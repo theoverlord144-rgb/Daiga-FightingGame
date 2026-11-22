@@ -65,3 +65,11 @@ Player 2 on top of it, so two-player free play works as before.
 4. Set Block height to standing only and check that 2L and 2M hit.
 5. F6, make the dummy do something (a jab, a jump), F6 again, then F7 to loop it.
 6. Tell me if the colours and layout read well at a glance, and which missing options you want first.
+
+## Follow-up (added after Phase 7): what I'd missed
+Re-checking against your brief, I'd left out three Phase 6 items. They're done now:
+- **Frame step and slow motion:** F9 pauses, F10 moves one frame at a time, and the backquote key (`) cycles
+  speed between 1×, ½× and ¼×. They work in training, the sync test and the replay viewer.
+- **Motion notation in the input history:** when a button press completes a motion, the history shows it in
+  purple beside the row (236L, 623H, 41236S...). It uses the game's own motion rules, so it shows exactly what the
+  game understood. A test checks it, including when you're facing left.

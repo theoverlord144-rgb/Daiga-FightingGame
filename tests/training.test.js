@@ -5,7 +5,9 @@ import { RAW } from '../src/core/input.js';
 import { px } from '../src/core/fixed.js';
 import { createFrameMeter, advantageFromData } from '../src/ui/training/frame-meter.js';
 import { createTraining, defaultSettings, toRelative, fromRelative } from '../src/ui/training/training.js';
-import { loadWorld, loadChar } from './helpers.js';
+import { loadWorld, loadChar, script } from './helpers.js';
+import { createInputState, pushInput } from '../src/core/input.js';
+import { historyRuns, motionLabels } from '../src/ui/input-history.js';
 
 const A = loadChar('data/characters/avner/avner.toska.json');
 const W = loadWorld(A, A);
@@ -209,4 +211,18 @@ test('the frame bar holds the last exchange while both are idle, and the next ac
   assert.equal(held.length - held.lastIndexOf('recovery') - 1, 8, 'then only 8 free frames');
   run(3, RAW.L);
   assert.deepEqual(meter.bars[0].map((c) => c.kind), ['startup', 'startup', 'startup'], 'a fresh bar');
+});
+
+test('the input history names the motion a press completed (236L, 623H), mirrored by facing, and nothing for a plain press', () => {
+  const rules = W.input;
+  const label = (str, facing = 1) => {
+    const inp = createInputState(rules.bufferFrames);
+    for (const r of script(str)) pushInput(inp, r, rules);
+    const runs = historyRuns(inp, 18);
+    return motionLabels(inp, runs, rules, facing).find((x) => x) || '';
+  };
+  assert.equal(label('5*5 2*2 3*2 6+L 5*3'), '236');
+  assert.equal(label('5*5 6*2 2*2 3+H 5*3'), '623');
+  assert.equal(label('5*5 2*2 1*2 4+L 5*3', -1), '236', 'facing left, 214 on screen is a 236');
+  assert.equal(label('5*10 5+M 5*3'), '');
 });

@@ -70,6 +70,13 @@ Current through **Phase 7**.
   `?mode=netplay&side=1|2&lag=N&delay=N`) in the browser. `sync-test.js` / `?mode=synctest`: rewind 8 and replay
   every frame, demand the same hash. **Anything that affects the game must live in the game state**, or rollback and
   the sync test break.
+- **Replays** (`src/net/replay.js`): `{ format: "toska-replay", version: 1, chars, frames, inputs: [[p1, p2, runLength]],
+  checks: [[frame, hash]], finalHash }`. `createReplayRecorder` → `record(raws, game)` → `finish(game)`; `decodeReplay`
+  validates; `playReplay(world, file)` re-runs and verifies checkpoints. Sessions take `onFinal(f, raws, state)` to
+  record confirmed netplay frames. UI: Ctrl+S in synctest/netplay, `?mode=replay` viewer (`src/ui/replay-file.js`).
+  Training sessions are not replayable (refill/reset edit the state outside the inputs).
+- **Time controls** (`src/main.js`): F9 pause, F10 one frame, ` cycles 1×/½×/¼× (the loop's `speed`); not in netplay.
+  The input history labels presses with the motion they completed (`motionLabels` in `src/ui/input-history.js`).
 
 - **Training mode** (`src/ui/training/`, the default screen): never touches `src/core/`. `training.js` sits between the
   controllers and `step`: `inputs(game, dev)` returns [P1, P2] raw input (the dummy's input is OR-ed with a real P2
@@ -138,7 +145,7 @@ Current through **Phase 7**.
   `p.contact`) → fire the frame's one-shot events → physics (x += vx, y += vy, gravity) → stage clamp → landing
   (air state, y ≤ 0, falling → `landTo`). A press is consumed by game frame (`p.consumed`) so one press = one move.
 - **Screens**: `src/main.js` boots Training mode (default), the Input Lab (`?mode=lab`), Netplay (`?mode=netplay`)
-  or the live Sync Test (`?mode=synctest`). `src/render/fight-renderer.js`
+  the live Sync Test (`?mode=synctest`) or the Replay viewer (`?mode=replay`). `src/render/fight-renderer.js`
   draws the stage, fighters (sprites from `data/characters/<id>/` when a sheet image exists, else a placeholder figure
   whose limb reaches to the live hitbox), and the box view.
 

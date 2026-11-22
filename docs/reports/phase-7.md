@@ -65,3 +65,30 @@
 2. Try `lag=0`, `lag=6` and `lag=12`. Tell me where it starts to feel bad.
 3. Try `&delay=0` and `&delay=3` against the default 2. Some players prefer more delay and fewer rollbacks.
 4. `?mode=synctest` and play anything. It should only ever say OK.
+
+## Follow-up (added before Phase 8): what I'd missed
+- **Replays.** Your brief asked for "replays (an input log) reproduce a match exactly", and I hadn't built them.
+  Now:
+  - **Saving:** Ctrl+S saves the match as a small file, in `?mode=synctest` (local play) and in `?mode=netplay`
+    (the frames both players have confirmed).
+  - **Watching:** `?mode=replay` plays a file you drop on the page or pick with "Open replay…". Pause, frame step
+    and slow motion all work.
+  - **Proof built in:** the file carries checkpoints, so the viewer says "matched the recording exactly" or the
+    frame where it stopped matching.
+  - **Tests:**
+    - A 5,000-frame match replayed through a saved file is identical on every single frame.
+    - Replay files are small: a held input is stored once.
+    - A tampered file is caught at the next checkpoint.
+    - Non-replay files are refused with a clear message.
+    - A netplay match saved by both players replays to exactly what was played live.
+  - I checked it in the browser: a 900-frame replay played through and showed "matched the recording exactly".
+  - Training-mode sessions can't be saved as replays yet. Health refill and position reset change the game outside
+    the inputs. Versus mode (Phase 9) will save replays.
+- **Online play, what it needs** (left for its own phase, as you said):
+  - WebRTC data channels, set to unordered and unreliable. Rollback already re-sends everything, so lost packets
+    don't matter.
+  - A tiny pairing service: a "room code" page where two players exchange connection details. That's the only part
+    that needs a server.
+  - A free public STUN server to get through home routers. A TURN relay as a fallback for strict networks; that one
+    costs money to run.
+  - Nothing in the engine changes: the session code already doesn't care what carries its packets.

@@ -12,7 +12,7 @@
 import { createGame, step } from '../core/game.js';
 import { cloneState, hashState } from '../core/state.js';
 
-export function createSession(world, { local, delay = 2, maxRollback = 8, hashEvery = 10, redundancy = 64, keepInputs = false } = {}) {
+export function createSession(world, { local, delay = 2, maxRollback = 8, hashEvery = 10, redundancy = 64, keepInputs = false, onFinal = null } = {}) {
   const remote = 1 - local;
   let game = createGame(world);
   const localIn = new Map(); // frame -> raw
@@ -49,6 +49,12 @@ export function createSession(world, { local, delay = 2, maxRollback = 8, hashEv
     // A frame is final once both inputs are known and no rollback before it is pending.
     const final = Math.min(remoteContig, localNext - 1, game.frame - 1);
     for (let f = hashedUpTo + 1; f <= final; f++) {
+      if (onFinal) { // a frame whose inputs can never change again (for replays)
+        const raws = [0, 0];
+        raws[local] = localIn.get(f);
+        raws[remote] = remoteIn.get(f);
+        onFinal(f, raws, f + 1 === game.frame ? game : saved.get(f + 1));
+      }
       if ((f + 1) % hashEvery === 0) {
         // The state after frame f = the saved start of frame f + 1 (or the live game if that's now).
         const s = f + 1 === game.frame ? game : saved.get(f + 1);

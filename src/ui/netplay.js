@@ -8,9 +8,9 @@ import { createSession } from '../net/rollback.js';
 import { cloneState, hashState } from '../core/state.js';
 import { createGame, step } from '../core/game.js';
 
-export function createNetplay(world, { side, lag = 0, delay = 2, room = 'toska-netplay' }) {
+export function createNetplay(world, { side, lag = 0, delay = 2, room = 'toska-netplay', onFinal = null }) {
   const local = side - 1;
-  const session = createSession(world, { local, delay });
+  const session = createSession(world, { local, delay, onFinal });
   const ch = new BroadcastChannel(room);
   const inbox = []; // { at, msg }
   let tick = 0;
