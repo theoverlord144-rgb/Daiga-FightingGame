@@ -59,6 +59,7 @@ const KIND_RANK = { super: 3, special: 2, normal: 1 };
 
 function inferKind(m, parsed) {
   if (m.kind) return m.kind;
+  if (parsed && parsed.motion && parsed.motion.length >= 6) return 'super'; // 236236, 214214
   return parsed && parsed.motion ? 'special' : 'normal';
 }
 
@@ -75,7 +76,7 @@ function inferStance(m, parsed) {
 // Stats counted in frames, counts or percentages (everything else is a distance or speed, converted to units).
 const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'airTech', 'airTechInvuln', 'dashFrames', 'dashCancel', 'dashRecovery',
   'backdashFrames', 'backdashInvuln', 'backdashRecovery', 'airdashFrames', 'airdashCancel', 'airdashBackFrames',
-  'airdashKeep', 'airJumps', 'airDashes']);
+  'airdashKeep', 'airJumps', 'airDashes', 'meterBars', 'meterStart']);
 const BOX_STATS = new Set(['standHurt', 'crouchHurt', 'airHurt', 'standPush', 'crouchPush', 'airPush']);
 
 const boxes = (list) => (list || []).map(([x, y, w, h]) => [px(x), px(y), px(w), px(h)]);
@@ -107,13 +108,28 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
-/** Frame data of a move, converted to units (distances) and frames. */
-function compileMoveData(m) {
+/** Resource changes: { meter, gauge, vars: { name: n } } -> the same with defaults filled in. */
+function resources(r) {
+  if (!r) return null;
+  return { meter: r.meter | 0, gauge: r.gauge | 0, vars: { ...(r.vars || {}) } };
+}
+
+/** Frame data of a move, converted to units (distances) and frames. ctx = { kind, meter (system meter.json) }. */
+function compileMoveData(m, ctx = {}) {
+  const kind = ctx.kind ?? 'normal';
+  const M = ctx.meter;
+  const ex = m.ex ?? (kind === 'special' && ctx.chord === true);
+  const gain = M ? { ...(M.gain[kind] ?? M.gain.normal), ...(m.meter || {}) } : { hit: 0, block: 0, whiff: 0 };
+  const cost = resources(m.cost) ?? { meter: 0, gauge: 0, vars: {} };
+  if (m.meterCost !== undefined) cost.meter = m.meterCost;
+  else if (!m.cost?.meter && M) cost.meter = kind === 'super' ? M.superCost : ex ? M.exCost : 0;
   return {
+    kind,
+    ex: !!ex,
     startup: m.startup ?? 1,
     active: m.active ?? 0,
     recovery: m.recovery ?? 0,
@@ -142,7 +158,34 @@ function compileMoveData(m) {
     wallBounce: m.wallBounce ? { x: px(m.wallBounce.x ?? 0), y: px(m.wallBounce.y ?? 0) } : null,
     groundBounce: m.groundBounce ? { y: px(m.groundBounce.y ?? 0) } : null,
     bounceLimit: m.bounceLimit ?? null,
+    // Meter and the character mechanic (Phase 8).
+    meterGain: { hit: gain.hit | 0, block: gain.block | 0, whiff: gain.whiff | 0 },
+    cost, // paid when the move starts: { meter, gauge, vars }
+    requires: m.requires ? { meter: m.requires.meter | 0, gauge: m.requires.gauge | 0, vars: { ...(m.requires.vars || {}) } } : null,
+    onHit: resources(m.onHit),
+    onBlock: resources(m.onBlock),
+    onWhiff: resources(m.onWhiff),
   };
+}
+
+/**
+ * The character mechanic slot: a named gauge and named counters ("vars") that moves and timeline events can
+ * require, spend and build. All values are integers kept in the game state.
+ *   mechanic: { name, gauge: { max, start, perFrame, onHit, onBlock, onHurt, label },
+ *               vars: { name: { start, min, max, perFrame, label } },
+ *               modifiers: [{ when: { gauge: n, vars: { name: [min, max] } }, damagePct }] }
+ */
+function compileMechanic(src) {
+  if (!src) return { name: null, gauge: null, vars: {}, modifiers: [] };
+  const g = src.gauge;
+  const gauge = g ? { max: g.max ?? 10000, start: g.start ?? 0, perFrame: g.perFrame ?? 0, onHit: g.onHit ?? 0,
+    onBlock: g.onBlock ?? 0, onHurt: g.onHurt ?? 0, label: g.label ?? src.name ?? 'Gauge' } : null;
+  const vars = {};
+  for (const [k, v] of Object.entries(src.vars || {})) {
+    vars[k] = { start: v.start ?? 0, min: v.min ?? 0, max: v.max ?? 99, perFrame: v.perFrame ?? 0, label: v.label ?? k, show: v.show ?? true };
+  }
+  const modifiers = (src.modifiers || []).map((x) => ({ when: x.when || {}, damagePct: x.damagePct ?? 10000 }));
+  return { name: src.name ?? null, gauge, vars, modifiers };
 }
 
 /** Sprite timeline from a sheet: [{ at, index }]. holds[i] frames per sprite; missing = spread evenly. */
@@ -315,6 +358,7 @@ export function compileCharacter(file, system) {
   const states = {};
   const sheets = {};
   const commands = [];
+  const mechanic = compileMechanic(t.mechanic ?? file.mechanic);
   const moveIds = new Set(t.moves.map((m) => m.id));
   if (moveIds.size !== t.moves.length) throw new Error(`${ch.id}: duplicate move ids`);
 
@@ -331,13 +375,18 @@ export function compileCharacter(file, system) {
     if (!states[name]) states[name] = compileState(name, src, stats, {});
   }
 
+  // Universal moves (burst), unless the character defines its own with the same id.
+  const universal = Object.entries(system.burst?.moves || {}).filter(([id]) => !moveIds.has(id))
+    .map(([id, m]) => ({ ...m, id, kind: 'burst', input: undefined }));
+
   // Moves.
-  for (const m of t.moves) {
+  for (const m of [...t.moves, ...universal]) {
     if (common[m.id]) continue; // a sprite for a system state, handled above
     const parsed = parseInput(m.input);
     const kind = inferKind(m, parsed);
     const stance = inferStance(m, parsed);
-    const move = compileMoveData(m);
+    const move = compileMoveData(m, { kind, meter: system.meter, chord: !!parsed && parsed.buttons.length > 1 });
+    checkVars(ch.id, m.id, mechanic, [move.cost, move.requires, move.onHit, move.onBlock, move.onWhiff]);
     if (m.sprite) sheets[m.id] = m.sprite;
     const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id], kind, move)];
     states[m.id] = compileState(m.id, { ...m, stance, next: m.next ?? (stance === 'air' ? 'fall' : stance === 'crouch' ? 'crouch' : 'idle') }, stats, {
@@ -352,12 +401,21 @@ export function compileCharacter(file, system) {
         dir: parsed.dir,
         buttons: parsed.buttons,
         negativeEdge: !!m.negativeEdge,
+        neutral: m.neutral !== false, // false: only reachable from a cancel window that names it (chains, follow-ups)
+        cost: move.cost,
+        requires: move.requires,
       });
     }
   }
 
   // Validate references so mistakes show up at load, not mid-match.
   for (const st of Object.values(states)) {
+    for (const shots of st.onEnter) {
+      for (const s of shots) {
+        if (s.type === 'addVar' || s.type === 'setVar') checkVars(ch.id, st.name, mechanic, [{ vars: s.value }]);
+        if (s.type === 'gauge' && !mechanic.gauge) throw new Error(`${ch.id}: ${st.name} changes the gauge, but the mechanic has none`);
+      }
+    }
     if (!states[st.next]) throw new Error(`${ch.id}: state ${st.name} goes to unknown state ${st.next}`);
     for (const c of st.cancels) {
       for (const into of c.into) {
@@ -366,13 +424,28 @@ export function compileCharacter(file, system) {
     }
   }
 
-  // Priority: supers, then specials (longer motions first), then exact-direction normals, then the rest.
+  // Priority: supers, then specials (longer motions first; chords like EX before single buttons), then
+  // exact-direction normals, then the rest.
   commands.sort((a, b) =>
     KIND_RANK[b.kind] - KIND_RANK[a.kind] ||
     (b.motion?.length ?? 0) - (a.motion?.length ?? 0) ||
+    b.buttons.length - a.buttons.length ||
     dirRank(a.dir) - dirRank(b.dir));
 
-  return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands, sheets };
+  // EX upgrades: a chord command (236LM) can take over its one-button version (236L or 236M) during the chord
+  // window, because a player's two buttons rarely land on the very same frame.
+  const upgrades = {};
+  for (const c of commands) {
+    if (c.buttons.length < 2) continue;
+    for (const d of commands) {
+      if (d === c || d.buttons.length !== 1 || d.motion !== c.motion || d.dir !== c.dir || d.air !== c.air) continue;
+      if (c.buttons.includes(d.buttons)) (upgrades[d.move] ||= []).push(c);
+    }
+  }
+
+  const meterMax = stats.units.meterBars * (system.meter?.barSize ?? 10000);
+  return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
+    sheets, mechanic, meterMax, upgrades };
 }
 
 /**
@@ -402,6 +475,15 @@ function gatlingCancels(m, gatling, kind, move) {
   if (jc.length) out.push({ from, to, into: ['#jump'], on: jc });
   if (m.launcher) out.push({ from, to, into: ['#superjump'], on: ['hit'] });
   return out;
+}
+
+/** Every var a move mentions must be declared in the mechanic, so typos fail at load. */
+function checkVars(charId, moveId, mechanic, list) {
+  for (const r of list) {
+    for (const k of Object.keys(r?.vars || {})) {
+      if (!mechanic.vars[k]) throw new Error(`${charId}: move ${moveId} uses var "${k}", which the mechanic doesn't declare`);
+    }
+  }
 }
 
 /** Exact single directions beat the broad 5 (any non-down) and 2 (any down). */

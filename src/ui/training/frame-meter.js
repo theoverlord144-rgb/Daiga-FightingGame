@@ -35,14 +35,17 @@ export function createFrameMeter({ length = 80 } = {}) {
         recovery: t.t - t.lastActive, total: t.t, cancelled: t.cancelled };
   }
 
+  let flashPrev = 0;
   function update(game, world) {
+    const flashNow = game.flash ?? 0;
     const pending = [null, null];
     for (const p of game.players) {
       const i = p.id;
       const def = world.chars[i];
       const st = def.states[p.state];
       const pv = prev[i];
-      const frozen = pv !== null && pv.hitstop > 0; // hitstop at the start of this step froze the fighter
+      // Hitstop at the start of this step froze the fighter; a super flash freezes everyone.
+      const frozen = (pv !== null && pv.hitstop > 0) || flashPrev > 0;
       prev[i] = { state: p.state, frame: p.frame, hitstop: p.hitstop, dur: st.duration };
       if (frozen) continue;
 
@@ -50,7 +53,16 @@ export function createFrameMeter({ length = 80 } = {}) {
       if (st.move && p.frame === 0) {
         if (track[i]) { track[i].cancelled = true; finishMove(i); }
         track[i] = { move: p.state, t: 0, firstActive: null, lastActive: null, cancelled: false };
-      } else if (track[i] && track[i].move !== p.state) finishMove(i);
+      } else if (track[i] && track[i].move !== p.state) {
+        // A throw that grabs leaves its move on the very frame its throwbox is out: count that frame as active.
+        const t = track[i];
+        if (game.cues.some((c) => c.type === 'throw' && c.p === i)) {
+          t.t++;
+          if (t.firstActive === null) t.firstActive = t.t;
+          t.lastActive = t.t;
+        }
+        finishMove(i);
+      }
 
       const fr = frameOf(def, p.state, p.frame);
       let kind;
@@ -68,6 +80,7 @@ export function createFrameMeter({ length = 80 } = {}) {
       pending[i] = { kind, inv: !!(fr.invStrike || fr.invThrow) };
     }
 
+    flashPrev = flashNow;
     // While both players are free the bar holds still, showing the last exchange. After 20 quiet frames, the next
     // action clears it, so a new move always starts at the left edge.
     // (The first few free frames still show, so short gaps where both players can act are visible.)

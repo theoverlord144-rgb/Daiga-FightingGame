@@ -34,6 +34,8 @@ const SPARK = {
   tech: { color: '#e0d050', size: 26, life: 18, text: 'TECH' },
   wallbounce: { color: '#ff9a3c', size: 40, life: 18, text: 'WALL BOUNCE' },
   groundbounce: { color: '#ff9a3c', size: 40, life: 18, text: 'GROUND BOUNCE' },
+  burst: { color: '#7fe0ff', size: 70, life: 26, text: 'BURST' },
+  superflash: { color: '#ffffff', size: 80, life: 22, text: '' },
 };
 
 export function createFightRenderer(ctx, W, H) {
@@ -172,6 +174,57 @@ export function createFightRenderer(ctx, W, H) {
     ctx.fillRect(ox - 1, oy - 3, 2, 7);
   }
 
+  /** Burst gauge (under the health bar), super meter, and the character mechanic. */
+  function drawResources(p, def, world, x, w) {
+    const left = p.id === 0;
+    const B = world.burst;
+    if (B && B.enabled) {
+      const full = p.burst >= B.gaugeMax;
+      const bw = Math.round((w * 0.4 * p.burst) / B.gaugeMax);
+      const bx = left ? x + w - Math.round(w * 0.4) : x;
+      ctx.fillStyle = '#1c1826';
+      ctx.fillRect(bx, 34, Math.round(w * 0.4), 4);
+      ctx.fillStyle = full ? '#7fe0ff' : '#3f6f80';
+      ctx.fillRect(left ? bx + Math.round(w * 0.4) - bw : bx, 34, bw, 4);
+      if (full) {
+        ctx.font = '700 10px system-ui';
+        ctx.textAlign = left ? 'right' : 'left';
+        ctx.fillText('BURST', left ? bx - 4 : bx + Math.round(w * 0.4) + 4, 39);
+      }
+    }
+    // Super meter: whole bars as a number, the current bar as a fill.
+    const bar = world.meter?.barSize ?? 10000;
+    const bars = Math.floor(p.meter / bar);
+    const part = p.meter - bars * bar;
+    const mw = 180;
+    const mx = left ? x : x + w - mw;
+    const my = 54;
+    ctx.fillStyle = '#1c1826';
+    ctx.fillRect(mx, my, mw, 8);
+    const full = p.meter >= def.meterMax;
+    ctx.fillStyle = full ? '#ffe9a8' : '#c9a2ff';
+    const fw = full ? mw : Math.round((mw * part) / bar);
+    ctx.fillRect(left ? mx : mx + mw - fw, my, fw, 8);
+    ctx.font = '800 15px system-ui';
+    ctx.textAlign = left ? 'left' : 'right';
+    ctx.fillStyle = bars > 0 ? '#ffe9a8' : '#5d556b';
+    ctx.fillText(String(bars), left ? mx + mw + 8 : mx - 8, my + 9);
+    // The mechanic: its gauge as a thin bar, its counters as pips.
+    const mech = def.mechanic;
+    let line = '';
+    if (mech?.gauge) line += `${mech.gauge.label} ${Math.floor((100 * p.gauge) / mech.gauge.max)}%  `;
+    for (const [k, v] of Object.entries(mech?.vars || {})) {
+      if (!v.show) continue;
+      const n = p.vars[k];
+      line += v.max <= 6 ? `${v.label} ${'●'.repeat(n)}${'○'.repeat(Math.max(0, v.max - n))}  ` : `${v.label} ${n}  `;
+    }
+    if (line) {
+      ctx.font = '600 11px system-ui';
+      ctx.fillStyle = '#c9a2ff';
+      ctx.fillText(line.trim(), left ? mx : mx + mw, my + 22);
+    }
+  }
+
   return {
     cam,
     toScreen,
@@ -202,6 +255,21 @@ export function createFightRenderer(ctx, W, H) {
       const wantY = Math.max(0, top - (GROUND - 40));
       cam.y += (wantY - cam.y) * 0.25;
       drawStage(world);
+      // Super flash: the stage goes dark while the game is frozen; the super's user stays lit.
+      const flashing = game.flash > 0;
+      if (flashing) {
+        ctx.fillStyle = '#05030acc';
+        ctx.fillRect(0, 0, W, H);
+        const sp = game.players[game.flashBy];
+        if (sp) {
+          const [fx, fy] = toScreen(sp.x, sp.y + 9000);
+          const glow = ctx.createRadialGradient(fx, fy, 10, fx, fy, 160);
+          glow.addColorStop(0, '#ffe9a855');
+          glow.addColorStop(1, '#ffe9a800');
+          ctx.fillStyle = glow;
+          ctx.fillRect(fx - 160, fy - 160, 320, 320);
+        }
+      }
       // Draw the fighter who is attacking last so their limb sits on top.
       const order = [...game.players].sort((a, b) => (frameOf(world.chars[a.id], a.state, a.frame).hit.length ? 1 : 0) - (frameOf(world.chars[b.id], b.state, b.frame).hit.length ? 1 : 0));
       for (const p of order) {
@@ -213,7 +281,9 @@ export function createFightRenderer(ctx, W, H) {
         ctx.beginPath();
         ctx.ellipse(shx, GROUND + cam.y + 3, 34, 6, 0, 0, Math.PI * 2);
         ctx.fill();
+        if (flashing && p.id !== game.flashBy) ctx.globalAlpha = 0.45;
         if (!drawSprite(p, def, fr)) drawPlaceholder(p, def, fr, COLORS[p.id]);
+        ctx.globalAlpha = 1;
         if (opts.boxes) drawBoxes(p, fr);
         if (opts.labels) {
           const [lx, ly] = toScreen(p.x, p.y + 18500 + p.id * 1600);
@@ -276,6 +346,7 @@ export function createFightRenderer(ctx, W, H) {
         ctx.font = '12px system-ui';
         ctx.textAlign = p.id === 0 ? 'left' : 'right';
         ctx.fillText(`${world.chars[p.id].name}  ${p.health}`, p.id === 0 ? x : x + w, 46);
+        drawResources(p, world.chars[p.id], world, x, w);
       }
     },
   };

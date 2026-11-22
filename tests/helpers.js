@@ -38,6 +38,8 @@ import { createWorld } from '../src/core/game.js';
 export const SYSTEM = {
   defaults: loadJSON('data/system/fighter-defaults.json'),
   common: loadJSON('data/system/common-states.json'),
+  meter: loadJSON('data/system/meter.json'),
+  burst: loadJSON('data/system/burst.json'),
 };
 
 export const loadChar = (rel) => compileCharacter(loadJSON(rel), SYSTEM);
@@ -48,6 +50,8 @@ export function loadWorld(a = 'data/characters/avner/avner.toska.json', b = a) {
     input: loadJSON('data/system/input.json'),
     battle: loadJSON('data/system/battle.json'),
     combo: loadJSON('data/system/combo.json'),
+    meter: SYSTEM.meter,
+    burst: SYSTEM.burst,
     chars: [typeof a === 'string' ? loadChar(a) : a, typeof b === 'string' ? loadChar(b) : b],
   });
 }

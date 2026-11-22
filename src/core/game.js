@@ -4,7 +4,7 @@
 // `world` is the static, read-only context: { input, battle, chars: [def1, def2] }. Build it with createWorld().
 // The game state holds only plain data and refers to characters by id.
 
-import { createInputState, pushInput } from './input.js';
+import { createInputState, pushInput, BTN } from './input.js';
 import { createFighter, advanceAndDecide, move, land } from './fighter.js';
 import { separate, resolveHits, checkThrowBreaks, throwLands } from './combat.js';
 import { px } from './fixed.js';
@@ -15,10 +15,17 @@ export const FPS = 60;
 const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown']);
 
 /** Bundle the system data and two compiled characters into the read-only world. */
-export function createWorld({ input, battle, combo, chars }) {
+export function createWorld({ input, battle, combo, meter = null, burst = null, chars }) {
   return {
     input,
     combo,
+    meter,
+    burst: burst && {
+      ...burst,
+      buttons: [...burst.buttons],
+      bits: [...burst.buttons].map((b) => BTN[b]),
+      stateSet: new Set(burst.states),
+    },
     battle: {
       ...battle,
       halfWidthUnits: px(battle.stage.halfWidth),
@@ -36,10 +43,13 @@ export function createGame(world) {
   return {
     frame: 0,
     cues: [],
+    flash: 0, // super flash: frames the whole game stays frozen
+    flashBy: -1,
     players: [0, 1].map((i) => ({
       id: i,
       input: createInputState(world.input.bufferFrames),
       ...createFighter(world.chars[i], i, i === 0 ? -world.battle.startXUnits : world.battle.startXUnits),
+      burst: world.burst ? world.burst.start : 0,
     })),
   };
 }
@@ -54,6 +64,25 @@ export function step(state, rawInputs, world) {
   const ps = state.players;
   pushInput(ps[0].input, rawInputs[0] | 0, world.input);
   pushInput(ps[1].input, rawInputs[1] | 0, world.input);
+
+  // Super flash: everything stands still; presses made now stay buffered for when it ends.
+  if (state.flash > 0) {
+    state.flash--;
+    for (const p of ps) p.freezeAge++;
+    return state;
+  }
+
+  // Per-frame resources: the mechanic's gauge and vars, and the burst gauge.
+  for (const p of ps) {
+    const def = world.chars[p.id];
+    const mech = def.mechanic;
+    if (mech.gauge && mech.gauge.perFrame) p.gauge = Math.max(0, Math.min(mech.gauge.max, p.gauge + mech.gauge.perFrame));
+    for (const [k, v] of Object.entries(mech.vars)) {
+      if (v.perFrame) p.vars[k] = Math.max(v.min, Math.min(v.max, p.vars[k] + v.perFrame));
+    }
+    const B = world.burst;
+    if (B && B.enabled && B.perFrame) p.burst = Math.min(B.gaugeMax, p.burst + B.perFrame);
+  }
 
   // Hitstop: a frozen fighter skips everything this frame.
   const frozen = [false, false];

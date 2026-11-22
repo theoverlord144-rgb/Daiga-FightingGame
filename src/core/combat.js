@@ -2,7 +2,7 @@
 // throws and throw techs, hitstop, hitstun/blockstun, pushback (and corner pushback), damage with guts.
 
 import { frameOf } from './character.js';
-import { CONTACT, enterState, isAirborne, startSlide } from './fighter.js';
+import { CONTACT, enterState, isAirborne, startSlide, applyResources, meets } from './fighter.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
 import { pct, sign } from './fixed.js';
 
@@ -182,6 +182,33 @@ function resolveStrike(game, world, a, d, rect, snap) {
   return out;
 }
 
+/** Meter and mechanic gains when a strike connects: attacker by the move, defender by the damage taken. */
+function gains(world, a, d, move, kind, dmg) {
+  const adef = world.chars[a.id];
+  const ddef = world.chars[d.id];
+  const g = adef.mechanic.gauge;
+  if (kind === 'block') {
+    applyResources(a, adef, { meter: move.meterGain.block, gauge: g ? g.onBlock : 0 });
+    applyResources(a, adef, move.onBlock);
+    return;
+  }
+  applyResources(a, adef, { meter: move.meterGain.hit, gauge: g ? g.onHit : 0 });
+  applyResources(a, adef, move.onHit);
+  const M = world.meter;
+  if (M && dmg > 0) applyResources(d, ddef, { meter: pct(dmg, M.victimGainPct) });
+  const dg = ddef.mechanic.gauge;
+  if (dg && dg.onHurt) applyResources(d, ddef, { gauge: dg.onHurt });
+  const B = world.burst;
+  if (B && B.enabled && B.hurtPct && dmg > 0) d.burst = Math.min(B.gaugeMax, d.burst + pct(dmg, B.hurtPct));
+}
+
+/** The attacker's mechanic damage modifier (the product of every modifier whose condition holds). */
+function damageMod(world, a) {
+  let m = 10000;
+  for (const x of world.chars[a.id].mechanic.modifiers) if (meets(a, x.when)) m = pct(m, x.damagePct);
+  return m;
+}
+
 function applyStrike(game, world, r) {
   const { a, d, move, block, away, rect } = r;
   const ddef = world.chars[d.id];
@@ -191,6 +218,7 @@ function applyStrike(game, world, r) {
   if (r.kind === 'armor') {
     d.armorUsed++;
     a.contact = CONTACT.HIT;
+    gains(world, a, d, move, 'hit', 0);
     applyDamage(d, ddef, gutsDamage(pct(move.damage, battle.armorDamagePct), d.health, maxHp, battle));
     a.hitstop = d.hitstop = move.hitstop;
     cue(game, 'armor', a, rect, { move: a.state });
@@ -202,6 +230,7 @@ function applyStrike(game, world, r) {
 
   if (r.kind === 'block') {
     a.contact = CONTACT.BLOCK;
+    gains(world, a, d, move, 'block', 0);
     applyDamage(d, ddef, move.chip);
     a.hitstop = d.hitstop = move.blockHitstop;
     enterState(d, ddef, r.block === 'air' ? 'blockAir' : r.block === 'crouch' ? 'blockCrouch' : 'blockStand');
@@ -227,6 +256,7 @@ function applyStrike(game, world, r) {
 
   // Damage: base (counter bonus) x combo scaling x same-move penalty, then guts.
   let base = counter ? pct(move.damage, ch.damagePct) : move.damage;
+  base = pct(base, damageMod(world, a));
   base = pct(base, combo.scale);
   for (let i = 0; i < uses; i++) base = pct(base, C.repeatPenalty);
   const dmg = gutsDamage(base, d.health, maxHp, battle);
@@ -240,6 +270,7 @@ function applyStrike(game, world, r) {
   combo.hits++;
   combo.damage += dmg;
   if (r.firstOfUse) combo.used[moveId] = used + 1;
+  gains(world, a, d, move, 'hit', dmg);
 
   a.hitstop = d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
   // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
@@ -339,7 +370,9 @@ export function throwLands(game, world, d) {
   const ddef = world.chars[d.id];
   const move = adef.states[d.throwMove]?.move;
   if (move) {
-    applyDamage(d, ddef, gutsDamage(move.damage, d.health, ddef.stats.health, world.battle));
+    const dmg = gutsDamage(pct(move.damage, damageMod(world, a)), d.health, ddef.stats.health, world.battle);
+    applyDamage(d, ddef, dmg);
+    gains(world, a, d, move, 'hit', dmg);
     if (move.throwSwap) {
       d.x = a.x - a.facing * move.throwDistance;
       a.facing = -a.facing;
@@ -347,7 +380,7 @@ export function throwLands(game, world, d) {
     const away = d.x > a.x ? 1 : -1;
     d.facing = -away;
     startSlide(d, away * move.pushbackHit, world.battle.pushbackFrames);
-    cue(game, 'hit', a, null, { move: d.throwMove, damage: move.damage, throw: true });
+    cue(game, 'hit', a, null, { move: d.throwMove, damage: dmg, throw: true });
   }
   d.throwBy = -1;
 }

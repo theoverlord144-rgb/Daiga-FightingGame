@@ -1,12 +1,15 @@
 {
   "version": 1,
-  "notes": "Engine-wide input rules. Steps are strings of numpad directions; '!' in front means 'any direction except these'. Optional steps end with '?'. window = frames from the first step to the button press (or, for direction-only motions like 66, to the last direction); lenientWindow is used when leniency is on. Charge: hold one of 'charge' for chargeFrames, then press one of 'release' within window frames of the button.",
+  "notes": "Engine-wide input rules. Steps are strings of numpad directions; '!' in front means 'any direction except these'. Optional steps end with '?'. window = frames from the first step to the button press (or, for direction-only motions like 66, to the last direction); lenientWindow is used when leniency is on. chordWindow = how many frames apart the buttons of a chord (EX moves like 236LM, burst) may be pressed. Charge: hold one of 'charge' for chargeFrames, then press one of 'release' within window frames of the button.",
   "socd": { "horizontal": "neutral", "vertical": "up" },
   "bufferFrames": 120,
   "pressBuffer": 4,
+  "chordWindow": 3,
   "leniency": true,
-  "motionPriority": ["41236", "63214", "623", "421", "22", "236", "214", "[4]6", "[2]8"],
+  "motionPriority": ["236236", "214214", "41236", "63214", "623", "421", "22", "236", "214", "[4]6", "[2]8"],
   "motions": {
+    "236236": { "steps": ["2", "3", "6", "2", "3", "6"], "lenient": ["2", "3?", "6", "2", "3?", "6"], "window": 20, "lenientWindow": 26 },
+    "214214": { "steps": ["2", "1", "4", "2", "1", "4"], "lenient": ["2", "1?", "4", "2", "1?", "4"], "window": 20, "lenientWindow": 26 },
     "236":   { "steps": ["2", "3", "6"],           "lenient": ["12", "3?", "6"],           "window": 10, "lenientWindow": 14 },
     "214":   { "steps": ["2", "1", "4"],           "lenient": ["23", "1?", "4"],           "window": 10, "lenientWindow": 14 },
     "623":   { "steps": ["6", "2", "3"],           "lenient": ["36", "12", "3"],           "window": 10, "lenientWindow": 14 },

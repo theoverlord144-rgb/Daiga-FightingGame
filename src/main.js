@@ -63,8 +63,8 @@ function drawHistories(game) {
   ctx.fillRect(0, 0, 126, 350);
   ctx.fillRect(W - 126, 0, 126, 350);
   const [a, b] = game.players;
-  drawHistory(ctx, a.input, 12, 22, { rows: 17, rules: INPUT_RULES, facing: a.facing });
-  drawHistory(ctx, b.input, W - 12, 22, { align: 'right', rows: 17, rules: INPUT_RULES, facing: b.facing });
+  drawHistory(ctx, a.input, 12, 22, { rows: 17, rules: INPUT_RULES, facing: a.facing, width: 112 });
+  drawHistory(ctx, b.input, W - 12, 22, { align: 'right', rows: 17, rules: INPUT_RULES, facing: b.facing, width: 112 });
 }
 
 let saveReplay = null; // set by modes that can save one (Ctrl+S)

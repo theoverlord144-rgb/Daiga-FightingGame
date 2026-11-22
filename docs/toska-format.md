@@ -31,8 +31,8 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | --- | --- |
 | `id` | Unique name, also the state name (`"5L"`, `"236H"`). Defaults to `input`. |
 | `name` | Display name. |
-| `input` | Command in numpad notation: `5L`, `2M`, `6H`, `j.H`, `236L`, `j.214S`, `[4]6H`, `623HS`(two buttons: later). `5` = any non-down direction, `2` = any down direction, other single digits are exact. `j.` = in the air. |
-| `kind` | `normal`, `special` or `super`. Inferred from `input` if missing (a motion = special). |
+| `input` | Command in numpad notation: `5L`, `2M`, `6H`, `j.H`, `236L`, `j.214S`, `[4]6H`, `236LM` (two buttons = a chord: pressed together, up to `chordWindow` frames apart in either order). `5` = any non-down direction, `2` = any down direction, other single digits are exact. `j.` = in the air. |
+| `kind` | `normal`, `special` or `super`. Inferred from `input` if missing (a motion = special, a double motion like `236236` = super). A special with a two-button input is an **EX** move. |
 | `startup` | Frames until the first active frame, counting it (a 4-frame move hits on its 4th frame). |
 | `active` | Frames the hitbox is out. |
 | `recovery` | Frames after the last active frame. Total length = startup − 1 + active + recovery. |
@@ -78,6 +78,35 @@ Version 2 adds per move:
 | `jumpCancel` | `"hit"`, `"block"`, `true` (both) or `false` (default). |
 | `cancelFrom`, `cancelTo` | Override the gatling window (default: first active frame to the end of the move). |
 
+### Meter, specials and supers (version 2, Phase 8)
+
+| Field | Meaning |
+| --- | --- |
+| `meter` | `{ hit, block, whiff }`: super meter this move builds. Default by `kind` in `data/system/meter.json`. Whiff meter is paid when the move ends without touching anything. |
+| `cost` | `{ meter, gauge, vars: { name: n } }`: paid when the move starts; the move can't be done without it. Default: `superCost` (one bar) for supers, `exCost` (half a bar) for EX moves, nothing otherwise. If an EX can't be afforded, the one-button version comes out instead. |
+| `requires` | `{ gauge: n, vars: { name: n or [min, max] } }`: must be true to start the move; nothing is spent. |
+| `onHit`, `onBlock`, `onWhiff` | `{ meter, gauge, vars: { name: +n } }`: changes to the attacker's resources when the move hits, is blocked or whiffs. |
+| `neutral` | `false`: the move only comes out from a cancel window that names it. For chain follow-ups ("214L, then L, then L"): the follow-up's input can be a plain button without taking that button over in neutral. |
+
+**EX upgrade:** if the one-button version starts and the second button arrives within `chordWindow` frames, the move
+becomes the EX version (the one-button cost is refunded).
+
+### `mechanic` (top level, version 2): the character-specific slot
+
+```json
+"mechanic": {
+  "name": "Charge",
+  "gauge": { "max": 5000, "start": 0, "perFrame": 0, "onHit": 0, "onBlock": 0, "onHurt": 0, "label": "Heat" },
+  "vars": { "charge": { "start": 0, "min": 0, "max": 3, "perFrame": 0, "label": "Charge", "show": true } },
+  "modifiers": [{ "when": { "vars": { "charge": [3, 3] }, "gauge": 0 }, "damagePct": 11000 }]
+}
+```
+A **gauge** (one number with a max) and named **vars** (small counters, clamped to min/max, ticking by `perFrame`).
+Moves use them through `cost`, `requires`, `onHit`/`onBlock`/`onWhiff` and the `addVar`/`setVar`/`gauge`
+timeline events. **Modifiers** apply while their `when` holds; `damagePct` multiplies the damage dealt. A move or
+event naming a var that isn't declared is an error when the file loads. The HUD shows the gauge and every var with
+`show` (default true).
+
 ### `gatlings` (top level, version 2)
 
 `{ "5L": ["5L", "2L", "5M"], ... }` — which moves each move chains into, on hit or block. Use
@@ -103,6 +132,18 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `velScale` | one-shot | Scale velocity by a percentage out of 10000 `{ x, y }` (an airdash keeping 30% of its speed). |
 | `sound`, `fx` | one-shot | Cue names for the renderer and audio. |
 | `jump` | one-shot | Engine hook: launch a jump from the stats (`"normal"`). |
+| `superFlash` | one-shot | Frames of super flash: the whole game freezes and the screen dims (presses made during it are kept). |
+| `meter`, `gauge` | one-shot | Add meter / mechanic gauge (negative to spend). |
+| `addVar`, `setVar` | one-shot | `{ name: n }`: change a mechanic var. |
+
+## Universal mechanics (system data)
+
+- **Meter** (`data/system/meter.json`): `barSize`, gains by kind, `victimGainPct` (the defender builds this
+  share of the damage taken), `exCost`, `superCost`. Bars per character: `stats.meterBars` (default 3),
+  `stats.meterStart`.
+- **Burst** (`data/system/burst.json`): `enabled`, `buttons` (default `"HS"` pressed together), `gaugeMax`,
+  `start`, `perFrame`, `hurtPct` (gauge from damage taken), `states` (where it's allowed: being comboed) and the
+  `burst` / `burstAir` moves every character gets (invincible, knocks the attacker away, ends the combo).
 
 ## System states
 

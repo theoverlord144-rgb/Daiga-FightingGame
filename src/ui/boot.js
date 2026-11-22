@@ -4,6 +4,8 @@ import battle from '../../data/system/battle.json';
 import combo from '../../data/system/combo.json';
 import defaults from '../../data/system/fighter-defaults.json';
 import common from '../../data/system/common-states.json';
+import meter from '../../data/system/meter.json';
+import burst from '../../data/system/burst.json';
 import { compileCharacter } from '../core/character.js';
 import { createWorld } from '../core/game.js';
 
@@ -28,7 +30,7 @@ export function setupCanvas() {
   return { canvas, ctx, ui: document.getElementById('ui') };
 }
 
-export const SYSTEM = { defaults, common };
+export const SYSTEM = { defaults, common, meter, burst };
 export const INPUT_RULES = inputRules;
 export const BATTLE = battle;
 
@@ -43,5 +45,5 @@ export function loadCharacters() {
 }
 
 export function makeWorld(a, b) {
-  return createWorld({ input: inputRules, battle, combo, chars: [a, b] });
+  return createWorld({ input: inputRules, battle, combo, meter, burst, chars: [a, b] });
 }

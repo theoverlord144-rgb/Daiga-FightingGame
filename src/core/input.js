@@ -92,6 +92,19 @@ export function releasedAt(inp, b, age) {
 export const held = (inp, b) => (buttonsOf(frameAt(inp, 0)) & b) !== 0;
 
 /** Age of the newest press of `b` within the last `within` steps, or -1. */
+/**
+ * A chord: every button in `bits` pressed within `window` frames of each other, the newest within `within` frames.
+ * Returns { age, ages } (age = the newest press) or null.
+ */
+export function chordWithin(inp, bits, within, window) {
+  const ages = bits.map((b) => pressedWithin(inp, b, within + window));
+  if (ages.some((a) => a < 0)) return null;
+  const newest = Math.min(...ages);
+  const oldest = Math.max(...ages);
+  if (newest >= within || oldest - newest > window) return null;
+  return { age: newest, ages };
+}
+
 export function pressedWithin(inp, b, within, negativeEdge = false) {
   for (let age = 0; age < within; age++) {
     if (pressedAt(inp, b, age) || (negativeEdge && releasedAt(inp, b, age))) return age;
