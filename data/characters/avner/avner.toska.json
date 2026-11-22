@@ -1,7 +1,7 @@
 {
   "engine": "Toska",
   "version": 2,
-  "notes": "PLACEHOLDER normals written by the engine (Phases 2-5) at UMvC3-speed targets, until Yahushua's Toska editor export replaces them. Brand of Light (mechanic, Lumen Hook, Reel, Lightstep) is a first pass to tune. Only 5L has art; everything else draws the placeholder figure.",
+  "notes": "PLACEHOLDER normals written by the engine (Phases 2-5) at UMvC3-speed targets, until Yahushua's Toska editor export replaces them. Brand of Light (mechanic, Lumen Hook, Reel, Lightstep) is a first pass to tune. Art: idle, 5L, Lumen Hook (with chain and brand flash), Reel, Lightstep, brand mark; everything else draws the placeholder figure.",
   "character": {
     "id": "avner",
     "name": "Avner",
@@ -10,7 +10,8 @@
   "mechanic": {
     "name": "Brand of Light",
     "vars": {
-      "brand": { "start": 0, "min": 0, "max": 300, "perFrame": -1, "label": "Brand", "display": "timer", "mark": "#fff1b8" }
+      "brand": { "start": 0, "min": 0, "max": 300, "perFrame": -1, "label": "Brand", "display": "timer",
+        "mark": { "color": "#fff1b8", "at": 95, "hold": 5, "sprite": { "image": "sheets/brand-mark.png", "columns": 8, "rows": 1, "count": 8, "frameW": 156, "frameH": 164, "originX": 78, "originY": 82, "scale": 0.5 } } }
     }
   },
   "palettes": {
@@ -44,7 +45,7 @@
       "starterProration": 8000,
       "hitboxes": [[20, 100, 60, 20]],
       "sprite": { "image": "sheets/5L.png", "columns": 6, "rows": 1, "count": 6, "frameW": 301, "frameH": 370,
-        "originX": 133, "originY": 368, "scale": 0.5, "holds": [3, 2, 2, 2, 2, 1] } },
+        "originX": 133, "originY": 368, "scale": 0.5, "holds": [2, 1, 2, 2, 2, 3] } },
     { "id": "5M", "name": "Standing Medium", "input": "5M", "startup": 6, "active": 3, "recovery": 12,
       "damage": 600, "hitstun": 17, "blockstun": 13, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18, "guard": "mid", "reach": 105,
       "starterProration": 9000,
@@ -97,23 +98,45 @@
     { "id": "hookL", "name": "Lumen Hook (L)", "input": "236L", "startup": 13, "active": 3, "recovery": 18,
       "damage": 700, "hitstun": 24, "blockstun": 12, "hitstop": 10, "pushbackHit": 8, "pushbackBlock": 25, "selfPushback": 10, "guard": "mid", "reach": 210,
       "starterProration": 9000, "onHit": { "vars": { "brand": 300 } },
-      "hitboxes": [[40, 92, 170, 18]] },
+      "hitboxes": [[40, 92, 170, 18]],
+      "sprite": { "image": "sheets/hook.png", "columns": 6, "rows": 1, "count": 6, "frameW": 292, "frameH": 364, "originX": 129, "originY": 362, "scale": 0.5, "holds": [6, 4, 2, 9, 7, 5] },
+      "chain": { "hand": [58, 133], "retract": 6, "headLength": 22,
+        "segment": { "image": "sheets/chain-segment.png", "columns": 1, "rows": 1, "count": 1, "frameW": 118, "frameH": 36, "originX": 59, "originY": 18, "scale": 0.5 },
+        "head": { "image": "sheets/chain-head.png", "columns": 1, "rows": 1, "count": 1, "frameW": 108, "frameH": 78, "originX": 54, "originY": 39, "scale": 0.5 } },
+      "hitFx": { "hold": 3, "sprite": { "image": "sheets/brand-flash.png", "columns": 7, "rows": 1, "count": 7, "frameW": 222, "frameH": 264, "originX": 111, "originY": 132, "scale": 0.5 } } },
     { "id": "hookM", "name": "Lumen Hook (M)", "input": "236M", "startup": 15, "active": 3, "recovery": 20,
       "damage": 750, "hitstun": 24, "blockstun": 12, "hitstop": 10, "pushbackHit": 8, "pushbackBlock": 25, "selfPushback": 10, "guard": "mid", "reach": 250,
       "starterProration": 9000, "onHit": { "vars": { "brand": 300 } },
-      "hitboxes": [[40, 92, 210, 18]] },
+      "hitboxes": [[40, 92, 210, 18]],
+      "sprite": { "image": "sheets/hook.png", "columns": 6, "rows": 1, "count": 6, "frameW": 292, "frameH": 364, "originX": 129, "originY": 362, "scale": 0.5, "holds": [7, 5, 2, 9, 8, 6] },
+      "chain": { "hand": [58, 133], "retract": 6, "headLength": 22,
+        "segment": { "image": "sheets/chain-segment.png", "columns": 1, "rows": 1, "count": 1, "frameW": 118, "frameH": 36, "originX": 59, "originY": 18, "scale": 0.5 },
+        "head": { "image": "sheets/chain-head.png", "columns": 1, "rows": 1, "count": 1, "frameW": 108, "frameH": 78, "originX": 54, "originY": 39, "scale": 0.5 } },
+      "hitFx": { "hold": 3, "sprite": { "image": "sheets/brand-flash.png", "columns": 7, "rows": 1, "count": 7, "frameW": 222, "frameH": 264, "originX": 111, "originY": 132, "scale": 0.5 } } },
     { "id": "hookH", "name": "Lumen Hook (H)", "input": "236H", "startup": 18, "active": 4, "recovery": 23,
       "damage": 800, "hitstun": 24, "blockstun": 12, "hitstop": 10, "pushbackHit": 8, "pushbackBlock": 25, "selfPushback": 10, "guard": "mid", "reach": 290,
       "starterProration": 9000, "onHit": { "vars": { "brand": 300 } },
-      "hitboxes": [[40, 92, 250, 18]] },
+      "hitboxes": [[40, 92, 250, 18]],
+      "sprite": { "image": "sheets/hook.png", "columns": 6, "rows": 1, "count": 6, "frameW": 292, "frameH": 364, "originX": 129, "originY": 362, "scale": 0.5, "holds": [8, 7, 2, 10, 9, 8] },
+      "chain": { "hand": [58, 133], "retract": 6, "headLength": 22,
+        "segment": { "image": "sheets/chain-segment.png", "columns": 1, "rows": 1, "count": 1, "frameW": 118, "frameH": 36, "originX": 59, "originY": 18, "scale": 0.5 },
+        "head": { "image": "sheets/chain-head.png", "columns": 1, "rows": 1, "count": 1, "frameW": 108, "frameH": 78, "originX": 54, "originY": 39, "scale": 0.5 } },
+      "hitFx": { "hold": 3, "sprite": { "image": "sheets/brand-flash.png", "columns": 7, "rows": 1, "count": 7, "frameW": 222, "frameH": 264, "originX": 111, "originY": 132, "scale": 0.5 } } },
     { "id": "reel", "name": "Reel", "input": "214H", "startup": 9, "active": 3, "recovery": 22,
       "damage": 600, "hitstun": 34, "untech": 34, "blockstun": 10, "hitstop": 10, "pushbackBlock": 20, "selfPushback": 10, "guard": "mid", "reach": 360,
       "comboProration": 8500, "requires": { "vars": { "brand": [1, 300] } }, "perCombo": 1, "pull": { "to": 70, "frames": 10 },
       "timeline": [{ "at": 0, "setVar": { "brand": 0 } }],
-      "hitboxes": [[40, 40, 320, 110]] },
+      "hitboxes": [[40, 40, 320, 110]],
+      "sprite": { "image": "sheets/reel.png", "columns": 5, "rows": 1, "count": 5, "frameW": 371, "frameH": 364, "originX": 165, "originY": 362, "scale": 0.5, "holds": [8, 5, 7, 7, 6] },
+      "chain": { "hand": [55, 105], "retract": 4, "headLength": 22,
+        "segment": { "image": "sheets/chain-segment.png", "columns": 1, "rows": 1, "count": 1, "frameW": 118, "frameH": 36, "originX": 59, "originY": 18, "scale": 0.5 },
+        "head": { "image": "sheets/chain-head.png", "columns": 1, "rows": 1, "count": 1, "frameW": 108, "frameH": 78, "originX": 54, "originY": 39, "scale": 0.5 } } },
     { "id": "lightstep", "name": "Lightstep", "input": "214L", "startup": 1, "active": 0, "recovery": 22,
       "requires": { "vars": { "brand": [1, 300] } },
       "timeline": [{ "at": 0, "setVar": { "brand": 0 } }, { "at": 2, "toOpponent": { "to": 70, "frames": 8 } }],
-      "cancels": [{ "from": 12, "to": 21, "into": ["#normal"], "on": ["whiff"] }] }
+      "cancels": [{ "from": 12, "to": 21, "into": ["#normal"], "on": ["whiff"] }],
+      "sprite": { "image": "sheets/lightstep.png", "columns": 5, "rows": 1, "count": 5, "frameW": 360, "frameH": 374, "originX": 180, "originY": 372, "scale": 0.5, "holds": [3, 7, 4, 4, 4] } },
+    { "id": "idle", "name": "Idle (art for the system idle state)",
+      "sprite": { "image": "sheets/idle.png", "columns": 8, "rows": 1, "count": 8, "frameW": 168, "frameH": 377, "originX": 84, "originY": 375, "scale": 0.5 } }
   ]
 }

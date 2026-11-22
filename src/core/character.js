@@ -161,6 +161,9 @@ function compileMoveData(m, ctx = {}) {
     // Pull-in: on hit the defender slides toward the attacker, ending `to` px in front of them, over `frames`.
     pull: m.pull ? { to: px(m.pull.to ?? 70), frames: Math.max(1, m.pull.frames ?? 8) } : null,
     perCombo: m.perCombo ?? 0, // > 0: the move can hit at most this many times in one combo (no loops)
+    // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
+    chain: m.chain ?? null,
+    hitFx: m.hitFx ?? null,
     // Meter and the character mechanic (Phase 8).
     meterGain: { hit: gain.hit | 0, block: gain.block | 0, whiff: gain.whiff | 0 },
     cost, // paid when the move starts: { meter, gauge, vars }

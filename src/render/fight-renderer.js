@@ -109,22 +109,98 @@ export function createFightRenderer(ctx, W, H) {
     for (const [k, v] of Object.entries(oppDef.mechanic?.vars || {})) {
       const n = opp.vars[k];
       if (!v.mark || !(n > 0)) continue;
-      const [x, y] = toScreen(p.x, p.y + 9000);
+      const m = typeof v.mark === 'string' ? { color: v.mark } : v.mark;
+      const [x, y] = toScreen(p.x, p.y + (m.at ?? 90) * UNIT);
       const fade = Math.min(1, n / 60);
+      if (m.sprite) {
+        ctx.save();
+        ctx.globalAlpha = fade;
+        drawSheetFrame(oppDef, m.sprite, Math.floor(frame / (m.hold ?? 5)) % m.sprite.count, x, y, 1);
+        ctx.restore();
+        continue;
+      }
       const pulse = 0.75 + 0.25 * Math.sin(frame * 0.25);
       ctx.save();
       ctx.globalAlpha = fade * pulse;
       const glow = ctx.createRadialGradient(x, y, 4, x, y, 70);
-      glow.addColorStop(0, `${v.mark}aa`);
-      glow.addColorStop(1, `${v.mark}00`);
+      glow.addColorStop(0, `${m.color}aa`);
+      glow.addColorStop(1, `${m.color}00`);
       ctx.fillStyle = glow;
       ctx.fillRect(x - 70, y - 70, 140, 140);
-      ctx.strokeStyle = v.mark;
+      ctx.strokeStyle = m.color;
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.ellipse(x, y, 40, 11, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
+    }
+  }
+
+  /** One frame of a sheet (effects, marks, chain pieces: no palette), centred on its origin at screen x, y. */
+  function drawSheetFrame(def, sheet, index, x, y, facing, angle = 0) {
+    const img = spriteImage(def.id, sheet.image);
+    if (!img) return false;
+    const cols = sheet.columns ?? 1;
+    const fw = sheet.frameW ?? img.naturalWidth / cols;
+    const fh = sheet.frameH ?? img.naturalHeight / (sheet.rows ?? 1);
+    const k = sheet.scale ?? 1;
+    ctx.save();
+    ctx.translate(x, y);
+    if (angle) ctx.rotate(angle);
+    ctx.scale(facing * k, k);
+    ctx.drawImage(img, (index % cols) * fw, Math.floor(index / cols) * fh, fw, fh, -(sheet.originX ?? fw / 2), -(sheet.originY ?? fh / 2), fw, fh);
+    ctx.restore();
+    return true;
+  }
+
+  /**
+   * A move's chain (drawing only): from the hand to the tip of its hitbox while the hitbox is out, then reeling back
+   * in over `retract` frames. Once the move has hit, it runs to the opponent instead, and stays attached while
+   * they're being pulled in.
+   */
+  function drawChain(p, def, opp) {
+    const st = def.states[p.state];
+    const ch = st?.move?.chain;
+    if (!ch) return;
+    let last = -1, first = -1, tip = null;
+    st.frames.forEach((f, i) => {
+      if (!f.hit.length) return;
+      if (first < 0) first = i;
+      last = i;
+      for (const b of f.hit) tip = !tip || b[0] + b[2] > tip[0] ? [b[0] + b[2], b[1] + b[3] / 2] : tip;
+    });
+    if (first < 0 || p.frame < first) return;
+    const hit = p.contact === 1; // CONTACT.HIT
+    const pulling = hit && opp.slideLeft > 0;
+    const after = p.frame - last;
+    const retract = ch.retract ?? 6;
+    if (after > retract && !pulling) return;
+    const [hx, hy] = toScreen(p.x + p.facing * (ch.hand?.[0] ?? 40) * UNIT, p.y + (ch.hand?.[1] ?? 100) * UNIT);
+    let [ex, ey] = hit ? toScreen(opp.x, opp.y + 9000) : toScreen(p.x + p.facing * tip[0], p.y + tip[1]);
+    if (!hit && after > 0) {
+      const t = Math.max(0, 1 - after / retract);
+      ex = hx + (ex - hx) * t;
+      ey = hy + (ey - hy) * t;
+    }
+    const dx = ex - hx, dy = ey - hy;
+    const len = Math.hypot(dx, dy);
+    if (len < 4) return;
+    const ang = Math.atan2(dy, dx);
+    const seg = ch.segment;
+    const step = (seg.frameW ?? 100) * (seg.scale ?? 1); // one tile's length on screen
+    ctx.save();
+    ctx.translate(hx, hy);
+    ctx.rotate(ang);
+    ctx.beginPath();
+    ctx.rect(0, -40, Math.max(0, len - (ch.headLength ?? 20)), 80); // the chain stops where the head starts
+    ctx.clip();
+    for (let d = step / 2; d - step / 2 < len; d += step) drawSheetFrame(def, seg, 0, d, 0, 1);
+    ctx.restore();
+    if (ch.head) {
+      const hk = (ch.head.frameW ?? 100) * (ch.head.scale ?? 1) / 2;
+      // The head points along the chain, its far end at the tip (mirrored when the chain runs leftward).
+      const back = dx < 0;
+      drawSheetFrame(def, ch.head, 0, ex - Math.cos(ang) * hk, ey - Math.sin(ang) * hk, 1, back ? ang + Math.PI : ang);
     }
   }
 
@@ -240,7 +316,13 @@ export function createFightRenderer(ctx, W, H) {
     draw(game, world, opts = {}) {
       if (game.frame !== lastFrame) {
         // Cues live for one game frame: pick them up once.
-        for (const c of game.cues) if (SPARK[c.type]) effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+        for (const c of game.cues) {
+          if (!SPARK[c.type]) continue;
+          // A move with its own hit effect (art) shows that instead of the generic spark.
+          const fx = (c.type === 'hit' || c.type === 'counter') && world.chars[c.p]?.states[c.move]?.move?.hitFx;
+          if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
+          if (!fx || c.type === 'counter') effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+        }
         for (const e of effects) e.age++;
         for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
         lastFrame = game.frame;
@@ -292,6 +374,7 @@ export function createFightRenderer(ctx, W, H) {
         if (flashing && p.id !== game.flashBy) ctx.globalAlpha = 0.45;
         const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
         if (!drawSprite(p, def, fr, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
+        drawChain(p, def, game.players[1 - p.id]);
         ctx.globalAlpha = 1;
         drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame);
         if (opts.boxes) drawBoxes(p, fr);
@@ -306,6 +389,10 @@ export function createFightRenderer(ctx, W, H) {
       // Sparks.
       for (const e of effects) {
         const [sx, sy] = toScreen(e.x, e.y);
+        if (e.sheet) {
+          drawSheetFrame(e.def, e.sheet.sprite, Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, 1);
+          continue;
+        }
         const t = e.age / e.life;
         const r = e.size * (0.5 + t);
         ctx.globalAlpha = 1 - t;
