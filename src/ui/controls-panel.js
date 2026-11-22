@@ -25,13 +25,17 @@ function keyName(code) {
   return (code || '—').replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'Num ').replace(/^Arrow/, '');
 }
 
+/** Adds the shared panel styles to the page once. */
+export function ensurePanelCss() {
+  if (document.getElementById('tk-panel-css')) return;
+  const st = document.createElement('style');
+  st.id = 'tk-panel-css';
+  st.textContent = CSS;
+  document.head.append(st);
+}
+
 export function openControlsPanel(root, devices, onClose) {
-  if (!document.getElementById('tk-panel-css')) {
-    const st = document.createElement('style');
-    st.id = 'tk-panel-css';
-    st.textContent = CSS;
-    document.head.append(st);
-  }
+  ensurePanelCss();
   const el = document.createElement('div');
   el.className = 'tk-panel';
   root.append(el);

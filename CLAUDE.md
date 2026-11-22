@@ -56,7 +56,18 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 5**.
+Current through **Phase 6**.
+
+- **Training mode** (`src/ui/training/`, the default screen): never touches `src/core/`. `training.js` sits between the
+  controllers and `step`: `inputs(game, dev)` returns [P1, P2] raw input (the dummy's input is OR-ed with a real P2
+  controller; in record mode P1's controller drives P2 and is stored facing-relative; playback mirrors by facing);
+  `afterStep` refills health after 40 frames with both free; `newGame` places fighters at the chosen position. Its
+  only randomness is a seeded LCG (random block). `frame-meter.js` reads the game after each step: per-player frame
+  bars (startup/active/recovery/stun/busy/free + invincible; hitstop frames skipped; holds after 8 quiet frames, the
+  next action clears it), measured startup/active/recovery, and advantage = first frame the defender is out of
+  `STUN_STATES` minus first frame the attacker can act (leaving the move on its last frame, or restarting it; leaving
+  early = "cancelled"). `overlay.js` draws it; `training-panel.js` (F2) edits settings (localStorage
+  `toska.training.v1`). Keys: F6 record, F7 playback, F8 meter, R reset.
 
 - **Combos** (`data/system/combo.json`, `applyStrike` in combat.js): a hit on a fighter with no `combo` starts one
   `{ hits, damage, time, scale, used, wb, gb }`. Damage = base × `scale` × `repeatPenalty`^(earlier uses of the
@@ -113,7 +124,7 @@ Current through **Phase 5**.
   walk, stand, auto-face; otherwise only commands/jumps allowed by an open cancel window whose condition matches
   `p.contact`) → fire the frame's one-shot events → physics (x += vx, y += vy, gravity) → stage clamp → landing
   (air state, y ≤ 0, falling → `landTo`). A press is consumed by game frame (`p.consumed`) so one press = one move.
-- **Screens**: `src/main.js` boots the Sandbox (default) or the Input Lab (`?mode=lab`). `src/render/fight-renderer.js`
+- **Screens**: `src/main.js` boots Training mode (default) or the Input Lab (`?mode=lab`). `src/render/fight-renderer.js`
   draws the stage, fighters (sprites from `data/characters/<id>/` when a sheet image exists, else a placeholder figure
   whose limb reaches to the live hitbox), and the box view.
 
