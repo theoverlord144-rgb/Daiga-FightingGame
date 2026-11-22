@@ -39,6 +39,9 @@ export const MATCH = match;
 /** Every stage under data/stages, by id. */
 export const STAGES = Object.fromEntries(Object.values(STAGE_FILES).map((s) => [s.id, s]));
 
+/** Every character file as written (the raw Toska JSON) and where it lives, by id: the box editor edits these. */
+export const CHAR_SOURCES = Object.fromEntries(Object.entries(CHAR_FILES).map(([key, file]) => [file.character.id, { file, path: key.slice(key.indexOf('data/')) }]));
+
 /** Every character file found under data/characters, compiled, by id. */
 export function loadCharacters() {
   const out = {};

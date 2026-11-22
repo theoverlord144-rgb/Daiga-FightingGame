@@ -5,6 +5,7 @@ import { createSelectScreen } from './screens/select.js';
 import { createFightScreen } from './screens/fight.js';
 import { createTrainingScreen } from './screens/training-screen.js';
 import { createSettingsScreen } from './screens/settings-screen.js';
+import { createBoxEditorScreen } from './screens/box-editor.js';
 import { createMenuInput } from './menu-input.js';
 import { loadSettings } from './settings.js';
 
@@ -14,6 +15,7 @@ const SCREENS = {
   versus: createFightScreen,
   training: createTrainingScreen,
   settings: createSettingsScreen,
+  editor: createBoxEditorScreen,
 };
 
 /**
@@ -38,6 +40,7 @@ export function createApp(shared, start = ['title', {}]) {
     },
     go(name, params = {}) {
       if (app.panel) { app.panel.close(); app.panel = null; }
+      app.screen?.close?.(); // a screen that listens to the mouse lets go of it here
       app.screen = SCREENS[name](app, params);
       app.screenName = name;
       app.time.paused = false;

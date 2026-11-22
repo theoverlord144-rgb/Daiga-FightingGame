@@ -8,6 +8,8 @@ const ITEMS = [
   { label: 'TRAINING', go: ['select', { mode: 'training' }] },
   { label: 'SETTINGS', go: ['settings', {}] },
 ];
+// The box editor writes character files through the dev server, so it is only offered there (npm run dev).
+if (import.meta.env.DEV) ITEMS.push({ label: 'BOX EDITOR', go: ['editor', {}] });
 
 export function createTitleScreen(app, { index = 0 } = {}) {
   const { ctx, W, H } = app;

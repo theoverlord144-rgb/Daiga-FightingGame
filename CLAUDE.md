@@ -76,6 +76,12 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
   `data/UniversalEffects/`), rules in `data/system/effects.json` (hit row by the move's base damage, counter one
   size up, block row; additive). `collect` in fight-renderer.js pushes them from hit/counter/block cues; a move's
   own `hitFx` wins; the code-drawn sparks remain for clash, armor, throws, bounces and burst.
+- **Box editor** (title menu, dev server only; `?mode=editor&move=5H&frame=8`): `src/ui/screens/box-editor.js`
+  (screen, mouse), `src/editor/box-model.js` (pure: which place in the Toska file a frame's hurt / hit boxes come
+  from, mirroring `compileState`; edits; `diffOps`), `scripts/json-edit.mjs` (changes values inside the file's
+  text without reformatting it), the `toska-editor` plugin in `vite.config.js` (POST `/__toska/save-character`).
+  If `compileState`'s event order changes, `sourcesAt` must change with it (tests/box-editor.test.js catches it).
+  Report: `docs/reports/box-editor.md`.
 - **Movement effects** (drawing only): `motion` in `data/system/effects.json`. The renderer watches each fighter's
   state (`lastMove` in fight-renderer.js): `enter` / `leave` rules play a sheet from `data/effects/` at the feet or
   body; `trail` follows the fighter while the state lasts; `byDrift` picks landing dust by travel direction. Dust

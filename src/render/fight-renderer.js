@@ -469,6 +469,26 @@ export function createFightRenderer(ctx, W, H) {
     cam,
     toScreen,
     notice: collect,
+    /**
+     * One fighter alone, on one frame of one state, feet at screen x, y, enlarged by zoom, facing right (the box
+     * editor). Draws the sprite (or the placeholder figure), its layers and its chain; no stage, no boxes.
+     */
+    pose(def, state, frame, x, y, zoom = 1, pal = 0) {
+      const keep = [cam.x, cam.y];
+      cam.x = 0;
+      cam.y = 0;
+      const p = { id: 0, x: 0, y: 0, facing: 1, state, frame, contact: 0, vars: {} };
+      const fr = frameOf(def, state, frame);
+      ctx.save();
+      ctx.translate(x - (zoom * W) / 2, y - zoom * GROUND);
+      ctx.scale(zoom, zoom);
+      drawLayers(p, def, fr, true);
+      if (!drawSprite(p, def, fr, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
+      drawLayers(p, def, fr, false);
+      drawChain(p, def, { x: 0, y: 0, slideLeft: 0 });
+      ctx.restore();
+      [cam.x, cam.y] = keep;
+    },
     /** opts: { boxes: bool, labels: bool } */
     draw(game, world, opts = {}) {
       if (game.frame !== lastFrame) {

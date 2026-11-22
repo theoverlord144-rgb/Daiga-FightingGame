@@ -1,6 +1,7 @@
 // Entry point. Without ?mode= it runs the game: title, character select, versus, versus CPU, training, settings.
 // Developer shortcuts with ?mode=:
 //   training  straight into training mode (&p1=, &p2=, &pal1=, &pal2=)
+//   editor    straight into the box editor (&p1= character, &move=, &frame=)
 //   versus    straight into a versus match (same params; &cpu=1 for the CPU on Player 2)
 //   lab       the Input Lab
 //   netplay   rollback netplay between two tabs, with rounds (&side=1|2, &lag=N, &delay=N, &free=1 for no rounds)
@@ -24,7 +25,7 @@ const { ctx, ui } = setupCanvas();
 const devices = createDevices();
 const params = new URLSearchParams(location.search);
 const mode = params.get('mode') || 'game';
-const isGame = mode === 'game' || mode === 'training' || mode === 'versus';
+const isGame = mode === 'game' || mode === 'training' || mode === 'versus' || mode === 'editor';
 const opts = { boxes: params.has('boxes'), labels: true, history: true, versusHistory: false, meter: true };
 const stage = STAGES[params.get('stage')] || Object.values(STAGES)[0];
 
@@ -88,7 +89,8 @@ if (isGame) {
   ];
   const start = mode === 'training' ? ['training', { picks }]
     : mode === 'versus' ? ['versus', { mode: params.get('cpu') ? 'cpu' : 'versus', picks }]
-      : ['title', {}];
+      : mode === 'editor' ? ['editor', { char: picks[0].id, state: params.get('move'), frame: Number(params.get('frame') ?? 0) }]
+        : ['title', {}];
   app = createApp({
     ctx, ui, W, H, devices, chars, stage, battle: BATTLE, matchBase: MATCH, renderer, opts, time,
     makeWorld: (a, b, match) => makeWorld(a, b, match),
