@@ -142,7 +142,7 @@ test('a recorded match replays exactly, rounds and all', () => {
   const rules = { ...RULES, timerSeconds: 10, introFrames: 30 };
   const w = loadWorld(undefined, undefined, { match: rules });
   const g = createGame(w);
-  const rec = createReplayRecorder({ chars: ['avner', 'avner'], match: rules, checkEvery: 120 });
+  const rec = createReplayRecorder({ chars: ['fixture', 'fixture'], match: rules, checkEvery: 120 });
   const inp = fightInputs(5);
   for (let i = 0; i < 2400 && g.match.phase !== 'end'; i++) {
     const raws = inp(g);

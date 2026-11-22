@@ -156,6 +156,15 @@ export function fireOnEnter(game, p, def) {
       case 'addVar':
         applyResources(p, def, { vars: v });
         break;
+      case 'toOpponent': {
+        // Slide to the opponent, stopping v.to units in front of them (Lightstep). Pushboxes still keep the two apart.
+        const o = game.players[1 - p.id];
+        const gap = o.x - p.x;
+        const dir = gap === 0 ? p.facing : gap > 0 ? 1 : -1;
+        const dist = (gap < 0 ? -gap : gap) - v.to;
+        startSlide(p, dist > 0 ? dir * dist : 0, v.frames);
+        break;
+      }
       case 'setVar':
         for (const [k, n] of Object.entries(v)) {
           const d = def.mechanic.vars[k];
@@ -215,11 +224,15 @@ function pickCommand(game, p, def, world, allowed) {
   for (const cmd of def.commands) {
     if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
     if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
+    if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
     const presses = commandInput(game, p, cmd, world, buffer);
     if (presses) return { cmd, presses };
   }
   return null;
 }
+
+/** The opponent's current combo already took this move as many times as it's allowed. */
+const overCombo = (o, cmd) => !!o.combo && (o.combo.used[cmd.move] || 0) >= cmd.perCombo;
 
 /** Start a command's move: mark its presses used and pay its cost. */
 function startCommand(p, def, pick) {

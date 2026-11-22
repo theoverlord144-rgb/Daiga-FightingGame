@@ -7,7 +7,7 @@ import { createSimNetwork } from '../src/net/sim-network.js';
 import { runSyncTest } from '../src/net/sync-test.js';
 import { loadWorld, loadChar, loadJSON, fightInputs } from './helpers.js';
 
-const A = loadChar('data/characters/avner/avner.toska.json');
+const A = loadChar('tests/fixtures/fighter.toska.json');
 const W = loadWorld(A, A);
 
 // ---------- Sync test ----------

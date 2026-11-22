@@ -108,7 +108,7 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
@@ -158,6 +158,9 @@ function compileMoveData(m, ctx = {}) {
     wallBounce: m.wallBounce ? { x: px(m.wallBounce.x ?? 0), y: px(m.wallBounce.y ?? 0) } : null,
     groundBounce: m.groundBounce ? { y: px(m.groundBounce.y ?? 0) } : null,
     bounceLimit: m.bounceLimit ?? null,
+    // Pull-in: on hit the defender slides toward the attacker, ending `to` px in front of them, over `frames`.
+    pull: m.pull ? { to: px(m.pull.to ?? 70), frames: Math.max(1, m.pull.frames ?? 8) } : null,
+    perCombo: m.perCombo ?? 0, // > 0: the move can hit at most this many times in one combo (no loops)
     // Meter and the character mechanic (Phase 8).
     meterGain: { hit: gain.hit | 0, block: gain.block | 0, whiff: gain.whiff | 0 },
     cost, // paid when the move starts: { meter, gauge, vars }
@@ -182,7 +185,9 @@ function compileMechanic(src) {
     onBlock: g.onBlock ?? 0, onHurt: g.onHurt ?? 0, label: g.label ?? src.name ?? 'Gauge' } : null;
   const vars = {};
   for (const [k, v] of Object.entries(src.vars || {})) {
-    vars[k] = { start: v.start ?? 0, min: v.min ?? 0, max: v.max ?? 99, perFrame: v.perFrame ?? 0, label: v.label ?? k, show: v.show ?? true };
+    vars[k] = { start: v.start ?? 0, min: v.min ?? 0, max: v.max ?? 99, perFrame: v.perFrame ?? 0, label: v.label ?? k, show: v.show ?? true,
+      display: v.display ?? 'count', // HUD only: 'count', or 'timer' (frames shown as a draining bar)
+      mark: v.mark ?? null }; // drawing only: a colour; while the var is above 0 the opponent glows with it (a brand)
   }
   const modifiers = (src.modifiers || []).map((x) => ({ when: x.when || {}, damagePct: x.damagePct ?? 10000 }));
   return { name: src.name ?? null, gauge, vars, modifiers };
@@ -341,6 +346,7 @@ function normalizeEvent(e, stats, sheetName) {
       if (v.x !== undefined) out[k].x = ref(v.x, stats, 'px');
       if (v.y !== undefined) out[k].y = ref(v.y, stats, 'px');
     } else if (k === 'sprite') out[k] = typeof v === 'number' ? { sheet: sheetName, index: v } : v;
+    else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
     else out[k] = v;
   }
   return out;
@@ -404,6 +410,7 @@ export function compileCharacter(file, system) {
         neutral: m.neutral !== false, // false: only reachable from a cancel window that names it (chains, follow-ups)
         cost: move.cost,
         requires: move.requires,
+        perCombo: move.perCombo,
       });
     }
   }

@@ -9,7 +9,7 @@ import { loadWorld, loadChar, script } from './helpers.js';
 import { createInputState, pushInput } from '../src/core/input.js';
 import { historyRuns, motionLabels } from '../src/ui/input-history.js';
 
-const A = loadChar('data/characters/avner/avner.toska.json');
+const A = loadChar('tests/fixtures/fighter.toska.json');
 const W = loadWorld(A, A);
 const BTN = { L: RAW.L, M: RAW.M, H: RAW.H, S: RAW.S };
 const GROUND = ['5L', '5M', '5H', '2L', '2M'];

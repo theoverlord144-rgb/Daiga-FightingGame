@@ -1,0 +1,519 @@
+{
+ "engine": "Toska",
+ "version": 2,
+ "notes": "Frozen copy of Avner as of Phase 9, for the tests. Tests that rely on exact frame data (reach, startup, combo routes) use this fighter, so the real characters can be retuned freely. Do not tune this file: a test that needs different numbers gets its own fixture.",
+ "character": {
+  "id": "fixture",
+  "name": "Test Fighter",
+  "stats": {
+   "airJumps": 1
+  }
+ },
+ "palettes": {
+  "base": [
+   "#d9534f",
+   "#ff8a7a",
+   "#7a2622"
+  ],
+  "colors": [
+   {
+    "name": "Ember",
+    "colors": [
+     "#d9534f",
+     "#ff8a7a",
+     "#7a2622"
+    ]
+   },
+   {
+    "name": "Tide",
+    "colors": [
+     "#3f7fcf",
+     "#8ac2ff",
+     "#1c3566"
+    ]
+   },
+   {
+    "name": "Moss",
+    "colors": [
+     "#5c9a4a",
+     "#a6d98f",
+     "#274a1e"
+    ]
+   },
+   {
+    "name": "Bone",
+    "colors": [
+     "#d8cfb8",
+     "#fff6df",
+     "#6b6250"
+    ]
+   },
+   {
+    "name": "Dusk",
+    "colors": [
+     "#7a4fb0",
+     "#c6a2ff",
+     "#352057"
+    ]
+   },
+   {
+    "name": "Ash",
+    "colors": [
+     "#555060",
+     "#a09aae",
+     "#1f1c26"
+    ]
+   }
+  ]
+ },
+ "gatlings": {
+  "5L": [
+   "5L",
+   "2L",
+   "5M",
+   "2M",
+   "5H",
+   "2H",
+   "3H",
+   "5S"
+  ],
+  "2L": [
+   "5L",
+   "2L",
+   "5M",
+   "2M",
+   "5H",
+   "2H",
+   "3H",
+   "5S"
+  ],
+  "5M": [
+   "2M",
+   "5H",
+   "2H",
+   "3H",
+   "5S"
+  ],
+  "2M": [
+   "5H",
+   "2H",
+   "3H",
+   "5S"
+  ],
+  "5H": [
+   "2H",
+   "3H",
+   "5S"
+  ],
+  "3H": [
+   "5S"
+  ],
+  "j.L": [
+   "j.L",
+   "j.M",
+   "j.H",
+   "j.S"
+  ],
+  "j.M": [
+   "j.H",
+   "j.S"
+  ],
+  "j.H": [
+   "j.S"
+  ]
+ },
+ "moves": [
+  {
+   "id": "5L",
+   "name": "Standing Light",
+   "input": "5L",
+   "startup": 4,
+   "active": 2,
+   "recovery": 7,
+   "damage": 400,
+   "hitstun": 13,
+   "blockstun": 10,
+   "hitstop": 8,
+   "pushbackHit": 18,
+   "pushbackBlock": 22,
+   "selfPushback": 14,
+   "guard": "mid",
+   "reach": 80,
+   "starterProration": 8000,
+   "hitboxes": [
+    [
+     20,
+     100,
+     60,
+     20
+    ]
+   ]
+  },
+  {
+   "id": "5M",
+   "name": "Standing Medium",
+   "input": "5M",
+   "startup": 6,
+   "active": 3,
+   "recovery": 12,
+   "damage": 600,
+   "hitstun": 17,
+   "blockstun": 13,
+   "hitstop": 10,
+   "pushbackHit": 22,
+   "pushbackBlock": 28,
+   "selfPushback": 18,
+   "guard": "mid",
+   "reach": 105,
+   "starterProration": 9000,
+   "hitboxes": [
+    [
+     25,
+     82,
+     80,
+     26
+    ]
+   ]
+  },
+  {
+   "id": "5H",
+   "name": "Standing Heavy",
+   "input": "5H",
+   "startup": 9,
+   "active": 3,
+   "recovery": 18,
+   "damage": 800,
+   "hitstun": 20,
+   "blockstun": 15,
+   "hitstop": 12,
+   "pushbackHit": 28,
+   "pushbackBlock": 34,
+   "selfPushback": 22,
+   "guard": "mid",
+   "reach": 130,
+   "hitboxes": [
+    [
+     30,
+     70,
+     100,
+     32
+    ]
+   ]
+  },
+  {
+   "id": "2L",
+   "name": "Crouching Light",
+   "input": "2L",
+   "startup": 4,
+   "active": 2,
+   "recovery": 8,
+   "damage": 350,
+   "hitstun": 13,
+   "blockstun": 10,
+   "hitstop": 8,
+   "pushbackHit": 18,
+   "pushbackBlock": 22,
+   "selfPushback": 14,
+   "guard": "low",
+   "reach": 85,
+   "starterProration": 8000,
+   "hitboxes": [
+    [
+     20,
+     8,
+     65,
+     20
+    ]
+   ]
+  },
+  {
+   "id": "2M",
+   "name": "Crouching Medium",
+   "input": "2M",
+   "startup": 7,
+   "active": 3,
+   "recovery": 13,
+   "damage": 550,
+   "hitstun": 17,
+   "blockstun": 13,
+   "hitstop": 10,
+   "pushbackHit": 22,
+   "pushbackBlock": 28,
+   "selfPushback": 18,
+   "guard": "low",
+   "reach": 115,
+   "starterProration": 9000,
+   "hitboxes": [
+    [
+     25,
+     6,
+     90,
+     22
+    ]
+   ]
+  },
+  {
+   "id": "2H",
+   "name": "Sweep",
+   "input": "2H",
+   "startup": 9,
+   "active": 3,
+   "recovery": 22,
+   "damage": 800,
+   "hitstun": 22,
+   "blockstun": 14,
+   "hitstop": 12,
+   "pushbackHit": 10,
+   "pushbackBlock": 30,
+   "selfPushback": 22,
+   "guard": "low",
+   "reach": 140,
+   "knockdown": true,
+   "hitboxes": [
+    [
+     30,
+     0,
+     110,
+     22
+    ]
+   ]
+  },
+  {
+   "id": "3H",
+   "name": "Crushing Blow",
+   "input": "3H",
+   "startup": 12,
+   "active": 3,
+   "recovery": 24,
+   "damage": 900,
+   "hitstun": 24,
+   "untech": 40,
+   "blockstun": 15,
+   "hitstop": 14,
+   "pushbackHit": 0,
+   "pushbackBlock": 34,
+   "selfPushback": 22,
+   "guard": "mid",
+   "reach": 125,
+   "launch": {
+    "x": 18,
+    "y": 6
+   },
+   "wallBounce": {
+    "x": 5,
+    "y": 13
+   },
+   "hitboxes": [
+    [
+     30,
+     60,
+     95,
+     40
+    ]
+   ]
+  },
+  {
+   "id": "5S",
+   "name": "Launcher",
+   "input": "5S",
+   "startup": 8,
+   "active": 3,
+   "recovery": 24,
+   "damage": 700,
+   "hitstun": 30,
+   "untech": 50,
+   "blockstun": 14,
+   "hitstop": 12,
+   "pushbackHit": 0,
+   "pushbackBlock": 30,
+   "selfPushback": 22,
+   "guard": "mid",
+   "reach": 90,
+   "launcher": true,
+   "launch": {
+    "x": 0,
+    "y": 24
+   },
+   "hitboxes": [
+    [
+     15,
+     90,
+     70,
+     90
+    ]
+   ]
+  },
+  {
+   "id": "6H",
+   "name": "Forward Throw",
+   "input": "6H",
+   "startup": 2,
+   "active": 2,
+   "recovery": 22,
+   "damage": 1000,
+   "pushbackHit": 60,
+   "guard": "unblockable",
+   "reach": 65,
+   "counterHit": "none",
+   "specialCancel": false,
+   "throwboxes": [
+    [
+     10,
+     20,
+     55,
+     120
+    ]
+   ],
+   "throwDistance": 70
+  },
+  {
+   "id": "4H",
+   "name": "Back Throw",
+   "input": "4H",
+   "startup": 2,
+   "active": 2,
+   "recovery": 22,
+   "damage": 1000,
+   "pushbackHit": 60,
+   "guard": "unblockable",
+   "reach": 65,
+   "counterHit": "none",
+   "specialCancel": false,
+   "throwboxes": [
+    [
+     10,
+     20,
+     55,
+     120
+    ]
+   ],
+   "throwDistance": 70,
+   "throwSwap": true
+  },
+  {
+   "id": "j.L",
+   "name": "Jumping Light",
+   "input": "j.L",
+   "startup": 4,
+   "active": 4,
+   "recovery": 8,
+   "damage": 400,
+   "hitstun": 13,
+   "untech": 20,
+   "blockstun": 10,
+   "hitstop": 8,
+   "pushbackHit": 10,
+   "pushbackBlock": 14,
+   "selfPushback": 0,
+   "guard": "high",
+   "reach": 70,
+   "jumpCancel": "hit",
+   "airHit": {
+    "x": 2,
+    "y": 4
+   },
+   "hitboxes": [
+    [
+     10,
+     40,
+     60,
+     32
+    ]
+   ]
+  },
+  {
+   "id": "j.M",
+   "name": "Jumping Medium",
+   "input": "j.M",
+   "startup": 6,
+   "active": 4,
+   "recovery": 12,
+   "damage": 600,
+   "hitstun": 16,
+   "untech": 24,
+   "blockstun": 12,
+   "hitstop": 10,
+   "pushbackHit": 12,
+   "pushbackBlock": 16,
+   "selfPushback": 0,
+   "guard": "high",
+   "reach": 90,
+   "jumpCancel": "hit",
+   "airHit": {
+    "x": 2,
+    "y": 5
+   },
+   "hitboxes": [
+    [
+     15,
+     30,
+     75,
+     40
+    ]
+   ]
+  },
+  {
+   "id": "j.H",
+   "name": "Jumping Heavy",
+   "input": "j.H",
+   "startup": 8,
+   "active": 4,
+   "recovery": 15,
+   "damage": 800,
+   "hitstun": 19,
+   "untech": 28,
+   "blockstun": 14,
+   "hitstop": 12,
+   "pushbackHit": 14,
+   "pushbackBlock": 18,
+   "selfPushback": 0,
+   "guard": "high",
+   "reach": 105,
+   "airHit": {
+    "x": 3,
+    "y": 6
+   },
+   "hitboxes": [
+    [
+     15,
+     10,
+     90,
+     50
+    ]
+   ]
+  },
+  {
+   "id": "j.S",
+   "name": "Air Spike",
+   "input": "j.S",
+   "startup": 9,
+   "active": 4,
+   "recovery": 18,
+   "damage": 900,
+   "hitstun": 22,
+   "untech": 30,
+   "blockstun": 14,
+   "hitstop": 14,
+   "pushbackHit": 0,
+   "pushbackBlock": 18,
+   "selfPushback": 0,
+   "guard": "high",
+   "reach": 95,
+   "airHit": {
+    "x": 1,
+    "y": -14
+   },
+   "groundBounce": {
+    "y": 13
+   },
+   "hitboxes": [
+    [
+     0,
+     -10,
+     95,
+     55
+    ]
+   ]
+  }
+ ]
+}

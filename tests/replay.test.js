@@ -7,12 +7,12 @@ import { createSession } from '../src/net/rollback.js';
 import { createSimNetwork } from '../src/net/sim-network.js';
 import { loadWorld, loadChar, fightInputs } from './helpers.js';
 
-const A = loadChar('data/characters/avner/avner.toska.json');
+const A = loadChar('tests/fixtures/fighter.toska.json');
 const W = loadWorld(A, A);
 
 function recordFight(frames, seed) {
   const g = createGame(W);
-  const rec = createReplayRecorder({ chars: ['avner', 'avner'], checkEvery: 300 });
+  const rec = createReplayRecorder({ chars: ['fixture', 'fixture'], checkEvery: 300 });
   const inputs = fightInputs(seed);
   const hashes = [];
   for (let f = 0; f < frames; f++) {
@@ -61,7 +61,7 @@ test('files that are not replays are refused with a clear message', () => {
 
 test('a netplay match recorded from the confirmed inputs replays to the same game both players saw', () => {
   const net = createSimNetwork({ latency: 4, jitter: 2, loss: 500, seed: 3 });
-  const recs = [0, 1].map(() => createReplayRecorder({ chars: ['avner', 'avner'], checkEvery: 120 }));
+  const recs = [0, 1].map(() => createReplayRecorder({ chars: ['fixture', 'fixture'], checkEvery: 120 }));
   const s = [0, 1].map((i) => createSession(W, { local: i, onFinal: (f, raws, g) => recs[i].record(raws, g) }));
   const brains = [fightInputs(1), fightInputs(2)];
   for (let t = 0; t < 1400; t++) {
