@@ -2,20 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createGame, step } from '../src/core/game.js';
 import { cloneState, serializeState, deserializeState, statesEqual, diffState, hashState } from '../src/core/state.js';
-import { loadWorld } from './helpers.js';
+import { loadWorld, fightInputs } from './helpers.js';
 
 const WORLD = loadWorld();
 
-/** A tiny deterministic generator for test inputs (tests may use any maths; the core may not). */
-export function lcg(seed) {
-  let s = seed >>> 0;
-  return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0);
-}
-
 function play(frames, seed) {
   const g = createGame(WORLD);
-  const rnd = lcg(seed);
-  for (let i = 0; i < frames; i++) step(g, [rnd() & 255, rnd() & 255], WORLD);
+  const inputs = fightInputs(seed);
+  for (let i = 0; i < frames; i++) step(g, inputs(g), WORLD);
   return g;
 }
 
@@ -50,11 +44,12 @@ test('same inputs, same game: two runs are identical, hashes match', () => {
 
 test('stepping from a restored clone matches stepping the original (rollback groundwork)', () => {
   const g = createGame(WORLD);
-  const rnd = lcg(7);
-  const inputs = Array.from({ length: 600 }, () => [rnd() & 255, rnd() & 255]);
+  const gen = fightInputs(7);
+  const inputs = [];
   let saved = null;
   for (let i = 0; i < 600; i++) {
     if (i === 300) saved = cloneState(g);
+    inputs.push(gen(g));
     step(g, inputs[i], WORLD);
   }
   for (let i = 300; i < 600; i++) step(saved, inputs[i], WORLD);
@@ -68,4 +63,13 @@ test('every position, velocity and timer in the state is an integer', () => {
     else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, `${path}.${k}`);
   };
   walk(g, '$');
+});
+
+test('the random fights used by these tests really fight: hits, blocks and both players hurt', () => {
+  const g = createGame(WORLD);
+  const inputs = fightInputs(11);
+  const seen = new Set();
+  for (let i = 0; i < 3000; i++) { step(g, inputs(g), WORLD); for (const c of g.cues) seen.add(c.type); }
+  assert.ok(seen.has('hit') && seen.has('block'), [...seen].join(','));
+  assert.ok(g.players[0].health < 10000 && g.players[1].health < 10000);
 });

@@ -65,7 +65,8 @@ Version 2 adds per move:
 
 ## Timeline events
 
-`{ "at": frame, ...fields }`, or `{ "from": a, "to": b, ...fields }` for a range. Frames are 0-indexed. Lasting
+`{ "at": frame, ...fields }`, or `{ "from": a, "to": b, ...fields }` / `{ "from": a, "for": n, ...fields }` for a range.
+Frame numbers (`at`, `from`, `to`, `for`, a state's `duration`, cancel `from`/`to`) can name a stat: `"@dashFrames"`. Frames are 0-indexed. Lasting
 fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on the frame they name.
 
 | Field | Lasting / one-shot | Meaning |
@@ -79,6 +80,7 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `gravity` | lasting | On or off. |
 | `vel` | one-shot | Set velocity `{ x, y }` (px/frame; x is forward). Missing axis = unchanged. |
 | `addVel` | one-shot | Add to velocity. |
+| `velScale` | one-shot | Scale velocity by a percentage out of 10000 `{ x, y }` (an airdash keeping 30% of its speed). |
 | `sound`, `fx` | one-shot | Cue names for the renderer and audio. |
 | `jump` | one-shot | Engine hook: launch a jump from the stats (`"normal"`). |
 

@@ -36,11 +36,11 @@ const SPARK = {
 
 export function createFightRenderer(ctx, W, H) {
   const GROUND = H - 70;
-  const cam = { x: 0 };
+  const cam = { x: 0, y: 0 };
   const effects = []; // visual only: spawned from the game's cues, never fed back into the game
   let lastFrame = -1;
 
-  const toScreen = (x, y) => [W / 2 + (x / UNIT - cam.x), GROUND - y / UNIT];
+  const toScreen = (x, y) => [W / 2 + (x / UNIT - cam.x), GROUND - y / UNIT + cam.y];
 
   /** A character-space box [x, y, w, h] (units) to a screen rect, flipped by facing. */
   function boxRect(p, b) {
@@ -56,26 +56,27 @@ export function createFightRenderer(ctx, W, H) {
     g.addColorStop(1, '#0d0b12');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
+    const gy = GROUND + cam.y;
     ctx.fillStyle = '#231e2e';
-    ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.fillRect(0, gy, W, H - gy);
     ctx.strokeStyle = '#3a3347';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(0, GROUND);
-    ctx.lineTo(W, GROUND);
+    ctx.moveTo(0, gy);
+    ctx.lineTo(W, gy);
     ctx.stroke();
     // Floor marks every 100 px, so movement reads clearly.
     ctx.fillStyle = '#2f2839';
     const half = world.battle.stage.halfWidth;
     for (let x = -half; x <= half; x += 100) {
       const [sx] = toScreen(x * UNIT, 0);
-      ctx.fillRect(sx - 1, GROUND + 2, 2, 10);
+      ctx.fillRect(sx - 1, gy + 2, 2, 10);
     }
     // Walls.
     ctx.fillStyle = '#3a3347';
     for (const s of [-1, 1]) {
       const [sx] = toScreen(s * half * UNIT, 0);
-      ctx.fillRect(sx - (s < 0 ? 6 : 0), 0, 6, GROUND);
+      ctx.fillRect(sx - (s < 0 ? 6 : 0), 0, 6, gy);
     }
   }
 
@@ -185,6 +186,10 @@ export function createFightRenderer(ctx, W, H) {
       const half = world.battle.stage.halfWidth;
       const lim = Math.max(0, half - W / 2 + 20);
       cam.x = Math.max(-lim, Math.min(lim, mid));
+      // Rise with the highest fighter so super jumps stay on screen (eased: presentation only).
+      const top = Math.max(game.players[0].y, game.players[1].y) / UNIT + 200;
+      const wantY = Math.max(0, top - (GROUND - 40));
+      cam.y += (wantY - cam.y) * 0.25;
       drawStage(world);
       // Draw the fighter who is attacking last so their limb sits on top.
       const order = [...game.players].sort((a, b) => (frameOf(world.chars[a.id], a.state, a.frame).hit.length ? 1 : 0) - (frameOf(world.chars[b.id], b.state, b.frame).hit.length ? 1 : 0));
@@ -195,7 +200,7 @@ export function createFightRenderer(ctx, W, H) {
         const [shx] = toScreen(p.x, 0);
         ctx.fillStyle = '#00000066';
         ctx.beginPath();
-        ctx.ellipse(shx, GROUND + 3, 34, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(shx, GROUND + cam.y + 3, 34, 6, 0, 0, Math.PI * 2);
         ctx.fill();
         if (!drawSprite(p, def, fr)) drawPlaceholder(p, def, fr, COLORS[p.id]);
         if (opts.boxes) drawBoxes(p, fr);

@@ -1,5 +1,5 @@
 {
-  "notes": "Defaults for every character stat. Pixels and frames. A character's own stats override these.",
+  "notes": "Defaults for every character stat. Pixels, pixels per frame, and frames. airdashKeep is a percentage out of 10000 of the airdash speed kept after it ends. A character's own stats override these.",
   "stats": {
     "health": 10000,
     "walkForward": 5,
@@ -16,6 +16,28 @@
     "standPush": [[-22, 0, 44, 150]],
     "crouchPush": [[-24, 0, 48, 95]],
     "airPush": [[-20, 20, 40, 110]],
-    "throwBreak": 7
+    "throwBreak": 7,
+    "dashSpeed": 16,
+    "dashFrames": 12,
+    "dashCancel": 4,
+    "dashRecovery": 3,
+    "backdashSpeed": 13,
+    "backdashFrames": 14,
+    "backdashInvuln": 8,
+    "backdashRecovery": 6,
+    "airdashSpeed": 15,
+    "airdashFrames": 14,
+    "airdashCancel": 5,
+    "airdashBackSpeed": 13,
+    "airdashBackFrames": 12,
+    "airdashKeep": 3000,
+    "superJumpUp": 24,
+    "superJumpForward": 6,
+    "superJumpBack": 5,
+    "airJumpUp": 15,
+    "airJumpForward": 5,
+    "airJumpBack": 4.5,
+    "airJumps": 0,
+    "airDashes": 1
   }
 }

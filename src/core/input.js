@@ -189,6 +189,18 @@ export function readMotion(inp, rules, motion, b, facing, opts = {}) {
   return -1;
 }
 
+/**
+ * Direction-only motions (dashes 66/44, super jump 28): completed THIS frame, with the last direction freshly
+ * entered (it wasn't held the frame before), so holding forward never re-triggers a dash.
+ */
+export function dirMotionNow(inp, rules, name, facing, opts = {}) {
+  const def = rules.motions[name];
+  const list = (opts.leniency ?? rules.leniency) && def.lenient ? def.lenient : def.steps;
+  const last = steps([list[list.length - 1]])[0];
+  if (!(last & (1 << relDirAt(inp, 0, facing))) || (last & (1 << relDirAt(inp, 1, facing)))) return false;
+  return motionAt(inp, rules, name, facing, 0, opts);
+}
+
 /** Every motion completed by the button event at `endAge`, in the data's priority order. */
 export function motionsAt(inp, rules, facing, endAge = 0, opts = {}) {
   return rules.motionPriority.filter((name) => motionAt(inp, rules, name, facing, endAge, opts));

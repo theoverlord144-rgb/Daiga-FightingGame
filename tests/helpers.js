@@ -50,3 +50,40 @@ export function loadWorld(a = 'data/characters/avner/avner.toska.json', b = a) {
     chars: [typeof a === 'string' ? loadChar(a) : a, typeof b === 'string' ? loadChar(b) : b],
   });
 }
+
+// ---------- Random fights ----------
+
+/** A small deterministic random generator for tests (tests may use any maths; the core may not). */
+export function lcg(seed) {
+  let s = seed >>> 0;
+  return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0);
+}
+
+/**
+ * Random inputs that actually fight: mostly toward the opponent, often pressing buttons, sometimes jumping,
+ * crouching or backing off. Each player holds a choice for a few frames, like a person would.
+ */
+export function fightInputs(seed) {
+  const rnd = lcg(seed);
+  const hold = [0, 0];
+  const cur = [0, 0];
+  return (game) => {
+    const out = [0, 0];
+    for (let i = 0; i < 2; i++) {
+      if (hold[i] <= 0) {
+        const me = game.players[i];
+        const them = game.players[1 - i];
+        const toward = them.x >= me.x ? 2 : 1; // RAW.RIGHT : RAW.LEFT
+        const away = toward === 2 ? 1 : 2;
+        const r = rnd() % 100;
+        let raw = r < 45 ? toward : r < 60 ? away : r < 70 ? 8 : r < 78 ? 4 | toward : r < 85 ? 8 | away : 0;
+        if (rnd() % 100 < 40) raw |= 16 << (rnd() % 4);
+        cur[i] = raw;
+        hold[i] = 1 + (rnd() % 8);
+      }
+      hold[i]--;
+      out[i] = cur[i];
+    }
+    return out;
+  };
+}

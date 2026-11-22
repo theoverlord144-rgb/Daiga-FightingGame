@@ -195,7 +195,7 @@ test('fighters face each other and walk, crouch and jump from data', () => {
   assert.equal(g.players[0].x, x0 + 10 * world.chars[0].stats.walkForward);
   drive(world, g, '2');
   assert.equal(g.players[0].state, 'crouch');
-  const seen = drive(world, g, '8 5*200');
+  const seen = drive(world, g, '5*10 8 5*200'); // neutral first: down straight into up is a super jump
   assert.ok(seen.some((s) => s.state === 'jump'));
   assert.equal(g.players[0].y, 0, 'landed');
   assert.equal(g.players[0].state, 'idle');

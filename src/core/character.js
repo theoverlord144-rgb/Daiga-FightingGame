@@ -72,7 +72,10 @@ function inferStance(m, parsed) {
 
 // ---------- Compile ----------
 
-const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak']);
+// Stats counted in frames, counts or percentages (everything else is a distance or speed, converted to units).
+const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'dashFrames', 'dashCancel', 'dashRecovery',
+  'backdashFrames', 'backdashInvuln', 'backdashRecovery', 'airdashFrames', 'airdashCancel', 'airdashBackFrames',
+  'airdashKeep', 'airJumps', 'airDashes']);
 const BOX_STATS = new Set(['standHurt', 'crouchHurt', 'airHurt', 'standPush', 'crouchPush', 'airPush']);
 
 const boxes = (list) => (list || []).map(([x, y, w, h]) => [px(x), px(y), px(w), px(h)]);
@@ -104,7 +107,7 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity'];
-const ONE_SHOT = ['vel', 'addVel', 'sound', 'fx', 'jump'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
@@ -190,8 +193,9 @@ function compileState(name, src, stats, extra = {}) {
   const sets = [];
   for (const e of events) {
     if (e.from !== undefined) {
-      const { from, to, ...fields } = e;
-      sets.push({ at: from, fields, revertAt: (to ?? from) + 1 });
+      const { from, to, for: count, ...fields } = e;
+      const last = count !== undefined ? from + count - 1 : to ?? from;
+      sets.push({ at: from, fields, revertAt: last + 1 });
     } else {
       const { at, ...fields } = e;
       sets.push({ at: at ?? 0, fields });
@@ -245,8 +249,8 @@ function compileState(name, src, stats, extra = {}) {
   }
 
   const cancels = (extra.cancels || src.cancels || []).map((c) => ({
-    from: c.from ?? 0,
-    to: c.to ?? duration - 1,
+    from: ref(c.from ?? 0, stats, 'frames'),
+    to: ref(c.to ?? duration - 1, stats, 'frames'),
     into: new Set(c.into || []),
     hit: (c.on || ['hit', 'block']).includes('hit'),
     block: (c.on || ['hit', 'block']).includes('block'),
@@ -277,7 +281,9 @@ function compileState(name, src, stats, extra = {}) {
 function normalizeEvent(e, stats, sheetName) {
   const out = {};
   for (const [k, v] of Object.entries(e)) {
-    if (['hit', 'hurt', 'push', 'throw', 'throwHurt'].includes(k)) out[k] = boxes(v);
+    if (['at', 'from', 'to', 'for'].includes(k)) out[k] = ref(v, stats, 'frames');
+    else if (['hit', 'hurt', 'push', 'throw', 'throwHurt'].includes(k)) out[k] = boxes(v);
+    else if (k === 'velScale') out[k] = { x: v.x === undefined ? undefined : ref(v.x, stats, 'frames'), y: v.y === undefined ? undefined : ref(v.y, stats, 'frames') };
     else if (k === 'vel' || k === 'addVel') {
       out[k] = {};
       if (v.x !== undefined) out[k].x = ref(v.x, stats, 'px');

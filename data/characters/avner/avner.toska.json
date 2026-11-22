@@ -5,7 +5,7 @@
   "character": {
     "id": "avner",
     "name": "Avner",
-    "stats": {}
+    "stats": { "airJumps": 1 }
   },
   "moves": [
     { "id": "5L", "name": "Standing Light", "input": "5L", "startup": 4, "active": 2, "recovery": 7,

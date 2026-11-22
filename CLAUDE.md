@@ -56,7 +56,16 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 3**.
+Current through **Phase 4**.
+
+- **Movement** (all numbers in `fighter-defaults.json` stats, overridable per character; states in
+  `common-states.json`): walk, `jumpSquat` → `jump`, `superJumpSquat` → `superJump` (28 motion), `airJump`
+  (fresh up in the air, `stats.airJumps` per jump), `dashF` → `dashStop` (66; cancellable into attacks and jumps
+  from `dashCancel`), `backdash` → `backdashStop` (44; invincible `backdashInvuln` frames), `airdashF` /
+  `airdashB` → `airdashEnd` (66/44 in the air, no gravity, keeps `airdashKeep`/10000 of its speed after,
+  `stats.airDashes` per jump). Direction-only motions use `dirMotionNow` (last direction must be fresh). The `jump`
+  event reads `<kind>Up/Forward/Back` for kind jump, superJump, airJump. Air counters reset on landing. Cancel tags
+  `#jump` and `#dash` allow jumping and dashing out of a window. A button on the same frame as a dash tap wins.
 
 - **One frame** (`step` in `src/core/game.js`) runs in stages for both fighters before the next stage starts, so
   neither player acts first: frame++ and clear cues → push inputs → hitstop (a frozen fighter skips everything,

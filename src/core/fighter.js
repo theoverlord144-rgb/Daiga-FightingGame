@@ -4,7 +4,8 @@
 //   land              -> touching the ground ends air states
 // All fighter data lives on the player object in the game state; the character definition is read-only.
 
-import { BTN, readMotion, pressedWithin, relDirAt } from './input.js';
+import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow } from './input.js';
+import { pct } from './fixed.js';
 
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
 const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3 };
@@ -29,6 +30,8 @@ export function createFighter(def, side, x) {
     armorUsed: 0,
     consumed: [-1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
     jumpDir: 8,
+    airJumpsUsed: 0,
+    airDashesUsed: 0,
     slide: 0, // pushback still to travel (signed, units), spread over slideLeft frames
     slideLeft: 0,
     slid: 0, // how far the slide moved the fighter this frame (for corner transfer)
@@ -67,11 +70,17 @@ export function fireOnEnter(game, p, def) {
         if (v.x !== undefined) p.vx += v.x * p.facing;
         if (v.y !== undefined) p.vy += v.y;
         break;
+      case 'velScale':
+        if (v.x !== undefined) p.vx = pct(p.vx, v.x);
+        if (v.y !== undefined) p.vy = pct(p.vy, v.y);
+        break;
       case 'jump': {
+        // Three jump kinds, each with its own numbers: normal, super, air (double jump).
         const s2 = def.stats;
+        const k = v === 'super' ? 'superJump' : v === 'air' ? 'airJump' : 'jump';
         const d = p.jumpDir;
-        p.vy = s2.jumpUp;
-        p.vx = (d === 9 ? s2.jumpForward : d === 7 ? -s2.jumpBack : 0) * p.facing;
+        p.vy = s2[`${k}Up`];
+        p.vx = (d === 9 ? s2[`${k}Forward`] : d === 7 ? -s2[`${k}Back`] : 0) * p.facing;
         break;
       }
       case 'sound':
@@ -145,14 +154,43 @@ function decide(game, p, opp, def, world) {
     return;
   }
 
-  const dir = relDirAt(p.input, 0, p.facing);
-  const canJump = st.free ? !air : !air && windows.some((w) => w.into.has('#jump'));
-  if (canJump && dir >= 7) {
-    p.jumpDir = dir;
-    enterState(p, def, 'jumpSquat');
+  const inp = p.input;
+  const rules = world.input;
+  const dir = relDirAt(inp, 0, p.facing);
+  const freshUp = dir >= 7 && relDirAt(inp, 1, p.facing) < 7;
+  const canJump = st.free || windows.some((w) => w.into.has('#jump'));
+  const canDash = st.free || windows.some((w) => w.into.has('#dash'));
+  const stats = def.stats;
+
+  if (air) {
+    // Airdash (66 / 44) and double jump (a fresh up), each limited per jump.
+    if (canDash && p.airDashesUsed < stats.airDashes) {
+      const f = dirMotionNow(inp, rules, '66', p.facing);
+      if (f || dirMotionNow(inp, rules, '44', p.facing)) {
+        p.airDashesUsed++;
+        enterState(p, def, f ? 'airdashF' : 'airdashB');
+        return;
+      }
+    }
+    if (canJump && freshUp && p.airJumpsUsed < stats.airJumps) {
+      p.airJumpsUsed++;
+      p.jumpDir = dir;
+      enterState(p, def, 'airJump');
+    }
     return;
   }
-  if (!st.free || air) return;
+
+  if (canJump && dir >= 7) {
+    p.jumpDir = dir;
+    // Down then up quickly (28) is a super jump.
+    enterState(p, def, dirMotionNow(inp, rules, '28', p.facing) ? 'superJumpSquat' : 'jumpSquat');
+    return;
+  }
+  if (canDash) {
+    if (dirMotionNow(inp, rules, '66', p.facing)) { enterState(p, def, 'dashF'); return; }
+    if (dirMotionNow(inp, rules, '44', p.facing)) { enterState(p, def, 'backdash'); return; }
+  }
+  if (!st.free) return;
   const want = dir <= 3 ? 'crouch' : dir === 6 ? 'walkF' : dir === 4 ? 'walkB' : 'idle';
   if (p.state !== want) enterState(p, def, want);
 }
@@ -173,7 +211,7 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
       else enterState(p, def, st.next);
     }
   }
-  if (p.state === 'jumpSquat') {
+  if (p.state === 'jumpSquat' || p.state === 'superJumpSquat') {
     const d = relDirAt(p.input, 0, p.facing);
     if (d >= 7) p.jumpDir = d;
   }
@@ -209,6 +247,8 @@ export function land(game, p, def) {
     p.vy = 0;
     p.vx = 0;
     p.stun = 0;
+    p.airJumpsUsed = 0;
+    p.airDashesUsed = 0;
     enterState(p, def, st.landTo);
     fireOnEnter(game, p, def);
   } else if (st.stance !== 'air' && p.y !== 0) {
