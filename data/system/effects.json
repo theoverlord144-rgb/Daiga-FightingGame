@@ -1,6 +1,6 @@
 {
   "notes": "Universal hit and block effects (drawing only: the game never reads this). One sheet in data/effects/, a row per effect, drawn as light (additive). A hit picks its row by the move's base damage: the first entry whose \"below\" it is under. A counter hit uses the next stronger row. A move with its own hitFx shows that instead.",
-  "sheet": { "image": "hit-block.png", "columns": 4, "rows": 4, "count": 16, "frameW": 384, "frameH": 384, "originX": 192, "originY": 192, "scale": 0.5 },
+  "sheet": { "image": "hit-block.png", "columns": 4, "rows": 4, "count": 16, "frameW": 384, "frameH": 432, "originX": 192, "originY": 216, "scale": 0.5 },
   "frames": 4,
   "hold": 3,
   "hit": [
