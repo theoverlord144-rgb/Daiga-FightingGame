@@ -14,7 +14,7 @@
 // - black: glow drawn on black. Brightness becomes opacity, so the glow keeps its soft falloff over any stage.
 // Fighter strips:
 // - Splits the strip into --frames drawings (drawings may touch: each connected piece stays with the drawing it
-//   mostly belongs to) and puts them in --order (numbers as drawn, counted from 1, left to right).
+//   mostly belongs to; --cuts x1,x2,... places the dividing lines by hand when drawings overlap) and puts them in --order (numbers as drawn, counted from 1, left to right).
 // - Stands every frame on the floor: its own lowest point (--floor frame, default) or the strip's shared floor line
 //   (--floor common: for jumps and leaps drawn in the air). Keeps one anchor still: the planted foot (--anchor
 //   front, default; rear) or the body's centre (center, for moves that travel). The fighter's centre is placed
@@ -111,8 +111,11 @@ if (GRID) {
   count = Number(opt('frames', String(opt('order', '').split(',').filter(Boolean).length || 0)));
   if (!count) throw new Error('give --frames N (or an --order listing every frame)');
   const span = (last - first + 1) / count;
-  const cuts = []; // cut i lies between frame i and i+1: the emptiest column within a third of a frame of the even split
-  for (let i = 1; i < count; i++) {
+  // cut i lies between frame i and i+1: given with --cuts (x in strip pixels, for drawings that overlap), else the
+  // emptiest column within a third of a frame of the even split.
+  const cuts = opt('cuts', '') ? opt('cuts').split(',').map(Number) : [];
+  if (cuts.length && cuts.length !== count - 1) throw new Error(`--cuts needs ${count - 1} positions for ${count} frames`);
+  for (let i = 1; i < count && cuts.length < count - 1; i++) {
     const mid = Math.round(first + span * i);
     let best = mid;
     for (let x = Math.round(mid - span / 3); x <= Math.round(mid + span / 3); x++) if (colCount[x] < colCount[best]) best = x;

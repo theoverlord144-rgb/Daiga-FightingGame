@@ -455,7 +455,8 @@ export function compileCharacter(file, system) {
 
   const meterMax = stats.units.meterBars * (system.meter?.barSize ?? 10000);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, upgrades, palettes: compilePalettes(ch.id, t.palettes) };
+    sheets, mechanic, meterMax, upgrades, palettes: compilePalettes(ch.id, t.palettes),
+    effects: t.effects ?? file.effects ?? {} }; // drawing only: named sheet effects for `fx` cues
 }
 
 // Placeholder colours for characters that don't list any (index 0 body, 1 limbs, 2 dark detail).

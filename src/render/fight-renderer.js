@@ -43,6 +43,7 @@ export function createFightRenderer(ctx, W, H) {
   const cam = { x: 0, y: 0 };
   const effects = []; // visual only: spawned from the game's cues, never fed back into the game
   let lastFrame = -1;
+  let front = 1; // which fighter is drawn in front (presentation only; P2 until someone attacks)
   const comboShow = [null, null]; // per victim: { combo, hold } - keeps the finished combo on screen a moment
   const hud = createHud(ctx, W);
   let stageR = null; // { id, r }: the stage renderer, made when a stage is first drawn
@@ -175,7 +176,9 @@ export function createFightRenderer(ctx, W, H) {
     const after = p.frame - last;
     const retract = ch.retract ?? 6;
     if (after > retract && !pulling) return;
-    const [hx, hy] = toScreen(p.x + p.facing * (ch.hand?.[0] ?? 40) * UNIT, p.y + (ch.hand?.[1] ?? 100) * UNIT);
+    // The hand moves between drawings: `hands` maps a sprite frame index to its hand point; `hand` is the fallback.
+    const hand = ch.hands?.[st.frames[Math.min(p.frame, st.frames.length - 1)]?.sprite?.index] ?? ch.hand;
+    const [hx, hy] = toScreen(p.x + p.facing * (hand?.[0] ?? 40) * UNIT, p.y + (hand?.[1] ?? 100) * UNIT);
     let [ex, ey] = hit ? toScreen(opp.x, opp.y + 9000) : toScreen(p.x + p.facing * tip[0], p.y + tip[1]);
     if (!hit && after > 0) {
       const t = Math.max(0, 1 - after / retract);
@@ -317,6 +320,11 @@ export function createFightRenderer(ctx, W, H) {
       if (game.frame !== lastFrame) {
         // Cues live for one game frame: pick them up once.
         for (const c of game.cues) {
+          const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
+          if (named) {
+            const at = named.at ?? [0, 0];
+            effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: named.sprite.count * (named.hold ?? 3) });
+          }
           if (!SPARK[c.type]) continue;
           // A move with its own hit effect (art) shows that instead of the generic spark.
           const fx = (c.type === 'hit' || c.type === 'counter') && world.chars[c.p]?.states[c.move]?.move?.hitFx;
@@ -360,8 +368,16 @@ export function createFightRenderer(ctx, W, H) {
           ctx.fillRect(fx - 160, fy - 160, 320, 320);
         }
       }
-      // Draw the fighter who is attacking last so their limb sits on top.
-      const order = [...game.players].sort((a, b) => (frameOf(world.chars[a.id], a.state, a.frame).hit.length ? 1 : 0) - (frameOf(world.chars[b.id], b.state, b.frame).hit.length ? 1 : 0));
+      // Draw the attacker last so the whole move (wind-up, hit, follow-through) sits in front of the other fighter:
+      // 2 = hitbox out, 1 = anywhere in an attack, 0 = anything else. A tie keeps whoever was in front, so nothing flickers.
+      const rank = (p) => {
+        const st = world.chars[p.id].states[p.state];
+        if (!st?.move) return 0;
+        return frameOf(world.chars[p.id], p.state, p.frame).hit.length ? 2 : 1;
+      };
+      const r0 = rank(game.players[0]), r1 = rank(game.players[1]);
+      if (r0 !== r1) front = r0 > r1 ? 0 : 1;
+      const order = [game.players[1 - front], game.players[front]];
       for (const p of order) {
         const def = world.chars[p.id];
         const fr = frameOf(def, p.state, p.frame);
@@ -390,7 +406,7 @@ export function createFightRenderer(ctx, W, H) {
       for (const e of effects) {
         const [sx, sy] = toScreen(e.x, e.y);
         if (e.sheet) {
-          drawSheetFrame(e.def, e.sheet.sprite, Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, 1);
+          drawSheetFrame(e.def, e.sheet.sprite, Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
           continue;
         }
         const t = e.age / e.life;
