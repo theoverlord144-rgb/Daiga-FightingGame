@@ -72,7 +72,7 @@ function inferStance(m, parsed) {
 
 // ---------- Compile ----------
 
-const FRAME_STATS = new Set(['health', 'prejump', 'landing']);
+const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak']);
 const BOX_STATS = new Set(['standHurt', 'crouchHurt', 'airHurt', 'standPush', 'crouchPush', 'airPush']);
 
 const boxes = (list) => (list || []).map(([x, y, w, h]) => [px(x), px(y), px(w), px(h)]);
@@ -123,6 +123,14 @@ function compileMoveData(m) {
     selfPushback: px(m.selfPushback ?? 0),
     guard: m.guard ?? 'mid',
     reach: px(m.reach ?? 0),
+    chip: m.chip ?? 0,
+    blockHitstop: m.blockHitstop ?? m.hitstop ?? 0,
+    airBlockable: m.airBlockable ?? true,
+    knockdown: !!m.knockdown,
+    launch: m.launch ? { x: px(m.launch.x ?? 0), y: px(m.launch.y ?? 0) } : null,
+    airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
+    throwSwap: !!m.throwSwap,
+    throwDistance: px(m.throwDistance ?? 70),
   };
 }
 
@@ -166,6 +174,10 @@ function compileState(name, src, stats, extra = {}) {
     if (extra.hitboxes && m.active > 0) {
       events.push({ at: first, hit: boxes(extra.hitboxes) });
       events.push({ at: first + m.active, hit: [] });
+    }
+    if (extra.throwboxes && m.active > 0) {
+      events.push({ at: first, throw: boxes(extra.throwboxes) });
+      events.push({ at: first + m.active, throw: [] });
     }
     const ch = extra.counterHit ?? 'all';
     events.push({ at: 0, counter: ch !== 'none' });
@@ -250,6 +262,7 @@ function compileState(name, src, stats, extra = {}) {
     loopFrom: src.loopFrom ?? 0,
     stun: !!src.stun,
     keepVel: !!src.keepVel,
+    throwVictim: !!src.throwVictim,
     next: src.next ?? (stance === 'air' ? 'fall' : 'idle'),
     landTo: src.landTo ?? 'land',
     duration,
@@ -312,7 +325,7 @@ export function compileCharacter(file, system) {
     const move = compileMoveData(m);
     if (m.sprite) sheets[m.id] = m.sprite;
     states[m.id] = compileState(m.id, { ...m, stance, next: m.next ?? (stance === 'air' ? 'fall' : stance === 'crouch' ? 'crouch' : 'idle') }, stats, {
-      move, kind, sheet: m.sprite, sheetName: m.id, hitboxes: m.hitboxes, hurtboxes: m.hurtboxes, counterHit: m.counterHit, cancels: m.cancels,
+      move, kind, sheet: m.sprite, sheetName: m.id, hitboxes: m.hitboxes, throwboxes: m.throwboxes, hurtboxes: m.hurtboxes, counterHit: m.counterHit, cancels: m.cancels,
     });
     if (parsed) {
       commands.push({

@@ -24,9 +24,21 @@ const COLORS = [
   { body: '#4f8fd9', limb: '#8ac2ff', dark: '#223f7a' },
 ];
 
+const SPARK = {
+  hit: { color: '#ffd36b', size: 26, life: 14, text: '' },
+  counter: { color: '#ff5a3c', size: 34, life: 22, text: 'COUNTER' },
+  block: { color: '#8ac2ff', size: 20, life: 12, text: '' },
+  clash: { color: '#ffffff', size: 30, life: 16, text: 'CLASH' },
+  armor: { color: '#c9a2ff', size: 26, life: 14, text: 'ARMOR' },
+  throw: { color: '#e0d050', size: 22, life: 14, text: 'THROW' },
+  tech: { color: '#e0d050', size: 26, life: 18, text: 'TECH' },
+};
+
 export function createFightRenderer(ctx, W, H) {
   const GROUND = H - 70;
   const cam = { x: 0 };
+  const effects = []; // visual only: spawned from the game's cues, never fed back into the game
+  let lastFrame = -1;
 
   const toScreen = (x, y) => [W / 2 + (x / UNIT - cam.x), GROUND - y / UNIT];
 
@@ -161,6 +173,13 @@ export function createFightRenderer(ctx, W, H) {
     toScreen,
     /** opts: { boxes: bool, labels: bool } */
     draw(game, world, opts = {}) {
+      if (game.frame !== lastFrame) {
+        // Cues live for one game frame: pick them up once.
+        for (const c of game.cues) if (SPARK[c.type]) effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+        for (const e of effects) e.age++;
+        for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
+        lastFrame = game.frame;
+      }
       // Camera follows the midpoint, held inside the stage.
       const mid = (game.players[0].x + game.players[1].x) / 2 / UNIT;
       const half = world.battle.stage.halfWidth;
@@ -185,8 +204,46 @@ export function createFightRenderer(ctx, W, H) {
           ctx.fillStyle = '#e8e2d4';
           ctx.font = '12px ui-monospace, monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(`${p.state} ${p.frame}`, lx, ly);
+          ctx.fillText(`${p.state} ${p.frame}${p.hitstop ? ` (stop ${p.hitstop})` : ''}${p.stun ? ` stun ${p.stun}` : ''}`, lx, ly);
         }
+      }
+      // Sparks.
+      for (const e of effects) {
+        const [sx, sy] = toScreen(e.x, e.y);
+        const t = e.age / e.life;
+        const r = e.size * (0.5 + t);
+        ctx.globalAlpha = 1 - t;
+        ctx.strokeStyle = e.color;
+        ctx.lineWidth = 4 * (1 - t) + 1;
+        ctx.beginPath();
+        for (let k = 0; k < 8; k++) {
+          const ang = (k / 8) * Math.PI * 2 + e.age * 0.05;
+          ctx.moveTo(sx + Math.cos(ang) * r * 0.35, sy + Math.sin(ang) * r * 0.35);
+          ctx.lineTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r);
+        }
+        ctx.stroke();
+        if (e.text) {
+          ctx.fillStyle = e.color;
+          ctx.font = '700 16px system-ui';
+          ctx.textAlign = 'center';
+          ctx.fillText(e.text, sx, sy - e.size - 6 - e.age);
+        }
+        ctx.globalAlpha = 1;
+      }
+      // Health bars (a simple version; the real HUD comes with the game screens).
+      for (const p of game.players) {
+        const max = world.chars[p.id].stats.health;
+        const w = 330;
+        const x = p.id === 0 ? 130 : W - 130 - w;
+        ctx.fillStyle = '#2a2535';
+        ctx.fillRect(x, 18, w, 14);
+        ctx.fillStyle = p.health * 3 < max ? '#ff5a3c' : '#ffd36b';
+        const fill = Math.round((w * p.health) / max);
+        ctx.fillRect(p.id === 0 ? x + w - fill : x, 18, fill, 14);
+        ctx.fillStyle = '#e8e2d4';
+        ctx.font = '12px system-ui';
+        ctx.textAlign = p.id === 0 ? 'left' : 'right';
+        ctx.fillText(`${world.chars[p.id].name}  ${p.health}`, p.id === 0 ? x : x + w, 46);
       }
     },
   };

@@ -56,7 +56,25 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 2**.
+Current through **Phase 3**.
+
+- **One frame** (`step` in `src/core/game.js`) runs in stages for both fighters before the next stage starts, so
+  neither player acts first: frame++ and clear cues → push inputs → hitstop (a frozen fighter skips everything,
+  `freezeAge` grows so presses made in hitstop stay buffered) → throw breaks → `advanceAndDecide` (both) → `move`
+  (both: one-shot events, physics, pushback slide) → `separate` (walls, corner transfer, pushboxes) → `land` (both)
+  → `resolveHits`.
+- **Hits** (`src/core/combat.js`): everything is decided from a frame-start snapshot, then applied, so trades work.
+  Order: throws (both = tech; a throw beats a strike), then strikes both ways, else clash (hitbox vs hitbox, no body
+  contact). A strike becomes armor / block / counter / hit. Block = holding away from the attacker in a free or block
+  state, checked against `guard`. Hitstop goes on both; then `stun` = hitstun or blockstun (N = N frames stuck).
+  Pushback is a slide (`slide`, `slideLeft`, decreasing per frame over `battle.pushbackFrames`); a cornered defender
+  makes the attacker slide instead, and wall-refused slide transfers to the opponent. Damage goes through guts
+  (`battle.guts`). Contact sets `p.contact` (HIT, BLOCK, CLASH; clash counts as block for cancels). Throws:
+  `throwHold`/`thrown` for `stats.throwBreak` frames (H breaks), then `throwLands` applies damage, swap and knockdown.
+- **Cues** (`game.cues`, one frame long): `hit`, `counter`, `block`, `clash`, `armor`, `throw`, `tech`, `sound`, `fx`,
+  with x/y. The renderer turns them into sparks; the game never reads them back.
+- **System rules** live in `data/system/battle.json` (stage, corner zone, pushback frames, counter hit, clash, guts,
+  air hit, air block, armor damage, throw tech).
 
 - **World and state** (`src/core/game.js`): `world = createWorld({ input, battle, chars: [def1, def2] })` is static
   and read-only (system JSON + compiled characters). The game state is `{ frame, cues, players: [p1, p2] }`; each

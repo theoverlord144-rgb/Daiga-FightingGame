@@ -1,4 +1,14 @@
 {
-  "notes": "Engine-wide battle rules. Pixels and frames.",
-  "stage": { "halfWidth": 760, "startX": 150 }
+  "notes": "Engine-wide battle rules. Pixels, frames, and percentages out of 10000 (10000 = 100%).",
+  "stage": { "halfWidth": 760, "startX": 150 },
+  "cornerZone": 4,
+  "pushbackFrames": 8,
+  "counterHit": { "hitstunAdd": 4, "hitstopAdd": 3, "damagePct": 10000 },
+  "clash": { "hitstop": 10 },
+  "guts": [[5000, 9000], [3500, 8000], [2000, 7000], [1000, 6000]],
+  "minDamage": 1,
+  "airHit": { "x": 3, "y": 8 },
+  "airBlock": true,
+  "armorDamagePct": 10000,
+  "throwTech": { "stun": 12, "push": 60 }
 }

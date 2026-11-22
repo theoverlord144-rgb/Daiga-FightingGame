@@ -1,9 +1,12 @@
-// One fighter's frame: timeline playback, input decisions (commands, cancels, movement) and physics.
+// One fighter's frame, in stages the game runs for both fighters together (see game.js step()):
+//   advanceAndDecide  -> timeline + input decisions (positions don't change, so both fighters see the same world)
+//   move              -> one-shot events, physics, pushback slide
+//   land              -> touching the ground ends air states
 // All fighter data lives on the player object in the game state; the character definition is read-only.
 
 import { BTN, readMotion, pressedWithin, relDirAt } from './input.js';
 
-export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2 };
+export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
 const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3 };
 
 /** Fighter fields, merged into a player object. */
@@ -19,15 +22,22 @@ export function createFighter(def, side, x) {
     frame: 0,
     stun: 0,
     hitstop: 0,
+    freezeAge: 0, // hitstop frames since this fighter last acted: presses made during hitstop stay buffered
     health: def.stats.health,
     contact: CONTACT.NONE,
     hitsDone: 0, // bitmask of this move's hit ids that already connected (multi-hit moves)
+    armorUsed: 0,
     consumed: [-1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
     jumpDir: 8,
+    slide: 0, // pushback still to travel (signed, units), spread over slideLeft frames
+    slideLeft: 0,
+    slid: 0, // how far the slide moved the fighter this frame (for corner transfer)
+    throwBy: -1, // while being thrown: the attacker's id
+    throwMove: '',
   };
 }
 
-const isAir = (def, p) => def.states[p.state].stance === 'air';
+export const isAirborne = (def, p) => def.states[p.state].stance === 'air';
 
 /** Switch state. Velocity rules: ground states stop the fighter unless the state keeps velocity. */
 export function enterState(p, def, name) {
@@ -37,11 +47,12 @@ export function enterState(p, def, name) {
   p.frame = 0;
   p.contact = CONTACT.NONE;
   p.hitsDone = 0;
+  p.armorUsed = 0;
   if (!st.keepVel && st.stance !== 'air') { p.vx = 0; p.vy = 0; }
 }
 
 /** Fire the one-shot events of the fighter's current frame. */
-function fireOnEnter(game, p, def, world, inp) {
+export function fireOnEnter(game, p, def) {
   const st = def.states[p.state];
   const shots = st.onEnter[p.frame < st.onEnter.length ? p.frame : st.onEnter.length - 1];
   if (!shots || !shots.length) return;
@@ -73,7 +84,7 @@ function fireOnEnter(game, p, def, world, inp) {
 
 /** Is a command's direction/stance satisfied right now? */
 function stanceOk(cmd, def, p, dir) {
-  if (cmd.air !== isAir(def, p)) return false;
+  if (cmd.air !== isAirborne(def, p)) return false;
   if (cmd.motion) return true;
   const d = cmd.dir;
   if (d === '5') return cmd.air ? true : dir >= 4; // any non-down
@@ -85,14 +96,15 @@ function stanceOk(cmd, def, p, dir) {
 function pickCommand(game, p, def, world, allowed) {
   const inp = p.input;
   const rules = world.input;
+  const buffer = rules.pressBuffer + p.freezeAge;
   const dir = relDirAt(inp, 0, p.facing);
   for (const cmd of def.commands) {
     if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
     const b = cmd.buttons[cmd.buttons.length - 1];
     const bit = BTN[b];
     const age = cmd.motion
-      ? readMotion(inp, rules, cmd.motion, bit, p.facing, { negativeEdge: cmd.negativeEdge })
-      : pressedWithin(inp, bit, rules.pressBuffer, cmd.negativeEdge);
+      ? readMotion(inp, rules, cmd.motion, bit, p.facing, { negativeEdge: cmd.negativeEdge, pressBuffer: buffer })
+      : pressedWithin(inp, bit, buffer, cmd.negativeEdge);
     if (age < 0) continue;
     const pressFrame = game.frame - age;
     if (pressFrame <= p.consumed[BTN_INDEX[b]]) continue;
@@ -106,15 +118,10 @@ function openCancels(st, p) {
   const out = [];
   for (const c of st.cancels) {
     if (p.frame < c.from || p.frame > c.to) continue;
-    if (p.contact === CONTACT.HIT ? c.hit : p.contact === CONTACT.BLOCK ? c.block : c.whiff) out.push(c);
+    const ok = p.contact === CONTACT.HIT ? c.hit : p.contact === CONTACT.NONE ? c.whiff : c.block; // a clash counts as block
+    if (ok) out.push(c);
   }
   return out;
-}
-
-/** Face the opponent (only while free on the ground). */
-function autoFace(p, opp) {
-  if (opp.x > p.x) p.facing = 1;
-  else if (opp.x < p.x) p.facing = -1;
 }
 
 /** Decide what to do this frame: start a move, cancel, jump, crouch, walk, stand. */
@@ -123,7 +130,10 @@ function decide(game, p, opp, def, world) {
   const air = st.stance === 'air';
   const windows = st.free ? null : openCancels(st, p);
   if (!st.free && !windows.length) return;
-  if (st.free && !air) autoFace(p, opp);
+  if (st.free && !air) {
+    if (opp.x > p.x) p.facing = 1;
+    else if (opp.x < p.x) p.facing = -1;
+  }
 
   const allowed = st.free
     ? () => true
@@ -147,19 +157,15 @@ function decide(game, p, opp, def, world) {
   if (p.state !== want) enterState(p, def, want);
 }
 
-/**
- * Advance one fighter one frame.
- * Order: hitstop -> advance the timeline -> decide (input) -> fire the frame's one-shot events -> physics -> landing.
- */
-export function stepFighter(game, p, opp, def, world) {
-  if (p.hitstop > 0) { p.hitstop--; return; }
+/** Stage A: advance the timeline, then decide. Returns false if the fighter is frozen in hitstop. */
+export function advanceAndDecide(game, p, opp, def, world, hooks) {
   const st = def.states[p.state];
-
-  // 1. Advance the timeline.
   if (st.stun) {
-    if (p.stun > 0) p.stun--;
-    if (p.stun <= 0) enterState(p, def, st.next);
-    else p.frame++;
+    if (p.stun > 0) { p.stun--; p.frame++; }
+    else {
+      if (st.throwVictim) hooks.throwLands(p);
+      enterState(p, def, st.next);
+    }
   } else {
     p.frame++;
     if (p.frame >= st.duration) {
@@ -167,35 +173,51 @@ export function stepFighter(game, p, opp, def, world) {
       else enterState(p, def, st.next);
     }
   }
-
-  // 2. Input decisions. While squatting, an up-direction updates the jump direction.
   if (p.state === 'jumpSquat') {
     const d = relDirAt(p.input, 0, p.facing);
     if (d >= 7) p.jumpDir = d;
   }
   decide(game, p, opp, def, world);
+  p.freezeAge = 0;
+}
 
-  // 3. One-shot events of the frame we ended up on.
-  fireOnEnter(game, p, def, world);
-
-  // 4. Physics. Integer units throughout.
-  const st2 = def.states[p.state];
-  const fr = st2.frames[p.frame < st2.frames.length ? p.frame : st2.frames.length - 1];
+/** Stage B: one-shot events, physics, pushback slide. */
+export function move(game, p, def) {
+  fireOnEnter(game, p, def);
+  const st = def.states[p.state];
+  const fr = st.frames[p.frame < st.frames.length ? p.frame : st.frames.length - 1];
   p.x += p.vx;
   p.y += p.vy;
   if (fr.gravity) p.vy -= def.stats.gravity;
-  const half = world.battle.halfWidthUnits;
-  if (p.x < -half) p.x = -half;
-  if (p.x > half) p.x = half;
+  p.slid = 0;
+  if (p.slideLeft > 0) {
+    // Pushback slides over several frames, fastest first: frame i of n moves 2(n-i)/(n(n+1)) of the total.
+    const n = p.slideLeft;
+    const d = n === 1 ? p.slide : Math.trunc((p.slide * 2) / (n + 1));
+    p.x += d;
+    p.slid = d;
+    p.slide -= d;
+    p.slideLeft--;
+  }
+}
 
-  // 5. Landing.
-  if (st2.stance === 'air' && p.y <= 0 && p.vy < 0) {
+/** Stage D: landing. */
+export function land(game, p, def) {
+  const st = def.states[p.state];
+  if (st.stance === 'air' && p.y <= 0 && p.vy < 0) {
     p.y = 0;
     p.vy = 0;
     p.vx = 0;
-    enterState(p, def, st2.landTo);
-    fireOnEnter(game, p, def, world);
-  } else if (st2.stance !== 'air' && p.y !== 0) {
+    p.stun = 0;
+    enterState(p, def, st.landTo);
+    fireOnEnter(game, p, def);
+  } else if (st.stance !== 'air' && p.y !== 0) {
     p.y = 0;
   }
+}
+
+/** Start a pushback slide of `dist` units (signed, world direction). */
+export function startSlide(p, dist, frames) {
+  p.slide = dist;
+  p.slideLeft = dist === 0 ? 0 : Math.max(1, frames);
 }

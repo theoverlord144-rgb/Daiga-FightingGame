@@ -47,6 +47,15 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `counterHit` | `"all"` (default: the whole move is in counter-hit state), `"startup+active"`, or `"none"`. |
 | `negativeEdge` | `true` lets releasing the button fire the move. |
 | `sprite` | `{ image, columns, rows, count, holds, frameW, frameH, originX, originY }`. `holds[i]` = game frames sprite `i` shows; missing = spread evenly. |
+| `chip` | Damage dealt through a block (default 0). |
+| `blockHitstop` | Hitstop on block (default: `hitstop`). |
+| `airBlockable` | `false` = can't be blocked in the air (default `true`). |
+| `knockdown` | `true` = knocks a standing opponent down. |
+| `launch` | `{ x, y }` px/frame: sends the defender into the air (x = away from the attacker). |
+| `airHit` | `{ x, y }`: how an airborne defender is knocked away (default in `battle.json`). |
+| `throwboxes` | `[[x, y, w, h]]` during active frames: makes the move a throw (checked against the defender's throw-hurtbox). |
+| `throwDistance` | px between the fighters while the throw holds (default 70). |
+| `throwSwap` | `true` = a back throw: the defender lands on the other side. |
 
 Version 2 adds per move:
 - `timeline`: extra frame events (below), applied after the generated ones.

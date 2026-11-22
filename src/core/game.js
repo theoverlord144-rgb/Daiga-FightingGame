@@ -5,7 +5,8 @@
 // The game state holds only plain data and refers to characters by id.
 
 import { createInputState, pushInput } from './input.js';
-import { createFighter, stepFighter } from './fighter.js';
+import { createFighter, advanceAndDecide, move, land } from './fighter.js';
+import { separate, resolveHits, checkThrowBreaks, throwLands } from './combat.js';
 import { px } from './fixed.js';
 
 export const FPS = 60;
@@ -14,7 +15,14 @@ export const FPS = 60;
 export function createWorld({ input, battle, chars }) {
   return {
     input,
-    battle: { ...battle, halfWidthUnits: px(battle.stage.halfWidth), startXUnits: px(battle.stage.startX) },
+    battle: {
+      ...battle,
+      halfWidthUnits: px(battle.stage.halfWidth),
+      startXUnits: px(battle.stage.startX),
+      cornerZoneUnits: px(battle.cornerZone),
+      airHitUnits: { x: px(battle.airHit.x), y: px(battle.airHit.y) },
+      throwTechPushUnits: px(battle.throwTech.push),
+    },
     chars,
   };
 }
@@ -32,14 +40,30 @@ export function createGame(world) {
   };
 }
 
-/** Advance one frame. rawInputs: [p1Raw, p2Raw] bitmasks (see RAW in input.js). */
+/**
+ * Advance one frame. rawInputs: [p1Raw, p2Raw] bitmasks (see RAW in input.js).
+ * Stages run for both fighters before the next stage starts, so neither player acts first.
+ */
 export function step(state, rawInputs, world) {
   state.frame++;
   state.cues.length = 0;
-  const [a, b] = state.players;
-  pushInput(a.input, rawInputs[0] | 0, world.input);
-  pushInput(b.input, rawInputs[1] | 0, world.input);
-  stepFighter(state, a, b, world.chars[0], world);
-  stepFighter(state, b, a, world.chars[1], world);
+  const ps = state.players;
+  pushInput(ps[0].input, rawInputs[0] | 0, world.input);
+  pushInput(ps[1].input, rawInputs[1] | 0, world.input);
+
+  // Hitstop: a frozen fighter skips everything this frame.
+  const frozen = [false, false];
+  for (const p of ps) {
+    if (p.hitstop > 0) { p.hitstop--; p.freezeAge++; frozen[p.id] = true; }
+  }
+
+  checkThrowBreaks(state, world, frozen);
+
+  const hooks = { throwLands: (p) => throwLands(state, world, p) };
+  for (const p of ps) if (!frozen[p.id]) advanceAndDecide(state, p, ps[1 - p.id], world.chars[p.id], world, hooks);
+  for (const p of ps) if (!frozen[p.id]) move(state, p, world.chars[p.id]);
+  separate(state, world);
+  for (const p of ps) if (!frozen[p.id]) land(state, p, world.chars[p.id]);
+  resolveHits(state, world, frozen);
   return state;
 }
