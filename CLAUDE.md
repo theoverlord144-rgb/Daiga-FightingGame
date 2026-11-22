@@ -56,4 +56,22 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Phase 0: only `src/core/fixed.js` (integer helpers) exists. This section grows each phase.
+Current through **Phase 1**.
+
+- **Loop** (`src/ui/loop.js`): an accumulator turns real time into exactly 60 core steps a second (max 5 per
+  display frame; extra time is dropped, never fast-forwarded). `render(alpha)` runs once per display frame.
+- **Input** (`src/core/input.js`): each step the UI hands the core one raw bitmask per player
+  (`RAW`: LEFT 1, RIGHT 2, UP 4, DOWN 8, L 16, M 32, H 64, S 128). The core resolves SOCD from
+  `data/system/input.json` and pushes a frame `dir | buttons << 4` (dir = numpad 1-9, screen-absolute) into a
+  per-player ring buffer (`bufferFrames`). Motion reading mirrors by facing, so 6 always means forward.
+  - Motions (`motions` in the data): `steps` (strict) / `lenient` step strings (`"123"` = any of those, `"!123"` =
+    any but those, `"3?"` = optional), `window` / `lenientWindow` frames from the first step to the button.
+    Charges: `charge` dirs held `chargeFrames`, then `release` within `window`.
+  - `readMotion(inp, rules, motion, BTN.x, facing, {negativeEdge, leniency})` looks back `pressBuffer` frames for the
+    press (or release) and returns its age or -1. `motionsAt` lists every motion that matches, in `motionPriority`.
+- **State** (`src/core/game.js`, `src/core/state.js`): the game is one plain JSON-shaped object
+  `{ frame, players: [{ id, input }] }`. `step(state, [raw1, raw2], rules)` mutates it one frame. `cloneState`,
+  `serializeState`, `diffState` (path of the first difference), `hashState` (FNV-1a).
+- **Devices** (`src/ui/devices.js`): keyboard (`event.code`) + Gamepad API, OR-ed. Bindings in localStorage key
+  `toska.bindings.v1`; the F1 panel (`src/ui/controls-panel.js`) rebinds.
+- **Screen**: `src/main.js` is the Input Lab for now.

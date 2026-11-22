@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "notes": "Engine-wide input rules. Steps are strings of numpad directions; '!' in front means 'any direction except these'. Optional steps end with '?'. window = frames from the first step to the button press; lenientWindow is used when leniency is on. Charge: hold one of 'charge' for chargeFrames, then press one of 'release' within window frames of the button.",
+  "socd": { "horizontal": "neutral", "vertical": "up" },
+  "bufferFrames": 120,
+  "pressBuffer": 4,
+  "leniency": true,
+  "motionPriority": ["41236", "63214", "623", "421", "22", "236", "214", "[4]6", "[2]8"],
+  "motions": {
+    "236":   { "steps": ["2", "3", "6"],           "lenient": ["12", "3?", "6"],           "window": 10, "lenientWindow": 14 },
+    "214":   { "steps": ["2", "1", "4"],           "lenient": ["23", "1?", "4"],           "window": 10, "lenientWindow": 14 },
+    "623":   { "steps": ["6", "2", "3"],           "lenient": ["36", "12", "3"],           "window": 10, "lenientWindow": 14 },
+    "421":   { "steps": ["4", "2", "1"],           "lenient": ["14", "23", "1"],           "window": 10, "lenientWindow": 14 },
+    "41236": { "steps": ["4", "1", "2", "3", "6"], "lenient": ["47", "1?", "2", "3?", "69"], "window": 16, "lenientWindow": 22 },
+    "63214": { "steps": ["6", "3", "2", "1", "4"], "lenient": ["69", "3?", "2", "1?", "47"], "window": 16, "lenientWindow": 22 },
+    "22":    { "steps": ["2", "5", "2"],           "lenient": ["123", "!123", "123"],      "window": 12, "lenientWindow": 16 },
+    "[4]6":  { "charge": "147", "chargeFrames": 30, "release": "6",  "lenientRelease": "369", "window": 8, "lenientWindow": 12 },
+    "[2]8":  { "charge": "123", "chargeFrames": 30, "release": "8",  "lenientRelease": "789", "window": 8, "lenientWindow": 12 }
+  }
+}

@@ -18,7 +18,9 @@ const FORBIDDEN = [
   [/\bDate\b/, 'Date'],
   [/\bperformance\b/, 'performance'],
   [/\bdocument\b/, 'document'],
-  [/\bwindow\b/, 'window'],
+  // The browser global, used as an object (a local variable or data field named "window" is fine).
+  [/(?<![.\w])window\s*[.[]/, 'window (the browser global)'],
+  [/globalThis/, 'globalThis'],
   [/requestAnimationFrame/, 'requestAnimationFrame'],
   [/localStorage/, 'localStorage'],
   [/from ['"]\.\.\/(render|ui|tools|net)\//, 'an import from render/ui/tools/net'],
