@@ -461,3 +461,13 @@ test('the Vigil kit is deterministic and rollback-safe: same inputs, same game; 
   const c = play(a.saved, 46);
   assert.deepEqual(c.hashes, a.hashes.slice(46), 'resumed from a save with a projectile in the air');
 });
+
+test('Vigil entry: no drawing is held; it runs into the stance loop without a pause', () => {
+  const fr = C.states.vigil.frames.map((f) => f.sprite.sheet + f.sprite.index);
+  let run = 1, longest = 1;
+  for (let i = 1; i < fr.length; i++) { run = fr[i] === fr[i - 1] ? run + 1 : 1; longest = Math.max(longest, run); }
+  assert.ok(longest <= 5, 'no drawing stays longer than 5 frames');
+  assert.equal(fr[0], 'vigil0', 'it opens on the wind-up drawing');
+  assert.deepEqual(C.states.vigil.frames.at(-1).sprite, { sheet: 'vigilStance', index: 7 }, 'ends on the loop's last drawing, so the loop continues from its first');
+  assert.equal(C.states.vigil.duration, 20, 'still 20 frames');
+});

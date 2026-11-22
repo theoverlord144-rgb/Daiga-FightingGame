@@ -39,6 +39,20 @@ Avner now has drawings for being hit. Art only: no rule or number changed.
 - **Held in a throw:** the standing recoil drawing, since there is no drawing for it.
 - The hold lengths are my first pass. The drawings were matched to his standing and crouching size.
 
+## Hit and block effects, and the stance entry (same branch)
+
+- **Hit sparks and the block flash** come from your sheet in . They belong to the game, not to
+  Avner, so every character gets them. Row 1 is the light hit, row 2 medium, row 3 heavy, row 4 the block. Which spark
+  a hit gets is decided by the move's base damage: under 500 light, under 800 medium, 800 and up heavy. A counter hit
+  goes one size up and keeps its COUNTER label. The block flash curves toward the attacker. Each plays 4 drawings, 3
+  frames each, drawn as light. The thresholds and timing are in .
+- Moves with their own hit effect (the Brand flash on Lumen Hook, Snap and the crescent, the Flare burst) keep it
+  instead of the spark.
+- **The stance entry no longer holds one drawing.** It is still 20 frames (your spec's number, and the punish
+  window), but now the wind-up drawing shows for 5 frames and then the chain whirls through the loop's last five
+  drawings, so it runs straight into the stance with no pause. If you meant the entry itself should be shorter,
+  that is a rules change: tell me the number.
+
 ## Which file I used for what
 
 | Your file | Used for |
@@ -116,7 +130,7 @@ Avner now has drawings for being hit. Art only: no rule or number changed.
 
 ## Tests
 
-202 tests, all passing (20 new in `tests/avner-vigil.test.js`, 1 for the hit-reaction art; the old placeholder-stance test was removed with the
+204 tests, all passing (21 new in `tests/avner-vigil.test.js`, 1 for the hit-reaction art, 1 for the effects data; the old placeholder-stance test was removed with the
 placeholder). `npm run build` passes. The new tests cover everything on your list as far as the paste went:
 
 - Each move's frame data and drawing holds.

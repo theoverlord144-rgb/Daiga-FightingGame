@@ -6,14 +6,17 @@ import { frameOf } from '../core/character.js';
 import { createHud } from './hud.js';
 import { createStageRenderer } from './stage-renderer.js';
 import { paletteSheet, placeholderColors } from './palette.js';
+import FX from '../../data/system/effects.json';
 
 // Game-ready sheets only (data/characters/<id>/sheets/): raw art dropped elsewhere in a character's folder is not
 // shipped with the game.
 const SPRITE_URLS = import.meta.glob('../../data/characters/*/sheets/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
+// Universal effects (hit sparks, block flash): data/effects/, described by data/system/effects.json.
+const FX_URLS = import.meta.glob('../../data/effects/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
 const images = new Map();
 // Start loading every sheet up front, so an effect or a move shows the first time it's used (not the second).
 if (typeof Image !== 'undefined') {
-  for (const [key, url] of Object.entries(SPRITE_URLS)) {
+  for (const [key, url] of [...Object.entries(SPRITE_URLS), ...Object.entries(FX_URLS)]) {
     const img = new Image();
     img.src = url;
     images.set(key, img);
@@ -21,12 +24,14 @@ if (typeof Image !== 'undefined') {
 }
 
 function spriteImage(charId, path) {
-  const key = Object.keys(SPRITE_URLS).find((k) => k.endsWith(`/characters/${charId}/${path}`));
+  // charId null: a universal effect sheet.
+  const urls = charId === null ? FX_URLS : SPRITE_URLS;
+  const key = Object.keys(urls).find((k) => k.endsWith(charId === null ? `/effects/${path}` : `/characters/${charId}/${path}`));
   if (!key) return null;
   let img = images.get(key);
   if (!img) {
     img = new Image();
-    img.src = SPRITE_URLS[key];
+    img.src = urls[key];
     images.set(key, img);
   }
   return img.complete && img.naturalWidth ? img : null;
@@ -147,7 +152,7 @@ export function createFightRenderer(ctx, W, H) {
 
   /** One frame of a sheet (effects, marks, chain pieces: no palette), centred on its origin at screen x, y. */
   function drawSheetFrame(def, sheet, index, x, y, facing, angle = 0) {
-    const img = spriteImage(def.id, sheet.image);
+    const img = spriteImage(def ? def.id : null, sheet.image);
     if (!img) return false;
     const cols = sheet.columns ?? 1;
     const fw = sheet.frameW ?? img.naturalWidth / cols;
@@ -390,7 +395,30 @@ export function createFightRenderer(ctx, W, H) {
       const src = world.chars[c.p];
       const fx = (c.type === 'hit' || c.type === 'counter') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
       if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
-      if (!fx || c.type === 'counter') effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+      // The universal sheet: a hit spark sized by the move's base damage (a counter hit goes one size up), or the
+      // block flash, which curves toward the attacker.
+      const isHit = c.type === 'hit' || c.type === 'counter';
+      let uni = false;
+      if ((isHit && !fx) || c.type === 'block') {
+        let row;
+        let facing = game.players[c.p].facing;
+        if (isHit) {
+          const base = (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.damage ?? 0;
+          let i = FX.hit.findIndex((h) => h.below === undefined || base < h.below);
+          if (i < 0) i = FX.hit.length - 1;
+          if (c.type === 'counter') i = Math.min(FX.hit.length - 1, i + 1);
+          row = FX.hit[i].row;
+        } else {
+          row = FX.block.row;
+          facing = game.players[1 - c.p].facing;
+        }
+        effects.push({ uni: row * FX.sheet.columns, x: c.x, y: c.y, facing, age: 0, life: FX.frames * FX.hold });
+        uni = true;
+      }
+      // The drawn-in-code spark stays for what has no art (clash, armor, throw, tech, bounces, burst), and as the
+      // COUNTER label over the art.
+      if (!uni && !fx) effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+      else if (c.type === 'counter') effects.push({ ...SPARK.counter, labelOnly: true, x: c.x, y: c.y, age: 0 });
     }
     // A mark that runs out (the Brand fading by itself) plays its fizzle on the opponent.
     for (const p of game.players) {
@@ -507,6 +535,13 @@ export function createFightRenderer(ctx, W, H) {
           ctx.restore();
           continue;
         }
+        if (e.uni !== undefined) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          drawSheetFrame(null, FX.sheet, e.uni + Math.min(FX.frames - 1, Math.floor((e.age - 1) / FX.hold)), sx, sy, e.facing);
+          ctx.restore();
+          continue;
+        }
         if (e.sheet) {
           drawSheetFrame(e.def, e.sheet.sprite, Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
           continue;
@@ -517,7 +552,7 @@ export function createFightRenderer(ctx, W, H) {
         ctx.strokeStyle = e.color;
         ctx.lineWidth = 4 * (1 - t) + 1;
         ctx.beginPath();
-        for (let k = 0; k < 8; k++) {
+        for (let k = 0; k < 8 && !e.labelOnly; k++) {
           const ang = (k / 8) * Math.PI * 2 + e.age * 0.05;
           ctx.moveTo(sx + Math.cos(ang) * r * 0.35, sy + Math.sin(ang) * r * 0.35);
           ctx.lineTo(sx + Math.cos(ang) * r, sy + Math.sin(ang) * r);

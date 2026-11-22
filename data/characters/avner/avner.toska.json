@@ -208,6 +208,8 @@
       "cancels": [{ "from": 12, "to": 21, "into": ["#normal"], "on": ["whiff"] }],
       "sprite": { "image": "sheets/lightstep.png", "columns": 5, "rows": 1, "count": 5, "frameW": 360, "frameH": 374, "originX": 180, "originY": 372, "scale": 0.5, "holds": [3, 7, 4, 4, 4] } },
     { "id": "vigil", "name": "Vigil", "input": "22S", "startup": 21, "active": 0, "recovery": 0, "next": "vigilStance",
+      "timeline": [{ "at": 5, "sprite": { "sheet": "vigilStance", "index": 3 } }, { "at": 8, "sprite": { "sheet": "vigilStance", "index": 4 } }, { "at": 11, "sprite": { "sheet": "vigilStance", "index": 5 } },
+        { "at": 14, "sprite": { "sheet": "vigilStance", "index": 6 } }, { "at": 17, "sprite": { "sheet": "vigilStance", "index": 7 } }],
       "sprite": { "image": "sheets/vigil.png", "columns": 1, "rows": 1, "count": 1, "frameW": 255, "frameH": 320, "originX": 96, "originY": 318, "scale": 0.5, "holds": [20] } },
     { "id": "vigilSnap", "name": "Snap", "input": "L", "anyDir": true, "neutral": false, "kind": "special", "startup": 7, "active": 3, "recovery": 14, "next": "vigilStance",
       "damage": 300, "hitstun": 16, "blockstun": 10, "hitstop": 8, "pushbackHit": 6, "pushbackBlock": 16, "guard": "low", "reach": 105,

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { createGame, step } from '../src/core/game.js';
 import { compileCharacter } from '../src/core/character.js';
 import { px } from '../src/core/fixed.js';
-import { loadWorld, loadChar, script, SYSTEM } from './helpers.js';
+import { loadWorld, loadChar, loadJSON, script, SYSTEM } from './helpers.js';
 
 const AVNER = 'data/characters/avner/avner.toska.json';
 
@@ -176,4 +176,14 @@ test('Avner: hit reactions have their art (standing, crouching, air, tumble, kno
   assert.equal(c.states.knockdown.duration, 40);
   assert.equal(c.states.wakeup.duration, 12);
   assert.ok(c.states.tumble.techable && c.states.tumble.loop);
+});
+
+test('universal hit and block effects: three hit sizes by damage and a block row, all inside the sheet', () => {
+  const fx = loadJSON('data/system/effects.json');
+  assert.deepEqual(fx.hit.map((h) => h.name), ['light', 'medium', 'heavy']);
+  const limits = fx.hit.map((h) => h.below ?? Infinity);
+  assert.ok(limits.every((v, i) => i === 0 || v > limits[i - 1]), 'thresholds rise, the last one is open-ended');
+  for (const row of [...fx.hit.map((h) => h.row), fx.block.row]) assert.ok(row >= 0 && row < fx.sheet.rows);
+  assert.equal(fx.frames, fx.sheet.columns);
+  assert.equal(fx.sheet.columns * fx.sheet.rows, fx.sheet.count);
 });
