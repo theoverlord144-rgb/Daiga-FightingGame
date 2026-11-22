@@ -12,6 +12,15 @@
     "vars": { "charge": { "start": 0, "min": 0, "max": 3, "label": "Charge" } },
     "modifiers": [{ "when": { "vars": { "charge": [3, 3] } }, "damagePct": 11000 }]
   },
+  "palettes": {
+    "base": ["#8a8f99","#c9ced8","#3b3f47"],
+    "colors": [
+      { "name": "Steel", "colors": ["#8a8f99","#c9ced8","#3b3f47"] },
+      { "name": "Signal", "colors": ["#e07a2e","#ffc08a","#6b3510"] },
+      { "name": "Circuit", "colors": ["#2ea39a","#8ae6dd","#10504a"] },
+      { "name": "Test", "colors": ["#c43ca0","#f29ad9","#5a1449"] }
+    ]
+  },
   "gatlings": {
     "5L": ["5L", "2L", "5M", "2M", "5H", "2H", "5S"],
     "2L": ["5L", "2L", "5M", "2M", "5H", "2H", "5S"],

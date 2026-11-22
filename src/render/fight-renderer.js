@@ -3,6 +3,9 @@
 
 import { UNIT } from '../core/fixed.js';
 import { frameOf } from '../core/character.js';
+import { createHud } from './hud.js';
+import { createStageRenderer } from './stage-renderer.js';
+import { paletteSheet, placeholderColors } from './palette.js';
 
 const SPRITE_URLS = import.meta.glob('../../data/characters/*/**/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
 const images = new Map();
@@ -18,11 +21,6 @@ function spriteImage(charId, path) {
   }
   return img.complete && img.naturalWidth ? img : null;
 }
-
-const COLORS = [
-  { body: '#d9534f', limb: '#ff8a7a', dark: '#7a2622' },
-  { body: '#4f8fd9', limb: '#8ac2ff', dark: '#223f7a' },
-];
 
 const SPARK = {
   hit: { color: '#ffd36b', size: 26, life: 14, text: '' },
@@ -44,6 +42,8 @@ export function createFightRenderer(ctx, W, H) {
   const effects = []; // visual only: spawned from the game's cues, never fed back into the game
   let lastFrame = -1;
   const comboShow = [null, null]; // per victim: { combo, hold } - keeps the finished combo on screen a moment
+  const hud = createHud(ctx, W);
+  let stageR = null; // { id, r }: the stage renderer, made when a stage is first drawn
 
   const toScreen = (x, y) => [W / 2 + (x / UNIT - cam.x), GROUND - y / UNIT + cam.y];
 
@@ -55,7 +55,15 @@ export function createFightRenderer(ctx, W, H) {
     return [sx, sy, bw / UNIT, bh / UNIT];
   }
 
-  function drawStage(world) {
+  function drawStage(world, opts) {
+    if (opts.stage) {
+      if (!stageR || stageR.id !== opts.stage.id) {
+        stageR = { id: opts.stage.id, r: createStageRenderer(opts.stage, W, H, GROUND, world.battle.stage.halfWidth) };
+      }
+      stageR.r.draw(ctx, cam);
+      if (opts.marks) drawMarks(world);
+      return;
+    }
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, '#1b1726');
     g.addColorStop(1, '#0d0b12');
@@ -70,6 +78,12 @@ export function createFightRenderer(ctx, W, H) {
     ctx.moveTo(0, gy);
     ctx.lineTo(W, gy);
     ctx.stroke();
+    drawMarks(world);
+  }
+
+  /** Floor marks every 100 px and the walls, so movement reads clearly (training). */
+  function drawMarks(world) {
+    const gy = GROUND + cam.y;
     // Floor marks every 100 px, so movement reads clearly.
     ctx.fillStyle = '#2f2839';
     const half = world.battle.stage.halfWidth;
@@ -86,6 +100,20 @@ export function createFightRenderer(ctx, W, H) {
   }
 
   function drawPlaceholder(p, def, fr, col) {
+    // On the floor (knockdown, KO): no hurtbox, and the figure lies down, head away from the opponent's side.
+    if (!fr.hurt.length && p.y === 0 && (p.state === 'knockdown' || p.state === 'koDown')) {
+      const [fx, fy] = toScreen(p.x, 0);
+      const len = 150;
+      const back = -p.facing; // falls backwards
+      ctx.fillStyle = col.body;
+      ctx.fillRect(back > 0 ? fx - len * 0.35 : fx - len * 0.65 + 34, fy - 34, len - 34, 34);
+      ctx.beginPath();
+      ctx.arc(fx + back * len * 0.5, fy - 17, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = col.dark;
+      ctx.fillRect(fx + back * len * 0.5 - 3, fy - 25, 6, 6);
+      return;
+    }
     const hurt = fr.hurt[0] || [-3000, 0, 6000, 16000];
     const [sx, sy, sw, sh] = boxRect(p, hurt);
     const headR = Math.min(16, sw * 0.3);
@@ -125,13 +153,14 @@ export function createFightRenderer(ctx, W, H) {
     }
   }
 
-  function drawSprite(p, def, fr) {
+  function drawSprite(p, def, fr, pal) {
     const s = fr.sprite;
     if (!s) return false;
     const sheet = def.sheets[s.sheet];
     if (!sheet) return false;
-    const img = spriteImage(def.id, sheet.image);
-    if (!img) return false;
+    const raw = spriteImage(def.id, sheet.image);
+    if (!raw) return false;
+    const img = paletteSheet(raw, def.palettes, pal);
     const fw = sheet.frameW ?? img.naturalWidth / sheet.columns;
     const fh = sheet.frameH ?? img.naturalHeight / sheet.rows;
     const ox = sheet.originX ?? fw / 2;
@@ -142,7 +171,7 @@ export function createFightRenderer(ctx, W, H) {
     ctx.save();
     ctx.translate(sx, sy);
     ctx.scale(p.facing, 1);
-    ctx.drawImage(img, col * fw, row * fh, fw, fh, -ox, -oy, fw, fh);
+    ctx.drawImage(img, col * fw, row * fh, fw, fh, -ox, -oy, fw, fh); // img: the sheet in this palette
     ctx.restore();
     return true;
   }
@@ -174,57 +203,6 @@ export function createFightRenderer(ctx, W, H) {
     ctx.fillRect(ox - 1, oy - 3, 2, 7);
   }
 
-  /** Burst gauge (under the health bar), super meter, and the character mechanic. */
-  function drawResources(p, def, world, x, w) {
-    const left = p.id === 0;
-    const B = world.burst;
-    if (B && B.enabled) {
-      const full = p.burst >= B.gaugeMax;
-      const bw = Math.round((w * 0.4 * p.burst) / B.gaugeMax);
-      const bx = left ? x + w - Math.round(w * 0.4) : x;
-      ctx.fillStyle = '#1c1826';
-      ctx.fillRect(bx, 34, Math.round(w * 0.4), 4);
-      ctx.fillStyle = full ? '#7fe0ff' : '#3f6f80';
-      ctx.fillRect(left ? bx + Math.round(w * 0.4) - bw : bx, 34, bw, 4);
-      if (full) {
-        ctx.font = '700 10px system-ui';
-        ctx.textAlign = left ? 'right' : 'left';
-        ctx.fillText('BURST', left ? bx - 4 : bx + Math.round(w * 0.4) + 4, 39);
-      }
-    }
-    // Super meter: whole bars as a number, the current bar as a fill.
-    const bar = world.meter?.barSize ?? 10000;
-    const bars = Math.floor(p.meter / bar);
-    const part = p.meter - bars * bar;
-    const mw = 180;
-    const mx = left ? x : x + w - mw;
-    const my = 54;
-    ctx.fillStyle = '#1c1826';
-    ctx.fillRect(mx, my, mw, 8);
-    const full = p.meter >= def.meterMax;
-    ctx.fillStyle = full ? '#ffe9a8' : '#c9a2ff';
-    const fw = full ? mw : Math.round((mw * part) / bar);
-    ctx.fillRect(left ? mx : mx + mw - fw, my, fw, 8);
-    ctx.font = '800 15px system-ui';
-    ctx.textAlign = left ? 'left' : 'right';
-    ctx.fillStyle = bars > 0 ? '#ffe9a8' : '#5d556b';
-    ctx.fillText(String(bars), left ? mx + mw + 8 : mx - 8, my + 9);
-    // The mechanic: its gauge as a thin bar, its counters as pips.
-    const mech = def.mechanic;
-    let line = '';
-    if (mech?.gauge) line += `${mech.gauge.label} ${Math.floor((100 * p.gauge) / mech.gauge.max)}%  `;
-    for (const [k, v] of Object.entries(mech?.vars || {})) {
-      if (!v.show) continue;
-      const n = p.vars[k];
-      line += v.max <= 6 ? `${v.label} ${'●'.repeat(n)}${'○'.repeat(Math.max(0, v.max - n))}  ` : `${v.label} ${n}  `;
-    }
-    if (line) {
-      ctx.font = '600 11px system-ui';
-      ctx.fillStyle = '#c9a2ff';
-      ctx.fillText(line.trim(), left ? mx : mx + mw, my + 22);
-    }
-  }
-
   return {
     cam,
     toScreen,
@@ -254,7 +232,7 @@ export function createFightRenderer(ctx, W, H) {
       const top = Math.max(game.players[0].y, game.players[1].y) / UNIT + 200;
       const wantY = Math.max(0, top - (GROUND - 40));
       cam.y += (wantY - cam.y) * 0.25;
-      drawStage(world);
+      drawStage(world, opts);
       // Super flash: the stage goes dark while the game is frozen; the super's user stays lit.
       const flashing = game.flash > 0;
       if (flashing) {
@@ -282,7 +260,8 @@ export function createFightRenderer(ctx, W, H) {
         ctx.ellipse(shx, GROUND + cam.y + 3, 34, 6, 0, 0, Math.PI * 2);
         ctx.fill();
         if (flashing && p.id !== game.flashBy) ctx.globalAlpha = 0.45;
-        if (!drawSprite(p, def, fr)) drawPlaceholder(p, def, fr, COLORS[p.id]);
+        const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
+        if (!drawSprite(p, def, fr, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
         ctx.globalAlpha = 1;
         if (opts.boxes) drawBoxes(p, fr);
         if (opts.labels) {
@@ -332,22 +311,7 @@ export function createFightRenderer(ctx, W, H) {
         ctx.fillText(`${s.c.damage} damage  ·  scaling ${Math.round(s.c.scale / 100)}%  ·  ${s.c.time}f`, x, 118);
         ctx.globalAlpha = 1;
       }
-      // Health bars (a simple version; the real HUD comes with the game screens).
-      for (const p of game.players) {
-        const max = world.chars[p.id].stats.health;
-        const w = 330;
-        const x = p.id === 0 ? 130 : W - 130 - w;
-        ctx.fillStyle = '#2a2535';
-        ctx.fillRect(x, 18, w, 14);
-        ctx.fillStyle = p.health * 3 < max ? '#ff5a3c' : '#ffd36b';
-        const fill = Math.round((w * p.health) / max);
-        ctx.fillRect(p.id === 0 ? x + w - fill : x, 18, fill, 14);
-        ctx.fillStyle = '#e8e2d4';
-        ctx.font = '12px system-ui';
-        ctx.textAlign = p.id === 0 ? 'left' : 'right';
-        ctx.fillText(`${world.chars[p.id].name}  ${p.health}`, p.id === 0 ? x : x + w, 46);
-        drawResources(p, world.chars[p.id], world, x, w);
-      }
+      if (opts.hud !== false) hud.draw(game, world, H);
     },
   };
 }

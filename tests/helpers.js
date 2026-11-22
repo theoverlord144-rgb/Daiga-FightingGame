@@ -45,8 +45,9 @@ export const SYSTEM = {
 export const loadChar = (rel) => compileCharacter(loadJSON(rel), SYSTEM);
 
 /** A world with two characters (default: Avner vs Avner). */
-export function loadWorld(a = 'data/characters/avner/avner.toska.json', b = a) {
+export function loadWorld(a = 'data/characters/avner/avner.toska.json', b = a, { match = null } = {}) {
   return createWorld({
+    match,
     input: loadJSON('data/system/input.json'),
     battle: loadJSON('data/system/battle.json'),
     combo: loadJSON('data/system/combo.json'),

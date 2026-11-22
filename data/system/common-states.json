@@ -32,6 +32,7 @@
     "thrown": {"stance": "stand", "stun": true, "next": "knockdown", "throwVictim": true, "timeline": [{"at": 0, "hurt": [], "invuln": {"strike": true, "throw": true}}]},
     "throwHold": {"stance": "stand", "stun": true, "next": "throwFinish", "timeline": [{"at": 0, "invuln": {"strike": true, "throw": true}}]},
     "throwFinish": {"stance": "stand", "duration": 18, "next": "idle"},
+    "koDown": { "stance": "crouch", "loop": true, "duration": 60, "timeline": [{ "at": 0, "hurt": [], "invuln": { "strike": true, "throw": true } }] },
     "throwTech": {"stance": "stand", "stun": true, "next": "idle"}
   }
 }

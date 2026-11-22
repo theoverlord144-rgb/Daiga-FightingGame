@@ -78,3 +78,24 @@ console.log(`rollback worst case per frame (9 steps + 9 clones): ${((stepUs + cl
   for (let i = 0; i < 20000; i++) cloneState(g3);
   console.log(`clone state (with meter, vars): ${(Number(process.hrtime.bigint() - t) / 1000 / 20000).toFixed(2)} µs`);
 }
+
+// Phase 9: a versus match with rounds and the timer, two CPUs deciding every frame.
+{
+  const { loadJSON } = await import('../helpers.js');
+  const { createCpu } = await import('../../src/ui/cpu.js');
+  const w = loadWorld(undefined, undefined, { match: { ...loadJSON('data/system/match.json'), roundsToWin: 99 } });
+  const g4 = createGame(w);
+  const a = createCpu(w, 0, { level: 'hard', seed: 1 });
+  const b = createCpu(w, 1, { level: 'hard', seed: 2 });
+  const M = 100000;
+  let cpuNs = 0n;
+  const t0 = process.hrtime.bigint();
+  for (let i = 0; i < M; i++) {
+    const c0 = process.hrtime.bigint();
+    const raws = [a.input(g4), b.input(g4)];
+    cpuNs += process.hrtime.bigint() - c0;
+    step(g4, raws, w);
+  }
+  const us = Number(process.hrtime.bigint() - t0) / 1000 / M;
+  console.log(`CPU vs CPU match frame: ${us.toFixed(2)} µs (both CPUs ${(Number(cpuNs) / 1000 / M).toFixed(2)} µs) · ${g4.match.round - 1} rounds finished in ${M} frames`);
+}

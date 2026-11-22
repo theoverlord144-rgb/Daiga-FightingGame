@@ -5,7 +5,7 @@ import { hashState } from '../src/core/state.js';
 import { createSession } from '../src/net/rollback.js';
 import { createSimNetwork } from '../src/net/sim-network.js';
 import { runSyncTest } from '../src/net/sync-test.js';
-import { loadWorld, loadChar, fightInputs } from './helpers.js';
+import { loadWorld, loadChar, loadJSON, fightInputs } from './helpers.js';
 
 const A = loadChar('data/characters/avner/avner.toska.json');
 const W = loadWorld(A, A);
@@ -46,9 +46,9 @@ test('sync test catches a step that keeps hidden state outside the game (so it i
 // ---------- Two players over a network ----------
 
 /** Plays a match between two sessions over a simulated network. Each side's "player" reacts to what it sees. */
-function netMatch({ frames = 1500, latency = 3, jitter = 0, loss = 0, delay = 2, seed = 5, cutAt = null, cutFor = 0, tamper = null } = {}) {
+function netMatch({ world = W, frames = 1500, latency = 3, jitter = 0, loss = 0, delay = 2, seed = 5, cutAt = null, cutFor = 0, tamper = null } = {}) {
   const net = createSimNetwork({ latency, jitter, loss, seed });
-  const s = [0, 1].map((i) => createSession(W, { local: i, delay, keepInputs: true }));
+  const s = [0, 1].map((i) => createSession(world, { local: i, delay, keepInputs: true }));
   const brains = [fightInputs(seed * 2 + 1), fightInputs(seed * 2 + 2)];
   let ticks = 0;
   const pump = (i) => { for (const m of s[i].outbox.splice(0)) net.send(i, m); };
@@ -160,4 +160,16 @@ test('a very laggy link (20 frames each way) still converges, it just waits more
   }
   assertConverged(s, 'laggy');
   assert.equal(hashState(s[0].game), hashState(s[1].game));
+});
+
+test('netplay with rounds: KOs, time-ups and new rounds over a lossy link, both sides identical', () => {
+  const rules = { ...loadJSON('data/system/match.json'), timerSeconds: 6, introFrames: 30, koFrames: 40, timeupFrames: 30, roundsToWin: 9 };
+  const world = loadWorld(A, A, { match: rules });
+  const { s, net } = netMatch({ world, frames: 3000, latency: 4, jitter: 3, loss: 1000, seed: 13 });
+  assert.ok(net.stats.lost > 50);
+  for (const i of [0, 1]) assert.equal(s[i].stats.desync, null);
+  assertConverged(s, 'rounds');
+  assert.equal(hashState(s[0].game), hashState(s[1].game));
+  assert.ok(s[0].game.match.round >= 4, `several rounds (${s[0].game.match.round})`);
+  assert.deepEqual(s[0].game.match.wins, s[1].game.match.wins);
 });

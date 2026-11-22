@@ -6,9 +6,11 @@ import defaults from '../../data/system/fighter-defaults.json';
 import common from '../../data/system/common-states.json';
 import meter from '../../data/system/meter.json';
 import burst from '../../data/system/burst.json';
+import match from '../../data/system/match.json';
 import { compileCharacter } from '../core/character.js';
 import { createWorld } from '../core/game.js';
 
+const STAGE_FILES = import.meta.glob('../../data/stages/*.json', { eager: true, import: 'default' });
 const CHAR_FILES = import.meta.glob('../../data/characters/*/*.toska.json', { eager: true, import: 'default' });
 
 export const W = 960;
@@ -33,6 +35,9 @@ export function setupCanvas() {
 export const SYSTEM = { defaults, common, meter, burst };
 export const INPUT_RULES = inputRules;
 export const BATTLE = battle;
+export const MATCH = match;
+/** Every stage under data/stages, by id. */
+export const STAGES = Object.fromEntries(Object.values(STAGE_FILES).map((s) => [s.id, s]));
 
 /** Every character file found under data/characters, compiled, by id. */
 export function loadCharacters() {
@@ -44,6 +49,7 @@ export function loadCharacters() {
   return out;
 }
 
-export function makeWorld(a, b) {
-  return createWorld({ input: inputRules, battle, combo, meter, burst, chars: [a, b] });
+/** match: the match rules (rounds, timer), or null for free play (training). */
+export function makeWorld(a, b, matchRules = null) {
+  return createWorld({ input: inputRules, battle, combo, meter, burst, match: matchRules, chars: [a, b] });
 }

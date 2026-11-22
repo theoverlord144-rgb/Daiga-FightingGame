@@ -107,6 +107,23 @@ timeline events. **Modifiers** apply while their `when` holds; `damagePct` multi
 event naming a var that isn't declared is an error when the file loads. The HUD shows the gauge and every var with
 `show` (default true).
 
+### `palettes` (top level, version 2): colour swaps
+
+```json
+"palettes": {
+  "base": ["#d9534f", "#ff8a7a", "#7a2622"],
+  "colors": [
+    { "name": "Ember", "colors": ["#d9534f", "#ff8a7a", "#7a2622"] },
+    { "name": "Tide", "colors": ["#3f7fcf", "#8ac2ff", "#1c3566"] }
+  ]
+}
+```
+Sprite sheets are drawn using **only the `base` colours** (plus transparency): an indexed palette. Each entry in
+`colors` swaps base colour i for its colour i, pixel for pixel; the first entry is normally the original. Every set
+needs exactly as many colours as `base`, all `#rrggbb` (checked when the file loads). Until a character has
+sprites, its placeholder figure uses colours 1-3 (body, limbs, detail). Missing palettes = four default sets. A sheet
+pixel that isn't a base colour stays as drawn (the browser console warns).
+
 ### `gatlings` (top level, version 2)
 
 `{ "5L": ["5L", "2L", "5M"], ... }` — which moves each move chains into, on hit or block. Use
@@ -136,6 +153,22 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `meter`, `gauge` | one-shot | Add meter / mechanic gauge (negative to spend). |
 | `addVar`, `setVar` | one-shot | `{ name: n }`: change a mechanic var. |
 
+## Stages (`data/stages/<id>.json`)
+
+Drawing only: every stage plays the same (size and walls are in `battle.json`). `{ id, name, layers: [...] }`,
+drawn first to last; each layer has a `type` and a `parallax` (0 = fixed to the screen, 1 = moves with the floor).
+Heights are pixels above the ground line.
+
+| Type | Fields |
+| --- | --- |
+| `sky` | `stops`: `[[0..1, colour], ...]` top to ground |
+| `sun` | `x` (from centre), `height`, `radius`, `color`, `glow` |
+| `ridge` | `height`, `variation`, `roughness` (bumps across), `seed`, `color` (a mountain line) |
+| `haze` | `height`, `thickness`, `color`, `alpha` |
+| `arches` | `spacing`, `width`, `height`, `thickness`, `broken` (0..1 share), `seed`, `color` |
+| `railing` | `height`, `postSpacing`, `color` |
+| `floor` | `top`, `bottom` (gradient), `line`, `tile` (seam spacing); always the last layer |
+
 ## Universal mechanics (system data)
 
 - **Meter** (`data/system/meter.json`): `barSize`, gains by kind, `victimGainPct` (the defender builds this
@@ -144,6 +177,9 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 - **Burst** (`data/system/burst.json`): `enabled`, `buttons` (default `"HS"` pressed together), `gaugeMax`,
   `start`, `perFrame`, `hurtPct` (gauge from damage taken), `states` (where it's allowed: being comboed) and the
   `burst` / `burstAir` moves every character gets (invincible, knocks the attacker away, ends the combo).
+- **Match** (`data/system/match.json`, versus only): `roundsToWin`, `timerSeconds` (0 = none; both also in the
+  Settings menu), `introFrames`, `koFrames`, `timeupFrames`, `meterCarries`, `burstRefillsEachRound`,
+  `koLaunch` `{ x, y }` (px/frame, how a standing fighter is knocked down by the final hit).
 
 ## System states
 

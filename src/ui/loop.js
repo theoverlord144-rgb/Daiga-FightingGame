@@ -8,7 +8,7 @@ export function startLoop({ step, render, hz = 60, maxStepsPerFrame = 5, speed =
   let last = performance.now();
   let raf = 0;
   let running = true;
-  const stats = { fps: 0, sps: 0, stepMs: 0, _frames: 0, _steps: 0, _stepTime: 0, _since: last };
+  const stats = { fps: 0, sps: 0, stepMs: 0, drawMs: 0, drawMax: 0, _frames: 0, _steps: 0, _stepTime: 0, _drawTime: 0, _drawMax: 0, _since: last };
 
   function frame(now) {
     if (!running) return;
@@ -26,13 +26,19 @@ export function startLoop({ step, render, hz = 60, maxStepsPerFrame = 5, speed =
     if (n === maxStepsPerFrame) acc = 0; // too slow to keep up: drop time instead of spiralling
     stats._steps += n;
     stats._frames++;
+    const d0 = performance.now();
     render(acc / dt);
+    const dd = performance.now() - d0;
+    stats._drawTime += dd;
+    if (dd > stats._drawMax) stats._drawMax = dd;
     if (now - stats._since >= 500) {
       const s = (now - stats._since) / 1000;
       stats.fps = Math.round(stats._frames / s);
       stats.sps = Math.round(stats._steps / s);
       stats.stepMs = stats._steps ? stats._stepTime / stats._steps : 0;
-      stats._frames = stats._steps = stats._stepTime = 0;
+      stats.drawMs = stats._frames ? stats._drawTime / stats._frames : 0; // average time to draw a frame
+      stats.drawMax = stats._drawMax; // slowest frame drawn in the last half second
+      stats._frames = stats._steps = stats._stepTime = stats._drawTime = stats._drawMax = 0;
       stats._since = now;
     }
     raf = requestAnimationFrame(frame);

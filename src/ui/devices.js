@@ -38,6 +38,9 @@ export function saveBindings(b) {
 
 export function createDevices() {
   const down = new Set();
+  // Keys pressed since the last game step. A tap shorter than one step (possible when several steps run between
+  // two drawn frames on a slow machine) still counts as held for one step, so no press is ever lost.
+  const tapped = new Set();
   let bindings = loadBindings();
   let captureKey = null; // (code) => void while rebinding
 
@@ -45,9 +48,10 @@ export function createDevices() {
     if (captureKey) { e.preventDefault(); const f = captureKey; captureKey = null; f(e.code); return; }
     if (isBound(e.code)) e.preventDefault();
     down.add(e.code);
+    tapped.add(e.code);
   };
   const onKeyUp = (e) => down.delete(e.code);
-  const onBlur = () => down.clear();
+  const onBlur = () => { down.clear(); tapped.clear(); };
   addEventListener('keydown', onKeyDown);
   addEventListener('keyup', onKeyUp);
   addEventListener('blur', onBlur);
@@ -69,7 +73,7 @@ export function createDevices() {
   function read(i) {
     const p = bindings.players[i];
     let raw = 0;
-    for (const a of ACTIONS) if (down.has(p.keys[a])) raw |= ACTION_BIT[a];
+    for (const a of ACTIONS) if (down.has(p.keys[a]) || tapped.has(p.keys[a])) raw |= ACTION_BIT[a];
     const pad = padFor(i);
     if (pad) {
       for (const a of ACTIONS) {
@@ -85,8 +89,18 @@ export function createDevices() {
     return raw;
   }
 
+  /** Player i's gamepad Start button (standard layout button 9): pause and menus. */
+  function readStart(i) {
+    const pad = padFor(i);
+    const b = pad && pad.buttons[9];
+    return !!(b && b.pressed);
+  }
+
   return {
     read,
+    readStart,
+    /** Call after every game step: taps have now been seen by that step. */
+    endStep() { tapped.clear(); },
     pads,
     get bindings() { return bindings; },
     setBindings(b) { bindings = b; saveBindings(b); },
