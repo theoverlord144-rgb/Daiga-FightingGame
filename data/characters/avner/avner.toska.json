@@ -7,6 +7,17 @@
     "name": "Avner",
     "stats": { "airJumps": 1 }
   },
+  "palettes": {
+    "base": ["#d9534f","#ff8a7a","#7a2622"],
+    "colors": [
+      { "name": "Ember", "colors": ["#d9534f","#ff8a7a","#7a2622"] },
+      { "name": "Tide", "colors": ["#3f7fcf","#8ac2ff","#1c3566"] },
+      { "name": "Moss", "colors": ["#5c9a4a","#a6d98f","#274a1e"] },
+      { "name": "Bone", "colors": ["#d8cfb8","#fff6df","#6b6250"] },
+      { "name": "Dusk", "colors": ["#7a4fb0","#c6a2ff","#352057"] },
+      { "name": "Ash", "colors": ["#555060","#a09aae","#1f1c26"] }
+    ]
+  },
   "gatlings": {
     "5L": ["5L", "2L", "5M", "2M", "5H", "2H", "3H", "5S"],
     "2L": ["5L", "2L", "5M", "2M", "5H", "2H", "3H", "5S"],

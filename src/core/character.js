@@ -445,7 +445,36 @@ export function compileCharacter(file, system) {
 
   const meterMax = stats.units.meterBars * (system.meter?.barSize ?? 10000);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, upgrades };
+    sheets, mechanic, meterMax, upgrades, palettes: compilePalettes(ch.id, t.palettes) };
+}
+
+// Placeholder colours for characters that don't list any (index 0 body, 1 limbs, 2 dark detail).
+const DEFAULT_PALETTES = {
+  base: ['#d9534f', '#ff8a7a', '#7a2622'],
+  colors: [
+    { name: 'Red', colors: ['#d9534f', '#ff8a7a', '#7a2622'] },
+    { name: 'Blue', colors: ['#4f8fd9', '#8ac2ff', '#223f7a'] },
+    { name: 'Green', colors: ['#4fae6a', '#8de0a2', '#1f5a33'] },
+    { name: 'Gold', colors: ['#c9a23a', '#f1d27a', '#5f4a12'] },
+  ],
+};
+
+/**
+ * Palettes (presentation data: the game never reads them). Sprites are drawn in the `base` colours only (an
+ * indexed palette); each entry in `colors` replaces base colour i with its colour i. Every set must have exactly
+ * as many colours as `base`, all "#rrggbb".
+ */
+function compilePalettes(id, src) {
+  const p = src ?? DEFAULT_PALETTES;
+  const hex = /^#[0-9a-fA-F]{6}$/;
+  if (!Array.isArray(p.base) || !p.base.length || !p.base.every((c) => hex.test(c))) throw new Error(`${id}: palettes.base must be a list of "#rrggbb" colours`);
+  if (!Array.isArray(p.colors) || !p.colors.length) throw new Error(`${id}: palettes.colors needs at least one colour set`);
+  for (const [i, set] of p.colors.entries()) {
+    if (!Array.isArray(set.colors) || set.colors.length !== p.base.length || !set.colors.every((c) => hex.test(c))) {
+      throw new Error(`${id}: palette ${i + 1} (${set.name ?? 'unnamed'}) must have ${p.base.length} "#rrggbb" colours, like base`);
+    }
+  }
+  return { base: p.base.map((c) => c.toLowerCase()), colors: p.colors.map((s, i) => ({ name: s.name ?? `Colour ${i + 1}`, colors: s.colors.map((c) => c.toLowerCase()) })) };
 }
 
 /**

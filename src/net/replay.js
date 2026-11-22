@@ -9,7 +9,9 @@ import { hashState } from '../core/state.js';
 export const REPLAY_FORMAT = 'toska-replay';
 export const REPLAY_VERSION = 1;
 
-export function createReplayRecorder({ chars, checkEvery = 600 }) {
+// `match`: the match rules the game ran with (null = free play / training rules). `palettes`: colours, for show only.
+// Both are optional, so files saved before they existed still load.
+export function createReplayRecorder({ chars, match = null, palettes = null, checkEvery = 600 }) {
   const frames = [];
   const checks = [];
   return {
@@ -21,19 +23,22 @@ export function createReplayRecorder({ chars, checkEvery = 600 }) {
     },
     /** The replay file (a plain object; JSON.stringify it to save). */
     finish(game) {
-      return encodeReplay({ chars, frames, checks, finalHash: game ? hashState(game) : null });
+      return encodeReplay({ chars, match, palettes, frames, checks, finalHash: game ? hashState(game) : null });
     },
   };
 }
 
-export function encodeReplay({ chars, frames, checks = [], finalHash = null }) {
+export function encodeReplay({ chars, match = null, palettes = null, frames, checks = [], finalHash = null }) {
   const rle = [];
   for (const [a, b] of frames) {
     const last = rle[rle.length - 1];
     if (last && last[0] === a && last[1] === b) last[2]++;
     else rle.push([a, b, 1]);
   }
-  return { format: REPLAY_FORMAT, version: REPLAY_VERSION, chars, frames: frames.length, inputs: rle, checks, finalHash };
+  const file = { format: REPLAY_FORMAT, version: REPLAY_VERSION, chars, frames: frames.length, inputs: rle, checks, finalHash };
+  if (match) file.match = match;
+  if (palettes) file.palettes = palettes;
+  return file;
 }
 
 /** Back to one [p1, p2] entry per frame. Throws a clear message for anything that isn't a replay. */

@@ -5,6 +5,7 @@
 // The game state holds only plain data and refers to characters by id.
 
 import { createInputState, pushInput, BTN } from './input.js';
+import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from './match.js';
 import { createFighter, advanceAndDecide, move, land } from './fighter.js';
 import { separate, resolveHits, checkThrowBreaks, throwLands } from './combat.js';
 import { px } from './fixed.js';
@@ -15,9 +16,10 @@ export const FPS = 60;
 const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown']);
 
 /** Bundle the system data and two compiled characters into the read-only world. */
-export function createWorld({ input, battle, combo, meter = null, burst = null, chars }) {
+export function createWorld({ input, battle, combo, meter = null, burst = null, match = null, chars }) {
   return {
     input,
+    match: compileMatch(match),
     combo,
     meter,
     burst: burst && {
@@ -45,6 +47,7 @@ export function createGame(world) {
     cues: [],
     flash: 0, // super flash: frames the whole game stays frozen
     flashBy: -1,
+    match: world.match ? createMatch(world) : null, // rounds and timer (null in training)
     players: [0, 1].map((i) => ({
       id: i,
       input: createInputState(world.input.bufferFrames),
@@ -62,8 +65,11 @@ export function step(state, rawInputs, world) {
   state.frame++;
   state.cues.length = 0;
   const ps = state.players;
-  pushInput(ps[0].input, rawInputs[0] | 0, world.input);
-  pushInput(ps[1].input, rawInputs[1] | 0, world.input);
+  // Between rounds (KO, time up, match over) nobody can act.
+  const live = controlsLive(state);
+  pushInput(ps[0].input, live ? rawInputs[0] | 0 : 0, world.input);
+  pushInput(ps[1].input, live ? rawInputs[1] | 0 : 0, world.input);
+  if (state.match && matchBefore(state, world)) return state; // round intro: fighters stand still
 
   // Super flash: everything stands still; presses made now stay buffered for when it ends.
   if (state.flash > 0) {
@@ -110,5 +116,6 @@ export function step(state, rawInputs, world) {
     }
   }
   resolveHits(state, world, frozen);
+  if (state.match) matchAfter(state, world);
   return state;
 }

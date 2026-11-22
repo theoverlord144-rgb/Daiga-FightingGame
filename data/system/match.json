@@ -1,0 +1,14 @@
+{
+  "notes": "Match rules for versus (not training). Frames at 60 per second. The settings menu can change roundsToWin and timerSeconds.",
+  "roundsToWin": 2,
+  "timerSeconds": 99,
+  "introFrames": 100,
+  "koFrames": 150,
+  "timeupFrames": 120,
+  "meterCarries": true,
+  "burstRefillsEachRound": true,
+  "koLaunch": {
+    "x": 4,
+    "y": 11
+  }
+}

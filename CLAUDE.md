@@ -41,7 +41,8 @@ doesn't read code. **Every report to him is in plain words.**
 | `src/tools/` | Editors and importers' browser front-ends. |
 | `src/net/` | Rollback netcode. |
 | `data/characters/<id>/` | Character JSON (the Toska export and engine data) and sprites. |
-| `data/system/` | Engine-wide tunables (motions, SOCD, combo rules). |
+| `data/system/` | Engine-wide tunables (motions, SOCD, combo, meter, burst, match rules). |
+| `data/stages/` | Stage files (parallax layers; drawing only). |
 | `tests/` | Node's built-in test runner. |
 | `docs/reports/` | The plain-words report for each phase. |
 
@@ -56,7 +57,29 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 8**.
+Current through **Phase 9** (all phases of the brief done).
+
+- **The game** (Phase 9). `src/main.js` with no `?mode=` runs `src/ui/app.js`: one screen at a time from
+  `src/ui/screens/` (title → select → versus splash/fight with pause and results, training, settings), switched with
+  `app.go(name, params)`. Each screen gets `step(menu)` (from `src/ui/menu-input.js`: edges with auto-repeat;
+  confirm = L or Enter, back = M or Esc, start = Enter/Esc/pad Start) and `draw()`. Settings (`src/ui/settings.js`,
+  localStorage `toska.settings.v1`) feed `app.matchRules()` and the CPU level. Dev shortcuts: `?mode=training`,
+  `?mode=versus[&cpu=1]` with `&p1= &p2= &pal1= &pal2=`. `window.toska.app` is a console debugging hook
+  (`toska.app.screen.game`). Devices latch key taps until `endStep()` after each step, so no press is lost.
+- **Rounds** (`src/core/match.js`, rules in `data/system/match.json`, `world.match`; null in training):
+  `game.match = { round, wins, timer, phase, phaseTime, roundWinner, winner, ko }`. Phases intro (fighters frozen,
+  inputs still buffered) → fight (timer ticks, not during super flash) → ko / timeup (inputs replaced by 0; the loser
+  falls with stun 999 into `koDown`) → next round (fresh fighters at start positions; meter carries, burst refills,
+  per the rules) or end. Time up: higher health share wins, equal = draw (both get a round). Replays store the rules
+  (`file.match`) and palettes.
+- **CPU** (`src/ui/cpu.js`): an input device, pure (own seeded random, no DOM). Per frame: block a coming attack in
+  range (rolled once per attack; low crouching, air standing; keeps blocking through blockstun) → on hit, chain the
+  next stronger normal that still reaches after pushback → punish when the opponent's remaining recovery ≥ a normal's
+  startup and it reaches → poke in range → walk in / back off. Levels in `CPU_LEVELS` (chances out of 10000).
+- **Presentation**: palettes in the character file (`palettes.base` + `colors[]`, validated at load), recoloured by
+  exact match (`src/render/palette.js`; the placeholder figure uses colours 0-2). Stages are data
+  (`data/stages/*.json`, layers drawn by `src/render/stage-renderer.js`, far layers pre-painted offscreen). The HUD
+  (`src/render/hud.js`): health with damage trail, timer, round pips, burst, meter, mechanic, banners.
 
 - **Meter, specials, supers, mechanics, burst** (Phase 8; fields in `docs/toska-format.md`). Player resources:
   `meter` (max `def.meterMax` = `stats.meterBars` × `meter.barSize`), `burst`, `gauge` and `vars` (the character's
@@ -93,7 +116,7 @@ Current through **Phase 8**.
 - **Time controls** (`src/main.js`): F9 pause, F10 one frame, ` cycles 1×/½×/¼× (the loop's `speed`); not in netplay.
   The input history labels presses with the motion they completed (`motionLabels` in `src/ui/input-history.js`).
 
-- **Training mode** (`src/ui/training/`, the default screen): never touches `src/core/`. `training.js` sits between the
+- **Training mode** (`src/ui/training/`, run by `src/ui/screens/training-screen.js`): never touches `src/core/`. `training.js` sits between the
   controllers and `step`: `inputs(game, dev)` returns [P1, P2] raw input (the dummy's input is OR-ed with a real P2
   controller; in record mode P1's controller drives P2 and is stored facing-relative; playback mirrors by facing);
   `afterStep` refills health after 40 frames with both free; `newGame` places fighters at the chosen position. Its
@@ -158,10 +181,11 @@ Current through **Phase 8**.
   walk, stand, auto-face; otherwise only commands/jumps allowed by an open cancel window whose condition matches
   `p.contact`) → fire the frame's one-shot events → physics (x += vx, y += vy, gravity) → stage clamp → landing
   (air state, y ≤ 0, falling → `landTo`). A press is consumed by game frame (`p.consumed`) so one press = one move.
-- **Screens**: `src/main.js` boots Training mode (default), the Input Lab (`?mode=lab`), Netplay (`?mode=netplay`)
-  the live Sync Test (`?mode=synctest`) or the Replay viewer (`?mode=replay`). `src/render/fight-renderer.js`
-  draws the stage, fighters (sprites from `data/characters/<id>/` when a sheet image exists, else a placeholder figure
-  whose limb reaches to the live hitbox), and the box view.
+- **Screens**: `src/main.js` boots the game (title menu) by default; developer modes: the Input Lab (`?mode=lab`),
+  Netplay (`?mode=netplay`), the live Sync Test (`?mode=synctest`), the Replay viewer (`?mode=replay`).
+  `src/render/fight-renderer.js` draws the stage, fighters (sprites from `data/characters/<id>/` when a sheet image
+  exists, else a placeholder figure whose limb reaches to the live hitbox; lying down in knockdown/koDown), the HUD
+  and the box view.
 
 - **Loop** (`src/ui/loop.js`): an accumulator turns real time into exactly 60 core steps a second (max 5 per
   display frame; extra time is dropped, never fast-forwarded). `render(alpha)` runs once per display frame.
