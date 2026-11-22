@@ -89,6 +89,7 @@ export function createFightScreen(app, { mode = 'versus', picks }) {
   function advance() {
     const raws = [app.devices.read(0), cpu ? cpu.input(game) : app.devices.read(1)];
     step(game, raws, world);
+    renderer.notice(game, world);
     rec.record(raws, game);
   }
 

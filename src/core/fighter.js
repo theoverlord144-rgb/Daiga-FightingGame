@@ -225,6 +225,7 @@ function pickCommand(game, p, def, world, allowed) {
     if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
     if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
     if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
+    if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
     const presses = commandInput(game, p, cmd, world, buffer);
     if (presses) return { cmd, presses };
   }
@@ -233,6 +234,33 @@ function pickCommand(game, p, def, world, allowed) {
 
 /** The opponent's current combo already took this move as many times as it's allowed. */
 const overCombo = (o, cmd) => !!o.combo && (o.combo.used[cmd.move] || 0) >= cmd.perCombo;
+
+/**
+ * Would this throw grab the opponent as they stand right now? A throw command only comes out in range of an
+ * opponent who can be thrown; otherwise the input falls through to the next command it matches (4H: back throw up
+ * close, the Back Heavy strike from farther away), so a throw never whiffs by accident.
+ */
+function throwInRange(game, p, def, world, cmd) {
+  const o = game.players[1 - p.id];
+  const ost = world.chars[o.id].states[o.state];
+  if (ost.stance === 'air' || ost.stun || o.y !== 0) return false; // the same rule the grab itself uses (combat.js)
+  const fo = ost.frames[o.frame < ost.frames.length ? o.frame : ost.frames.length - 1];
+  if (fo.invThrow) return false;
+  const st = def.states[cmd.move];
+  const grab = st.frames[Math.min(st.move.startup - 1, st.frames.length - 1)].throw;
+  const span = (q, [x, y, w, h]) => {
+    const l = q.facing > 0 ? q.x + x : q.x - x - w;
+    return [l, q.y + y, l + w, q.y + y + h];
+  };
+  for (const tb of grab) {
+    const a = span(p, tb);
+    for (const hb of fo.throwHurt) {
+      const b = span(o, hb);
+      if (a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]) return true;
+    }
+  }
+  return false;
+}
 
 /** Start a command's move: mark its presses used and pay its cost. */
 function startCommand(p, def, pick) {
