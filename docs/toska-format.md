@@ -58,6 +58,8 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `throwSwap` | `true` = a back throw: the defender lands on the other side. |
 | `pull` | `{ to, frames }`: on hit (not block) the defender slides toward the attacker, ending `to` px in front of them, over `frames` frames, from any range and in the air too. Replaces pushback. |
 | `perCombo` | `n`: the move can be used at most `n` times in one combo (it won't come out again until the combo ends). Stops loops. |
+| `chain` | Drawing only. `{ hand: [x, y], retract, headLength, segment: sprite, head: sprite }`: a chain drawn from the hand (px from the feet, x forward) to the far tip of the hitbox while it's out, reeling back in over `retract` frames; once the move hits, it runs to the opponent and stays attached while they're pulled in. `segment` is tiled along it, `head` sits at the tip. |
+| `hitFx` | Drawing only. `{ sprite, hold }`: an animation played where the move hits (each drawing held `hold` game frames; it plays through hitstop), instead of the generic spark. |
 
 Version 2 adds per move:
 - `timeline`: extra frame events (below), applied after the generated ones.
@@ -105,8 +107,9 @@ becomes the EX version (the one-button cost is refunded).
 ```
 A **gauge** (one number with a max) and named **vars** (small counters, clamped to min/max, ticking by `perFrame`).
 A var can also say how it's shown (drawing only): `"display": "timer"` shows frames as seconds in the HUD (and
-nothing at 0), and `"mark": "#rrggbb"` makes the opponent glow with a ring of that colour while the var is above 0
-(Avner's brand).
+nothing at 0), and `"mark"` puts a mark on the opponent while the var is above 0 (Avner's brand): a colour
+(`"#rrggbb"`, a drawn ring), or `{ color, at, hold, sprite }` (an animation looping on the opponent `at` px up,
+each drawing held `hold` frames). It fades out over the last second.
 Moves use them through `cost`, `requires`, `onHit`/`onBlock`/`onWhiff` and the `addVar`/`setVar`/`gauge`
 timeline events. **Modifiers** apply while their `when` holds; `damagePct` multiplies the damage dealt. A move or
 event naming a var that isn't declared is an error when the file loads. The HUD shows the gauge and every var with
@@ -161,7 +164,10 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 
 ## Making a sprite sheet
 
-`node scripts/sprite-prep.mjs <drawn strip.png> data/characters/<id>/sheets/<move>.png --frames N [--order 1,4,3,...] [--height 180] [--res 2] [--anchor front|rear]`
+All options are listed at the top of `scripts/sprite-prep.mjs`. Fighter strips:
+`node scripts/sprite-prep.mjs <drawn strip.png> data/characters/<id>/sheets/<move>.png --frames N [--order 1,4,3,...] [--height 180] [--res 2] [--anchor front|rear|center] [--floor frame|common]`
+(`--anchor center --floor common` for moves that travel or leave the ground). Effects in a grid:
+`--grid 4x2 [--count 7] --size 110 --key black` (glow drawn on black). Art that already has transparency keeps it.
 
 Takes a strip of drawings on a flat background colour (read from the top-left pixel, e.g. magenta), drawn facing
 right, left to right. It removes the background with soft edges (no coloured fringe), splits the strip into N

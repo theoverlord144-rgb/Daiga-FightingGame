@@ -66,7 +66,11 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
   for any character: move `pull` (combat.js, a slide toward the attacker instead of pushback), timeline event
   `toOpponent` (fighter.js, a slide toward the opponent), move `perCombo` (`pickCommand` skips a command whose
   move is already in the opponent's `combo.used` that many times). The renderer draws mechanic vars with a `mark`
-  as a ring on the opponent (`drawOpponentMarks`). Tests: `tests/brand.test.js`.
+  as a ring or a looping sheet on the opponent (`drawOpponentMarks`). Tests: `tests/brand.test.js`.
+- **Art in the renderer** (all drawing-only data the core carries but never reads): move `chain` (`drawChain`: hand
+  → hitbox tip, or → opponent after a hit while they slide), move `hitFx` (a sheet effect spawned from the hit cue,
+  aged per game frame so it plays through hitstop), var `mark.sprite`. `drawSheetFrame` draws one frame of any sheet
+  (no palette). Avner has art for idle, 5L, the Hooks, Reel, Lightstep; raw drawings stay beside `sheets/`.
 
 - **The game** (Phase 9). `src/main.js` with no `?mode=` runs `src/ui/app.js`: one screen at a time from
   `src/ui/screens/` (title → select → versus splash/fight with pause and results, training, settings), switched with
