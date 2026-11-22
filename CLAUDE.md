@@ -56,7 +56,22 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 7**.
+Current through **Phase 8**.
+
+- **Meter, specials, supers, mechanics, burst** (Phase 8; fields in `docs/toska-format.md`). Player resources:
+  `meter` (max `def.meterMax` = `stats.meterBars` × `meter.barSize`), `burst`, `gauge` and `vars` (the character's
+  `mechanic`, compiled by `compileMechanic`). `gains` in combat.js pays meter/gauge on hit and block (the defender
+  builds `victimGainPct` of damage taken); `enterState` pays whiff meter and `onWhiff` when a move ends without
+  contact. Commands carry `kind`, `cost`, `requires`, `neutral`; `pickCommand` checks `affords`/`meets`,
+  `startCommand` pays. Chords (`236LM`) use `chordWithin` (buttons ≤ `input.chordWindow` frames apart); an EX
+  that can't be afforded falls back to the one-button version, and a one-button special upgrades to EX if the second
+  button lands within `chordWindow` frames (`def.upgrades`, refund). Cancel windows: free states only take
+  `neutral` commands; windows take commands they name, or neutral ones of a `#kind` they list (chain follow-ups use
+  `neutral: false`). `superFlash` event sets `game.flash`/`flashBy`: `step` then only pushes inputs and grows
+  `freezeAge` until it runs out. Burst (`world.burst` from `data/system/burst.json`): the buttons together in a
+  `burst.states` state with a full gauge → `burst`/`burstAir` (moves compiled into every character), ends the
+  combo. Damage modifiers from `mechanic.modifiers` (`damageMod`). Engine test character: `data/characters/proto`
+  (not part of the cast). Training option `meter: always full`; the frame meter skips flash frames.
 
 - **Rollback** (`src/net/`, pure like the core; the purity test covers it): `createSession(world, { local, delay,
   maxRollback: 8, hashEvery: 10 })`. Frame f = the step taking `game.frame` from f to f+1; `saved[f]` is the state
@@ -111,7 +126,7 @@ Current through **Phase 7**.
   `#jump` and `#dash` allow jumping and dashing out of a window. A button on the same frame as a dash tap wins.
 
 - **One frame** (`step` in `src/core/game.js`) runs in stages for both fighters before the next stage starts, so
-  neither player acts first: frame++ and clear cues → push inputs → hitstop (a frozen fighter skips everything,
+  neither player acts first: frame++ and clear cues → push inputs → super flash (if `game.flash`, count it down and stop) → mechanic/burst ticks → hitstop (a frozen fighter skips everything,
   `freezeAge` grows so presses made in hitstop stay buffered) → throw breaks → `advanceAndDecide` (both) → `move`
   (both: one-shot events, physics, pushback slide) → `separate` (walls, corner transfer, pushboxes) → `land` (both)
   → `resolveHits`.
@@ -123,21 +138,20 @@ Current through **Phase 7**.
   makes the attacker slide instead, and wall-refused slide transfers to the opponent. Damage goes through guts
   (`battle.guts`). Contact sets `p.contact` (HIT, BLOCK, CLASH; clash counts as block for cancels). Throws:
   `throwHold`/`thrown` for `stats.throwBreak` frames (H breaks), then `throwLands` applies damage, swap and knockdown.
-- **Cues** (`game.cues`, one frame long): `hit`, `counter`, `block`, `clash`, `armor`, `throw`, `tech`, `sound`, `fx`,
+- **Cues** (`game.cues`, one frame long): `hit`, `counter`, `block`, `clash`, `armor`, `throw`, `tech`, `burst`, `superflash`, `sound`, `fx`,
   with x/y. The renderer turns them into sparks; the game never reads them back.
 - **System rules** live in `data/system/battle.json` (stage, corner zone, pushback frames, counter hit, clash, guts,
   air hit, air block, armor damage, throw tech).
 
 - **World and state** (`src/core/game.js`): `world = createWorld({ input, battle, chars: [def1, def2] })` is static
-  and read-only (system JSON + compiled characters). The game state is `{ frame, cues, players: [p1, p2] }`; each
-  player is `{ id, input, char, x, y, vx, vy, facing, state, frame, stun, hitstop, health, contact, hitsDone,
-  consumed, jumpDir }`. `step(game, [raw1, raw2], world)`: frame++, clear `cues`, push inputs, then
-  `stepFighter` for P1 then P2.
+  and read-only (system JSON + compiled characters). The game state is `{ frame, cues, flash, flashBy, players: [p1, p2] }`; each
+  player holds position, velocity, state/frame, stun, hitstop, health, meter, burst, gauge, vars, combo, input buffer
+  and consumed presses (see `createGame`). `step(game, [raw1, raw2], world)` runs the stages in **One frame** above.
 - **Characters** (`src/core/character.js`, format in `docs/toska-format.md`): `compileCharacter(file, { defaults,
   common })` imports any Toska version (1 is upgraded to 2), merges `data/system/common-states.json` (system states)
   and `fighter-defaults.json` (stats), and compiles every state into per-frame tables: `frames[i]` = lasting values
   (sprite, hit, hitId, hitProps, hurt, push, throw, throwHurt, invStrike, invThrow, armor, counter, gravity) and
-  `onEnter[i]` = one-shot events (vel, addVel, sound, fx, jump). Boxes are `[x, y, w, h]` in units, x forward from
+  `onEnter[i]` = one-shot events (vel, addVel, velScale, sound, fx, jump, superFlash, meter, gauge, addVar, setVar). Boxes are `[x, y, w, h]` in units, x forward from
   the feet, y up. `commands` are sorted by priority. `frameOf(def, state, frame)` reads a frame (clamped).
 - **A fighter's frame** (`src/core/fighter.js`, `stepFighter`): hitstop → advance the timeline (stun states count
   `p.stun` down; others end at `duration` and loop or go to `next`) → decide (`free` states: commands, jump, crouch,
@@ -160,9 +174,7 @@ Current through **Phase 7**.
     Charges: `charge` dirs held `chargeFrames`, then `release` within `window`.
   - `readMotion(inp, rules, motion, BTN.x, facing, {negativeEdge, leniency})` looks back `pressBuffer` frames for the
     press (or release) and returns its age or -1. `motionsAt` lists every motion that matches, in `motionPriority`.
-- **State** (`src/core/game.js`, `src/core/state.js`): the game is one plain JSON-shaped object
-  `{ frame, players: [{ id, input }] }`. `step(state, [raw1, raw2], rules)` mutates it one frame. `cloneState`,
+- **State helpers** (`src/core/state.js`): the game is one plain JSON-shaped object that `step` mutates. `cloneState`,
   `serializeState`, `diffState` (path of the first difference), `hashState` (FNV-1a).
 - **Devices** (`src/ui/devices.js`): keyboard (`event.code`) + Gamepad API, OR-ed. Bindings in localStorage key
   `toska.bindings.v1`; the F1 panel (`src/ui/controls-panel.js`) rebinds.
-- **Screen**: `src/main.js` is the Input Lab for now.

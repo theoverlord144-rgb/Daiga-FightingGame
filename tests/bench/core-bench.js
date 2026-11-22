@@ -44,3 +44,37 @@ console.log(`rollback worst case per frame (9 steps + 9 clones): ${((stepUs + cl
   const us = Number(process.hrtime.bigint() - t0) / 1000 / M;
   console.log(`training frame (step + dummy + meter): ${us.toFixed(2)} µs`);
 }
+
+// Phase 8: Proto doing specials, EX, supers (with flash), chains and bursts, meter always available.
+{
+  const { loadChar, script, lcg } = await import('../helpers.js');
+  const P = loadChar('data/characters/proto/proto.toska.json');
+  const w = loadWorld(P, P);
+  const g3 = createGame(w);
+  const rnd = lcg(8);
+  const plans = ['2 3 6+L', '2 3 6+LM', '2 3 6 2 3 6+H', '2 1 4+L 5*6 5+L 5*6 5+L', '2 5 2+S', '2 3 6+S', '6 2 3+H', '5+M', '5+S', '5+HS', '6*10', '4*6', '9'];
+  const q = [[], []];
+  let flashes = 0;
+  let bursts = 0;
+  const M = 100000;
+  const t0 = process.hrtime.bigint();
+  for (let i = 0; i < M; i++) {
+    for (const k of [0, 1]) {
+      const p = g3.players[k];
+      if (p.meter < 10000) p.meter = w.chars[k].meterMax;
+      if (!q[k].length) {
+        let r = script(plans[rnd() % plans.length]);
+        if (p.facing < 0) r = r.map((x) => (x & ~3) | ((x & 1) << 1) | ((x & 2) >> 1));
+        q[k] = r;
+      }
+    }
+    step(g3, [q[0].shift(), q[1].shift()], w);
+    for (const c of g3.cues) { if (c.type === 'superflash') flashes++; if (c.type === 'burst') bursts++; }
+    if (g3.players[0].health <= 0 || g3.players[1].health <= 0) for (const p of g3.players) p.health = w.chars[p.id].stats.health;
+  }
+  const us = Number(process.hrtime.bigint() - t0) / 1000 / M;
+  console.log(`Proto step with meter, supers and bursts: ${us.toFixed(2)} µs  (${flashes} supers, ${bursts} bursts over ${M} frames)`);
+  t = process.hrtime.bigint();
+  for (let i = 0; i < 20000; i++) cloneState(g3);
+  console.log(`clone state (with meter, vars): ${(Number(process.hrtime.bigint() - t) / 1000 / 20000).toFixed(2)} µs`);
+}

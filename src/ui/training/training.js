@@ -16,11 +16,12 @@ export const OPTIONS = {
   blockGuard: ['correct', 'stand only', 'crouch only'],
   tech: ['air tech', 'no tech'],
   refill: ['on', 'off'],
+  meter: ['normal', 'always full'],
   position: ['center', 'left corner', 'right corner'],
 };
 
 export function defaultSettings() {
-  return { stance: 'stand', block: 'none', blockGuard: 'correct', tech: 'air tech', refill: 'on', position: 'center' };
+  return { stance: 'stand', block: 'none', blockGuard: 'correct', tech: 'air tech', refill: 'on', meter: 'normal', position: 'center' };
 }
 
 const DIRS = RAW.LEFT | RAW.RIGHT | RAW.UP | RAW.DOWN;
@@ -125,10 +126,23 @@ export function createTraining(world, settings = defaultSettings(), { seed = 123
 
     /** Between frames: refill health once both fighters have been free for a moment. */
     afterStep(game) {
+      if (settings.meter === 'always full') {
+        for (const p of game.players) {
+          const def = world.chars[p.id];
+          p.meter = def.meterMax;
+          if (world.burst) p.burst = world.burst.gaugeMax;
+          if (def.mechanic.gauge) p.gauge = def.mechanic.gauge.max;
+        }
+      }
       if (settings.refill !== 'on') return;
       const free = game.players.every((p) => world.chars[p.id].states[p.state].free && !p.combo);
       t.freeFrames = free ? t.freeFrames + 1 : 0;
-      if (t.freeFrames === 40) for (const p of game.players) p.health = world.chars[p.id].stats.health;
+      if (t.freeFrames === 40) {
+        for (const p of game.players) {
+          p.health = world.chars[p.id].stats.health;
+          if (world.burst && p.burst < world.burst.gaugeMax) p.burst = world.burst.gaugeMax; // burst back too
+        }
+      }
     },
   };
   return t;

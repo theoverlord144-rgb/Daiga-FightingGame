@@ -4,7 +4,7 @@
 //   land              -> touching the ground ends air states
 // All fighter data lives on the player object in the game state; the character definition is read-only.
 
-import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow } from './input.js';
+import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow, chordWithin, motionAt } from './input.js';
 import { pct } from './fixed.js';
 
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
@@ -42,8 +42,50 @@ export function createFighter(def, side, x) {
     gbY: 0, // pending ground bounce (upward speed, units; 0 = none)
     throwBy: -1, // while being thrown: the attacker's id
     throwMove: '',
+    meter: def.stats.meterStart ?? 0, // super meter, units (a bar is meter.json barSize)
+    burst: 0, // burst gauge (set from burst.json when the game is created)
+    gauge: def.mechanic?.gauge ? def.mechanic.gauge.start : 0, // the character mechanic's gauge
+    vars: Object.fromEntries(Object.entries(def.mechanic?.vars || {}).map(([k, v]) => [k, v.start])), // its counters
   };
 }
+
+// ---------- Resources: meter, the mechanic gauge and vars ----------
+
+const clampTo = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+
+/** Add meter / gauge / vars, clamped to their limits. r = { meter, gauge, vars: { name: n } } */
+export function applyResources(p, def, r) {
+  if (!r) return;
+  if (r.meter) p.meter = clampTo(p.meter + r.meter, 0, def.meterMax);
+  const g = def.mechanic?.gauge;
+  if (g && r.gauge) p.gauge = clampTo(p.gauge + r.gauge, 0, g.max);
+  for (const [k, n] of Object.entries(r.vars || {})) {
+    const v = def.mechanic.vars[k];
+    if (v) p.vars[k] = clampTo(p.vars[k] + n, v.min, v.max);
+  }
+}
+
+/** Do the fighter's resources satisfy a requirement { meter, gauge, vars: { name: [min, max] or min } }? */
+export function meets(p, req) {
+  if (!req) return true;
+  if (p.meter < (req.meter | 0) || p.gauge < (req.gauge | 0)) return false;
+  for (const [k, range] of Object.entries(req.vars || {})) {
+    const [lo, hi] = Array.isArray(range) ? range : [range, Infinity];
+    const v = p.vars[k] ?? 0;
+    if (v < lo || v > hi) return false;
+  }
+  return true;
+}
+
+/** Can the fighter pay a cost { meter, gauge, vars: { name: n } }? */
+function affords(p, cost) {
+  if (!cost) return true;
+  if (p.meter < cost.meter || p.gauge < cost.gauge) return false;
+  for (const [k, n] of Object.entries(cost.vars)) if ((p.vars[k] ?? 0) < n) return false;
+  return true;
+}
+
+const negate = (cost) => ({ meter: -cost.meter, gauge: -cost.gauge, vars: Object.fromEntries(Object.entries(cost.vars).map(([k, n]) => [k, -n])) });
 
 export const isAirborne = (def, p) => def.states[p.state].stance === 'air';
 
@@ -51,6 +93,13 @@ export const isAirborne = (def, p) => def.states[p.state].stance === 'air';
 export function enterState(p, def, name) {
   const st = def.states[name];
   if (!st) throw new Error(`${def.id}: no state ${name}`);
+  // Leaving a move that never touched anyone: whiff meter and the move's on-whiff effects. (Not when the fighter
+  // is knocked out of it by a hit, a block or a throw: that's an interruption, not a whiff.)
+  const old = def.states[p.state]?.move;
+  if (old && p.contact === CONTACT.NONE && p.hitsDone === 0 && !st.stun && !st.throwVictim) {
+    applyResources(p, def, { meter: old.meterGain.whiff });
+    applyResources(p, def, old.onWhiff);
+  }
   p.state = name;
   p.frame = 0;
   p.contact = CONTACT.NONE;
@@ -92,6 +141,27 @@ export function fireOnEnter(game, p, def) {
       case 'fx':
         game.cues.push({ p: p.id, type: s.type, name: v, x: p.x, y: p.y, facing: p.facing });
         break;
+      case 'superFlash':
+        // The whole game freezes for v frames (the screen dims); presses made meanwhile stay buffered.
+        game.flash = v;
+        game.flashBy = p.id;
+        game.cues.push({ p: p.id, type: 'superflash', frames: v, x: p.x, y: p.y });
+        break;
+      case 'meter':
+        applyResources(p, def, { meter: v });
+        break;
+      case 'gauge':
+        applyResources(p, def, { gauge: v });
+        break;
+      case 'addVar':
+        applyResources(p, def, { vars: v });
+        break;
+      case 'setVar':
+        for (const [k, n] of Object.entries(v)) {
+          const d = def.mechanic.vars[k];
+          if (d) p.vars[k] = clampTo(n, d.min, d.max);
+        }
+        break;
     }
   }
 }
@@ -106,25 +176,56 @@ function stanceOk(cmd, def, p, dir) {
   return String(dir) === d;
 }
 
-/** Find the command to start this frame, if any. `allowed(cmd)` filters by cancel rules. */
-function pickCommand(game, p, def, world, allowed) {
+/**
+ * Is this command's input there? Returns the press frame per button used ({ L: frame, ... }) or null.
+ * One button: the usual press (or release, for negative edge) within the buffer, after the motion if any.
+ * Several buttons (a chord, e.g. EX 236LM): all pressed within chordWindow frames of each other.
+ */
+// reuse = true (EX upgrade only): a press already used by the move being upgraded may be used again.
+function commandInput(game, p, cmd, world, buffer, reuse = false) {
   const inp = p.input;
   const rules = world.input;
-  const buffer = rules.pressBuffer + p.freezeAge;
-  const dir = relDirAt(inp, 0, p.facing);
+  if (cmd.buttons.length === 1) {
+    const b = cmd.buttons;
+    const age = cmd.motion
+      ? readMotion(inp, rules, cmd.motion, BTN[b], p.facing, { negativeEdge: cmd.negativeEdge, pressBuffer: buffer })
+      : pressedWithin(inp, BTN[b], buffer, cmd.negativeEdge);
+    if (age < 0) return null;
+    const f = game.frame - age;
+    return f < p.consumed[BTN_INDEX[b]] || (f === p.consumed[BTN_INDEX[b]] && !reuse) ? null : { [b]: f };
+  }
+  const bs = [...cmd.buttons];
+  const ch = chordWithin(inp, bs.map((b) => BTN[b]), buffer, rules.chordWindow ?? 3);
+  if (!ch) return null;
+  if (cmd.motion && !motionAt(inp, rules, cmd.motion, p.facing, Math.max(...ch.ages))) return null;
+  const out = {};
+  for (let i = 0; i < bs.length; i++) {
+    const f = game.frame - ch.ages[i];
+    const used = p.consumed[BTN_INDEX[bs[i]]];
+    if (f < used || (f === used && !reuse)) return null;
+    out[bs[i]] = f;
+  }
+  return out;
+}
+
+/** Find the command to start this frame, if any. `allowed(cmd)` filters by cancel rules. */
+function pickCommand(game, p, def, world, allowed) {
+  const buffer = world.input.pressBuffer + p.freezeAge;
+  const dir = relDirAt(p.input, 0, p.facing);
   for (const cmd of def.commands) {
     if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
-    const b = cmd.buttons[cmd.buttons.length - 1];
-    const bit = BTN[b];
-    const age = cmd.motion
-      ? readMotion(inp, rules, cmd.motion, bit, p.facing, { negativeEdge: cmd.negativeEdge, pressBuffer: buffer })
-      : pressedWithin(inp, bit, buffer, cmd.negativeEdge);
-    if (age < 0) continue;
-    const pressFrame = game.frame - age;
-    if (pressFrame <= p.consumed[BTN_INDEX[b]]) continue;
-    return { cmd, pressFrame };
+    if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
+    const presses = commandInput(game, p, cmd, world, buffer);
+    if (presses) return { cmd, presses };
   }
   return null;
+}
+
+/** Start a command's move: mark its presses used and pay its cost. */
+function startCommand(p, def, pick) {
+  for (const [b, f] of Object.entries(pick.presses)) p.consumed[BTN_INDEX[b]] = f;
+  enterState(p, def, pick.cmd.move);
+  applyResources(p, def, negate(pick.cmd.cost));
 }
 
 /** Cancel windows of the current state that are open on this frame for this contact. */
@@ -142,6 +243,27 @@ function openCancels(st, p) {
 function decide(game, p, opp, def, world) {
   const st = def.states[p.state];
   const air = st.stance === 'air';
+
+  // EX upgrade: the second button of a chord arrived a frame or two after the one-button version started.
+  const ups = def.upgrades[p.state];
+  if (ups && p.frame <= (world.input.chordWindow ?? 3)) {
+    const buffer = world.input.pressBuffer + p.freezeAge;
+    for (const cmd of ups) {
+      if (!meets(p, cmd.requires)) continue;
+      const paid = def.states[p.state].move.cost;
+      const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter, gauge: p.gauge + paid.gauge };
+      if (!affords(refunded, cmd.cost)) continue;
+      const presses = commandInput(game, p, cmd, world, buffer, true);
+      if (presses) {
+        // Refund the one-button version's cost, then start the chord version (no whiff meter for the swap).
+        applyResources(p, def, paid);
+        p.contact = CONTACT.HIT;
+        startCommand(p, def, { cmd, presses });
+        return;
+      }
+    }
+  }
+
   const windows = st.free ? null : openCancels(st, p);
   if (!st.free && !windows.length) return;
   if (st.free && !air) {
@@ -149,13 +271,13 @@ function decide(game, p, opp, def, world) {
     else if (opp.x < p.x) p.facing = -1;
   }
 
+  // A move with neutral: false only comes out of a cancel window that names it (chains, follow-ups).
   const allowed = st.free
-    ? () => true
-    : (cmd) => windows.some((w) => w.into.has(cmd.move) || w.into.has(`#${cmd.kind}`));
+    ? (cmd) => cmd.neutral
+    : (cmd) => windows.some((w) => w.into.has(cmd.move) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
-    p.consumed[BTN_INDEX[pick.cmd.buttons[pick.cmd.buttons.length - 1]]] = pick.pressFrame;
-    enterState(p, def, pick.cmd.move);
+    startCommand(p, def, pick);
     return;
   }
 
@@ -220,6 +342,21 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
     if (p.frame >= st.duration) {
       if (st.loop) p.frame = st.loopFrom;
       else enterState(p, def, st.next);
+    }
+  }
+  // Burst: from a combo, with a full gauge, the burst buttons together.
+  const B = world.burst;
+  if (B && B.enabled && p.burst >= B.gaugeMax && B.stateSet.has(p.state)) {
+    const ch = chordWithin(p.input, B.bits, world.input.pressBuffer + p.freezeAge, world.input.chordWindow ?? 3);
+    if (ch && ch.ages.every((a, i) => game.frame - a > p.consumed[BTN_INDEX[B.buttons[i]]])) {
+      ch.ages.forEach((a, i) => { p.consumed[BTN_INDEX[B.buttons[i]]] = game.frame - a; });
+      p.burst = 0;
+      p.stun = 0;
+      p.wbX = p.wbY = p.gbY = 0;
+      enterState(p, def, isAirborne(def, p) ? 'burstAir' : 'burst');
+      game.cues.push({ p: p.id, type: 'burst', x: p.x, y: p.y });
+      p.freezeAge = 0;
+      return;
     }
   }
   // Air tech: once the untechable time is over, any button recovers.

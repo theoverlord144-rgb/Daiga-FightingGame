@@ -35,8 +35,14 @@ export function motionLabels(inp, runs, rules, facing) {
 export const buttonText = (bits) => BUTTONS.filter((_, i) => bits & (1 << i)).join('');
 
 /** Draw one player's history column at (x, y). */
-export function drawHistory(ctx, inp, x, y, { align = 'left', rows = 18, rules = null, facing = 1 } = {}) {
+export function drawHistory(ctx, inp, x, y, { align = 'left', rows = 18, rules = null, facing = 1, width = 0 } = {}) {
   ctx.save();
+  if (width) {
+    // Keep long motion labels inside the panel.
+    ctx.beginPath();
+    ctx.rect(align === 'right' ? x - width : x, 0, width, y + rows * 19 + 10);
+    ctx.clip();
+  }
   ctx.font = '15px ui-monospace, Consolas, monospace';
   ctx.textAlign = align;
   const runs = historyRuns(inp, rows);

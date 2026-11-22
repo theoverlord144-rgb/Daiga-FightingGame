@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createGame, step } from '../src/core/game.js';
 import { hashState } from '../src/core/state.js';
-import { createReplayRecorder, playReplay, decodeReplay } from '../src/net/replay.js';
+import { createReplayRecorder, playReplay, decodeReplay, encodeReplay } from '../src/net/replay.js';
 import { createSession } from '../src/net/rollback.js';
 import { createSimNetwork } from '../src/net/sim-network.js';
 import { loadWorld, loadChar, fightInputs } from './helpers.js';
@@ -43,14 +43,13 @@ test('replays are small: held inputs are stored once', () => {
 
 test('a tampered replay is caught at the first checkpoint after the change', () => {
   const { file } = recordFight(3000, 9);
-  // Change one entry in the middle (P1 suddenly holds a different input for that run).
-  const i = Math.floor(file.inputs.length / 2);
-  let at = 0;
-  for (let k = 0; k < i; k++) at += file.inputs[k][2];
-  file.inputs[i][0] ^= 16 | 2; // press L and flip right
-  const r = playReplay(W, file);
+  // From frame 1500, Player 1's inputs are replaced by a second of walking backwards: that always changes the game.
+  const frames = decodeReplay(file);
+  for (let f = 1500; f < 1560; f++) frames[f] = [1, frames[f][1]];
+  const bad = encodeReplay({ chars: file.chars, frames, checks: file.checks, finalHash: file.finalHash });
+  const r = playReplay(W, bad);
   assert.equal(r.ok, false);
-  assert.ok(r.failedAt > at && r.failedAt <= at + 300 + file.inputs[i][2], `caught at ${r.failedAt}, changed at ${at}`);
+  assert.ok(r.failedAt > 1500 && r.failedAt <= 1800, `caught at ${r.failedAt}, changed at 1500`);
 });
 
 test('files that are not replays are refused with a clear message', () => {

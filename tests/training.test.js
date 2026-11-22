@@ -226,3 +226,17 @@ test('the input history names the motion a press completed (236L, 623H), mirrore
   assert.equal(label('5*5 2*2 1*2 4+L 5*3', -1), '236', 'facing left, 214 on screen is a 236');
   assert.equal(label('5*10 5+M 5*3'), '');
 });
+
+test('a throw that grabs is measured with its real startup (the grab frame counts as active)', () => {
+  const tr = createTraining(W);
+  const g = tr.newGame();
+  g.players[0].x = -px(25); g.players[1].x = px(25);
+  const meter = createFrameMeter();
+  for (let f = 0; f < 60; f++) {
+    step(g, tr.inputs(g, [f === 0 ? RAW.RIGHT | RAW.H : 0, 0]), W);
+    meter.update(g, W);
+  }
+  const r = meter.last[0];
+  assert.equal(r.move, '6H');
+  assert.equal(r.startup, W.chars[0].states['6H'].move.startup);
+});
