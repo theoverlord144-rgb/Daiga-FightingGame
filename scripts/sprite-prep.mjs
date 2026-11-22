@@ -19,7 +19,8 @@
 //   (--floor common: for jumps and leaps drawn in the air). Keeps one anchor still: the planted foot (--anchor
 //   front, default; rear) or the body's centre (center, for moves that travel). The fighter's centre is placed
 //   over the last frame's body centre.
-// - Scales so the last frame's figure is --height game pixels tall.
+// - Scales so the last frame's figure is --height game pixels tall, or by a fixed --scale (sheet px per drawn px,
+//   printed by every run): use the idle's scale for every move drawn at the same size, crouching ones included.
 // Effects: each frame is centred on its own drawing (--center drawing, default) or on its grid cell (--center
 // cell, keeps drawn drift); --size is the largest frame's width or height in game pixels.
 // Sheets are stored at --res pixels per game pixel (sharper on big screens; the renderer draws them at 1/res).
@@ -197,7 +198,9 @@ if (GRID) {
   const ANCHOR = opt('anchor', 'front');
   const FLOOR = opt('floor', 'frame');
   const ref = boxes[order.at(-1) - 1]; // the last frame in play order: usually the settled stance
-  scale = (Number(opt('height', 180)) * res) / (ref.bottom - ref.top + 1);
+  // --scale: a fixed size (sheet px per drawn px; every run prints the one it used), so crouching moves and
+  // standing moves drawn at the same size come out the same size. Otherwise the last frame is --height tall.
+  scale = opt('scale', null) ? Number(opt('scale')) : (Number(opt('height', 180)) * res) / (ref.bottom - ref.top + 1);
   const anchorOf = (b) => (ANCHOR === 'center' ? (b.left + b.right) / 2 : ANCHOR === 'rear' ? b.rear : b.front);
   const centreFromAnchor = (ref.left + ref.right) / 2 - anchorOf(ref);
   const common = Math.max(...boxes.map((b) => b.bottom));
@@ -262,4 +265,5 @@ for (let i = 0; i < outW * cellH; i++) {
 writeFileSync(outPath, encodePng({ width: outW, height: cellH, data: px }));
 const rel = outPath.replace(/\\/g, '/').match(/characters\/[^/]+\/(.*)$/)?.[1] ?? outPath.split(/[\\/]/).pop();
 const sprite = { image: rel, columns: order.length, rows: 1, count: order.length, frameW: cellW, frameH: cellH, originX: left, originY: up, scale: +(1 / res).toFixed(4) };
+console.error(`scale ${scale.toFixed(5)} (sheet px per drawn px)`);
 console.log(JSON.stringify(sprite));

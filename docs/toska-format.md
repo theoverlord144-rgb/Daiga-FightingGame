@@ -166,7 +166,8 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 
 All options are listed at the top of `scripts/sprite-prep.mjs`. Fighter strips:
 `node scripts/sprite-prep.mjs <drawn strip.png> data/characters/<id>/sheets/<move>.png --frames N [--order 1,4,3,...] [--height 180] [--res 2] [--anchor front|rear|center] [--floor frame|common]`
-(`--anchor center --floor common` for moves that travel or leave the ground). Effects in a grid:
+(`--anchor center --floor common` for moves that travel or leave the ground; `--scale k` to size a crouching
+move like the standing ones: every run prints the scale it used; `--order` may list only some frames, e.g. `1,2,3,6`). Effects in a grid:
 `--grid 4x2 [--count 7] --size 110 --key black` (glow drawn on black). Art that already has transparency keeps it.
 
 Takes a strip of drawings on a flat background colour (read from the top-left pixel, e.g. magenta), drawn facing

@@ -55,3 +55,23 @@ Training, Avner vs Avner:
 3. **214 + H** while branded: Reel's yank.
 4. **214 + L** while branded: Lightstep's flying lunge.
 5. Tell me: chain level or angled? Is the mark the right size and height on the body?
+
+## Update: the normals (5L, 5M, 5H, 2L, 2M, launcher)
+
+- **Light and heavy punch swapped**, as you asked: the spinning punch that was on light punch is now **5H**
+  (your `Avner_HeavyPunch.png` is the same drawing, kept in your 1,4,3,5,2,6 order), and your new 5-frame jab is
+  **5L**.
+- New: **5M** (the kick), **2L**, **2M** (the low kick) and the **launcher (5S)** using drawings 1, 2, 3 and 6
+  only (no airborne frames).
+- **Hitstop on the smear, every move:** each smear drawing sits exactly on the frames the move can hit, so a hit
+  freezes on it. The frame data didn't change; only which drawing shows when.
+- Crouching moves are sized to match the standing ones (the tool has a new `--scale` option for that).
+
+**Honest flags:**
+1. **The art reaches further than the hitboxes.** 5L's drawn fist and 2L's punch nearly touch an opponent the
+   hitbox can't reach (both whiffed from about 120 px in my test). Players will feel cheated: "my fist was on
+   him." Fix: lengthen those hitboxes to the drawn fist (makes them better pokes) or I can shrink the art. Your call.
+2. **5H order:** with 1,4,3,5,2,6 the fully extended fist shows for one frame *before* the smear. If the drawn
+   order (wind-up, spin, smear, extended, follow-through, stance) is what you meant for heavy, it's a one-line change.
+3. **Launcher recovery** holds the final crouch for 24 frames, because drawings 4 and 5 (in the air) are left out.
+   It reads fine but static; a rise-to-stance drawing would smooth it.

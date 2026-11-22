@@ -70,7 +70,7 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
 - **Art in the renderer** (all drawing-only data the core carries but never reads): move `chain` (`drawChain`: hand
   → hitbox tip, or → opponent after a hit while they slide), move `hitFx` (a sheet effect spawned from the hit cue,
   aged per game frame so it plays through hitstop), var `mark.sprite`. `drawSheetFrame` draws one frame of any sheet
-  (no palette). Avner has art for idle, 5L, the Hooks, Reel, Lightstep; raw drawings stay beside `sheets/`.
+  (no palette). Avner has art for idle, 5L, 5M, 5H, 2L, 2M, 5S, the Hooks, Reel, Lightstep; raw drawings stay beside `sheets/`.
 
 - **The game** (Phase 9). `src/main.js` with no `?mode=` runs `src/ui/app.js`: one screen at a time from
   `src/ui/screens/` (title → select → versus splash/fight with pause and results, training, settings), switched with
