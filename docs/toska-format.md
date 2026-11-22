@@ -63,6 +63,26 @@ Version 2 adds per move:
   `#normal`, `#special`, `#super`, `#jump`. `from`/`to` are frame indexes (0 = first frame).
 - `stance`: `stand`, `crouch`, `air`. Inferred from `input`.
 
+### Combo fields (version 2)
+
+| Field | Meaning |
+| --- | --- |
+| `starterProration` | Percent (out of 10000) applied once if this move starts the combo. Default in `data/system/combo.json`. |
+| `comboProration` | Percent applied every time this move hits in a combo. |
+| `untech` | Frames an airborne opponent can't air-tech after this hit (default: `hitstun`). |
+| `launcher` | `true`: on hit, pressing up goes straight into a super jump to follow. |
+| `wallBounce` | `{ x, y }`: the opponent rebounds off the wall at this speed. Once per combo unless `bounceLimit` says more. |
+| `groundBounce` | `{ y }`: the opponent bounces off the floor instead of being knocked down. |
+| `bounceLimit` | How many bounces of each kind this move allows per combo. |
+| `specialCancel`, `superCancel` | Normals can cancel into specials and supers on hit or block by default; `false` turns it off, `"hit"` means hit only. |
+| `jumpCancel` | `"hit"`, `"block"`, `true` (both) or `false` (default). |
+| `cancelFrom`, `cancelTo` | Override the gatling window (default: first active frame to the end of the move). |
+
+### `gatlings` (top level, version 2)
+
+`{ "5L": ["5L", "2L", "5M"], ... }` — which moves each move chains into, on hit or block. Use
+`{ "into": [...], "on": ["hit"] }` for hit-only routes.
+
 ## Timeline events
 
 `{ "at": frame, ...fields }`, or `{ "from": a, "to": b, ...fields }` / `{ "from": a, "for": n, ...fields }` for a range.

@@ -1,5 +1,5 @@
 {
-  "notes": "States every character has. 'free' = the player can act. 'loop' = repeats until something changes it. 'stun' = lasts as long as the fighter's stun counter (hitstun, blockstun). Characters override any of these. throwVictim: the engine applies the pending throw when this state ends. Durations, timeline frames (at, from, to, for) and cancel windows can name a stat with @.",
+  "notes": "States every character has. 'free' = the player can act. 'loop' = repeats until something changes it. 'stun' = lasts as long as the fighter's stun counter (hitstun, blockstun). Characters override any of these. throwVictim: the engine applies the pending throw when this state ends. Durations, timeline frames (at, from, to, for) and cancel windows can name a stat with @. tumble = the untechable time is over: any button air-techs (airTech).",
   "states": {
     "idle": {"stance": "stand", "free": true, "loop": true, "duration": 60},
     "crouch": {"stance": "crouch", "free": true, "loop": true, "duration": 60},
@@ -21,7 +21,9 @@
     "airJump": {"stance": "air", "free": true, "loop": true, "loopFrom": 1, "duration": 60, "timeline": [{"at": 0, "jump": "air"}]},
     "hitStand": {"stance": "stand", "stun": true, "next": "idle"},
     "hitCrouch": {"stance": "crouch", "stun": true, "next": "crouch"},
-    "hitAir": {"stance": "air", "stun": true, "next": "fall", "keepVel": true, "landTo": "knockdown"},
+    "hitAir": {"stance": "air", "stun": true, "next": "tumble", "keepVel": true, "landTo": "knockdown"},
+    "tumble": {"stance": "air", "loop": true, "duration": 60, "techable": true, "landTo": "knockdown"},
+    "airTech": {"stance": "air", "duration": "@airTech", "next": "fall", "timeline": [{"at": 0, "vel": {"x": -2, "y": 5}}, {"from": 0, "for": "@airTechInvuln", "invuln": {"strike": true, "throw": true}}]},
     "blockStand": {"stance": "stand", "stun": true, "next": "idle"},
     "blockCrouch": {"stance": "crouch", "stun": true, "next": "crouch"},
     "blockAir": {"stance": "air", "stun": true, "next": "fall", "keepVel": true},

@@ -103,7 +103,9 @@ test('a move hits once per hit, multi-hit moves hit again', () => {
   const g = setup();
   arrange(g, 0, '2M', 2);
   go(g, 8);
-  assert.equal(g.players[1].health, 10000 - 200, 'two hits of 100');
+  const C = W.combo;
+  const second = Math.trunc((100 * Math.trunc((10000 * C.comboProration) / 10000)) / 10000);
+  assert.equal(g.players[1].health, 10000 - 100 - second, 'two hits: 100, then 100 after one hit of combo proration');
 });
 
 // ---------- Blocking ----------

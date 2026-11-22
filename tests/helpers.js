@@ -47,6 +47,7 @@ export function loadWorld(a = 'data/characters/avner/avner.toska.json', b = a) {
   return createWorld({
     input: loadJSON('data/system/input.json'),
     battle: loadJSON('data/system/battle.json'),
+    combo: loadJSON('data/system/combo.json'),
     chars: [typeof a === 'string' ? loadChar(a) : a, typeof b === 'string' ? loadChar(b) : b],
   });
 }

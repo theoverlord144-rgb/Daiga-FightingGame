@@ -73,7 +73,7 @@ function inferStance(m, parsed) {
 // ---------- Compile ----------
 
 // Stats counted in frames, counts or percentages (everything else is a distance or speed, converted to units).
-const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'dashFrames', 'dashCancel', 'dashRecovery',
+const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'airTech', 'airTechInvuln', 'dashFrames', 'dashCancel', 'dashRecovery',
   'backdashFrames', 'backdashInvuln', 'backdashRecovery', 'airdashFrames', 'airdashCancel', 'airdashBackFrames',
   'airdashKeep', 'airJumps', 'airDashes']);
 const BOX_STATS = new Set(['standHurt', 'crouchHurt', 'airHurt', 'standPush', 'crouchPush', 'airPush']);
@@ -134,6 +134,14 @@ function compileMoveData(m) {
     airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
     throwSwap: !!m.throwSwap,
     throwDistance: px(m.throwDistance ?? 70),
+    // Combo (Phase 5). null = use the default in data/system/combo.json.
+    starterProration: m.starterProration ?? null,
+    comboProration: m.comboProration ?? null,
+    untech: m.untech ?? null,
+    launcher: !!m.launcher,
+    wallBounce: m.wallBounce ? { x: px(m.wallBounce.x ?? 0), y: px(m.wallBounce.y ?? 0) } : null,
+    groundBounce: m.groundBounce ? { y: px(m.groundBounce.y ?? 0) } : null,
+    bounceLimit: m.bounceLimit ?? null,
   };
 }
 
@@ -267,6 +275,7 @@ function compileState(name, src, stats, extra = {}) {
     stun: !!src.stun,
     keepVel: !!src.keepVel,
     throwVictim: !!src.throwVictim,
+    techable: !!src.techable,
     next: src.next ?? (stance === 'air' ? 'fall' : 'idle'),
     landTo: src.landTo ?? 'land',
     duration,
@@ -330,8 +339,9 @@ export function compileCharacter(file, system) {
     const stance = inferStance(m, parsed);
     const move = compileMoveData(m);
     if (m.sprite) sheets[m.id] = m.sprite;
+    const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id], kind, move)];
     states[m.id] = compileState(m.id, { ...m, stance, next: m.next ?? (stance === 'air' ? 'fall' : stance === 'crouch' ? 'crouch' : 'idle') }, stats, {
-      move, kind, sheet: m.sprite, sheetName: m.id, hitboxes: m.hitboxes, throwboxes: m.throwboxes, hurtboxes: m.hurtboxes, counterHit: m.counterHit, cancels: m.cancels,
+      move, kind, sheet: m.sprite, sheetName: m.id, hitboxes: m.hitboxes, throwboxes: m.throwboxes, hurtboxes: m.hurtboxes, counterHit: m.counterHit, cancels,
     });
     if (parsed) {
       commands.push({
@@ -363,6 +373,35 @@ export function compileCharacter(file, system) {
     dirRank(a.dir) - dirRank(b.dir));
 
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands, sheets };
+}
+
+/**
+ * Turn a move's gatling list and cancel flags into cancel windows. The window opens on the first active frame and
+ * lasts to the end of the move (cancelTo overrides); it only matters after contact, because each needs a hit or block.
+ *   gatling: ["5M", "2M"] (on hit or block) or { into: [...], on: ["hit"] }
+ *   specialCancel: normals default to true (on hit or block); "hit" = on hit only; false = never
+ *   superCancel: defaults to specialCancel
+ *   jumpCancel: "hit" | "block" | true (both) | false (default)
+ *   launcher: true adds a super-jump cancel on hit
+ */
+function gatlingCancels(m, gatling, kind, move) {
+  const from = m.cancelFrom ?? move.startup - 1;
+  const to = m.cancelTo ?? move.startup - 1 + move.active + move.recovery - 1;
+  const on = (flag, dflt) => (flag === undefined ? dflt : flag === true ? ['hit', 'block'] : flag === false ? [] : [flag].flat());
+  const out = [];
+  if (gatling) {
+    const g = Array.isArray(gatling) ? { into: gatling } : gatling;
+    if (g.into.length) out.push({ from, to, into: g.into, on: g.on || ['hit', 'block'] });
+  }
+  const isNormal = kind === 'normal';
+  const sp = on(m.specialCancel, isNormal ? ['hit', 'block'] : []);
+  if (sp.length) out.push({ from, to, into: ['#special'], on: sp });
+  const su = on(m.superCancel, kind === 'super' ? [] : sp.length ? sp : ['hit', 'block']);
+  if (su.length && kind !== 'super') out.push({ from, to, into: ['#super'], on: su });
+  const jc = on(m.jumpCancel, []);
+  if (jc.length) out.push({ from, to, into: ['#jump'], on: jc });
+  if (m.launcher) out.push({ from, to, into: ['#superjump'], on: ['hit'] });
+  return out;
 }
 
 /** Exact single directions beat the broad 5 (any non-down) and 2 (any down). */

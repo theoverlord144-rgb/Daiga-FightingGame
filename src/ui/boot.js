@@ -1,6 +1,7 @@
 // Shared browser setup: the canvas, scaling to the window, the data bundle.
 import inputRules from '../../data/system/input.json';
 import battle from '../../data/system/battle.json';
+import combo from '../../data/system/combo.json';
 import defaults from '../../data/system/fighter-defaults.json';
 import common from '../../data/system/common-states.json';
 import { compileCharacter } from '../core/character.js';
@@ -42,5 +43,5 @@ export function loadCharacters() {
 }
 
 export function makeWorld(a, b) {
-  return createWorld({ input: inputRules, battle, chars: [a, b] });
+  return createWorld({ input: inputRules, battle, combo, chars: [a, b] });
 }

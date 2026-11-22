@@ -1,0 +1,14 @@
+{
+  "notes": "Combo rules (BBCF style). Percentages out of 10000. Decay tables: [comboTimeFrames, percent] - once combo time reaches a row, hitstun (or untechable time) is scaled by that percent. A move's own numbers override the defaults.",
+  "starterProration": 10000,
+  "comboProration": 9200,
+  "minScale": 1000,
+  "repeatPenalty": 8000,
+  "hitstunDecay": [[0, 10000], [120, 9000], [240, 8000], [360, 7000], [480, 5500], [600, 4000], [720, 2500], [840, 1000]],
+  "untechDecay":  [[0, 10000], [120, 8500], [240, 7000], [360, 5500], [480, 4000], [600, 2500], [720, 1000], [840, 0]],
+  "minHitstun": 1,
+  "juggleGravityPerHit": 400,
+  "juggleGravityMax": 10000,
+  "bounceLimit": 1,
+  "bounceUntech": 30
+}

@@ -35,6 +35,11 @@ export function createFighter(def, side, x) {
     slide: 0, // pushback still to travel (signed, units), spread over slideLeft frames
     slideLeft: 0,
     slid: 0, // how far the slide moved the fighter this frame (for corner transfer)
+    combo: null, // while this fighter is being comboed: { hits, damage, time, scale, used: { moveId: n }, wb, gb }
+    lastCombo: null, // the last finished combo against this fighter (for the HUD and training mode)
+    wbX: 0, // pending wall bounce (rebound speed, units; 0 = none)
+    wbY: 0,
+    gbY: 0, // pending ground bounce (upward speed, units; 0 = none)
     throwBy: -1, // while being thrown: the attacker's id
     throwMove: '',
   };
@@ -160,6 +165,12 @@ function decide(game, p, opp, def, world) {
   const freshUp = dir >= 7 && relDirAt(inp, 1, p.facing) < 7;
   const canJump = st.free || windows.some((w) => w.into.has('#jump'));
   const canDash = st.free || windows.some((w) => w.into.has('#dash'));
+  // Launcher: on hit, up goes straight into a super jump (no pre-jump), following the opponent up.
+  if (!st.free && !air && dir >= 7 && windows.some((w) => w.into.has('#superjump'))) {
+    p.jumpDir = dir;
+    enterState(p, def, 'superJump');
+    return;
+  }
   const stats = def.stats;
 
   if (air) {
@@ -211,6 +222,14 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
       else enterState(p, def, st.next);
     }
   }
+  // Air tech: once the untechable time is over, any button recovers.
+  const st1 = def.states[p.state];
+  if (st1.techable) {
+    const buffer = world.input.pressBuffer + p.freezeAge;
+    if ([BTN.L, BTN.M, BTN.H, BTN.S].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {
+      enterState(p, def, 'airTech');
+    }
+  }
   if (p.state === 'jumpSquat' || p.state === 'superJumpSquat') {
     const d = relDirAt(p.input, 0, p.facing);
     if (d >= 7) p.jumpDir = d;
@@ -220,13 +239,21 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
 }
 
 /** Stage B: one-shot events, physics, pushback slide. */
-export function move(game, p, def) {
+export function move(game, p, def, world) {
   fireOnEnter(game, p, def);
   const st = def.states[p.state];
   const fr = st.frames[p.frame < st.frames.length ? p.frame : st.frames.length - 1];
   p.x += p.vx;
   p.y += p.vy;
-  if (fr.gravity) p.vy -= def.stats.gravity;
+  if (fr.gravity) {
+    let g = def.stats.gravity;
+    // Juggle gravity: the longer the combo, the faster a juggled fighter falls.
+    if (p.combo && (st.stun || st.techable)) {
+      const C = world.combo;
+      g = pct(g, 10000 + Math.min(C.juggleGravityMax, p.combo.hits * C.juggleGravityPerHit));
+    }
+    p.vy -= g;
+  }
   p.slid = 0;
   if (p.slideLeft > 0) {
     // Pushback slides over several frames, fastest first: frame i of n moves 2(n-i)/(n(n+1)) of the total.
@@ -240,8 +267,19 @@ export function move(game, p, def) {
 }
 
 /** Stage D: landing. */
-export function land(game, p, def) {
+export function land(game, p, def, world) {
   const st = def.states[p.state];
+  if (st.stance === 'air' && p.y <= 0 && p.vy < 0 && p.gbY > 0 && p.combo) {
+    // Ground bounce: back up instead of a knockdown.
+    p.y = 0;
+    p.vy = p.gbY;
+    p.gbY = 0;
+    p.combo.gb++;
+    enterState(p, def, 'hitAir');
+    p.stun = world.combo.bounceUntech;
+    game.cues.push({ type: 'groundbounce', p: p.id, x: p.x, y: 0 });
+    return;
+  }
   if (st.stance === 'air' && p.y <= 0 && p.vy < 0) {
     p.y = 0;
     p.vy = 0;

@@ -11,10 +11,14 @@ import { px } from './fixed.js';
 
 export const FPS = 60;
 
+/** States a fighter can be in while still being comboed. */
+const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown']);
+
 /** Bundle the system data and two compiled characters into the read-only world. */
-export function createWorld({ input, battle, chars }) {
+export function createWorld({ input, battle, combo, chars }) {
   return {
     input,
+    combo,
     battle: {
       ...battle,
       halfWidthUnits: px(battle.stage.halfWidth),
@@ -57,13 +61,25 @@ export function step(state, rawInputs, world) {
     if (p.hitstop > 0) { p.hitstop--; p.freezeAge++; frozen[p.id] = true; }
   }
 
+  // Combo time runs while a combo is alive, not during hitstop (the hit frame itself is time 0).
+  for (const p of ps) if (p.combo && !frozen[p.id]) p.combo.time++;
+
   checkThrowBreaks(state, world, frozen);
 
   const hooks = { throwLands: (p) => throwLands(state, world, p) };
   for (const p of ps) if (!frozen[p.id]) advanceAndDecide(state, p, ps[1 - p.id], world.chars[p.id], world, hooks);
-  for (const p of ps) if (!frozen[p.id]) move(state, p, world.chars[p.id]);
+  for (const p of ps) if (!frozen[p.id]) move(state, p, world.chars[p.id], world);
   separate(state, world);
-  for (const p of ps) if (!frozen[p.id]) land(state, p, world.chars[p.id]);
+  for (const p of ps) if (!frozen[p.id]) land(state, p, world.chars[p.id], world);
+  // A combo ends the moment its victim gets free, before this frame's hits: a hit on a fighter who has just
+  // recovered starts a new combo (and they could have blocked it).
+  for (const p of ps) {
+    if (p.combo && p.hitstop === 0 && !COMBO_STATES.has(p.state)) {
+      p.lastCombo = p.combo;
+      p.combo = null;
+      p.wbX = p.wbY = p.gbY = 0;
+    }
+  }
   resolveHits(state, world, frozen);
   return state;
 }

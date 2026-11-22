@@ -56,7 +56,19 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 4**.
+Current through **Phase 5**.
+
+- **Combos** (`data/system/combo.json`, `applyStrike` in combat.js): a hit on a fighter with no `combo` starts one
+  `{ hits, damage, time, scale, used, wb, gb }`. Damage = base × `scale` × `repeatPenalty`^(earlier uses of the
+  move; a multi-hit move's own hits don't count) → guts. Then `scale` ×= starter proration (first hit only) ×
+  combo proration, floored at `minScale`. Hitstun (ground) or untech (air) is scaled by `hitstunDecay` /
+  `untechDecay` at the current combo `time` (frames since the first hit, not counting hitstop). Juggled fighters fall
+  faster per hit (`juggleGravityPerHit`, capped). `hitAir` → `tumble` when untech ends; any button in tumble →
+  `airTech`. Wall/ground bounces are armed by the move (`wbX/wbY/gbY` on the victim), fire in `separate` / `land`,
+  and are limited per combo. A combo ends (→ `lastCombo`) the moment the victim is out of `COMBO_STATES`, checked
+  before the frame's hits.
+- **Gatlings** compile into cancel windows (`gatlingCancels` in character.js): the table plus `specialCancel`,
+  `superCancel`, `jumpCancel`, `launcher` (`#superjump`: up on hit → `superJump` with no pre-jump).
 
 - **Movement** (all numbers in `fighter-defaults.json` stats, overridable per character; states in
   `common-states.json`): walk, `jumpSquat` → `jump`, `superJumpSquat` → `superJump` (28 motion), `airJump`

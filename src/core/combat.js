@@ -68,6 +68,17 @@ export function separate(game, world) {
 
   for (const [p, def, o, odef] of [[a, da, b, db], [b, db, a, da]]) {
     const d = clampToWalls(p, def, half);
+    if (d !== 0 && p.wbY > 0 && p.combo && def.states[p.state].stance === 'air') {
+      // Wall bounce: rebound off the wall and up, with fresh untechable time.
+      p.vx = sign(d) * p.wbX;
+      p.vy = p.wbY;
+      p.wbX = p.wbY = 0;
+      p.combo.wb++;
+      enterState(p, def, 'hitAir');
+      p.stun = world.combo.bounceUntech;
+      game.cues.push({ type: 'wallbounce', p: p.id, x: p.x, y: p.y });
+      continue;
+    }
     if (d !== 0 && p.slid !== 0 && sign(p.slid) === -sign(d) && !isAirborne(odef, o)) {
       // The wall stopped this fighter's slide: the opponent takes the refused part and the rest, the other way.
       const refused = Math.min(Math.abs(d), Math.abs(p.slid)) * sign(p.slid) + p.slide;
@@ -157,8 +168,9 @@ function resolveStrike(game, world, a, d, rect, snap) {
   const block = blockKind(d, ddef, a, move, world);
   const away = d.x > a.x ? 1 : d.x < a.x ? -1 : a.facing;
 
+  const firstOfUse = a.hitsDone === 0; // later hits of a multi-hit move are the same use of it
   a.hitsDone |= 1 << fa.hitId;
-  const out = { a, d, move, block, away, rect };
+  const out = { a, d, move, block, away, rect, moveId: snap[a.id].state, firstOfUse };
 
   if (!block && fd.armor > d.armorUsed) {
     out.kind = 'armor';
@@ -201,15 +213,47 @@ function applyStrike(game, world, r) {
 
   const counter = r.kind === 'counter';
   const ch = battle.counterHit;
+  const C = world.combo;
   a.contact = CONTACT.HIT;
-  const base = counter ? pct(move.damage, ch.damagePct) : move.damage;
+
+  // The combo this hit belongs to (a new one if the defender wasn't already being comboed).
+  const starter = !d.combo;
+  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0 };
+  const combo = d.combo;
+  const moveId = r.moveId;
+  // Earlier uses of this move in the combo (a multi-hit move's own later hits don't count as a new use).
+  const used = combo.used[moveId] || 0;
+  const uses = r.firstOfUse ? used : Math.max(0, used - 1);
+
+  // Damage: base (counter bonus) x combo scaling x same-move penalty, then guts.
+  let base = counter ? pct(move.damage, ch.damagePct) : move.damage;
+  base = pct(base, combo.scale);
+  for (let i = 0; i < uses; i++) base = pct(base, C.repeatPenalty);
   const dmg = gutsDamage(base, d.health, maxHp, battle);
   applyDamage(d, ddef, dmg);
-  a.hitstop = d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
-  const stun = move.hitstun + (counter ? ch.hitstunAdd : 0);
-  const airborne = isAirborne(ddef, d);
 
-  if (move.launch || airborne) {
+  // Proration for the hits that follow: the starter's own proration once, then every hit's combo proration.
+  let scale = combo.scale;
+  if (starter) scale = pct(scale, move.starterProration ?? C.starterProration);
+  scale = pct(scale, move.comboProration ?? C.comboProration);
+  combo.scale = Math.max(C.minScale, scale);
+  combo.hits++;
+  combo.damage += dmg;
+  if (r.firstOfUse) combo.used[moveId] = used + 1;
+
+  a.hitstop = d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
+  // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
+  const airborne = isAirborne(ddef, d);
+  const inAir = !!(move.launch || airborne);
+  const rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (counter ? ch.hitstunAdd : 0);
+  const stun = Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, combo.time)));
+
+  // Bounces: armed by the move, each kind limited per combo.
+  const limit = move.bounceLimit ?? C.bounceLimit;
+  if (move.wallBounce && combo.wb < limit) { d.wbX = move.wallBounce.x; d.wbY = move.wallBounce.y; }
+  if (move.groundBounce && combo.gb < limit) d.gbY = move.groundBounce.y;
+
+  if (inAir) {
     const v = move.launch || move.airHit || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
     enterState(d, ddef, 'hitAir');
     d.vx = v.x * away; // x is authored as "away from the attacker"
@@ -222,7 +266,14 @@ function applyStrike(game, world, r) {
   }
   d.stun = stun;
   if (!airborne && !move.launch) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
-  cue(game, counter ? 'counter' : 'hit', a, rect, { move: a.state, damage: dmg });
+  cue(game, counter ? 'counter' : 'hit', a, rect, { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale });
+}
+
+/** Percent from a decay table at combo time t: the last row whose time has been reached. */
+export function decayAt(table, t) {
+  let p = 10000;
+  for (const [at, v] of table) if (t >= at) p = v;
+  return p;
 }
 
 /**

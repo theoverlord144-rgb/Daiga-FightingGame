@@ -17,6 +17,8 @@
     "crouchPush": [[-24, 0, 48, 95]],
     "airPush": [[-20, 20, 40, 110]],
     "throwBreak": 7,
+    "airTech": 12,
+    "airTechInvuln": 8,
     "dashSpeed": 16,
     "dashFrames": 12,
     "dashCancel": 4,

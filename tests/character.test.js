@@ -121,8 +121,14 @@ test('timeline events fire on the right frames: velocity, cues, ranges, multi-hi
   assert.equal(g.cues.length, 0, 'cues last one frame');
 });
 
-test('cancel windows open and close on time (5L: frames 3-9, on hit or block)', () => {
-  const world = loadWorld();
+test('cancel windows open and close on time (an explicit window: frames 3-9, on hit or block)', () => {
+  // Same frame data as Avner's 5L (4/2/7, 12 frames), with a hand-written cancel window instead of a gatling.
+  const c = testChar([
+    { id: '5L', input: '5L', startup: 4, active: 2, recovery: 7, specialCancel: false,
+      cancels: [{ from: 3, to: 9, into: ['5M'], on: ['hit', 'block'] }] },
+    { id: '5M', input: '5M', startup: 6, active: 3, recovery: 12 },
+  ]);
+  const world = loadWorld(c, c);
   const run = (pressAt, contact) => {
     const g = createGame(world);
     step(g, [script('5+L')[0], 0], world);

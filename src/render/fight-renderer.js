@@ -32,6 +32,8 @@ const SPARK = {
   armor: { color: '#c9a2ff', size: 26, life: 14, text: 'ARMOR' },
   throw: { color: '#e0d050', size: 22, life: 14, text: 'THROW' },
   tech: { color: '#e0d050', size: 26, life: 18, text: 'TECH' },
+  wallbounce: { color: '#ff9a3c', size: 40, life: 18, text: 'WALL BOUNCE' },
+  groundbounce: { color: '#ff9a3c', size: 40, life: 18, text: 'GROUND BOUNCE' },
 };
 
 export function createFightRenderer(ctx, W, H) {
@@ -39,6 +41,7 @@ export function createFightRenderer(ctx, W, H) {
   const cam = { x: 0, y: 0 };
   const effects = []; // visual only: spawned from the game's cues, never fed back into the game
   let lastFrame = -1;
+  const comboShow = [null, null]; // per victim: { combo, hold } - keeps the finished combo on screen a moment
 
   const toScreen = (x, y) => [W / 2 + (x / UNIT - cam.x), GROUND - y / UNIT + cam.y];
 
@@ -180,6 +183,14 @@ export function createFightRenderer(ctx, W, H) {
         for (const e of effects) e.age++;
         for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
         lastFrame = game.frame;
+        for (const p of game.players) {
+          if (p.combo) comboShow[p.id] = { c: p.combo, hold: 70, live: true };
+          else if (comboShow[p.id]) {
+            const s = comboShow[p.id];
+            if (s.live && p.lastCombo) { s.c = p.lastCombo; s.live = false; }
+            if (--s.hold <= 0) comboShow[p.id] = null;
+          }
+        }
       }
       // Camera follows the midpoint, held inside the stage.
       const mid = (game.players[0].x + game.players[1].x) / 2 / UNIT;
@@ -205,7 +216,7 @@ export function createFightRenderer(ctx, W, H) {
         if (!drawSprite(p, def, fr)) drawPlaceholder(p, def, fr, COLORS[p.id]);
         if (opts.boxes) drawBoxes(p, fr);
         if (opts.labels) {
-          const [lx, ly] = toScreen(p.x, p.y + 18500);
+          const [lx, ly] = toScreen(p.x, p.y + 18500 + p.id * 1600);
           ctx.fillStyle = '#e8e2d4';
           ctx.font = '12px ui-monospace, monospace';
           ctx.textAlign = 'center';
@@ -233,6 +244,22 @@ export function createFightRenderer(ctx, W, H) {
           ctx.textAlign = 'center';
           ctx.fillText(e.text, sx, sy - e.size - 6 - e.age);
         }
+        ctx.globalAlpha = 1;
+      }
+      // Combo counter, on the attacker's side: hits, damage, current scaling.
+      for (const v of [0, 1]) {
+        const s = comboShow[v];
+        if (!s || s.c.hits < 1) continue;
+        const left = v === 1; // P2 is the victim: P1 attacking, show on the left
+        const x = left ? 130 : W - 130;
+        ctx.textAlign = left ? 'left' : 'right';
+        ctx.globalAlpha = s.live ? 1 : Math.min(1, s.hold / 30);
+        ctx.fillStyle = s.live ? '#ffd36b' : '#a99fb8';
+        ctx.font = '800 34px system-ui';
+        ctx.fillText(`${s.c.hits} HIT${s.c.hits > 1 ? 'S' : ''}`, x, 96);
+        ctx.font = '600 15px system-ui';
+        ctx.fillStyle = '#e8e2d4';
+        ctx.fillText(`${s.c.damage} damage  ·  scaling ${Math.round(s.c.scale / 100)}%  ·  ${s.c.time}f`, x, 118);
         ctx.globalAlpha = 1;
       }
       // Health bars (a simple version; the real HUD comes with the game screens).
