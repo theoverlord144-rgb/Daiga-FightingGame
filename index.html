@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toska Engine</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0b0a0f; color: #e8e2d4; font-family: system-ui, sans-serif; overflow: hidden; }
+      #game { display: block; margin: 0 auto; image-rendering: pixelated; }
+      #ui { position: absolute; inset: 0; pointer-events: none; }
+      #ui > * { pointer-events: auto; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div id="ui"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
