@@ -12,6 +12,23 @@ const FILES = ['data/characters/avner/avner.toska.json', 'data/characters/proto/
 const units = (list) => list.map((b) => b.map(px));
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
+/**
+ * Avner's file with every hurtbox override taken out, so these tests start from the same place whatever boxes
+ * have been tuned in the editor since (the tests are about the editor, not about Avner's numbers).
+ */
+function plainAvner() {
+  const raw = loadJSON(FILES[0]);
+  for (const k of ['standHurt', 'crouchHurt', 'airHurt']) delete raw.character.stats[k];
+  for (const m of raw.moves) {
+    if (!['5L', '5M'].includes(m.id)) continue;
+    delete m.hurtboxes;
+    if (m.timeline) m.timeline = m.timeline.filter((e) => e.hurt === undefined);
+    if (m.timeline && !m.timeline.length) delete m.timeline;
+  }
+  if (raw.states?.idle?.timeline) raw.states.idle.timeline = raw.states.idle.timeline.filter((e) => e.hurt === undefined);
+  return raw;
+}
+
 for (const file of FILES) {
   test(`box editor: on every frame of every state, the editor finds the boxes the game uses (${file.split('/').at(-1)})`, () => {
     const raw = loadJSON(file);
@@ -43,7 +60,7 @@ test('box editor: an edit lands where the game reads it, and nowhere else', () =
 });
 
 test('box editor: hurtbox overrides (whole move, from a frame) and removing them again', () => {
-  const raw = loadJSON(FILES[0]);
+  const raw = plainAvner();
   const start = clone(raw);
   const stand = compileCharacter(raw, SYSTEM).states.idle.frames[0].hurt;
   assert.equal(sourcesAt(raw, SYSTEM, '5M', 'stand', 0).hurt.kind, 'stat', 'a normal starts on the shared standing box');
@@ -73,7 +90,7 @@ test('box editor: hurtbox overrides (whole move, from a frame) and removing them
 });
 
 test('box editor: the shared stance box changes every state of that stance, and resets to the default', () => {
-  const raw = loadJSON(FILES[0]);
+  const raw = plainAvner();
   const src = sourcesAt(raw, SYSTEM, 'idle', 'stand', 0).hurt;
   assert.deepEqual(src, { kind: 'stat', stat: 'standHurt' });
   setBoxes(raw, src, [[-26, 0, 52, 172]]);

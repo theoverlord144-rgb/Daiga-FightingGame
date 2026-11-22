@@ -1,0 +1,21 @@
+{
+  "engine": "Toska",
+  "version": 2,
+  "notes": "Malik: a new character, so far only standing and walking. He has no attacks yet; every stat is the system default. Art: idle, walk forward, walk back (from Malik_Idle.png, Malik_ForwardWalk.png, Malik_BackWalk.png, all cut at the same scale, 186 px tall in game). Every other state shows the placeholder figure until it has art.",
+  "character": {
+    "id": "malik",
+    "name": "Malik",
+    "stats": {}
+  },
+  "states": {
+    "walkF": { "duration": 48 }, "walkB": { "duration": 48 }
+  },
+  "moves": [
+    { "id": "idle", "name": "Idle (art for the system idle state)",
+      "sprite": { "image": "sheets/idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 212, "frameH": 388, "originX": 102, "originY": 386, "scale": 0.5, "holds": [10, 10, 10, 10, 10, 10] } },
+    { "id": "walkF", "name": "Walk forward (system state art)",
+      "sprite": { "image": "sheets/walk.png", "columns": 6, "rows": 1, "count": 6, "frameW": 252, "frameH": 360, "originX": 126, "originY": 358, "scale": 0.5, "holds": [8, 8, 8, 8, 8, 8] } },
+    { "id": "walkB", "name": "Walk back (system state art)",
+      "sprite": { "image": "sheets/walk-back.png", "columns": 6, "rows": 1, "count": 6, "frameW": 234, "frameH": 391, "originX": 117, "originY": 389, "scale": 0.5, "holds": [8, 8, 8, 8, 8, 8] } }
+  ]
+}

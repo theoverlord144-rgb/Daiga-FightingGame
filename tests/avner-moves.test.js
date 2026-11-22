@@ -208,3 +208,23 @@ test('movement effects: every rule names a real state and a real sheet, and ever
     assert.ok(s.hold > 0);
   }
 });
+
+test('Malik: loads, stands and walks with his own art, and can be put in a match', () => {
+  const c = loadChar('data/characters/malik/malik.toska.json');
+  assert.equal(c.id, 'malik');
+  assert.equal(c.name, 'Malik');
+  for (const [name, n] of [['idle', 60], ['walkF', 48], ['walkB', 48]]) {
+    assert.equal(c.states[name].duration, n, name);
+    assert.ok(c.states[name].frames.every((f) => f.sprite && f.sprite.sheet === name), `${name}: every frame is drawn`);
+    assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
+    assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
+  }
+  assert.equal(c.commands.length, 0, 'no attacks yet');
+  // Twenty frames holding forward against Avner: he walks, nothing breaks.
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const game = createGame(world);
+  const x0 = game.players[0].x;
+  for (let i = 0; i < 20; i++) step(game, [script('6')[0], 0], world);
+  assert.equal(game.players[0].state, 'walkF');
+  assert.ok(game.players[0].x > x0);
+});
