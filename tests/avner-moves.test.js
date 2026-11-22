@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.equal(c.commands.length, 0, 'no attacks yet');
+  assert.deepEqual(c.commands.map((x) => x.move), ['5L'], 'one attack so far');
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -227,4 +227,23 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
   for (let i = 0; i < 20; i++) step(game, [script('6')[0], 0], world);
   assert.equal(game.players[0].state, 'walkF');
   assert.ok(game.players[0].x > x0);
+});
+
+test('Malik: Standing Light comes out on frame 4, is drawn with the arm out while it can hit, and hits Avner up close', () => {
+  const c = loadChar('data/characters/malik/malik.toska.json');
+  const st = c.states['5L'];
+  assert.deepEqual([st.move.startup, st.move.active, st.move.recovery, st.duration], [4, 2, 7, 12]);
+  assert.ok(st.frames.every((f) => f.sprite && f.sprite.sheet === '5L'));
+  const active = st.frames.map((f, i) => (f.hit.length ? i : -1)).filter((i) => i >= 0);
+  assert.deepEqual(active, [3, 4]);
+  for (const i of active) assert.equal(st.frames[i].sprite.index, 3, 'the full-extension drawing');
+  assert.equal(st.frames.at(-1).sprite.index, 5, 'ends back in his stance');
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const game = createGame(world);
+  game.players[0].x = -px(35);
+  game.players[1].x = px(35);
+  const hp = game.players[1].health;
+  for (const raw of script('5+L 5*8')) step(game, [raw, 0], world);
+  assert.equal(game.players[1].health, hp - 400);
+  assert.equal(game.players[1].state, 'hitStand');
 });

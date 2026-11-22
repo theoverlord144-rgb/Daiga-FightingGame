@@ -1,16 +1,25 @@
 {
   "engine": "Toska",
   "version": 2,
-  "notes": "Malik: a new character, so far only standing and walking. He has no attacks yet; every stat is the system default. Art: idle, walk forward, walk back (from Malik_Idle.png, Malik_ForwardWalk.png, Malik_BackWalk.png, all cut at the same scale, 186 px tall in game). Every other state shows the placeholder figure until it has art.",
+  "notes": "Malik: a new character, so far standing, walking and one attack. Standing Light (5L) uses Avner's 5L numbers as a first pass, with the hitbox on his own fist; every stat is the system default. Art: idle, walk forward, walk back (from Malik_Idle.png, Malik_ForwardWalk.png, Malik_BackWalk.png, all cut at the same scale, 186 px tall in game), Standing Light (Malik_LightPunch.jpg, matched to the idle by body size). Every other state shows the placeholder figure until it has art.",
   "character": {
     "id": "malik",
     "name": "Malik",
     "stats": {}
   },
+  "gatlings": {
+    "5L": ["5L"]
+  },
   "states": {
     "walkF": { "duration": 48 }, "walkB": { "duration": 48 }
   },
   "moves": [
+    { "id": "5L", "name": "Standing Light", "input": "5L", "startup": 4, "active": 2, "recovery": 7,
+      "damage": 400, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "mid", "reach": 75,
+      "starterProration": 8000,
+      "hitboxes": [[25, 118, 50, 26]],
+      "sprite": { "image": "sheets/5L.png", "columns": 6, "rows": 1, "count": 6, "frameW": 278, "frameH": 344,
+        "originX": 129, "originY": 342, "scale": 0.5, "holds": [1, 1, 1, 3, 3, 3] } },
     { "id": "idle", "name": "Idle (art for the system idle state)",
       "sprite": { "image": "sheets/idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 212, "frameH": 388, "originX": 102, "originY": 386, "scale": 0.5, "holds": [10, 10, 10, 10, 10, 10] } },
     { "id": "walkF", "name": "Walk forward (system state art)",
