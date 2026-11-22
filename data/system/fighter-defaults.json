@@ -1,0 +1,20 @@
+{
+  "notes": "Defaults for every character stat. Pixels and frames. A character's own stats override these.",
+  "stats": {
+    "health": 10000,
+    "walkForward": 5,
+    "walkBack": 4,
+    "gravity": 0.9,
+    "prejump": 3,
+    "jumpUp": 17,
+    "jumpForward": 5,
+    "jumpBack": 4.5,
+    "landing": 3,
+    "standHurt": [[-30, 0, 60, 160]],
+    "crouchHurt": [[-32, 0, 64, 100]],
+    "airHurt": [[-28, 10, 56, 130]],
+    "standPush": [[-22, 0, 44, 150]],
+    "crouchPush": [[-24, 0, 48, 95]],
+    "airPush": [[-20, 20, 40, 110]]
+  }
+}

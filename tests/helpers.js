@@ -30,3 +30,23 @@ export function script(str) {
   }
   return out;
 }
+
+// ---------- Worlds ----------
+import { compileCharacter } from '../src/core/character.js';
+import { createWorld } from '../src/core/game.js';
+
+export const SYSTEM = {
+  defaults: loadJSON('data/system/fighter-defaults.json'),
+  common: loadJSON('data/system/common-states.json'),
+};
+
+export const loadChar = (rel) => compileCharacter(loadJSON(rel), SYSTEM);
+
+/** A world with two characters (default: Avner vs Avner). */
+export function loadWorld(a = 'data/characters/avner/avner.toska.json', b = a) {
+  return createWorld({
+    input: loadJSON('data/system/input.json'),
+    battle: loadJSON('data/system/battle.json'),
+    chars: [typeof a === 'string' ? loadChar(a) : a, typeof b === 'string' ? loadChar(b) : b],
+  });
+}

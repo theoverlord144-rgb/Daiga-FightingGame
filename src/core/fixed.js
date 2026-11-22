@@ -4,8 +4,8 @@
 export const UNIT = 100;
 export const PCT = 10000;
 
-/** Pixels to units (data is authored in pixels; the core works in units). */
-export const px = (n) => Math.trunc(n * UNIT);
+/** Pixels to units (data is authored in pixels; the core works in units). Rounded, so 4.55 px = 455. */
+export const px = (n) => Math.round(n * UNIT);
 
 /** n scaled by a percentage (PCT = 100%), truncated toward zero. */
 export const pct = (n, p) => Math.trunc((n * p) / PCT);

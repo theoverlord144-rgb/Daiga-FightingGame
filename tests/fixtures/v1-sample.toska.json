@@ -1,0 +1,26 @@
+{
+  "engine": "Toska",
+  "version": 1,
+  "character": { "id": "sample", "name": "Sample" },
+  "moves": [
+    {
+      "name": "Standing Light", "input": "5L",
+      "startup": 3, "active": 2, "recovery": 6,
+      "damage": 300, "hitstun": 12, "blockstun": 9, "hitstop": 8,
+      "pushbackHit": 15, "pushbackBlock": 20, "selfPushback": 10, "guard": "mid", "reach": 75,
+      "hitboxes": [[20, 95, 55, 20]],
+      "sprite": { "image": "sprites/5L.png", "columns": 3, "rows": 2, "count": 5, "holds": [2, 1, 2, 3, 3] }
+    },
+    {
+      "name": "Rising Strike", "input": "623H",
+      "startup": 5, "active": 6, "recovery": 20,
+      "damage": 1200, "hitstun": 25, "blockstun": 12, "hitstop": 12, "guard": "mid",
+      "hitboxes": [[10, 60, 50, 120]],
+      "sprite": { "image": "sprites/623H.png", "columns": 4, "rows": 2, "count": 8 }
+    },
+    {
+      "id": "idle", "name": "Idle",
+      "sprite": { "image": "sprites/idle.png", "columns": 4, "rows": 1, "count": 4, "holds": [8, 8, 8, 8] }
+    }
+  ]
+}

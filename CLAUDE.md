@@ -56,7 +56,27 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 1**.
+Current through **Phase 2**.
+
+- **World and state** (`src/core/game.js`): `world = createWorld({ input, battle, chars: [def1, def2] })` is static
+  and read-only (system JSON + compiled characters). The game state is `{ frame, cues, players: [p1, p2] }`; each
+  player is `{ id, input, char, x, y, vx, vy, facing, state, frame, stun, hitstop, health, contact, hitsDone,
+  consumed, jumpDir }`. `step(game, [raw1, raw2], world)`: frame++, clear `cues`, push inputs, then
+  `stepFighter` for P1 then P2.
+- **Characters** (`src/core/character.js`, format in `docs/toska-format.md`): `compileCharacter(file, { defaults,
+  common })` imports any Toska version (1 is upgraded to 2), merges `data/system/common-states.json` (system states)
+  and `fighter-defaults.json` (stats), and compiles every state into per-frame tables: `frames[i]` = lasting values
+  (sprite, hit, hitId, hitProps, hurt, push, throw, throwHurt, invStrike, invThrow, armor, counter, gravity) and
+  `onEnter[i]` = one-shot events (vel, addVel, sound, fx, jump). Boxes are `[x, y, w, h]` in units, x forward from
+  the feet, y up. `commands` are sorted by priority. `frameOf(def, state, frame)` reads a frame (clamped).
+- **A fighter's frame** (`src/core/fighter.js`, `stepFighter`): hitstop → advance the timeline (stun states count
+  `p.stun` down; others end at `duration` and loop or go to `next`) → decide (`free` states: commands, jump, crouch,
+  walk, stand, auto-face; otherwise only commands/jumps allowed by an open cancel window whose condition matches
+  `p.contact`) → fire the frame's one-shot events → physics (x += vx, y += vy, gravity) → stage clamp → landing
+  (air state, y ≤ 0, falling → `landTo`). A press is consumed by game frame (`p.consumed`) so one press = one move.
+- **Screens**: `src/main.js` boots the Sandbox (default) or the Input Lab (`?mode=lab`). `src/render/fight-renderer.js`
+  draws the stage, fighters (sprites from `data/characters/<id>/` when a sheet image exists, else a placeholder figure
+  whose limb reaches to the live hitbox), and the box view.
 
 - **Loop** (`src/ui/loop.js`): an accumulator turns real time into exactly 60 core steps a second (max 5 per
   display frame; extra time is dropped, never fast-forwarded). `render(alpha)` runs once per display frame.

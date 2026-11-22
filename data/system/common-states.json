@@ -1,0 +1,21 @@
+{
+  "notes": "States every character has. 'free' = the player can act. 'loop' = repeats until something changes it. 'stun' = lasts as long as the fighter's stun counter (hitstun, blockstun). Characters override any of these.",
+  "states": {
+    "idle":     { "stance": "stand",  "free": true, "loop": true, "duration": 60 },
+    "crouch":   { "stance": "crouch", "free": true, "loop": true, "duration": 60 },
+    "walkF":    { "stance": "stand",  "free": true, "loop": true, "duration": 60, "timeline": [{ "at": 0, "vel": { "x": "@walkForward" } }] },
+    "walkB":    { "stance": "stand",  "free": true, "loop": true, "duration": 60, "timeline": [{ "at": 0, "vel": { "x": "-@walkBack" } }] },
+    "jumpSquat":{ "stance": "stand",  "duration": "@prejump", "next": "jump", "keepVel": true },
+    "jump":     { "stance": "air",    "free": true, "loop": true, "loopFrom": 1, "duration": 60, "timeline": [{ "at": 0, "jump": "normal" }] },
+    "fall":     { "stance": "air",    "free": true, "loop": true, "duration": 60 },
+    "land":     { "stance": "stand",  "duration": "@landing", "next": "idle" },
+    "hitStand": { "stance": "stand",  "stun": true, "next": "idle" },
+    "hitCrouch":{ "stance": "crouch", "stun": true, "next": "crouch" },
+    "hitAir":   { "stance": "air",    "stun": true, "next": "fall", "keepVel": true },
+    "blockStand":  { "stance": "stand",  "stun": true, "next": "idle" },
+    "blockCrouch": { "stance": "crouch", "stun": true, "next": "crouch" },
+    "blockAir":    { "stance": "air",    "stun": true, "next": "fall", "keepVel": true },
+    "knockdown":{ "stance": "crouch", "duration": 40, "next": "wakeup", "timeline": [{ "at": 0, "hurt": [], "invuln": { "strike": true, "throw": true } }] },
+    "wakeup":   { "stance": "stand",  "duration": 12, "next": "idle", "timeline": [{ "at": 0, "invuln": { "strike": true, "throw": true } }] }
+  }
+}
