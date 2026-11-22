@@ -41,11 +41,11 @@ Avner now has drawings for being hit. Art only: no rule or number changed.
 
 ## Hit and block effects, and the stance entry (same branch)
 
-- **Hit sparks and the block flash** come from your sheet in . They belong to the game, not to
+- **Hit sparks and the block flash** come from your sheet in `data/UniversalEffects`. They belong to the game, not to
   Avner, so every character gets them. Row 1 is the light hit, row 2 medium, row 3 heavy, row 4 the block. Which spark
   a hit gets is decided by the move's base damage: under 500 light, under 800 medium, 800 and up heavy. A counter hit
   goes one size up and keeps its COUNTER label. The block flash curves toward the attacker. Each plays 4 drawings, 3
-  frames each, drawn as light. The thresholds and timing are in .
+  frames each, drawn as light. The thresholds and timing are in `data/system/effects.json`.
 - Moves with their own hit effect (the Brand flash on Lumen Hook, Snap and the crescent, the Flare burst) keep it
   instead of the spark.
 - **The stance entry no longer holds one drawing.** It is still 20 frames (your spec's number, and the punish

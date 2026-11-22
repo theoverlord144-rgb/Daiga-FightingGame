@@ -468,6 +468,6 @@ test('Vigil entry: no drawing is held; it runs into the stance loop without a pa
   for (let i = 1; i < fr.length; i++) { run = fr[i] === fr[i - 1] ? run + 1 : 1; longest = Math.max(longest, run); }
   assert.ok(longest <= 5, 'no drawing stays longer than 5 frames');
   assert.equal(fr[0], 'vigil0', 'it opens on the wind-up drawing');
-  assert.deepEqual(C.states.vigil.frames.at(-1).sprite, { sheet: 'vigilStance', index: 7 }, 'ends on the loop's last drawing, so the loop continues from its first');
+  assert.deepEqual(C.states.vigil.frames.at(-1).sprite, { sheet: 'vigilStance', index: 7 }, 'ends on the last loop drawing, so the loop continues from its first');
   assert.equal(C.states.vigil.duration, 20, 'still 20 frames');
 });
