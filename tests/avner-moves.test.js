@@ -156,3 +156,24 @@ test('Avner: the walk cycles loop cleanly (six drawings, eight frames each)', ()
     assert.deepEqual(st.frames.map((f) => f.sprite.index).filter((v, i, a) => v !== a[i - 1]), [0, 1, 2, 3, 4, 5]);
   }
 });
+
+test('Avner: hit reactions have their art (standing, crouching, air, tumble, knockdown, KO, getting up, thrown)', () => {
+  const c = loadChar(AVNER);
+  for (const name of ['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'koDown', 'wakeup', 'thrown']) {
+    assert.ok(c.sheets[name], `${name} has a sheet`);
+    assert.ok(c.states[name].frames.every((f) => f.sprite && f.sprite.sheet === name), `${name}: every frame is drawn`);
+  }
+  // The recoil plays first, then the last drawing holds for however long the stun lasts.
+  for (const name of ['hitStand', 'hitCrouch']) {
+    assert.deepEqual(c.states[name].frames.map((f) => f.sprite.index).filter((v, i, a) => v !== a[i - 1]), [0, 1, 2, 3]);
+  }
+  assert.equal(c.states.hitAir.frames.at(-1).sprite.index, 1);
+  assert.deepEqual([...new Set(c.states.tumble.frames.map((f) => f.sprite.index))], [0, 1, 2, 3], 'the tumble spins through its four drawings');
+  assert.equal(c.states.knockdown.frames.at(-1).sprite.index, 1, 'lying flat');
+  assert.ok(c.states.koDown.frames.every((f) => f.sprite.index === 1), 'a KO stays flat (no bounce replay)');
+  assert.equal(c.states.wakeup.frames.at(-1).sprite.index, 2, 'back on his feet');
+  // Art only: the rules of these states are the system's.
+  assert.equal(c.states.knockdown.duration, 40);
+  assert.equal(c.states.wakeup.duration, 12);
+  assert.ok(c.states.tumble.techable && c.states.tumble.loop);
+});

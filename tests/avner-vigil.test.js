@@ -50,7 +50,7 @@ test('Vigil: every move has the frame data and drawing holds of the spec', () =>
   assert.ok(s.vigil.frames.every((f) => !f.armor && !f.invStrike && !f.invThrow && f.hurt.length), 'entry: no armor, no invulnerability');
   assert.equal(s.vigil.next, 'vigilStance');
   assert.deepEqual([s.vigilStance.duration, s.vigilStance.loop, s.vigilStance.timeout, s.vigilStance.timeoutTo, s.vigilStance.onBack], [24, true, 120, 'vigilExit', 'vigilExit']);
-  assert.deepEqual(holds('vigilStance'), [4, 4, 4, 3, 3, 3, 3], 'loop: 7 drawings (the hop was cut) filling the same 24 frames');
+  assert.deepEqual(holds('vigilStance'), [3, 3, 3, 3, 3, 3, 3, 3], 'loop: 8 drawings, 3 frames each');
   assert.ok(!s.vigilStance.free, 'no walking or blocking in the stance');
 
   assert.deepEqual([s.vigilSnap.move.startup, s.vigilSnap.move.active, s.vigilSnap.move.recovery, s.vigilSnap.move.guard], [7, 3, 14, 'low']);

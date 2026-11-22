@@ -26,11 +26,24 @@ the Tests list, after "Flare detonate at full screen vs fizzle;").
 - **Back Heavy (4 + H)** reaches twice as far, with your new drawings (again without the third, the hop, and with the
   lash on the frames that hit). Startup, active, recovery, damage and self-push are untouched.
 
+## Hit reactions (added after the Vigil work, same branch)
+
+Avner now has drawings for being hit. Art only: no rule or number changed.
+
+- **Standing and crouching hits:** the recoil drawings play over the first 12 frames, then the fourth drawing (guard
+  coming back up) holds for whatever hitstun is left.
+- **Air hits:** the first drawing for 5 frames, then the second holds. When the untechable time ends he tumbles
+  through the three spinning drawings and back to the second, 6 frames each, until he techs or lands.
+- **Knockdown:** the landing drawing for 6 frames, then flat on his back. **Getting up** is the last three drawings,
+  4 frames each. A KO stays on the flat drawing.
+- **Held in a throw:** the standing recoil drawing, since there is no drawing for it.
+- The hold lengths are my first pass. The drawings were matched to his standing and crouching size.
+
 ## Which file I used for what
 
 | Your file | Used for |
 | --- | --- |
-| `Avner_VigilStance.png` (the 15:46 version) | Drawing 1: the entry. Drawings 2, 3, 4, 6, 7, 8, 9: the stance loop (drawing 5, the hop, removed as you asked). |
+| `Avner_VigilStance.png` (the earlier animation, which you switched back to) | Drawing 1: the entry. Drawings 2 to 9: the stance loop. |
 | `Avner_VigilStance_MediumPunch.png` | Vigil Crescent (M), drawings 2 to 6. |
 | `Avner_VigilStance_MediumPunch_Projectile_Release_Movement_Impact.png` | The crescent itself: release, flight loop, impact. Your spec calls it `Avner_VigilM_Projectile.png`. |
 | `Avner_VigilStance_S.png` | Flare: top row 1 to 3 the turn, 4 to 6 the detonation; bottom row the fizzle. |
@@ -39,6 +52,8 @@ the Tests list, after "Flare detonate at full screen vs fizzle;").
 | `Avner_BrandMark.png` | The Brand on the opponent while it lasts (as before). |
 | `Avner_BrandHitFlash.png` | The Brand being applied (Snap and the crescent's hit). |
 | `Avner_Back_HeavyPunch.png` (the 16:00 version) | Back Heavy. |
+| `Avner_HitReaction_StandingAndCrouching.png` | Top row: hit while standing. Bottom row: hit while crouching. |
+| `Avner_HitReaction_Air.png` | Top row: 1 and 2 hit in the air, 3, 4, 5 (then 2) the tumble. Bottom row: 1 and 2 the knockdown, 3, 4, 5 getting up. |
 
 **Placeholders** (no sheet found; every one has `placeholder` in its file name, in `sheets/`):
 
@@ -77,11 +92,11 @@ the Tests list, after "Flare detonate at full screen vs fizzle;").
 9. **Back means held back.** If you are still holding back when the stance starts, he steps straight out. A follow-up
    pressed on the same frame wins.
 10. **The 120 frames restart each time he comes back into the stance** (after Snap, M or a detonated Flare).
-11. **With drawing 5 gone the loop has 7 drawings, and I kept it 24 frames long** (holds 4, 4, 4, 3, 3, 3, 3), so
-    the stance's timing and the two effect layers are unchanged. Every follow-up still opens on the loop's first
-    drawing (your drawing 2).
-12. **The stance sheet's second row is drawn about 9% bigger than its first** (the earlier version was 2.5%). I
-    scaled the rows to match by body size. His feet still shift a little between drawings.
+11. **The stance is back on your earlier animation, with all eight loop drawings.** You asked me to remove frame 5
+    while the newer animation was in; that was its hop. The earlier animation has no hop in drawing 5, so I kept
+    all of 2 to 9 (3 frames each, as the spec says). If you want its fifth drawing out too, say so.
+12. **The earlier stance sheet's second row is drawn slightly bigger than its first.** Scaled to match in height;
+    the back foot still shifts about 5 px once per loop.
 13. **Numbers the spec left open, all first guesses in data:** Snap 300 damage and 16 hitstun; crescent 400 damage
     and 18 hitstun; Anchor 500 damage, reach 300 px, hits mid; Flare 300 damage. Follow-ups work whatever direction
     is held.
@@ -101,7 +116,7 @@ the Tests list, after "Flare detonate at full screen vs fizzle;").
 
 ## Tests
 
-201 tests, all passing (20 new in `tests/avner-vigil.test.js`; the old placeholder-stance test was removed with the
+202 tests, all passing (20 new in `tests/avner-vigil.test.js`, 1 for the hit-reaction art; the old placeholder-stance test was removed with the
 placeholder). `npm run build` passes. The new tests cover everything on your list as far as the paste went:
 
 - Each move's frame data and drawing holds.
