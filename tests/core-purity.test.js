@@ -34,3 +34,15 @@ test('src/core has no randomness, clocks, DOM, rendering or floating-point maths
     for (const [re, what] of FORBIDDEN) assert.ok(!re.test(src), `${f} uses ${what}`);
   }
 });
+
+test('src/net (rollback) is just as pure: it re-simulates the core, so it must never add its own variation', () => {
+  const NET = new URL('../src/net/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+  const rules = FORBIDDEN.map(([re, what]) => (what.startsWith('an import')
+    ? [/from ['"]\.\.\/(render|ui|tools)\//, 'an import from render/ui/tools'] : [re, what]));
+  const list = files(NET);
+  assert.ok(list.length >= 3);
+  for (const f of list) {
+    const src = readFileSync(f, 'utf8').replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const [re, what] of rules) assert.ok(!re.test(src), `${f} uses ${what}`);
+  }
+});

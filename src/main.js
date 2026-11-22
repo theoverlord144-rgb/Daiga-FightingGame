@@ -12,6 +12,7 @@ import { createTraining } from './ui/training/training.js';
 import { createFrameMeter } from './ui/training/frame-meter.js';
 import { drawTrainingOverlay } from './ui/training/overlay.js';
 import { openTrainingPanel, loadTrainingSettings } from './ui/training/training-panel.js';
+import { createNetplay, createLiveSyncTest } from './ui/netplay.js';
 
 const { ctx, ui } = setupCanvas();
 const devices = createDevices();
@@ -30,6 +31,46 @@ if (mode === 'lab') {
   addEventListener('keydown', (e) => {
     if (e.code === 'F2') { e.preventDefault(); lab.toggleLeniency(); }
   });
+} else if (mode === 'netplay' || mode === 'synctest') {
+  const chars = loadCharacters();
+  const world = makeWorld(chars[params.get('p1') || 'avner'], chars[params.get('p2') || 'avner']);
+  const renderer = createFightRenderer(ctx, W, H);
+  const caption = (lines, color = '#e8e2d4') => {
+    ctx.textAlign = 'center';
+    ctx.font = '600 14px system-ui';
+    lines.forEach((l, i) => { ctx.fillStyle = i === 0 ? color : '#a99fb8'; ctx.fillText(l, W / 2, 150 + i * 20); });
+  };
+  if (mode === 'netplay') {
+    const side = params.get('side') === '2' ? 2 : 1;
+    const net = createNetplay(world, { side, lag: Number(params.get('lag') || 0), delay: Number(params.get('delay') || 2) });
+    stepFn = () => net.step(panel ? 0 : devices.read(0));
+    drawFn = () => {
+      const s = net.session;
+      renderer.draw(s.game, world, opts);
+      if (!net.started) {
+        caption([`Netplay: you are Player ${side}. Waiting for the other tab...`,
+          `Open this page again with side=${side === 1 ? 2 : 1} in another tab.`]);
+        return;
+      }
+      const st = s.stats;
+      const lines = [
+        st.desync !== null ? `DESYNC at frame ${st.desync}` : `Player ${side} · ping ${net.ping ?? '…'} ms · fake lag ${net.lag}f each way`,
+        `rollbacks ${st.rollbacks} · longest ${st.maxRollback}f · waits ${st.stalls + st.waits}`,
+      ];
+      caption(lines, st.desync !== null ? '#ff6b6b' : '#e8e2d4');
+    };
+  } else {
+    const live = createLiveSyncTest(world, 8);
+    stepFn = () => live.step(panel ? [0, 0] : [devices.read(0), devices.read(1)]);
+    drawFn = () => {
+      renderer.draw(live.game, world, opts);
+      const st = live.status;
+      caption(st.failFrame === null
+        ? [`SYNC TEST OK · ${st.checks} frames rewound 8 and replayed, all identical`]
+        : [`SYNC TEST FAILED at frame ${st.failFrame}`, 'Something in the game is not deterministic or not saved in the state.'],
+      st.failFrame === null ? '#5fd38a' : '#ff6b6b');
+    };
+  }
 } else {
   const chars = loadCharacters();
   const world = makeWorld(chars[params.get('p1') || 'avner'], chars[params.get('p2') || 'avner']);

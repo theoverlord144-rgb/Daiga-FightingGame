@@ -56,7 +56,20 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 6**.
+Current through **Phase 7**.
+
+- **Rollback** (`src/net/`, pure like the core; the purity test covers it): `createSession(world, { local, delay,
+  maxRollback: 8, hashEvery: 10 })`. Frame f = the step taking `game.frame` from f to f+1; `saved[f]` is the state
+  at its start. `addLocalInput(raw)` schedules for frame + delay and always emits an `input` packet carrying every
+  unacked local input (oldest first, up to 64) plus `ack` and `frame`. Unknown remote inputs are predicted as the
+  last contiguous confirmed one; `receive` of a different real input marks `rollbackFrom`; `advance()` restores and
+  re-simulates, then refuses to run (stall) if more than `maxRollback` frames past the confirmed remote input.
+  `shouldWait()` skips a tick when more than 2 frames ahead of the peer (frame sync). Final frames (both inputs
+  known) send `hash` messages every `hashEvery` frames; a mismatch sets `stats.desync`. Transport-agnostic:
+  `sim-network.js` (seeded lag/jitter/loss) for tests, `src/ui/netplay.js` (BroadcastChannel between tabs,
+  `?mode=netplay&side=1|2&lag=N&delay=N`) in the browser. `sync-test.js` / `?mode=synctest`: rewind 8 and replay
+  every frame, demand the same hash. **Anything that affects the game must live in the game state**, or rollback and
+  the sync test break.
 
 - **Training mode** (`src/ui/training/`, the default screen): never touches `src/core/`. `training.js` sits between the
   controllers and `step`: `inputs(game, dev)` returns [P1, P2] raw input (the dummy's input is OR-ed with a real P2
@@ -124,7 +137,8 @@ Current through **Phase 6**.
   walk, stand, auto-face; otherwise only commands/jumps allowed by an open cancel window whose condition matches
   `p.contact`) → fire the frame's one-shot events → physics (x += vx, y += vy, gravity) → stage clamp → landing
   (air state, y ≤ 0, falling → `landTo`). A press is consumed by game frame (`p.consumed`) so one press = one move.
-- **Screens**: `src/main.js` boots Training mode (default) or the Input Lab (`?mode=lab`). `src/render/fight-renderer.js`
+- **Screens**: `src/main.js` boots Training mode (default), the Input Lab (`?mode=lab`), Netplay (`?mode=netplay`)
+  or the live Sync Test (`?mode=synctest`). `src/render/fight-renderer.js`
   draws the stage, fighters (sprites from `data/characters/<id>/` when a sheet image exists, else a placeholder figure
   whose limb reaches to the live hitbox), and the box view.
 
