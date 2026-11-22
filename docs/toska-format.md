@@ -9,7 +9,7 @@ pixels to its integer units (1 px = 100).
 | Version | What it is |
 | --- | --- |
 | 1 | The editor's export: `{ engine: "Toska", version: 1, character, moves[] }`. Moves carry frame data, boxes and a sprite sheet. Always loads. |
-| 2 | Version 1 plus everything the engine adds: `character.stats`, explicit `timeline` events per move, `cancels`, `states` (overrides for system states). Version 1 files are upgraded to 2 on load. |
+| 2 | Version 1 plus everything the engine adds: `character.stats`, explicit `timeline` events per move, `cancels`, `states` (overrides for system states; e.g. `{ "jump": { "loopFrom": 59 } }` makes a looping state restart from that frame instead of 0). Version 1 files are upgraded to 2 on load. |
 
 Every later version must keep loading every earlier one (`tests/character.test.js` checks version 1).
 
@@ -58,7 +58,7 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `throwSwap` | `true` = a back throw: the defender lands on the other side. |
 | `pull` | `{ to, frames }`: on hit (not block) the defender slides toward the attacker, ending `to` px in front of them, over `frames` frames, from any range and in the air too. Replaces pushback. |
 | `perCombo` | `n`: the move can be used at most `n` times in one combo (it won't come out again until the combo ends). Stops loops. |
-| `chain` | Drawing only. `{ hand: [x, y], retract, headLength, segment: sprite, head: sprite }`: a chain drawn from the hand (px from the feet, x forward) to the far tip of the hitbox while it's out, reeling back in over `retract` frames; once the move hits, it runs to the opponent and stays attached while they're pulled in. `segment` is tiled along it, `head` sits at the tip. |
+| `chain` | Drawing only. `{ hand: [x, y], hands: { "<sprite frame>": [x, y] }, retract, headLength, segment: sprite, head: sprite }`: a chain drawn from the hand (px from the feet, x forward) to the far tip of the hitbox while it's out, reeling back in over `retract` frames; once the move hits, it runs to the opponent and stays attached while they're pulled in. `hands` (optional) gives the hand point per sprite frame index, for art where the hand moves; `hand` is the fallback. `segment` is tiled along it, `head` sits at the tip. |
 | `hitFx` | Drawing only. `{ sprite, hold }`: an animation played where the move hits (each drawing held `hold` game frames; it plays through hitstop), instead of the generic spark. |
 
 Version 2 adds per move:
@@ -155,7 +155,7 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `vel` | one-shot | Set velocity `{ x, y }` (px/frame; x is forward). Missing axis = unchanged. |
 | `addVel` | one-shot | Add to velocity. |
 | `velScale` | one-shot | Scale velocity by a percentage out of 10000 `{ x, y }` (an airdash keeping 30% of its speed). |
-| `sound`, `fx` | one-shot | Cue names for the renderer and audio. |
+| `sound`, `fx` | one-shot | Cue names for the renderer and audio. An `fx` name listed in the file's top-level `effects` plays that sheet: `{ "haloArc": { hold, at: [x, y], sprite } }` (drawing only; `at` is px from the feet, x forward; `hold` = game frames per drawing). |
 | `jump` | one-shot | Engine hook: launch a jump from the stats (`"normal"`). |
 | `superFlash` | one-shot | Frames of super flash: the whole game freezes and the screen dims (presses made during it are kept). |
 | `meter`, `gauge` | one-shot | Add meter / mechanic gauge (negative to spend). |
