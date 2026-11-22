@@ -1,11 +1,17 @@
 {
   "engine": "Toska",
   "version": 2,
-  "notes": "PLACEHOLDER moves written by the engine (Phases 2-5) at UMvC3-speed targets, until Yahushua's Toska editor export replaces them. No sprites yet: the game draws a placeholder figure.",
+  "notes": "PLACEHOLDER normals written by the engine (Phases 2-5) at UMvC3-speed targets, until Yahushua's Toska editor export replaces them. Brand of Light (mechanic, Lumen Hook, Reel, Lightstep) is a first pass to tune. Only 5L has art; everything else draws the placeholder figure.",
   "character": {
     "id": "avner",
     "name": "Avner",
     "stats": { "airJumps": 1 }
+  },
+  "mechanic": {
+    "name": "Brand of Light",
+    "vars": {
+      "brand": { "start": 0, "min": 0, "max": 300, "perFrame": -1, "label": "Brand", "display": "timer", "mark": "#fff1b8" }
+    }
   },
   "palettes": {
     "base": ["#d9534f","#ff8a7a","#7a2622"],
@@ -27,13 +33,18 @@
     "3H": ["5S"],
     "j.L": ["j.L", "j.M", "j.H", "j.S"],
     "j.M": ["j.H", "j.S"],
-    "j.H": ["j.S"]
+    "j.H": ["j.S"],
+    "hookL": { "into": ["reel", "lightstep"], "on": ["hit"] },
+    "hookM": { "into": ["reel", "lightstep"], "on": ["hit"] },
+    "hookH": { "into": ["reel", "lightstep"], "on": ["hit"] }
   },
   "moves": [
     { "id": "5L", "name": "Standing Light", "input": "5L", "startup": 4, "active": 2, "recovery": 7,
       "damage": 400, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "mid", "reach": 80,
       "starterProration": 8000,
-      "hitboxes": [[20, 100, 60, 20]] },
+      "hitboxes": [[20, 100, 60, 20]],
+      "sprite": { "image": "sheets/5L.png", "columns": 6, "rows": 1, "count": 6, "frameW": 301, "frameH": 370,
+        "originX": 133, "originY": 368, "scale": 0.5, "holds": [3, 2, 2, 2, 2, 1] } },
     { "id": "5M", "name": "Standing Medium", "input": "5M", "startup": 6, "active": 3, "recovery": 12,
       "damage": 600, "hitstun": 17, "blockstun": 13, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18, "guard": "mid", "reach": 105,
       "starterProration": 9000,
@@ -82,6 +93,27 @@
     { "id": "j.S", "name": "Air Spike", "input": "j.S", "startup": 9, "active": 4, "recovery": 18,
       "damage": 900, "hitstun": 22, "untech": 30, "blockstun": 14, "hitstop": 14, "pushbackHit": 0, "pushbackBlock": 18, "selfPushback": 0, "guard": "high", "reach": 95,
       "airHit": { "x": 1, "y": -14 }, "groundBounce": { "y": 13 },
-      "hitboxes": [[0, -10, 95, 55]] }
+      "hitboxes": [[0, -10, 95, 55]] },
+    { "id": "hookL", "name": "Lumen Hook (L)", "input": "236L", "startup": 13, "active": 3, "recovery": 18,
+      "damage": 700, "hitstun": 24, "blockstun": 12, "hitstop": 10, "pushbackHit": 8, "pushbackBlock": 25, "selfPushback": 10, "guard": "mid", "reach": 210,
+      "starterProration": 9000, "onHit": { "vars": { "brand": 300 } },
+      "hitboxes": [[40, 92, 170, 18]] },
+    { "id": "hookM", "name": "Lumen Hook (M)", "input": "236M", "startup": 15, "active": 3, "recovery": 20,
+      "damage": 750, "hitstun": 24, "blockstun": 12, "hitstop": 10, "pushbackHit": 8, "pushbackBlock": 25, "selfPushback": 10, "guard": "mid", "reach": 250,
+      "starterProration": 9000, "onHit": { "vars": { "brand": 300 } },
+      "hitboxes": [[40, 92, 210, 18]] },
+    { "id": "hookH", "name": "Lumen Hook (H)", "input": "236H", "startup": 18, "active": 4, "recovery": 23,
+      "damage": 800, "hitstun": 24, "blockstun": 12, "hitstop": 10, "pushbackHit": 8, "pushbackBlock": 25, "selfPushback": 10, "guard": "mid", "reach": 290,
+      "starterProration": 9000, "onHit": { "vars": { "brand": 300 } },
+      "hitboxes": [[40, 92, 250, 18]] },
+    { "id": "reel", "name": "Reel", "input": "214H", "startup": 9, "active": 3, "recovery": 22,
+      "damage": 600, "hitstun": 34, "untech": 34, "blockstun": 10, "hitstop": 10, "pushbackBlock": 20, "selfPushback": 10, "guard": "mid", "reach": 360,
+      "comboProration": 8500, "requires": { "vars": { "brand": [1, 300] } }, "perCombo": 1, "pull": { "to": 70, "frames": 10 },
+      "timeline": [{ "at": 0, "setVar": { "brand": 0 } }],
+      "hitboxes": [[40, 40, 320, 110]] },
+    { "id": "lightstep", "name": "Lightstep", "input": "214L", "startup": 1, "active": 0, "recovery": 22,
+      "requires": { "vars": { "brand": [1, 300] } },
+      "timeline": [{ "at": 0, "setVar": { "brand": 0 } }, { "at": 2, "toOpponent": { "to": 70, "frames": 8 } }],
+      "cancels": [{ "from": 12, "to": 21, "into": ["#normal"], "on": ["whiff"] }] }
   ]
 }

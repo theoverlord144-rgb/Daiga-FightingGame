@@ -296,7 +296,12 @@ function applyStrike(game, world, r) {
     enterState(d, ddef, ddef.states[d.state].stance === 'crouch' ? 'hitCrouch' : 'hitStand');
   }
   d.stun = stun;
-  if (!airborne && !move.launch) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
+  if (move.pull) {
+    // Pull-in: the defender slides toward the attacker (instead of pushback), ending pull.to in front of them.
+    if (inAir) d.vx = 0;
+    const gap = Math.abs(d.x - a.x) - move.pull.to;
+    startSlide(d, gap > 0 ? -away * gap : 0, move.pull.frames);
+  } else if (!airborne && !move.launch) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
   cue(game, counter ? 'counter' : 'hit', a, rect, { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale });
 }
 

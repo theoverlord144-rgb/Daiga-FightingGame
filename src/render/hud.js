@@ -114,7 +114,8 @@ export function createHud(ctx, W) {
     for (const [k, v] of Object.entries(mech?.vars || {})) {
       if (!v.show) continue;
       const n = p.vars[k];
-      line += v.max <= 6 ? `${v.label} ${'●'.repeat(n)}${'○'.repeat(Math.max(0, v.max - n))}  ` : `${v.label} ${n}  `;
+      if (v.display === 'timer') line += n > 0 ? `${v.label} ${(n / 60).toFixed(1)}s  ` : '';
+      else line += v.max <= 6 ? `${v.label} ${'●'.repeat(n)}${'○'.repeat(Math.max(0, v.max - n))}  ` : `${v.label} ${n}  `;
     }
     if (line) {
       ctx.font = `600 12px ${FONT}`;

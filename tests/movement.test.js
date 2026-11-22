@@ -6,9 +6,9 @@ import { createGame, step } from '../src/core/game.js';
 import { pct } from '../src/core/fixed.js';
 import { loadWorld, loadChar, script, SYSTEM } from './helpers.js';
 
-const AVNER = loadChar('data/characters/avner/avner.toska.json');
-const S = AVNER.stats; // units and frames
-const W = loadWorld(AVNER, AVNER);
+const FIGHTER = loadChar('tests/fixtures/fighter.toska.json');
+const S = FIGHTER.stats; // units and frames
+const W = loadWorld(FIGHTER, FIGHTER);
 
 /** P1 far left, P2 far right, so nothing gets in the way. */
 function setup(world = W) {
@@ -113,9 +113,9 @@ test('backdash: distance, invincible frames, recovery', () => {
   assert.equal(count(snaps, 'backdash'), S.backdashFrames);
   assert.equal(count(snaps, 'backdashStop'), S.backdashRecovery);
   assert.equal(g.players[0].x - x0, -S.walkBack - S.backdashFrames * S.backdashSpeed);
-  const inv = AVNER.states.backdash.frames.filter((f) => f.invStrike && f.invThrow).length;
+  const inv = FIGHTER.states.backdash.frames.filter((f) => f.invStrike && f.invThrow).length;
   assert.equal(inv, S.backdashInvuln);
-  assert.ok(frameOf(AVNER, 'backdash', 0).invStrike);
+  assert.ok(frameOf(FIGHTER, 'backdash', 0).invStrike);
 });
 
 test('airdash: flat, exact distance, keeps part of its speed after, once per jump', () => {
@@ -173,8 +173,8 @@ test('every movement number is per character: a different character moves differ
 });
 
 test('UMvC3-speed defaults: 4-frame lights, fast dashes and airdashes', () => {
-  assert.equal(AVNER.states['5L'].move.startup, 4);
-  assert.equal(AVNER.states['2L'].move.startup, 4);
+  assert.equal(FIGHTER.states['5L'].move.startup, 4);
+  assert.equal(FIGHTER.states['2L'].move.startup, 4);
   assert.ok(S.dashSpeed * S.dashFrames >= 18000, 'a dash covers at least 180 px');
   assert.ok(S.dashFrames + S.dashRecovery <= 16, 'and is over in 16 frames');
   assert.ok(S.airdashSpeed >= 1400);

@@ -205,7 +205,7 @@ test('ground bounce: once per combo, then a knockdown', () => {
 // ---------- Gatlings and cancels from data ----------
 
 test('gatling legality comes from the table: forward routes only, on contact only', () => {
-  const A = loadChar('data/characters/avner/avner.toska.json');
+  const A = loadChar('tests/fixtures/fighter.toska.json');
   const into = (m) => new Set(A.states[m].cancels.flatMap((c) => [...c.into]));
   assert.ok(into('5L').has('5M') && into('5L').has('5S'));
   assert.ok(!into('5M').has('5L'), 'no going back down');
@@ -228,7 +228,7 @@ test('gatlings in play: 5L > 5M works on hit, 5M > 5L does not', () => {
   hit(g, '5L');
   step(g, [RAW.M, 0], W);
   assert.equal(g.players[0].state, '5M');
-  const A = loadChar('data/characters/avner/avner.toska.json');
+  const A = loadChar('tests/fixtures/fighter.toska.json');
   const w = loadWorld(A, A);
   const g2 = createGame(w);
   g2.players[0].x = px(-60);
@@ -243,7 +243,7 @@ test('gatlings in play: 5L > 5M works on hit, 5M > 5L does not', () => {
 // ---------- Launcher into air combo ----------
 
 test('launcher: both fighters go up, and the air combo connects', () => {
-  const A = loadChar('data/characters/avner/avner.toska.json');
+  const A = loadChar('tests/fixtures/fighter.toska.json');
   const w = loadWorld(A, A);
   const g = createGame(w);
   g.players[0].x = px(-50);

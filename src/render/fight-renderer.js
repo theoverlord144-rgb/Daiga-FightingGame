@@ -7,7 +7,9 @@ import { createHud } from './hud.js';
 import { createStageRenderer } from './stage-renderer.js';
 import { paletteSheet, placeholderColors } from './palette.js';
 
-const SPRITE_URLS = import.meta.glob('../../data/characters/*/**/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
+// Game-ready sheets only (data/characters/<id>/sheets/): raw art dropped elsewhere in a character's folder is not
+// shipped with the game.
+const SPRITE_URLS = import.meta.glob('../../data/characters/*/sheets/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
 const images = new Map();
 
 function spriteImage(charId, path) {
@@ -99,6 +101,33 @@ export function createFightRenderer(ctx, W, H) {
     }
   }
 
+  /**
+   * Marks the opponent carries (a mechanic var with a `mark` colour, e.g. Avner's brand): a ring of light at the
+   * waist and a glow, pulsing, fading out over the last second.
+   */
+  function drawOpponentMarks(p, opp, oppDef, frame) {
+    for (const [k, v] of Object.entries(oppDef.mechanic?.vars || {})) {
+      const n = opp.vars[k];
+      if (!v.mark || !(n > 0)) continue;
+      const [x, y] = toScreen(p.x, p.y + 9000);
+      const fade = Math.min(1, n / 60);
+      const pulse = 0.75 + 0.25 * Math.sin(frame * 0.25);
+      ctx.save();
+      ctx.globalAlpha = fade * pulse;
+      const glow = ctx.createRadialGradient(x, y, 4, x, y, 70);
+      glow.addColorStop(0, `${v.mark}aa`);
+      glow.addColorStop(1, `${v.mark}00`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - 70, y - 70, 140, 140);
+      ctx.strokeStyle = v.mark;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 40, 11, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   function drawPlaceholder(p, def, fr, col) {
     // On the floor (knockdown, KO): no hurtbox, and the figure lies down, head away from the opponent's side.
     if (!fr.hurt.length && p.y === 0 && (p.state === 'knockdown' || p.state === 'koDown')) {
@@ -165,12 +194,13 @@ export function createFightRenderer(ctx, W, H) {
     const fh = sheet.frameH ?? img.naturalHeight / sheet.rows;
     const ox = sheet.originX ?? fw / 2;
     const oy = sheet.originY ?? fh;
+    const k = sheet.scale ?? 1; // sheets stored larger than game size (sharper on big screens) are drawn at this scale
     const col = s.index % sheet.columns;
     const row = Math.floor(s.index / sheet.columns);
     const [sx, sy] = toScreen(p.x, p.y);
     ctx.save();
     ctx.translate(sx, sy);
-    ctx.scale(p.facing, 1);
+    ctx.scale(p.facing * k, k);
     ctx.drawImage(img, col * fw, row * fh, fw, fh, -ox, -oy, fw, fh); // img: the sheet in this palette
     ctx.restore();
     return true;
@@ -263,6 +293,7 @@ export function createFightRenderer(ctx, W, H) {
         const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
         if (!drawSprite(p, def, fr, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
         ctx.globalAlpha = 1;
+        drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame);
         if (opts.boxes) drawBoxes(p, fr);
         if (opts.labels) {
           const [lx, ly] = toScreen(p.x, p.y + 18500 + p.id * 1600);

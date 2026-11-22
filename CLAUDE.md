@@ -40,10 +40,11 @@ doesn't read code. **Every report to him is in plain words.**
 | `src/ui/` | Menus, HUD, training overlays, input devices (keyboard, gamepad, bindings). |
 | `src/tools/` | Editors and importers' browser front-ends. |
 | `src/net/` | Rollback netcode. |
-| `data/characters/<id>/` | Character JSON (the Toska export and engine data) and sprites. |
+| `data/characters/<id>/` | Character JSON (the Toska export and engine data). Game-ready sheets in `sheets/` (only those ship); raw art can sit beside them. |
+| `scripts/` | Node tools: `sprite-prep.mjs` (drawn strip → sheet) and `png.mjs` (dependency-free PNG read/write). |
 | `data/system/` | Engine-wide tunables (motions, SOCD, combo, meter, burst, match rules). |
 | `data/stages/` | Stage files (parallax layers; drawing only). |
-| `tests/` | Node's built-in test runner. |
+| `tests/` | Node's built-in test runner. `tests/fixtures/fighter.toska.json` is a frozen copy of Avner (Phase 9) that every frame-data test uses, so real characters can be retuned freely; never tune it. |
 | `docs/reports/` | The plain-words report for each phase. |
 
 ## Commands
@@ -57,7 +58,15 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 9** (all phases of the brief done).
+Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand of Light** (report `docs/reports/avner-brand.md`).
+
+- **Brand of Light** (Avner's mechanic, all data): var `brand` (frames, 300 max, -1 per frame, `display: timer`,
+  `mark`). Lumen Hook (`hookL/M/H`, 236 + L/M/H) adds 300 on hit and gatlings into `reel` / `lightstep` on hit
+  only. Reel (214H) and Lightstep (214L) `require` brand ≥ 1 and `setVar` it to 0 on frame 0. Engine pieces, general
+  for any character: move `pull` (combat.js, a slide toward the attacker instead of pushback), timeline event
+  `toOpponent` (fighter.js, a slide toward the opponent), move `perCombo` (`pickCommand` skips a command whose
+  move is already in the opponent's `combo.used` that many times). The renderer draws mechanic vars with a `mark`
+  as a ring on the opponent (`drawOpponentMarks`). Tests: `tests/brand.test.js`.
 
 - **The game** (Phase 9). `src/main.js` with no `?mode=` runs `src/ui/app.js`: one screen at a time from
   `src/ui/screens/` (title → select → versus splash/fight with pause and results, training, settings), switched with

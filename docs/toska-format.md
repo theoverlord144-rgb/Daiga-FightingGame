@@ -46,7 +46,7 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `hurtboxes` | Hurtboxes for the whole move (default: the stance's hurtbox). |
 | `counterHit` | `"all"` (default: the whole move is in counter-hit state), `"startup+active"`, or `"none"`. |
 | `negativeEdge` | `true` lets releasing the button fire the move. |
-| `sprite` | `{ image, columns, rows, count, holds, frameW, frameH, originX, originY }`. `holds[i]` = game frames sprite `i` shows; missing = spread evenly. |
+| `sprite` | `{ image, columns, rows, count, holds, frameW, frameH, originX, originY, scale }`. `image` is a path inside the character's folder, and only `sheets/` is shipped with the game (raw art can sit anywhere else in the folder). `holds[i]` = game frames sprite `i` shows; missing = spread evenly; a move lasts startup − 1 + active + recovery frames (startup counts the first active frame). `scale`: sheets stored larger than game size are drawn at this scale (0.5 = stored at 2×). Make sheets with `node scripts/sprite-prep.mjs` (below). |
 | `chip` | Damage dealt through a block (default 0). |
 | `blockHitstop` | Hitstop on block (default: `hitstop`). |
 | `airBlockable` | `false` = can't be blocked in the air (default `true`). |
@@ -56,6 +56,8 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `throwboxes` | `[[x, y, w, h]]` during active frames: makes the move a throw (checked against the defender's throw-hurtbox). |
 | `throwDistance` | px between the fighters while the throw holds (default 70). |
 | `throwSwap` | `true` = a back throw: the defender lands on the other side. |
+| `pull` | `{ to, frames }`: on hit (not block) the defender slides toward the attacker, ending `to` px in front of them, over `frames` frames, from any range and in the air too. Replaces pushback. |
+| `perCombo` | `n`: the move can be used at most `n` times in one combo (it won't come out again until the combo ends). Stops loops. |
 
 Version 2 adds per move:
 - `timeline`: extra frame events (below), applied after the generated ones.
@@ -102,6 +104,9 @@ becomes the EX version (the one-button cost is refunded).
 }
 ```
 A **gauge** (one number with a max) and named **vars** (small counters, clamped to min/max, ticking by `perFrame`).
+A var can also say how it's shown (drawing only): `"display": "timer"` shows frames as seconds in the HUD (and
+nothing at 0), and `"mark": "#rrggbb"` makes the opponent glow with a ring of that colour while the var is above 0
+(Avner's brand).
 Moves use them through `cost`, `requires`, `onHit`/`onBlock`/`onWhiff` and the `addVar`/`setVar`/`gauge`
 timeline events. **Modifiers** apply while their `when` holds; `damagePct` multiplies the damage dealt. A move or
 event naming a var that isn't declared is an error when the file loads. The HUD shows the gauge and every var with
@@ -152,6 +157,18 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `superFlash` | one-shot | Frames of super flash: the whole game freezes and the screen dims (presses made during it are kept). |
 | `meter`, `gauge` | one-shot | Add meter / mechanic gauge (negative to spend). |
 | `addVar`, `setVar` | one-shot | `{ name: n }`: change a mechanic var. |
+| `toOpponent` | one-shot | `{ to, frames }`: slide to the opponent, stopping `to` px in front of them, over `frames` frames (never past them; pushboxes still apply). |
+
+## Making a sprite sheet
+
+`node scripts/sprite-prep.mjs <drawn strip.png> data/characters/<id>/sheets/<move>.png --frames N [--order 1,4,3,...] [--height 180] [--res 2] [--anchor front|rear]`
+
+Takes a strip of drawings on a flat background colour (read from the top-left pixel, e.g. magenta), drawn facing
+right, left to right. It removes the background with soft edges (no coloured fringe), splits the strip into N
+drawings (drawings may touch: each connected piece stays with the drawing it mostly belongs to), puts them in
+`--order` (numbers as drawn), stands every frame on one floor line, keeps the planted foot (`--anchor`, front by
+default) in the same place, and scales the last frame in the order to `--height` game px, stored at `--res`×. It
+prints the `sprite` block to paste into the move (add `holds`).
 
 ## Stages (`data/stages/<id>.json`)
 
