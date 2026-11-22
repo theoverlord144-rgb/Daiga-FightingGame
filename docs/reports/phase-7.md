@@ -32,7 +32,7 @@
   waiting, the game keeps sending, so the two sides can never end up waiting on each other forever.
 
 ## Tests
-- 113 tests, all passing. New:
+- 112 tests, all passing. New:
   - **The sync test over 6,000 frames of real fighting** (over 50 hits and blocks), rewinding 8 frames every frame:
     never differs.
   - The same at every rewind distance from 1 to 12 frames.
