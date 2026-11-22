@@ -148,24 +148,6 @@ test('Avner: dashes, air dash and blocks have their art', () => {
   assert.equal(c.states.airdashEnd.frames[c.states.airdashEnd.loopFrom].sprite.index, 2, 'falling loops on the last drawing');
 });
 
-test('Avner: Vigil Stance (22S) takes one hit without flinching, and goes into Lumen Hook from the stance', () => {
-  const c = loadChar(AVNER);
-  const w = loadWorld(c, c);
-  const g = placed(w, 70);
-  const full = g.players[0].health;
-  run(g, w, '2 5 2+S 5*14', '5*8 5+L 5*8');
-  assert.equal(g.players[0].state, 'vigil', 'still in the stance after the jab');
-  assert.ok(g.players[0].health < full, 'the hit still hurts');
-  run(g, w, '5*10 2 3 6+L 5');
-  assert.equal(g.players[0].state, 'hookL');
-  // A second hit inside one stance gets through.
-  const g2 = placed(w, 70);
-  run(g2, w, '2 5 2+S 5*40', '5*8 5+L 5*14 5+L 5*16');
-  assert.equal(g2.players[0].state, 'hitStand', 'the armour only takes one hit');
-  // The stance can't be cancelled into itself (that would be endless armour).
-  assert.ok(!c.states.vigil.cancels.some((k) => k.into.has('vigil') || k.into.has('#special')));
-});
-
 test('Avner: the walk cycles loop cleanly (six drawings, eight frames each)', () => {
   const c = loadChar(AVNER);
   for (const name of ['walkF', 'walkB']) {

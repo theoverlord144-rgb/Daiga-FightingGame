@@ -7,7 +7,7 @@
 import { createInputState, pushInput, BTN } from './input.js';
 import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from './match.js';
 import { createFighter, advanceAndDecide, move, land } from './fighter.js';
-import { separate, resolveHits, checkThrowBreaks, throwLands } from './combat.js';
+import { separate, resolveHits, checkThrowBreaks, throwLands, moveProjectiles, resolveProjectiles } from './combat.js';
 import { px } from './fixed.js';
 
 export const FPS = 60;
@@ -47,6 +47,7 @@ export function createGame(world) {
     cues: [],
     flash: 0, // super flash: frames the whole game stays frozen
     flashBy: -1,
+    projectiles: [], // live projectiles: { owner, kind, x, y, facing, age } (their definitions stay in the character)
     match: world.match ? createMatch(world) : null, // rounds and timer (null in training)
     players: [0, 1].map((i) => ({
       id: i,
@@ -103,6 +104,7 @@ export function step(state, rawInputs, world) {
 
   const hooks = { throwLands: (p) => throwLands(state, world, p) };
   for (const p of ps) if (!frozen[p.id]) advanceAndDecide(state, p, ps[1 - p.id], world.chars[p.id], world, hooks);
+  moveProjectiles(state, world);
   for (const p of ps) if (!frozen[p.id]) move(state, p, world.chars[p.id], world);
   separate(state, world);
   for (const p of ps) if (!frozen[p.id]) land(state, p, world.chars[p.id], world);
@@ -116,6 +118,7 @@ export function step(state, rawInputs, world) {
     }
   }
   resolveHits(state, world, frozen);
+  resolveProjectiles(state, world);
   if (state.match) matchAfter(state, world);
   return state;
 }

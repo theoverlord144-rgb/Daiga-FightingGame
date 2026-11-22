@@ -170,7 +170,8 @@ function resolveStrike(game, world, a, d, rect, snap) {
 
   const firstOfUse = a.hitsDone === 0; // later hits of a multi-hit move are the same use of it
   a.hitsDone |= 1 << fa.hitId;
-  const out = { a, d, move, block, away, rect, moveId: snap[a.id].state, firstOfUse };
+  const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0; // read before the hit's own gains
+  const out = { a, d, move, block, away, rect, moveId: snap[a.id].state, firstOfUse, stagger };
 
   if (!block && fd.armor > d.armorUsed) {
     out.kind = 'armor';
@@ -215,13 +216,18 @@ function applyStrike(game, world, r) {
   const battle = world.battle;
   const maxHp = ddef.stats.health;
 
+  // A projectile's hit (r.proj) is its owner's hit for damage, meter and combos, but the owner's body isn't part
+  // of it: no contact flag, no hitstop and no pushback on them.
+  const body = !r.proj;
+
   if (r.kind === 'armor') {
     d.armorUsed++;
-    a.contact = CONTACT.HIT;
+    if (body) a.contact = CONTACT.HIT;
     gains(world, a, d, move, 'hit', 0);
     applyDamage(d, ddef, gutsDamage(pct(move.damage, battle.armorDamagePct), d.health, maxHp, battle));
-    a.hitstop = d.hitstop = move.hitstop;
-    cue(game, 'armor', a, rect, { move: a.state });
+    d.hitstop = move.hitstop;
+    if (body) a.hitstop = move.hitstop;
+    cue(game, 'armor', a, rect, { move: r.moveId });
     return;
   }
 
@@ -229,21 +235,23 @@ function applyStrike(game, world, r) {
   d.facing = -away;
 
   if (r.kind === 'block') {
-    a.contact = CONTACT.BLOCK;
+    if (body) a.contact = CONTACT.BLOCK;
     gains(world, a, d, move, 'block', 0);
     applyDamage(d, ddef, move.chip);
-    a.hitstop = d.hitstop = move.blockHitstop;
+    d.hitstop = move.blockHitstop;
+    if (body) a.hitstop = move.blockHitstop;
     enterState(d, ddef, r.block === 'air' ? 'blockAir' : r.block === 'crouch' ? 'blockCrouch' : 'blockStand');
     d.stun = move.blockstun;
-    pushback(world, a, d, away, move.pushbackBlock, move.selfPushback);
-    cue(game, 'block', a, rect, { move: a.state });
+    if (body) pushback(world, a, d, away, move.pushbackBlock, move.selfPushback);
+    else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackBlock, battle.pushbackFrames);
+    cue(game, 'block', a, rect, { move: r.moveId });
     return;
   }
 
   const counter = r.kind === 'counter';
   const ch = battle.counterHit;
   const C = world.combo;
-  a.contact = CONTACT.HIT;
+  if (body) a.contact = CONTACT.HIT;
 
   // The combo this hit belongs to (a new one if the defender wasn't already being comboed).
   const starter = !d.combo;
@@ -272,11 +280,12 @@ function applyStrike(game, world, r) {
   if (r.firstOfUse) combo.used[moveId] = used + 1;
   gains(world, a, d, move, 'hit', dmg);
 
-  a.hitstop = d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
+  d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
+  if (body) a.hitstop = d.hitstop;
   // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
   const airborne = isAirborne(ddef, d);
   const inAir = !!(move.launch || airborne);
-  const rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (counter ? ch.hitstunAdd : 0);
+  const rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (counter ? ch.hitstunAdd : 0) + (r.stagger | 0);
   const stun = Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, combo.time)));
 
   // Bounces: armed by the move, each kind limited per combo.
@@ -301,8 +310,66 @@ function applyStrike(game, world, r) {
     if (inAir) d.vx = 0;
     const gap = Math.abs(d.x - a.x) - move.pull.to;
     startSlide(d, gap > 0 ? -away * gap : 0, move.pull.frames);
-  } else if (!airborne && !move.launch) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
-  cue(game, counter ? 'counter' : 'hit', a, rect, { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale });
+  } else if (!airborne && !move.launch) {
+    if (body) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
+    else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackHit, battle.pushbackFrames);
+  }
+  if (body && move.onHitState) {
+    // An animation branch on hit (a catch): still the same use of the move, so it keeps its contact.
+    enterState(a, world.chars[a.id], move.onHitState);
+    a.contact = CONTACT.HIT;
+  }
+  cue(game, counter ? 'counter' : 'hit', a, rect, { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale, stagger: r.stagger | 0 });
+}
+
+// ---------- Projectiles ----------
+
+/** Every projectile flies one frame forward (before this frame's spawns, so a new one starts where it was put). */
+export function moveProjectiles(game, world) {
+  for (const pr of game.projectiles) {
+    pr.x += world.chars[pr.owner].projectiles[pr.kind].speed * pr.facing;
+    pr.age++;
+  }
+}
+
+/**
+ * Projectiles against each other, then against the opponent, then the stage edge and their lifetime.
+ * Two opposing projectiles that touch both vanish. A hit or a block uses the projectile up.
+ */
+export function resolveProjectiles(game, world) {
+  const list = game.projectiles;
+  if (!list.length) return;
+  const gone = new Array(list.length).fill('');
+  const pdef = (pr) => world.chars[pr.owner].projectiles[pr.kind];
+  for (let i = 0; i < list.length; i++) {
+    for (let j = i + 1; j < list.length; j++) {
+      if (gone[i] || gone[j] || list[i].owner === list[j].owner) continue;
+      if (contact(list[i], pdef(list[i]).hitbox, list[j], pdef(list[j]).hitbox)) gone[i] = gone[j] = 'clash';
+    }
+  }
+  const half = world.battle.halfWidthUnits;
+  list.forEach((pr, i) => {
+    if (gone[i]) return;
+    const def = pdef(pr);
+    const a = game.players[pr.owner];
+    const d = game.players[1 - pr.owner];
+    const ddef = world.chars[d.id];
+    const fd = frameOf(ddef, d.state, d.frame);
+    const rect = fd.invStrike ? null : contact(pr, def.hitbox, d, fd.hurt);
+    if (rect) {
+      const move = def.move;
+      const away = pr.facing; // it pushes the way it flies, and is blocked by holding away from where it came from
+      const block = blockKind(d, ddef, { x: d.x - away }, move, world);
+      const kind = !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : fd.counter ? 'counter' : 'hit';
+      const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
+      applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: true, kind, stagger, proj: pr });
+      gone[i] = kind === 'block' ? 'block' : 'hit';
+    } else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
+  });
+  list.forEach((pr, i) => {
+    if (gone[i]) game.cues.push({ type: 'projectileEnd', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, facing: pr.facing, why: gone[i] });
+  });
+  game.projectiles = list.filter((_, i) => !gone[i]);
 }
 
 /** Percent from a decay table at combo time t: the last row whose time has been reached. */
@@ -412,6 +479,10 @@ export function resolveHits(game, world, frozen) {
     const fq = snap[q.id].fr;
     if (!live(p) || !fp.hit.length || !fp.hitId || (p.hitsDone & (1 << fp.hitId)) || p.hitsDone === -1) return null;
     if (fq.invStrike) return null;
+    const mv = world.chars[p.id].states[snap[p.id].state].move;
+    if (mv?.hitRequires && !meets(p, mv.hitRequires)) return null; // e.g. only a branded opponent can be hit
+    // A remote hit lands wherever the opponent is: the "contact" is their body (their position if they have no hurtbox).
+    if (mv?.remote) return fq.hurt[0] ? worldBox(q, fq.hurt[0]) : [q.x, q.y, q.x, q.y];
     return contact(p, fp.hit, q, fq.hurt);
   };
   const throwOf = (p, q) => {
@@ -435,7 +506,8 @@ export function resolveHits(game, world, frozen) {
     // Clash: both hitboxes meet but neither reaches a hurtbox.
     const fa = snap[a.id].fr;
     const fb = snap[b.id].fr;
-    const fresh = (p, f) => live(p) && f.hit.length && f.hitId && !(p.hitsDone & (1 << f.hitId)) && p.hitsDone !== -1;
+    const boxed = (p) => { const mv = world.chars[p.id].states[snap[p.id].state].move; return !(mv?.remote || (mv?.hitRequires && !meets(p, mv.hitRequires))); };
+    const fresh = (p, f) => live(p) && f.hit.length && f.hitId && !(p.hitsDone & (1 << f.hitId)) && p.hitsDone !== -1 && boxed(p);
     if (fresh(a, fa) && fresh(b, fb)) {
       const rect = contact(a, fa.hit, b, fb.hit);
       if (rect) {

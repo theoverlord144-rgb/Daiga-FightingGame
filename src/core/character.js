@@ -108,7 +108,7 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
@@ -161,6 +161,12 @@ function compileMoveData(m, ctx = {}) {
     // Pull-in: on hit the defender slides toward the attacker, ending `to` px in front of them, over `frames`.
     pull: m.pull ? { to: px(m.pull.to ?? 70), frames: Math.max(1, m.pull.frames ?? 8) } : null,
     perCombo: m.perCombo ?? 0, // > 0: the move can hit at most this many times in one combo (no loops)
+    // Conditions on the attacker's own resources (same shape as `requires`), read at the moment of the hit:
+    hitRequires: m.hitRequires ? condition(m.hitRequires) : null, // unmet: the hitbox touches nothing at all
+    stagger: m.stagger ? { when: condition(m.stagger.when), hitstun: m.stagger.hitstun | 0 } : null, // met: extra hitstun
+    onHitState: m.onHitState ?? null, // on hit (not block) the attacker switches to this state (an animation branch)
+    remote: !!m.remote, // the hit lands wherever the opponent is (no box check)
+    oneAtATime: m.oneAtATime ?? null, // a projectile name: the move can't start while the fighter has one out
     // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
     chain: m.chain ?? null,
     hitFx: m.hitFx ?? null,
@@ -172,6 +178,32 @@ function compileMoveData(m, ctx = {}) {
     onBlock: resources(m.onBlock),
     onWhiff: resources(m.onWhiff),
   };
+}
+
+/** A condition on a fighter's resources: { meter, gauge, vars: { name: min or [min, max] } }. */
+const condition = (r) => ({ meter: r?.meter | 0, gauge: r?.gauge | 0, vars: { ...(r?.vars || {}) } });
+
+/**
+ * Projectiles: objects a move spawns with a `spawn` timeline event. Each lives in the game state (position, age),
+ * flies straight, and hits once with its own frame data (the same fields as a move's).
+ *   projectiles: { name: { speed, spawn: [x, y], hitbox: [x, y, w, h] (from its leading edge), lifetime, ...frame data } }
+ */
+function compileProjectiles(src) {
+  const out = {};
+  for (const [name, p] of Object.entries(src || {})) {
+    const sp = p.spawn ?? [0, 0];
+    out[name] = {
+      name,
+      speed: px(p.speed ?? 0),
+      spawn: [px(sp[0]), px(sp[1])],
+      hitbox: boxes([p.hitbox ?? [0, 0, 0, 0]]),
+      lifetime: p.lifetime ?? 600,
+      move: compileMoveData(p, { kind: 'special' }),
+      sprite: p.sprite ?? null, // drawing only
+      anim: p.anim ?? null,
+    };
+  }
+  return out;
 }
 
 /**
@@ -235,8 +267,10 @@ function compileState(name, src, stats, extra = {}) {
     const m = extra.move;
     const first = m.startup - 1;
     if (extra.hurtboxes) events.push({ at: 0, hurt: boxes(extra.hurtboxes) });
-    if (extra.hitboxes && m.active > 0) {
-      events.push({ at: first, hit: boxes(extra.hitboxes) });
+    // A remote hit has no real box: an empty-sized one keeps the usual "a hit is out" bookkeeping (hit ids).
+    const hb = extra.hitboxes ?? (m.remote ? [[0, 0, 0, 0]] : null);
+    if (hb && m.active > 0) {
+      events.push({ at: first, hit: boxes(hb) });
       events.push({ at: first + m.active, hit: [] });
     }
     if (extra.throwboxes && m.active > 0) {
@@ -330,6 +364,12 @@ function compileState(name, src, stats, extra = {}) {
     throwVictim: !!src.throwVictim,
     techable: !!src.techable,
     next: src.next ?? (stance === 'air' ? 'fall' : 'idle'),
+    // Branches and held stances (all optional):
+    nextIf: (src.nextIf || []).map((b) => ({ when: condition(b.when), to: b.to })), // at the end: the first whose condition holds, else `next`
+    timeout: src.timeout ?? 0, // frames in the state (loops included) before it leaves by itself to timeoutTo
+    timeoutTo: src.timeoutTo ?? src.next ?? 'idle',
+    onBack: src.onBack ?? null, // holding back leaves to this state (a pressed follow-up wins)
+    layers: src.layers ?? null, // drawing only: effects drawn in step with the state's sprite
     landTo: src.landTo ?? 'land',
     duration,
     move: extra.move ?? null,
@@ -384,9 +424,14 @@ export function compileCharacter(file, system) {
     if (spriteMove?.sprite) sheets[name] = spriteMove.sprite;
     states[name] = compileState(name, src, stats, { sheet: spriteMove?.sprite, sheetName: name });
   }
+  // A character's own states (stances, animation branches) can carry art, like moves do.
   for (const [name, src] of Object.entries(t.states || {})) {
-    if (!states[name]) states[name] = compileState(name, src, stats, {});
+    if (states[name]) continue;
+    if (src.sprite) sheets[name] = src.sprite;
+    states[name] = compileState(name, src, stats, { sheet: src.sprite, sheetName: name });
   }
+  const projectiles = compileProjectiles(t.projectiles ?? file.projectiles);
+  for (const p of Object.values(projectiles)) checkVars(ch.id, p.name, mechanic, [p.move.onHit, p.move.onBlock, p.move.stagger?.when]);
 
   // Universal moves (burst), unless the character defines its own with the same id.
   const universal = Object.entries(system.burst?.moves || {}).filter(([id]) => !moveIds.has(id))
@@ -399,7 +444,8 @@ export function compileCharacter(file, system) {
     const kind = inferKind(m, parsed);
     const stance = inferStance(m, parsed);
     const move = compileMoveData(m, { kind, meter: system.meter, chord: !!parsed && parsed.buttons.length > 1 });
-    checkVars(ch.id, m.id, mechanic, [move.cost, move.requires, move.onHit, move.onBlock, move.onWhiff]);
+    checkVars(ch.id, m.id, mechanic, [move.cost, move.requires, move.onHit, move.onBlock, move.onWhiff, move.hitRequires, move.stagger?.when]);
+    if (move.oneAtATime && !projectiles[move.oneAtATime]) throw new Error(`${ch.id}: move ${m.id} names unknown projectile ${move.oneAtATime}`);
     if (m.sprite) sheets[m.id] = m.sprite;
     const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id], kind, move)];
     states[m.id] = compileState(m.id, { ...m, stance, next: m.next ?? (stance === 'air' ? 'fall' : stance === 'crouch' ? 'crouch' : 'idle') }, stats, {
@@ -412,6 +458,8 @@ export function compileCharacter(file, system) {
         air: parsed.air,
         motion: parsed.motion,
         dir: parsed.dir,
+        anyDir: !!m.anyDir, // a plain button that works whatever direction is held (stance follow-ups)
+        oneAtATime: move.oneAtATime,
         buttons: parsed.buttons,
         negativeEdge: !!m.negativeEdge,
         neutral: m.neutral !== false, // false: only reachable from a cancel window that names it (chains, follow-ups)
@@ -429,9 +477,13 @@ export function compileCharacter(file, system) {
       for (const s of shots) {
         if (s.type === 'addVar' || s.type === 'setVar') checkVars(ch.id, st.name, mechanic, [{ vars: s.value }]);
         if (s.type === 'gauge' && !mechanic.gauge) throw new Error(`${ch.id}: ${st.name} changes the gauge, but the mechanic has none`);
+        if (s.type === 'spawn' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value}`);
       }
     }
-    if (!states[st.next]) throw new Error(`${ch.id}: state ${st.name} goes to unknown state ${st.next}`);
+    for (const to of [st.next, st.timeout ? st.timeoutTo : null, st.onBack, st.move?.onHitState, ...st.nextIf.map((b) => b.to)]) {
+      if (to && !states[to]) throw new Error(`${ch.id}: state ${st.name} goes to unknown state ${to}`);
+    }
+    for (const b of st.nextIf) checkVars(ch.id, st.name, mechanic, [b.when]);
     for (const c of st.cancels) {
       for (const into of c.into) {
         if (!into.startsWith('#') && !states[into]) throw new Error(`${ch.id}: ${st.name} cancels into unknown move ${into}`);
@@ -460,7 +512,7 @@ export function compileCharacter(file, system) {
 
   const meterMax = stats.units.meterBars * (system.meter?.barSize ?? 10000);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, upgrades, palettes: compilePalettes(ch.id, t.palettes),
+    sheets, mechanic, meterMax, upgrades, projectiles, palettes: compilePalettes(ch.id, t.palettes),
     effects: t.effects ?? file.effects ?? {} }; // drawing only: named sheet effects for `fx` cues
 }
 

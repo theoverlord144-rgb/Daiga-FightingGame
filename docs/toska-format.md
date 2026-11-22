@@ -58,6 +58,13 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `throwSwap` | `true` = a back throw: the defender lands on the other side. |
 | `pull` | `{ to, frames }`: on hit (not block) the defender slides toward the attacker, ending `to` px in front of them, over `frames` frames, from any range and in the air too. Replaces pushback. |
 | `perCombo` | `n`: the move can be used at most `n` times in one combo (it won't come out again until the combo ends). Stops loops. |
+| `hitRequires` | A condition on the attacker (same shape as `requires`), read when the hitbox touches: unmet, it touches nothing at all (Anchor only hits a branded opponent). |
+| `stagger` | `{ when, hitstun }`: extra hitstun when the attacker meets `when` at the moment of the hit (read before the hit's own `onHit`). |
+| `onHitState` | On hit (not block) the attacker switches to this state: an animation branch (a catch). |
+| `remote` | `true`: the hit lands wherever the opponent is, with no box check (it still respects invincibility and `guard`). |
+| `oneAtATime` | A projectile name: the move can't start while the fighter has one of those out. |
+| `anyDir` | `true`: a plain-button input (`"L"`) that works whatever direction is held (stance follow-ups; pair with `neutral: false`). |
+| `nextIf` | `[{ when, to }]`: when the move ends, go to the first `to` whose condition holds, else `next`. |
 | `chain` | Drawing only. `{ hand: [x, y], hands: { "<sprite frame>": [x, y] }, retract, headLength, segment: sprite, head: sprite }`: a chain drawn from the hand (px from the feet, x forward) to the far tip of the hitbox while it's out, reeling back in over `retract` frames; once the move hits, it runs to the opponent and stays attached while they're pulled in. `hands` (optional) gives the hand point per sprite frame index, for art where the hand moves; `hand` is the fallback. `segment` is tiled along it, `head` sits at the tip. |
 | `hitFx` | Drawing only. `{ sprite, hold }`: an animation played where the move hits (each drawing held `hold` game frames; it plays through hitstop), instead of the generic spark. |
 
@@ -161,6 +168,30 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `meter`, `gauge` | one-shot | Add meter / mechanic gauge (negative to spend). |
 | `addVar`, `setVar` | one-shot | `{ name: n }`: change a mechanic var. |
 | `toOpponent` | one-shot | `{ to, frames }`: slide to the opponent, stopping `to` px in front of them, over `frames` frames (never past them; pushboxes still apply). |
+| `spawn` | one-shot | A projectile name (top-level `projectiles`): one appears at its `spawn` offset, facing the way the fighter faces. |
+
+## `states` (top level): a character's own states
+
+Overrides for system states (`"walkF": { "duration": 48 }`), and new states of the character's own: stances and
+animation branches. A new state takes `duration`, `loop`, `loopFrom`, `next`, `nextIf`, `cancels`, `timeline`, a
+`sprite` (like a move's), and:
+
+| Field | Meaning |
+| --- | --- |
+| `timeout`, `timeoutTo` | Frames in the state, loops included, before it leaves by itself to `timeoutTo`. |
+| `onBack` | Holding back leaves to this state (a follow-up pressed on the same frame wins). |
+| `layers` | Drawing only: `[{ effect, behind }]`, named `effects` drawn with the state, one pass of the effect per pass of the state. |
+
+## `projectiles` (top level)
+
+`{ name: { speed, spawn: [x, y], hitbox: [x, y, w, h], lifetime, ...frame data, sprite, anim } }`. Pixels and frames.
+A projectile is an object in the game state (`game.projectiles`: owner, kind, x, y, facing, age). Its position is
+its leading edge; `hitbox` is measured from there (x forward). It flies `speed` px a frame, hits once with its own
+frame data (the move fields: `damage`, `hitstun`, `blockstun`, `hitstop`, `guard`, pushbacks, `onHit`, `stagger`,
+`hitFx`), and ends on hit, on block, on touching an opposing projectile (both end), past the stage wall, or after
+`lifetime` frames. Its hit is its owner's hit (damage, meter, combo) but puts no hitstop or pushback on the owner.
+Drawing only: `sprite` (with `additive: true` for light on black) and `anim: { release, loop, impact }`, hold lists
+over the sheet's frames in that order; the impact frames play where it ended (cue `projectileEnd`).
 
 ## Making a sprite sheet
 

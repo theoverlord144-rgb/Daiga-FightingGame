@@ -293,6 +293,49 @@ export function createFightRenderer(ctx, W, H) {
     return true;
   }
 
+  /** Effects a state carries in step with its own drawings (a stance's aura behind, its light trail in front). */
+  function drawLayers(p, def, fr, behind) {
+    const layers = def.states[p.state]?.layers;
+    if (!layers || !fr.sprite) return;
+    for (const l of layers) {
+      if (!!l.behind !== behind) continue;
+      const e = def.effects[l.effect];
+      if (!e) continue;
+      const at = e.at ?? [0, 0];
+      const [x, y] = toScreen(p.x + p.facing * at[0] * UNIT, p.y + at[1] * UNIT);
+      // One pass of the effect per pass of the state, whatever the number of drawings on either side.
+      const st = def.states[p.state];
+      const at2 = Math.min(st.duration - 1, p.frame);
+      drawSheetFrame(def, e.sprite, Math.floor((at2 * e.sprite.count) / st.duration) % e.sprite.count, x, y, p.facing);
+    }
+  }
+
+  /** A sheet frame for an animation given as hold lengths, at age t: [index into the holds, finished?]. */
+  function heldFrame(holds, t, loop) {
+    const total = holds.reduce((a, b) => a + b, 0);
+    if (t >= total) { if (!loop) return [holds.length - 1, true]; t %= total; }
+    let i = 0;
+    while (t >= holds[i]) t -= holds[i++];
+    return [i, false];
+  }
+
+  /** Live projectiles (game state) and the ones that just ended (their impact frames, where they vanished). */
+  function drawProjectiles(game, world) {
+    for (const pr of game.projectiles) {
+      const def = world.chars[pr.owner];
+      const d = def.projectiles[pr.kind];
+      if (!d?.sprite) continue;
+      const rel = d.anim?.release ?? [], loop = d.anim?.loop ?? [1];
+      const relLen = rel.reduce((a, b) => a + b, 0);
+      const index = pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0];
+      const [x, y] = toScreen(pr.x, pr.y);
+      ctx.save();
+      if (d.sprite.additive) ctx.globalCompositeOperation = 'lighter';
+      drawSheetFrame(def, d.sprite, index, x, y, pr.facing);
+      ctx.restore();
+    }
+  }
+
   function drawBoxes(p, fr) {
     const sets = [
       [fr.push, '#ffffff', 0.08],
@@ -324,6 +367,7 @@ export function createFightRenderer(ctx, W, H) {
   // slow display runs several steps between two draws and the cues of the earlier ones would be lost (effects and
   // sparks that never appear); draw() picks up the frame it sees if nobody did.
   let collected = -1;
+  const lastVars = [{}, {}]; // drawing only: last seen mechanic vars, to notice a mark running out
   function collect(game, world) {
     if (game.frame === collected) return;
     collected = game.frame;
@@ -333,11 +377,33 @@ export function createFightRenderer(ctx, W, H) {
         const at = named.at ?? [0, 0];
         effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: named.sprite.count * (named.hold ?? 3) });
       }
+      if (c.type === 'projectileEnd') {
+        // The projectile's impact frames play where it hit or vanished.
+        const d = world.chars[c.p]?.projectiles[c.name];
+        if (d?.sprite && d.anim?.impact) {
+          const first = (d.anim.release?.length ?? 0) + (d.anim.loop?.length ?? 0);
+          effects.push({ proj: d, def: world.chars[c.p], first, x: c.x, y: c.y, facing: c.facing, age: 0, life: d.anim.impact.reduce((a, b) => a + b, 0) - 1 });
+        }
+      }
       if (!SPARK[c.type]) continue;
-      // A move with its own hit effect (art) shows that instead of the generic spark.
-      const fx = (c.type === 'hit' || c.type === 'counter') && world.chars[c.p]?.states[c.move]?.move?.hitFx;
+      // A move (or projectile) with its own hit effect (art) shows that instead of the generic spark.
+      const src = world.chars[c.p];
+      const fx = (c.type === 'hit' || c.type === 'counter') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
       if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
       if (!fx || c.type === 'counter') effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+    }
+    // A mark that runs out (the Brand fading by itself) plays its fizzle on the opponent.
+    for (const p of game.players) {
+      const def = world.chars[p.id];
+      const o = game.players[1 - p.id];
+      for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
+        const was = lastVars[p.id][k] ?? 0;
+        lastVars[p.id][k] = p.vars[k];
+        if (v.mark?.fizzle && was === 1 && p.vars[k] === 0) {
+          const f = v.mark.fizzle;
+          effects.push({ sheet: f, def, x: o.x, y: o.y + (v.mark.at ?? 90) * UNIT, age: 0, life: f.sprite.count * (f.hold ?? 3) });
+        }
+      }
     }
     for (const e of effects) e.age++;
     for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
@@ -407,7 +473,9 @@ export function createFightRenderer(ctx, W, H) {
         ctx.fill();
         if (flashing && p.id !== game.flashBy) ctx.globalAlpha = 0.45;
         const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
+        drawLayers(p, def, fr, true);
         if (!drawSprite(p, def, fr, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
+        drawLayers(p, def, fr, false);
         drawChain(p, def, game.players[1 - p.id]);
         ctx.globalAlpha = 1;
         drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame);
@@ -420,9 +488,25 @@ export function createFightRenderer(ctx, W, H) {
           ctx.fillText(`${p.state} ${p.frame}${p.hitstop ? ` (stop ${p.hitstop})` : ''}${p.stun ? ` stun ${p.stun}` : ''}`, lx, ly);
         }
       }
+      drawProjectiles(game, world);
+      if (opts.boxes) {
+        for (const pr of game.projectiles) {
+          const [bx, by, bw, bh] = boxRect(pr, world.chars[pr.owner].projectiles[pr.kind].hitbox[0]);
+          ctx.strokeStyle = '#ff3b3b';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
+        }
+      }
       // Sparks.
       for (const e of effects) {
         const [sx, sy] = toScreen(e.x, e.y);
+        if (e.proj) {
+          ctx.save();
+          if (e.proj.sprite.additive) ctx.globalCompositeOperation = 'lighter';
+          drawSheetFrame(e.def, e.proj.sprite, e.first + heldFrame(e.proj.anim.impact, e.age - 1, false)[0], sx, sy, e.facing);
+          ctx.restore();
+          continue;
+        }
         if (e.sheet) {
           drawSheetFrame(e.def, e.sheet.sprite, Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
           continue;

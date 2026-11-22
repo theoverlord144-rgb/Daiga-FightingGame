@@ -21,6 +21,7 @@ export function createFighter(def, side, x) {
     facing: side === 0 ? 1 : -1,
     state: 'idle',
     frame: 0,
+    stateTime: 0, // frames spent in the current state, loops included (held stances time out on it)
     stun: 0,
     hitstop: 0,
     freezeAge: 0, // hitstop frames since this fighter last acted: presses made during hitstop stay buffered
@@ -102,6 +103,7 @@ export function enterState(p, def, name) {
   }
   p.state = name;
   p.frame = 0;
+  p.stateTime = 0;
   p.contact = CONTACT.NONE;
   p.hitsDone = 0;
   p.armorUsed = 0;
@@ -165,6 +167,13 @@ export function fireOnEnter(game, p, def) {
         startSlide(p, dist > 0 ? dir * dist : 0, v.frames);
         break;
       }
+      case 'spawn': {
+        // A projectile: its own object in the game state from here on (see combat.js).
+        const d = def.projectiles[v];
+        game.projectiles.push({ owner: p.id, kind: v, x: p.x + p.facing * d.spawn[0], y: p.y + d.spawn[1], facing: p.facing, age: 0 });
+        game.cues.push({ p: p.id, type: 'spawn', name: v, x: p.x, y: p.y, facing: p.facing });
+        break;
+      }
       case 'setVar':
         for (const [k, n] of Object.entries(v)) {
           const d = def.mechanic.vars[k];
@@ -178,7 +187,7 @@ export function fireOnEnter(game, p, def) {
 /** Is a command's direction/stance satisfied right now? */
 function stanceOk(cmd, def, p, dir) {
   if (cmd.air !== isAirborne(def, p)) return false;
-  if (cmd.motion) return true;
+  if (cmd.motion || cmd.anyDir) return true;
   const d = cmd.dir;
   if (d === '5') return cmd.air ? true : dir >= 4; // any non-down
   if (d === '2') return dir <= 3;
@@ -226,6 +235,7 @@ function pickCommand(game, p, def, world, allowed) {
     if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
     if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
     if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
+    if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.oneAtATime)) continue;
     const presses = commandInput(game, p, cmd, world, buffer);
     if (presses) return { cmd, presses };
   }
@@ -305,8 +315,16 @@ function decide(game, p, opp, def, world) {
     }
   }
 
+  // A held stance: holding back steps out of it (a pressed follow-up wins, below).
+  const backOut = () => {
+    if (!st.onBack) return false;
+    const d = relDirAt(p.input, 0, p.facing);
+    if (d !== 1 && d !== 4 && d !== 7) return false;
+    enterState(p, def, st.onBack);
+    return true;
+  };
   const windows = st.free ? null : openCancels(st, p);
-  if (!st.free && !windows.length) return;
+  if (!st.free && !windows.length) { backOut(); return; }
   if (st.free && !air) {
     if (opp.x > p.x) p.facing = 1;
     else if (opp.x < p.x) p.facing = -1;
@@ -321,6 +339,7 @@ function decide(game, p, opp, def, world) {
     startCommand(p, def, pick);
     return;
   }
+  if (backOut()) return;
 
   const inp = p.input;
   const rules = world.input;
@@ -380,9 +399,11 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
     }
   } else {
     p.frame++;
-    if (p.frame >= st.duration) {
+    p.stateTime++;
+    if (st.timeout && p.stateTime >= st.timeout) enterState(p, def, st.timeoutTo);
+    else if (p.frame >= st.duration) {
       if (st.loop) p.frame = st.loopFrom;
-      else enterState(p, def, st.next);
+      else enterState(p, def, (st.nextIf.find((b) => meets(p, b.when)) || { to: st.next }).to);
     }
   }
   // Burst: from a combo, with a full gauge, the burst buttons together.
