@@ -76,8 +76,8 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
   `data/UniversalEffects/`), rules in `data/system/effects.json` (hit row by the move's base damage, counter one
   size up, block row; additive). `collect` in fight-renderer.js pushes them from hit/counter/block cues; a move's
   own `hitFx` wins; the code-drawn sparks remain for clash, armor, throws, bounces and burst.
-- **Malik** (`data/characters/malik/`): second cast character, so far idle, both walks (art cut with
-  sprite-prep at scale 0.68635, 186 px tall) and Standing Light (5L, first-pass numbers copied from Avner); default stats, placeholder figure for every other state.
+- **Malik** (`data/characters/malik/`): second cast character, so far idle, both walks and 5L / 5M (two hits) / 5H, all art cut to one body
+  size (186 px tall; the two-row punch sheets are laid into one strip first). Punch numbers are a first pass copied from Avner; default stats, placeholder figure for every other state.
 - **Box editor** (title menu, dev server only; `?mode=editor&move=5H&frame=8`): `src/ui/screens/box-editor.js`
   (screen, mouse), `src/editor/box-model.js` (pure: which place in the Toska file a frame's hurt / hit boxes come
   from, mirroring `compileState`; edits; `diffOps`), `scripts/json-edit.mjs` (changes values inside the file's

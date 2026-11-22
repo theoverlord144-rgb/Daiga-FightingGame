@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move), ['5L'], 'one attack so far');
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['5H', '5L', '5M'], 'three punches so far');
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -236,7 +236,7 @@ test('Malik: Standing Light comes out on frame 4, is drawn with the arm out whil
   assert.ok(st.frames.every((f) => f.sprite && f.sprite.sheet === '5L'));
   const active = st.frames.map((f, i) => (f.hit.length ? i : -1)).filter((i) => i >= 0);
   assert.deepEqual(active, [3, 4]);
-  for (const i of active) assert.equal(st.frames[i].sprite.index, 3, 'the full-extension drawing');
+  for (const i of active) assert.equal(st.frames[i].sprite.index, 2, 'hits on drawing 3');
   assert.equal(st.frames.at(-1).sprite.index, 5, 'ends back in his stance');
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -246,4 +246,30 @@ test('Malik: Standing Light comes out on frame 4, is drawn with the arm out whil
   for (const raw of script('5+L 5*8')) step(game, [raw, 0], world);
   assert.equal(game.players[1].health, hp - 400);
   assert.equal(game.players[1].state, 'hitStand');
+});
+
+test('Malik: Standing Medium hits twice, on drawings 4 and 5; Standing Heavy hits on drawing 4 and skips drawn frames 5 and 6', () => {
+  const c = loadChar('data/characters/malik/malik.toska.json');
+  const m = c.states['5M'];
+  const hits = m.frames.map((f, i) => (f.hit.length ? [i, f.hitId, f.sprite.index] : null)).filter(Boolean);
+  assert.deepEqual([...new Set(hits.map((h) => h[1]))].length, 2, 'two separate hits');
+  assert.deepEqual([...new Set(hits.filter((h) => h[1] === hits[0][1]).map((h) => h[2]))], [3], 'first hit on drawing 4');
+  assert.deepEqual([...new Set(hits.filter((h) => h[1] !== hits[0][1]).map((h) => h[2]))], [4], 'second hit on drawing 5');
+  const h = c.states['5H'];
+  assert.equal(c.sheets['5H'].count, 6, 'eight drawn, two left out');
+  assert.deepEqual([...new Set(h.frames.filter((f) => f.hit.length).map((f) => f.sprite.index))], [3], 'hits on drawing 4');
+  assert.deepEqual(h.frames.map((f, i) => (f.hit.length ? i : -1)).filter((i) => i >= 0), [8, 9, 10]);
+
+  // In a match: both hits of 5M connect as one two-hit combo; 5L chains into 5M into 5H.
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  let game = createGame(world);
+  game.players[0].x = -px(30); game.players[1].x = px(30);
+  let most = 0;
+  for (const raw of script('5+M 5*40')) { step(game, [raw, 0], world); most = Math.max(most, game.players[1].combo?.hits ?? 0); }
+  assert.equal(most, 2);
+  game = createGame(world);
+  game.players[0].x = -px(30); game.players[1].x = px(30);
+  most = 0;
+  for (const raw of script('5+L 5*10 5+M 5*24 5+H 5*40')) { step(game, [raw, 0], world); most = Math.max(most, game.players[1].combo?.hits ?? 0); }
+  assert.equal(most, 4, 'light, medium twice, heavy');
 });
