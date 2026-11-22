@@ -53,7 +53,7 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `knockdown` | `true` = knocks a standing opponent down. |
 | `launch` | `{ x, y }` px/frame: sends the defender into the air (x = away from the attacker). |
 | `airHit` | `{ x, y }`: how an airborne defender is knocked away (default in `battle.json`). |
-| `throwboxes` | `[[x, y, w, h]]` during active frames: makes the move a throw (checked against the defender's throw-hurtbox). |
+| `throwboxes` | `[[x, y, w, h]]` during active frames: makes the move a throw (checked against the defender's throw-hurtbox). A throw only comes out when its box would reach an opponent who can be thrown right now; otherwise the input falls through to the next move it matches. So a strike can share a throw's input (Avner's `4H`: back throw up close, Back Heavy from farther; list the throw first), and `6H` out of range gives `5H`. |
 | `throwDistance` | px between the fighters while the throw holds (default 70). |
 | `throwSwap` | `true` = a back throw: the defender lands on the other side. |
 | `pull` | `{ to, frames }`: on hit (not block) the defender slides toward the attacker, ending `to` px in front of them, over `frames` frames, from any range and in the air too. Replaces pushback. |
@@ -146,7 +146,7 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | Field | Lasting / one-shot | Meaning |
 | --- | --- | --- |
 | `sprite` | lasting | `{ sheet, index }` or a number (index on the move's own sheet). |
-| `hit` | lasting | Hitboxes `[[x,y,w,h]]`; `[]` removes them. Each new `hit` event is a new hit (multi-hit moves). Optional `hitProps` overrides frame data for that hit. |
+| `hit` | lasting | Hitboxes `[[x,y,w,h]]`; `[]` removes them. Each new `hit` event is a new hit (multi-hit moves). Optional `hitProps` overrides frame data for that hit (same fields and units as the move; only the ones named). |
 | `hurt`, `push`, `throw`, `throwHurt` | lasting | Box sets. |
 | `invuln` | lasting | `{ "strike": true, "throw": false }` |
 | `armor` | lasting | Number of hits absorbed (0 = none). |
@@ -165,7 +165,7 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 ## Making a sprite sheet
 
 All options are listed at the top of `scripts/sprite-prep.mjs`. Fighter strips:
-`node scripts/sprite-prep.mjs <drawn strip.png> data/characters/<id>/sheets/<move>.png --frames N [--order 1,4,3,...] [--height 180] [--res 2] [--anchor front|rear|center] [--floor frame|common]`
+`node scripts/sprite-prep.mjs <drawn strip.png> data/characters/<id>/sheets/<move>.png --frames N [--order 1,4,3,...] [--height 180] [--res 2] [--anchor front|rear|center|slot] [--floor frame|common|<y>] [--tilt 2:12,3:12]`
 (`--anchor center --floor common` for moves that travel or leave the ground; `--scale k` to size a crouching
 move like the standing ones: every run prints the scale it used; `--order` may list only some frames, e.g. `1,2,3,6`). Effects in a grid:
 `--grid 4x2 [--count 7] --size 110 --key black` (glow drawn on black). Art that already has transparency keeps it.
@@ -210,3 +210,5 @@ Heights are pixels above the ground line.
 Every character gets the states in `data/system/common-states.json` (idle, crouch, walks, jump, landing, and the
 hit, block and knockdown states). A character can override any of them under `states` (version 2), or by giving a
 move in its version 1 export the same `id` (useful for sprites: a move with `"id": "idle"` gives idle its sheet).
+Stun states (hit, block) last as long as the stun: their art plays once through its `holds`, then the last drawing
+stays (a block: the pushed-back drawing, then the guard).

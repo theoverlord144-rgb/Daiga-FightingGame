@@ -220,7 +220,9 @@ function compileState(name, src, stats, extra = {}) {
   const stance = src.stance ?? 'stand';
   const isMove = !!extra.move;
   let duration;
-  if (src.stun) duration = 1;
+  // Stun states last as long as the stun counter; their table is only as long as their art (holds), and the last
+  // frame repeats (frameOf clamps), so a block can show its pushback drawing, then hold the guard.
+  if (src.stun) duration = Array.isArray(extra.sheet?.holds) ? Math.max(1, extra.sheet.holds.slice(0, extra.sheet.count).reduce((a, b) => a + b, 0)) : 1;
   else if (src.duration !== undefined) duration = ref(src.duration, stats, 'frames');
   else if (isMove) duration = Math.max(1, extra.move.startup - 1 + extra.move.active + extra.move.recovery);
   else duration = 1;
@@ -349,6 +351,8 @@ function normalizeEvent(e, stats, sheetName) {
       if (v.x !== undefined) out[k].x = ref(v.x, stats, 'px');
       if (v.y !== undefined) out[k].y = ref(v.y, stats, 'px');
     } else if (k === 'sprite') out[k] = typeof v === 'number' ? { sheet: sheetName, index: v } : v;
+    // A hit's own frame data: converted like the move's (distances to units), keeping only the fields it names.
+    else if (k === 'hitProps') { const full = compileMoveData(v); out[k] = Object.fromEntries(Object.keys(v).filter((f) => f in full).map((f) => [f, full[f]])); }
     else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
     else out[k] = v;
   }
@@ -414,6 +418,7 @@ export function compileCharacter(file, system) {
         cost: move.cost,
         requires: move.requires,
         perCombo: move.perCombo,
+        throw: !!(m.throwboxes && m.throwboxes.length && move.active > 0), // a throw only comes out with the opponent in range
       });
     }
   }

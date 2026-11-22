@@ -58,7 +58,7 @@ doesn't read code. **Every report to him is in plain words.**
 
 ## How the core runs
 
-Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand of Light** (report `docs/reports/avner-brand.md`) and his art (`avner-art.md`, `avner-hook.md`).
+Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand of Light** (report `docs/reports/avner-brand.md`) and his art (`avner-art.md`, `avner-hook.md`, `avner-moves.md`).
 
 - **Brand of Light** (Avner's mechanic, all data): var `brand` (frames, 300 max, -1 per frame, `display: timer`,
   `mark`). Lumen Hook (`hookL/M/H`, 236 + L/M/H) adds 300 on hit and gatlings into `reel` / `lightstep` on hit
@@ -70,7 +70,7 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
 - **Art in the renderer** (all drawing-only data the core carries but never reads): move `chain` (`drawChain`: hand
   → hitbox tip, or → opponent after a hit while they slide), move `hitFx` (a sheet effect spawned from the hit cue,
   aged per game frame so it plays through hitstop), var `mark.sprite`. `drawSheetFrame` draws one frame of any sheet
-  (no palette). Move `chain.hands` gives the hand point per sprite frame; top-level `effects` are named sheets a timeline `fx` cue plays (Halo Rise arc). The fighter in an attack is drawn in front for the whole move (`front` in fight-renderer.js; ties keep the last). Avner has art for idle, crouch, jump/fall/land, 5L, 5M, 5H, 2L, 2M, 5S, j.L, j.M, the Hooks (9 drawings, 8 used; drawn straight chain erased so the engine chain is the only one), Halo Rise (623 L/M/H), Reel, Lightstep; raw drawings stay beside `sheets/`. Report: `docs/reports/avner-hook.md`.
+  (no palette). Move `chain.hands` gives the hand point per sprite frame; top-level `effects` are named sheets a timeline `fx` cue plays (Halo Rise arc). The fighter in an attack is drawn in front for the whole move (`front` in fight-renderer.js; ties keep the last). Avner has art for idle, crouch, jump/fall/land, 5L, 5M, 5H, 2L, 2M, 5S, j.L, j.M, the Hooks (9 drawings, 8 used; drawn straight chain erased so the engine chain is the only one), Halo Rise (623 L/M/H), Reel, Lightstep, Back Heavy (`backHeavy`, 4H), the two-hit Air Heavy (j.H, a second `hit` event with `hitProps`), dashes, air dash and the three blocks (stun states take their table length from the sheet's `holds`, last drawing holds); raw drawings stay beside `sheets/`. Walk cycles (`walkF`/`walkB` are 48 frames for Avner). Vigil Stance (`vigil`, 22S) is a placeholder design until Yahushua says what it does: one hit of armor on frames 6-45, cancels into the Hooks and Halo Rise, effects `vigilRing` and `vigilGlint`. Screens call `renderer.notice(game, world)` after every step so cues are never missed when several steps run between draws; all sheets preload. **Throws only come out in range** (`throwInRange` in `pickCommand`: a command with `throw` is skipped unless its grab box touches a throwable opponent now, so 4H = back throw up close, else Back Heavy; 6H out of range = 5H). Reports: `docs/reports/avner-hook.md`, `avner-moves.md`. Tests: `tests/avner-moves.test.js`.
 
 - **The game** (Phase 9). `src/main.js` with no `?mode=` runs `src/ui/app.js`: one screen at a time from
   `src/ui/screens/` (title → select → versus splash/fight with pause and results, training, settings), switched with

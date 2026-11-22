@@ -14,10 +14,11 @@
 // - black: glow drawn on black. Brightness becomes opacity, so the glow keeps its soft falloff over any stage.
 // Fighter strips:
 // - Splits the strip into --frames drawings (drawings may touch: each connected piece stays with the drawing it
-//   mostly belongs to; --cuts x1,x2,... places the dividing lines by hand when drawings overlap) and puts them in --order (numbers as drawn, counted from 1, left to right).
+//   mostly belongs to; --tilt 2:12 leans drawing 2 forward 12 degrees; --cuts x1,x2,... places the dividing lines by hand when drawings overlap) and puts them in --order (numbers as drawn, counted from 1, left to right).
 // - Stands every frame on the floor: its own lowest point (--floor frame, default) or the strip's shared floor line
-//   (--floor common: for jumps and leaps drawn in the air). Keeps one anchor still: the planted foot (--anchor
-//   front, default; rear) or the body's centre (center, for moves that travel). The fighter's centre is placed
+//   (--floor common: for jumps and leaps drawn in the air), or a fixed source y (--floor 640: strips built by hand). Keeps one anchor still: the planted foot (--anchor
+//   front, default; rear) or the body's centre (center, for moves that travel), or the middle of the frame's slot
+//   between cuts (slot, for strips built with the body centred in each slot). The fighter's centre is placed
 //   over the last frame's body centre.
 // - Scales so the last frame's figure is --height game pixels tall, or by a fixed --scale (sheet px per drawn px,
 //   printed by every run): use the idle's scale for every move drawn at the same size, crouching ones included.
@@ -90,6 +91,7 @@ if (key === 'alpha') {
 const SOLID = 0.5;
 const owner = new Int8Array(W * H).fill(-1);
 let count;
+let slots = null; // fighter strips: [left, right] source x of each frame's region between cuts (for --anchor slot)
 if (GRID) {
   const [gc, gr] = GRID.split('x').map(Number);
   count = Number(opt('count', gc * gr));
@@ -102,7 +104,9 @@ if (GRID) {
 } else {
   // Drawings on a strip often touch (a scarf or chain crossing into the next frame), so: cut the strip at the
   // emptiest columns between frames, then keep each connected piece of a drawing whole, with the frame holding
-  // most of it. Pieces that really run across a cut are split at the cut.
+  // most of it. Pieces that really run across a cut are split at the cut. Pieces are traced through solid pixels
+  // only: a soft glow or halo around the drawings would otherwise join neighbours into one piece and get it sliced
+  // at the cut. Faint pixels then go to the nearest solid piece they touch (up to FAINT_REACH px away).
   const colCount = new Int32Array(W);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (alpha[y * W + x] > SOLID) colCount[x]++;
   let first = 0, last = W - 1;
@@ -121,12 +125,13 @@ if (GRID) {
     for (let x = Math.round(mid - span / 3); x <= Math.round(mid + span / 3); x++) if (colCount[x] < colCount[best]) best = x;
     cuts.push(best);
   }
+  slots = Array.from({ length: count }, (_, i) => [i ? cuts[i - 1] : 0, i < count - 1 ? cuts[i] : W]); // end slots run to the image edges
   const region = (x) => { let r = 0; while (r < cuts.length && x >= cuts[r]) r++; return r; };
   const label = new Int32Array(W * H).fill(-1);
   const stack = new Int32Array(W * H);
   let next = 0;
   for (let i0 = 0; i0 < W * H; i0++) {
-    if (label[i0] >= 0 || alpha[i0] <= 0.02) continue;
+    if (label[i0] >= 0 || alpha[i0] <= SOLID) continue;
     const id = next++;
     const massBy = new Float64Array(count);
     let sp = 0, total = 0;
@@ -142,15 +147,80 @@ if (GRID) {
         const nx = x + dx, ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
         const n = ny * W + nx;
-        if (label[n] < 0 && alpha[n] > 0.02) { label[n] = id; stack[sp++] = n; }
+        if (label[n] < 0 && alpha[n] > SOLID) { label[n] = id; stack[sp++] = n; }
       }
     }
     let top = 0;
     for (let r = 1; r < count; r++) if (massBy[r] > massBy[top]) top = r;
-    const whole = massBy[top] >= total * 0.9;
+    const whole = massBy[top] >= total * 0.6; // a limb reaching past the cut stays whole; two touching drawings (about half and half) are split
     for (const k of members) owner[k] = whole ? top : region(k % W);
   }
+  // Faint pixels (glow, soft edges): grow each frame's solid pixels outward through them, breadth first, so each
+  // takes the owner of the nearest solid pixel; anything farther than FAINT_REACH falls back to its cut region.
+  const FAINT_REACH = 40;
+  const dist = new Int16Array(W * H).fill(-1);
+  let queue = [];
+  for (let k = 0; k < W * H; k++) if (owner[k] >= 0) { dist[k] = 0; queue.push(k); }
+  while (queue.length) {
+    const nextQ = [];
+    for (const k of queue) {
+      if (dist[k] >= FAINT_REACH) continue;
+      const x = k % W, y = (k - x) / W;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const n = ny * W + nx;
+        if (dist[n] >= 0 || alpha[n] <= 0.02) continue;
+        dist[n] = dist[k] + 1; owner[n] = owner[k]; nextQ.push(n);
+      }
+    }
+    queue = nextQ;
+  }
+  for (let k = 0; k < W * H; k++) if (owner[k] < 0 && alpha[k] > 0.02) owner[k] = region(k % W);
   console.error(`${count} frames, cut at x = ${cuts.join(', ')}`);
+}
+
+// --tilt 2:12,3:12: turn those drawings (numbered as drawn) by that many degrees around their own centre, positive
+// leaning forward (clockwise, as the strip faces right). Done before framing, so the frame fits the turned drawing.
+if (opt('tilt', '')) {
+  for (const part of opt('tilt').split(',')) {
+    const [n, deg] = part.split(':').map(Number);
+    const fi = n - 1;
+    if (!(fi >= 0 && fi < count) || !Number.isFinite(deg)) throw new Error(`--tilt: bad entry "${part}"`);
+    let l = W, r = -1, t = H, b = -1;
+    for (let k = 0; k < W * H; k++) if (owner[k] === fi && alpha[k] > 0.02) { const x = k % W, y = (k - x) / W; if (x < l) l = x; if (x > r) r = x; if (y < t) t = y; if (y > b) b = y; }
+    if (r < 0) continue;
+    const cx = (l + r) / 2, cy = (t + b) / 2, rad = Math.hypot(r - l, b - t) / 2 + 2;
+    const th = (deg * Math.PI) / 180, c = Math.cos(th), sn = Math.sin(th);
+    const x0 = Math.max(0, Math.floor(cx - rad)), x1 = Math.min(W - 1, Math.ceil(cx + rad));
+    const y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(H - 1, Math.ceil(cy + rad));
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+    const na = new Float32Array(bw * bh), nc = new Float32Array(bw * bh * 3);
+    const src = (x, y) => { if (x < 0 || y < 0 || x >= W || y >= H) return -1; const k = y * W + x; return owner[k] === fi ? k : -1; };
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      // the source point that turns onto (x, y): turn back by -th (bilinear, this drawing's pixels only)
+      const dx = x - cx, dy = y - cy;
+      const sx = cx + dx * c + dy * sn, sy = cy - dx * sn + dy * c;
+      const ix = Math.floor(sx), iy = Math.floor(sy), fx = sx - ix, fy = sy - iy;
+      let A = 0, R = 0, G = 0, B = 0;
+      for (const [ox, oy, w] of [[0, 0, (1 - fx) * (1 - fy)], [1, 0, fx * (1 - fy)], [0, 1, (1 - fx) * fy], [1, 1, fx * fy]]) {
+        const k = src(ix + ox, iy + oy);
+        if (k < 0 || w <= 0) continue;
+        const a = alpha[k] * w;
+        A += a; R += rgb[k * 3] * a; G += rgb[k * 3 + 1] * a; B += rgb[k * 3 + 2] * a;
+      }
+      const o = (y - y0) * bw + (x - x0);
+      na[o] = A;
+      if (A > 0) { nc[o * 3] = R / A; nc[o * 3 + 1] = G / A; nc[o * 3 + 2] = B / A; }
+    }
+    // Lift the drawing out, then put the turned one back (never over another drawing's pixels).
+    for (let k = 0; k < W * H; k++) if (owner[k] === fi) { owner[k] = -1; alpha[k] = 0; }
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const o = (y - y0) * bw + (x - x0), k = y * W + x;
+      if (na[o] <= 0.02 || owner[k] >= 0) continue;
+      owner[k] = fi; alpha[k] = Math.min(1, na[o]); rgb[k * 3] = nc[o * 3]; rgb[k * 3 + 1] = nc[o * 3 + 1]; rgb[k * 3 + 2] = nc[o * 3 + 2];
+    }
+  }
 }
 
 const order = opt('order', Array.from({ length: count }, (_, i) => i + 1).join(',')).split(',').map(Number);
@@ -204,14 +274,16 @@ if (GRID) {
   // --scale: a fixed size (sheet px per drawn px; every run prints the one it used), so crouching moves and
   // standing moves drawn at the same size come out the same size. Otherwise the last frame is --height tall.
   scale = opt('scale', null) ? Number(opt('scale')) : (Number(opt('height', 180)) * res) / (ref.bottom - ref.top + 1);
-  const anchorOf = (b) => (ANCHOR === 'center' ? (b.left + b.right) / 2 : ANCHOR === 'rear' ? b.rear : b.front);
-  const centreFromAnchor = (ref.left + ref.right) / 2 - anchorOf(ref);
+  // slot: the middle of the frame's region between cuts, for strips laid out on purpose with the body centred in
+  // fixed slots (drawings with big effects, where the drawing's own box would pull the body off centre).
+  const anchorOf = (b) => (ANCHOR === 'slot' ? (slots[b.fi][0] + slots[b.fi][1]) / 2 : ANCHOR === 'center' ? (b.left + b.right) / 2 : ANCHOR === 'rear' ? b.rear : b.front);
+  const centreFromAnchor = ANCHOR === 'slot' ? 0 : (ref.left + ref.right) / 2 - anchorOf(ref); // slot: the slot centre is the body
   const common = Math.max(...boxes.map((b) => b.bottom));
   ext = order.map((n) => {
     const b = boxes[n - 1];
     const ax = anchorOf(b) + centreFromAnchor;
-    const ay = FLOOR === 'common' ? common : b.bottom;
-    return { b, ax, ay, l: ax - b.left, r: b.right - ax, u: ay - b.top, d: 0 };
+    const ay = FLOOR === 'common' ? common : FLOOR === 'frame' ? b.bottom : Number(FLOOR); // a number: that source y is the floor for every frame
+    return { b, ax, ay, l: ax - b.left, r: b.right - ax, u: ay - b.top, d: Math.max(0, b.bottom - ay) }; // d: art hanging below a fixed floor
   });
 }
 

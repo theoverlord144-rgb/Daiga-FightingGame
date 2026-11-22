@@ -43,6 +43,7 @@ export function createTrainingScreen(app, { picks }) {
       if (app.time.paused && !app.time.consumeStep()) return;
       const dev = app.panel ? [0, 0] : [app.devices.read(0), app.devices.read(1)];
       step(game, training.inputs(game, dev), world);
+      app.renderer.notice(game, world);
       training.afterStep(game);
       meter.update(game, world);
     },

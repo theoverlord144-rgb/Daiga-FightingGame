@@ -11,6 +11,14 @@ import { paletteSheet, placeholderColors } from './palette.js';
 // shipped with the game.
 const SPRITE_URLS = import.meta.glob('../../data/characters/*/sheets/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
 const images = new Map();
+// Start loading every sheet up front, so an effect or a move shows the first time it's used (not the second).
+if (typeof Image !== 'undefined') {
+  for (const [key, url] of Object.entries(SPRITE_URLS)) {
+    const img = new Image();
+    img.src = url;
+    images.set(key, img);
+  }
+}
 
 function spriteImage(charId, path) {
   const key = Object.keys(SPRITE_URLS).find((k) => k.endsWith(`/characters/${charId}/${path}`));
@@ -312,27 +320,37 @@ export function createFightRenderer(ctx, W, H) {
     ctx.fillRect(ox - 1, oy - 3, 2, 7);
   }
 
+  // Cues live for one game frame: pick them up once per frame. Screens call notice() after every step, because a
+  // slow display runs several steps between two draws and the cues of the earlier ones would be lost (effects and
+  // sparks that never appear); draw() picks up the frame it sees if nobody did.
+  let collected = -1;
+  function collect(game, world) {
+    if (game.frame === collected) return;
+    collected = game.frame;
+    for (const c of game.cues) {
+      const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
+      if (named) {
+        const at = named.at ?? [0, 0];
+        effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: named.sprite.count * (named.hold ?? 3) });
+      }
+      if (!SPARK[c.type]) continue;
+      // A move with its own hit effect (art) shows that instead of the generic spark.
+      const fx = (c.type === 'hit' || c.type === 'counter') && world.chars[c.p]?.states[c.move]?.move?.hitFx;
+      if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
+      if (!fx || c.type === 'counter') effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+    }
+    for (const e of effects) e.age++;
+    for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
+  }
+
   return {
     cam,
     toScreen,
+    notice: collect,
     /** opts: { boxes: bool, labels: bool } */
     draw(game, world, opts = {}) {
       if (game.frame !== lastFrame) {
-        // Cues live for one game frame: pick them up once.
-        for (const c of game.cues) {
-          const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
-          if (named) {
-            const at = named.at ?? [0, 0];
-            effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: named.sprite.count * (named.hold ?? 3) });
-          }
-          if (!SPARK[c.type]) continue;
-          // A move with its own hit effect (art) shows that instead of the generic spark.
-          const fx = (c.type === 'hit' || c.type === 'counter') && world.chars[c.p]?.states[c.move]?.move?.hitFx;
-          if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
-          if (!fx || c.type === 'counter') effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
-        }
-        for (const e of effects) e.age++;
-        for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
+        collect(game, world);
         lastFrame = game.frame;
         for (const p of game.players) {
           if (p.combo) comboShow[p.id] = { c: p.combo, hold: 70, live: true };
