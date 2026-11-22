@@ -373,6 +373,19 @@ export function createFightRenderer(ctx, W, H) {
   // sparks that never appear); draw() picks up the frame it sees if nobody did.
   let collected = -1;
   const lastVars = [{}, {}]; // drawing only: last seen mechanic vars, to notice a mark running out
+  const lastMove = [null, null]; // drawing only: last seen state and x, to notice a dash starting or a landing
+  // Movement effects (dash dust, air dash burst and trail, landing dust): data/system/effects.json "motion".
+  function motionFx(rule, p, dx) {
+    const M = FX.motion;
+    const facing = rule.back ? -p.facing : p.facing;
+    const y = p.y + (rule.at === 'body' ? M.bodyY * UNIT : 0);
+    let name = rule.play;
+    if (rule.byDrift) { const d = Math.abs(dx) > M.driftMax * UNIT ? 0 : Math.sign(dx) * p.facing; name = rule.byDrift[d > 0 ? 0 : d < 0 ? 2 : 1]; }
+    const s = M.sheets[name];
+    if (s) effects.push({ motion: s, x: p.x, y: rule.at === 'body' ? y : 0, facing, age: 0, life: s.sprite.count * s.hold });
+    const t = M.sheets[rule.trail];
+    if (t) effects.push({ motion: t, follow: p.id, state: p.state, dy: y - p.y, x: p.x, y, facing, age: 0, life: 1 });
+  }
   function collect(game, world) {
     if (game.frame === collected) return;
     collected = game.frame;
@@ -432,6 +445,21 @@ export function createFightRenderer(ctx, W, H) {
           effects.push({ sheet: f, def, x: o.x, y: o.y + (v.mark.at ?? 90) * UNIT, age: 0, life: f.sprite.count * (f.hold ?? 3) });
         }
       }
+    }
+    for (const p of game.players) {
+      const was = lastMove[p.id];
+      if (was && was.state !== p.state) {
+        const dx = p.x - was.x;
+        if (FX.motion.leave[was.state]) motionFx(FX.motion.leave[was.state], p, dx);
+        if (FX.motion.enter[p.state]) motionFx(FX.motion.enter[p.state], p, dx);
+      }
+      lastMove[p.id] = { state: p.state, x: p.x };
+    }
+    // A trail rides its fighter and lasts as long as the state that started it.
+    for (const e of effects) {
+      if (e.follow === undefined) continue;
+      const p = game.players[e.follow];
+      if (p.state === e.state) { e.x = p.x; e.y = p.y + e.dy; e.life = e.age + 1; }
     }
     for (const e of effects) e.age++;
     for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
@@ -532,6 +560,19 @@ export function createFightRenderer(ctx, W, H) {
           ctx.save();
           if (e.proj.sprite.additive) ctx.globalCompositeOperation = 'lighter';
           drawSheetFrame(e.def, e.proj.sprite, e.first + heldFrame(e.proj.anim.impact, e.age - 1, false)[0], sx, sy, e.facing);
+          ctx.restore();
+          continue;
+        }
+        if (e.motion) {
+          const m = e.motion, n = m.sprite.count;
+          const step = Math.floor((e.age - 1) / m.hold);
+          const fr = e.follow !== undefined ? step % n : Math.min(n - 1, step);
+          ctx.save();
+          if (m.additive) ctx.globalCompositeOperation = 'lighter';
+          if (m.alpha) ctx.globalAlpha = m.alpha;
+          // Dust thins out over its last drawing.
+          if (m.fade && fr === n - 1) ctx.globalAlpha = Math.max(0.15, 1 - ((e.age - 1) - (n - 1) * m.hold) / m.hold);
+          drawSheetFrame(null, m.sprite, fr, sx, sy, e.facing);
           ctx.restore();
           continue;
         }

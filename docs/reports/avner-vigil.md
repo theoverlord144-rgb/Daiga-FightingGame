@@ -53,6 +53,31 @@ Avner now has drawings for being hit. Art only: no rule or number changed.
   drawings, so it runs straight into the stance with no pause. If you meant the entry itself should be shorter,
   that is a rules change: tell me the number.
 
+## Dash, air dash and landing effects (same branch)
+
+From your three new sheets in `data/UniversalEffects`. Like the hit sparks they belong to the game, not to Avner.
+Drawing only: nothing about how dashes or jumps work changed.
+
+- **Forward dash:** the top row of the ground dust sheet, left on the floor where he pushed off, behind him.
+- **Back dash:** the bottom row, left where he pushed off, in front of him.
+- **Air dash (forward and back):** the ring burst where it starts, the streak trail riding behind him for as long as
+  the dash lasts, and the fading puff where it ends.
+- **Landing:** the middle row (dust both sides) when he comes straight down, the top row when he lands travelling
+  forward, the bottom row when travelling backward. A knockdown also throws the straight-down dust.
+- All play 4 drawings, 3 frames each. Dust is drawn as painted and thins out on its last drawing; the air dash
+  effects are drawn as light.
+
+Where I had to decide:
+
+- **Which landing row is which direction is my guess** (top forward, middle straight, bottom backward). If it is the
+  other way round, it is one line in `data/system/effects.json`.
+- **Size:** at the hit sparks' size the dust came out as big as he is, so the dust is drawn at about two thirds of
+  that and the air dash effects at four fifths. The trail is thinned to 70% so he stays readable. All numbers in the
+  same file.
+- **The sheets have a glow and a white floor line around the dust.** I cut those away and kept the painted clouds. A
+  few specks of the glow survive on the last ground dash drawing.
+- Effects are drawn in front of the fighters, so dust covers his feet for a moment and the trail crosses his back.
+
 ## Which file I used for what
 
 | Your file | Used for |
@@ -66,6 +91,10 @@ Avner now has drawings for being hit. Art only: no rule or number changed.
 | `Avner_BrandMark.png` | The Brand on the opponent while it lasts (as before). |
 | `Avner_BrandHitFlash.png` | The Brand being applied (Snap and the crescent's hit). |
 | `Avner_Back_HeavyPunch.png` (the 16:00 version) | Back Heavy. |
+| `UniversalEffects/Game_HitEffects_BlockEffects.png` | Hit sparks (light, medium, heavy) and the block flash. |
+| `UniversalEffects/Game_Ground_Dash_DustParticle.png` | Top row: forward dash dust. Bottom row: back dash dust. |
+| `UniversalEffects/Game_AirDash_Effect.png` | Top row: air dash start. Middle row: the trail. Bottom row: the end. |
+| `UniversalEffects/Game_Landing_Dust.png` | Top row: landing travelling forward. Middle: straight down. Bottom: travelling backward. |
 | `Avner_HitReaction_StandingAndCrouching.png` | Top row: hit while standing. Bottom row: hit while crouching. |
 | `Avner_HitReaction_Air.png` | Top row: 1 and 2 hit in the air, 3, 4, 5 (then 2) the tumble. Bottom row: 1 and 2 the knockdown, 3, 4, 5 getting up. |
 
@@ -130,7 +159,7 @@ Avner now has drawings for being hit. Art only: no rule or number changed.
 
 ## Tests
 
-204 tests, all passing (21 new in `tests/avner-vigil.test.js`, 1 for the hit-reaction art, 1 for the effects data; the old placeholder-stance test was removed with the
+205 tests, all passing (21 new in `tests/avner-vigil.test.js`, 1 for the hit-reaction art, 2 for the effects data; the old placeholder-stance test was removed with the
 placeholder). `npm run build` passes. The new tests cover everything on your list as far as the paste went:
 
 - Each move's frame data and drawing holds.

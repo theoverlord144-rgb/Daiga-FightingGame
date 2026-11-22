@@ -8,5 +8,34 @@
     { "name": "medium", "below": 800, "row": 1 },
     { "name": "heavy", "row": 2 }
   ],
-  "block": { "row": 3 }
+  "block": {
+    "row": 3
+  },
+  "motion": {
+    "notes": "Movement effects (drawing only). The renderer watches each fighter's state: \"enter\" plays a sheet when a state starts, \"leave\" when it ends. \"at\": \"feet\" is the floor under the fighter, \"body\" is bodyY px above their feet. \"trail\" loops on the fighter for as long as the state lasts. \"back\": true draws it facing the other way (a move that travels backward). \"byDrift\" picks by which way the fighter was travelling: [forward, still, backward]. \"alpha\" thins a sheet. A fighter that jumped more than driftMax px in one frame was placed, not moving (a reset): it counts as still. Dust is drawn as painted and fades on its last drawing; \"additive\" sheets are drawn as light.",
+    "bodyY": 95,
+    "driftMax": 40,
+    "sheets": {
+      "dashDustF": { "sprite": { "image": "dash-dust-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 225, "originX": 352, "originY": 225, "scale": 0.32 }, "hold": 3, "fade": true },
+      "dashDustB": { "sprite": { "image": "dash-dust-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 224, "originX": 32, "originY": 224, "scale": 0.32 }, "hold": 3, "fade": true },
+      "landF": { "sprite": { "image": "land-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 155, "originX": 192, "originY": 155, "scale": 0.32 }, "hold": 3, "fade": true },
+      "landN": { "sprite": { "image": "land-n.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 133, "originX": 192, "originY": 133, "scale": 0.32 }, "hold": 3, "fade": true },
+      "landB": { "sprite": { "image": "land-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 170, "originX": 192, "originY": 170, "scale": 0.32 }, "hold": 3, "fade": true },
+      "airDashBurst": { "sprite": { "image": "airdash-burst.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 417, "originX": 211, "originY": 206, "scale": 0.4 }, "hold": 3, "additive": true },
+      "airDashTrail": { "sprite": { "image": "airdash-trail.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 210, "originX": 384, "originY": 98, "scale": 0.4 }, "hold": 3, "alpha": 0.7, "additive": true },
+      "airDashPuff": { "sprite": { "image": "airdash-puff.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 252, "originX": 150, "originY": 127, "scale": 0.4 }, "hold": 3, "additive": true }
+    },
+    "enter": {
+      "dashF": { "play": "dashDustF", "at": "feet" },
+      "backdash": { "play": "dashDustB", "at": "feet" },
+      "airdashF": { "play": "airDashBurst", "at": "body", "trail": "airDashTrail" },
+      "airdashB": { "play": "airDashBurst", "at": "body", "trail": "airDashTrail", "back": true },
+      "land": { "byDrift": [ "landF", "landN", "landB" ], "at": "feet" },
+      "knockdown": { "play": "landN", "at": "feet" }
+    },
+    "leave": {
+      "airdashF": { "play": "airDashPuff", "at": "body" },
+      "airdashB": { "play": "airDashPuff", "at": "body", "back": true }
+    }
+  }
 }

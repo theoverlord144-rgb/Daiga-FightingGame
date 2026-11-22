@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 // Avner's Back Heavy, two-hit Air Heavy and movement/block art, and the engine pieces they needed: a throw command
 // that only comes out in range (the input falls through to the next move otherwise), a later hit's own frame data
 // converted like the move's, and block/hit states whose table is as long as their art.
@@ -186,4 +187,24 @@ test('universal hit and block effects: three hit sizes by damage and a block row
   for (const row of [...fx.hit.map((h) => h.row), fx.block.row]) assert.ok(row >= 0 && row < fx.sheet.rows);
   assert.equal(fx.frames, fx.sheet.columns);
   assert.equal(fx.sheet.columns * fx.sheet.rows, fx.sheet.count);
+});
+
+test('movement effects: every rule names a real state and a real sheet, and every sheet file exists', () => {
+  const m = loadJSON('data/system/effects.json').motion;
+  const c = loadChar(AVNER);
+  const rules = [...Object.entries(m.enter), ...Object.entries(m.leave)];
+  for (const [state, rule] of rules) {
+    assert.ok(c.states[state], state + ' is a state');
+    const names = [rule.play, rule.trail, ...(rule.byDrift ?? [])].filter(Boolean);
+    assert.ok(names.length > 0, state + ' plays something');
+    for (const n of names) assert.ok(m.sheets[n], n + ' is a sheet');
+    assert.ok(['feet', 'body'].includes(rule.at));
+  }
+  for (const s of ['dashF', 'backdash', 'airdashF', 'airdashB', 'land']) assert.ok(m.enter[s], s + ' has an effect');
+  assert.equal(m.enter.land.byDrift.length, 3, 'forward, still, backward');
+  for (const [name, s] of Object.entries(m.sheets)) {
+    assert.ok(fs.existsSync('data/effects/' + s.sprite.image), name + ': ' + s.sprite.image);
+    assert.equal(s.sprite.columns * s.sprite.rows, s.sprite.count);
+    assert.ok(s.hold > 0);
+  }
 });

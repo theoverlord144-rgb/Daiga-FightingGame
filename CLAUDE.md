@@ -76,6 +76,10 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
   `data/UniversalEffects/`), rules in `data/system/effects.json` (hit row by the move's base damage, counter one
   size up, block row; additive). `collect` in fight-renderer.js pushes them from hit/counter/block cues; a move's
   own `hitFx` wins; the code-drawn sparks remain for clash, armor, throws, bounces and burst.
+- **Movement effects** (drawing only): `motion` in `data/system/effects.json`. The renderer watches each fighter's
+  state (`lastMove` in fight-renderer.js): `enter` / `leave` rules play a sheet from `data/effects/` at the feet or
+  body; `trail` follows the fighter while the state lasts; `byDrift` picks landing dust by travel direction. Dust
+  strips are cut from the raw sheets with the glow removed (flood fill from outside through smooth pixels).
 - **Vigil stance** (Avner; spec kept verbatim in `docs/specs/avner-vigil.md`, report `docs/reports/avner-vigil.md`, tests
   `tests/avner-vigil.test.js`). `vigil` (22S, 20 frames) → state `vigilStance` (24-frame loop, `timeout` 120 and
   `onBack` → `vigilExit`, cancels into the follow-ups from frame 0). Follow-ups are `neutral: false`, `anyDir`
