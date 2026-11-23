@@ -3854,5 +3854,397 @@
     187
    ]
   ]
+ },
+ "hit-stand": {
+  "sprite": {
+   "image": "sheets/hit-stand.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 262,
+   "frameH": 384,
+   "originX": 119,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    54,
+    88
+   ],
+   [
+    45,
+    68
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    0,
+    70,
+    186
+   ],
+   [
+    -43,
+    0,
+    57,
+    190
+   ]
+  ]
+ },
+ "hit-crouch": {
+  "sprite": {
+   "image": "sheets/hit-crouch.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 244,
+   "frameH": 291,
+   "originX": 105,
+   "originY": 289,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    53,
+    73
+   ],
+   [
+    32,
+    38
+   ]
+  ],
+  "reach": [
+   [
+    -50,
+    0,
+    68,
+    143
+   ],
+   [
+    -51,
+    0,
+    54,
+    139
+   ]
+  ]
+ },
+ "hit-stand-gut": {
+  "sprite": {
+   "image": "sheets/hit-stand-gut.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 234,
+   "frameH": 382,
+   "originX": 129,
+   "originY": 380,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -46,
+    80
+   ],
+   [
+    39,
+    50
+   ]
+  ],
+  "reach": [
+   [
+    -63,
+    0,
+    51,
+    164
+   ],
+   [
+    -49,
+    0,
+    50,
+    189
+   ]
+  ]
+ },
+ "hit-stand-heavy": {
+  "sprite": {
+   "image": "sheets/hit-stand-heavy.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 289,
+   "frameH": 327,
+   "originX": 140,
+   "originY": 325,
+   "scale": 0.5,
+   "holds": [
+    8,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    58,
+    97
+   ],
+   [
+    23,
+    52
+   ]
+  ],
+  "reach": [
+   [
+    -69,
+    0,
+    73,
+    160
+   ],
+   [
+    -47,
+    0,
+    64,
+    161
+   ]
+  ]
+ },
+ "hit-air": {
+  "sprite": {
+   "image": "sheets/hit-air.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 349,
+   "frameH": 370,
+   "originX": 151,
+   "originY": 383,
+   "scale": 0.5,
+   "holds": [
+    5,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    68,
+    94
+   ],
+   [
+    21,
+    39
+   ]
+  ],
+  "reach": [
+   [
+    -51,
+    8,
+    97,
+    180
+   ],
+   [
+    -74,
+    15,
+    88,
+    190
+   ]
+  ]
+ },
+ "tumble": {
+  "sprite": {
+   "image": "sheets/tumble.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 358,
+   "frameH": 347,
+   "originX": 146,
+   "originY": 391,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    6,
+    91
+   ],
+   [
+    15,
+    46
+   ],
+   [
+    15,
+    50
+   ]
+  ],
+  "reach": [
+   [
+    -66,
+    28,
+    58,
+    182
+   ],
+   [
+    -60,
+    24,
+    104,
+    194
+   ],
+   [
+    -72,
+    28,
+    82,
+    193
+   ]
+  ]
+ },
+ "knockdown": {
+  "sprite": {
+   "image": "sheets/knockdown.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 356,
+   "frameH": 178,
+   "originX": 163,
+   "originY": 176,
+   "scale": 0.5,
+   "holds": [
+    6,
+    34
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    20,
+    21
+   ],
+   [
+    29,
+    20
+   ]
+  ],
+  "reach": [
+   [
+    -80,
+    0,
+    95,
+    87
+   ],
+   [
+    -73,
+    0,
+    95,
+    65
+   ]
+  ]
+ },
+ "wakeup": {
+  "sprite": {
+   "image": "sheets/wakeup.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 294,
+   "frameH": 376,
+   "originX": 143,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   8,
+   9,
+   10
+  ],
+  "lantern": [
+   [
+    13,
+    39
+   ],
+   [
+    -11,
+    46
+   ],
+   [
+    22,
+    42
+   ]
+  ],
+  "reach": [
+   [
+    -59,
+    0,
+    74,
+    133
+   ],
+   [
+    -58,
+    0,
+    67,
+    158
+   ],
+   [
+    -70,
+    0,
+    71,
+    186
+   ]
+  ]
  }
 }

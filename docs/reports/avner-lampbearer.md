@@ -109,6 +109,12 @@ a drawing (or `--only 5H,jump` for some). For every sheet it writes a contact sh
 
 `Avner_BaseSprite.png` is the reference drawing; it is not used in the game.
 
+The two hit-reaction sheets arrived while this was being built and are in: `Avner_HitReaction_Standing_And_Crouching.png`
+→ `hit-stand` (drawings 1, 2), `hit-crouch` (5, 6); `Avner_HitReaction_Air_And_Wakeup.png` → `hit-air` (1, 2), `tumble`
+(3, 4, 5), `knockdown` (6, 7; the KO pose is drawing 7), `wakeup` (8, 9, 10). Being held in a throw shows the standing
+hit. Drawings 3, 4 (a gut hit) and 7, 8 (a heavy hit) of the standing sheet are cut (`hit-stand-gut`,
+`hit-stand-heavy`) but not used: the engine has one standing reaction for every strength, as with Malik.
+
 ## Still on placeholders
 
 Every one has `placeholder` in its file name (`data/characters/avner/sheets/`).
@@ -121,7 +127,7 @@ Every one has `placeholder` in its file name (`data/characters/avner/sheets/`).
 | Recall (the crescent returning) | A copy of the 2R cast |
 | Full Moon: his animation, the giant moon, the column | Copies of the Rising Moon body, the eclipse moon and the Snap beam (double size) |
 | The lantern's moon phases | Five discs drawn by code (`scripts/make-lantern-phases.mjs`) |
-| Hit standing, crouching, in the air; tumble; knockdown; KO; get-up; held in a throw; pulled by a Draw | **The old design's drawings** (chain, old coat). They are the most visible thing still wrong. |
+| Pulled in by a Draw | A copy of the standing hit |
 | Absolve in the air, its recovery in the air | Copies of the ground drawings |
 | Repel, Draw | Copies of the standing block |
 
@@ -194,4 +200,4 @@ In-game pictures: `node scripts/shots.mjs <folder> lamp` saves 51 real frames of
 4. **Moonlit:** juggles inside the light at 70% gravity, and Snap as a combo extender. The light is 180 px wide.
 5. **5H and 4H at range.** 4H hits at 380 px with a kick drawn at 95: it will look wrong until the crescent is drawn.
 6. **The look:** sizes sheet to sheet (previews folder), the code-drawn moon in the lantern (it is crude, and at
-   four bars it is a bright disc over your lantern art), and the old-design hit reactions.
+   four bars it is a bright disc over your lantern art), and the new hit reactions and get-up.

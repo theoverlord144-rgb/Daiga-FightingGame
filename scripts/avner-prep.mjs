@@ -98,6 +98,20 @@ const SHEETS = [
     { name: 'eclipse', use: [1, 5], anchor: 'centre', size: 300, holds: [4, 4, 4, 8, 8] },
     { name: 'moon-slash', use: [6, 10], anchor: 'centre', size: 240, holds: [2, 2, 3, 3, 4] },
   ] },
+  // Hit reactions. Standing / crouching sheet: drawings 1-2 standing, 5-6 crouching (3-4 a gut hit and 7-8 a heavy
+  // hit wait for per-strength reactions in the engine). Air sheet: 1-2 the hit, 3-5 the tumble, 6-7 down, 8-10 up.
+  { ref: [2, 190], file: 'Avner_HitReaction_Standing_And_Crouching.png', n: 8, rows: 2, parts: [
+    { name: 'hit-stand', frames: [1, 2], holds: [6, 1] },
+    { name: 'hit-crouch', frames: [5, 6], holds: [6, 1] },
+    { name: 'hit-stand-gut', frames: [3, 4], holds: [6, 1] },
+    { name: 'hit-stand-heavy', frames: [7, 8], holds: [8, 1] },
+  ] },
+  { ref: [10, 186], file: 'Avner_HitReaction_Air_And_Wakeup.png', n: 10, rows: 2, parts: [
+    { name: 'hit-air', frames: [1, 2], mode: 'air', holds: [5, 1] },
+    { name: 'tumble', frames: [3, 4, 5], mode: 'air', holds: [8, 8, 8] },
+    { name: 'knockdown', frames: [6, 7], holds: [6, 34] },
+    { name: 'wakeup', frames: [8, 9, 10], holds: [4, 4, 4] },
+  ] },
   // Universal systems.
   { ref: [2, 186], file: 'Avner_Vow_And_Absorb.png', n: 9, rows: 2, parts: [
     { name: 'vow-start', frames: [1, 2], holds: [2, 2] },

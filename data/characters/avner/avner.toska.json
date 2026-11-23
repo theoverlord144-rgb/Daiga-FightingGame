@@ -111,7 +111,15 @@
         "sheets/moonlit-j.png": [[-64,49],[70,147],[77,145],[-15,48]],
         "sheets/moon-snap.png": [[16,50],[26,74],[28,76],[28,77],[29,74],[21,47]],
         "sheets/dash-stop.png": [[32,67],[18,44]],
-        "sheets/backdash-stop.png": [[15,50],[20,51]]
+        "sheets/backdash-stop.png": [[15,50],[20,51]],
+        "sheets/hit-stand.png": [[54,88],[45,68]],
+        "sheets/hit-crouch.png": [[53,73],[32,38]],
+        "sheets/hit-stand-gut.png": [[-46,80],[39,50]],
+        "sheets/hit-stand-heavy.png": [[58,97],[23,52]],
+        "sheets/hit-air.png": [[68,94],[21,39]],
+        "sheets/tumble.png": [[6,91],[15,46],[15,50]],
+        "sheets/knockdown.png": [[20,21],[29,20]],
+        "sheets/wakeup.png": [[13,39],[-11,46],[22,42]]
       }
     }
   },
@@ -168,14 +176,14 @@
     { "id": "blockStand", "name": "Standing block (pushed back, for the whole blockstun)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/block-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 385, "frameH": 396, "originX": 156, "originY": 394, "scale": 0.5, "holds": [60] }},
     { "id": "blockCrouch", "name": "Crouching block (pushed back)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/block-crouch.png", "columns": 2, "rows": 1, "count": 2, "frameW": 364, "frameH": 283, "originX": 138, "originY": 281, "scale": 0.5, "holds": [60] }},
     { "id": "blockAir", "name": "Air block (pushed back)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/block-air.png", "columns": 2, "rows": 1, "count": 2, "frameW": 330, "frameH": 295, "originX": 112, "originY": 335, "scale": 0.5, "holds": [60] }},
-    { "id": "hitStand", "name": "Hit, standing (placeholder art: the old design's drawing)", "sprite": { "image": "sheets/hit-stand-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 256, "frameH": 378, "originX": 128, "originY": 376, "scale": 0.5, "holds": [3,4,5,1] }},
-    { "id": "hitCrouch", "name": "Hit, crouching (placeholder art: the old design's drawing)", "sprite": { "image": "sheets/hit-crouch-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 216, "frameH": 273, "originX": 108, "originY": 271, "scale": 0.5, "holds": [3,4,5,1] }},
-    { "id": "hitAir", "name": "Hit in the air (placeholder art: the old design's drawing)", "sprite": { "image": "sheets/hit-air-placeholder.png", "columns": 2, "rows": 1, "count": 2, "frameW": 311, "frameH": 327, "originX": 155, "originY": 325, "scale": 0.5, "holds": [5,1] }},
-    { "id": "tumble", "name": "Tumbling after an air hit (placeholder art: the old design's drawing)", "sprite": { "image": "sheets/tumble-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 325, "frameH": 295, "originX": 162, "originY": 293, "scale": 0.5, "holds": [6,6,6,6] }},
-    { "id": "knockdown", "name": "Knocked down (placeholder art: the old design's drawing)", "sprite": { "image": "sheets/knockdown-placeholder.png", "columns": 2, "rows": 1, "count": 2, "frameW": 299, "frameH": 153, "originX": 149, "originY": 151, "scale": 0.5, "holds": [6,34] }},
-    { "id": "koDown", "name": "Down after a KO (placeholder art: the old design's drawing)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/ko-down-placeholder.png", "columns": 2, "rows": 1, "count": 2, "frameW": 299, "frameH": 153, "originX": 149, "originY": 151, "scale": 0.5, "holds": [60] }},
-    { "id": "wakeup", "name": "Getting up (placeholder art: the old design's drawing)", "sprite": { "image": "sheets/wakeup-placeholder.png", "columns": 3, "rows": 1, "count": 3, "frameW": 243, "frameH": 367, "originX": 121, "originY": 365, "scale": 0.5, "holds": [4,4,4] }},
-    { "id": "thrown", "name": "Held in a throw (placeholder art: the old design's drawing)", "sprite": { "image": "sheets/thrown-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 256, "frameH": 378, "originX": 128, "originY": 376, "scale": 0.5, "holds": [1] }},
+    { "id": "hitStand", "name": "Hit, standing", "sprite": { "image": "sheets/hit-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 262, "frameH": 384, "originX": 119, "originY": 382, "scale": 0.5, "holds": [6,1] }},
+    { "id": "hitCrouch", "name": "Hit, crouching", "sprite": { "image": "sheets/hit-crouch.png", "columns": 2, "rows": 1, "count": 2, "frameW": 244, "frameH": 291, "originX": 105, "originY": 289, "scale": 0.5, "holds": [6,1] }},
+    { "id": "hitAir", "name": "Hit in the air", "sprite": { "image": "sheets/hit-air.png", "columns": 2, "rows": 1, "count": 2, "frameW": 349, "frameH": 370, "originX": 151, "originY": 383, "scale": 0.5, "holds": [5,1] }},
+    { "id": "tumble", "name": "Tumbling after an air hit", "sprite": { "image": "sheets/tumble.png", "columns": 3, "rows": 1, "count": 3, "frameW": 358, "frameH": 347, "originX": 146, "originY": 391, "scale": 0.5, "holds": [8,8,8] }},
+    { "id": "knockdown", "name": "Knocked down", "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 356, "frameH": 178, "originX": 163, "originY": 176, "scale": 0.5, "holds": [6,34] }},
+    { "id": "koDown", "name": "Down after a KO (lying flat)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 356, "frameH": 178, "originX": 163, "originY": 176, "scale": 0.5, "holds": [60] }},
+    { "id": "wakeup", "name": "Getting up", "sprite": { "image": "sheets/wakeup.png", "columns": 3, "rows": 1, "count": 3, "frameW": 294, "frameH": 376, "originX": 143, "originY": 374, "scale": 0.5, "holds": [4,4,4] }},
+    { "id": "thrown", "name": "Held in a throw (the standing hit drawing)", "sprite": { "image": "sheets/hit-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 262, "frameH": 384, "originX": 119, "originY": 382, "scale": 0.5, "holds": [1] }},
     { "id": "vow_start", "name": "Vow: the guard coming up", "sprite": { "image": "sheets/vow-start.png", "columns": 2, "rows": 1, "count": 2, "frameW": 209, "frameH": 403, "originX": 116, "originY": 401, "scale": 0.5 }},
     { "id": "vow_hold", "name": "Vow: holding the guard (loop)", "sprite": { "image": "sheets/vow-hold.png", "columns": 4, "rows": 1, "count": 4, "frameW": 212, "frameH": 378, "originX": 116, "originY": 376, "scale": 0.5, "holds": [9,9,9,9] }},
     { "id": "vow_absorb", "name": "Vow: an absorbed hit", "sprite": { "image": "sheets/vow-absorb.png", "columns": 4, "rows": 1, "count": 4, "frameW": 238, "frameH": 392, "originX": 116, "originY": 390, "scale": 0.5, "holds": [2,5,4,3] }},
@@ -188,7 +196,7 @@
     { "id": "absolve_recovery_air", "name": "Absolve recovery in the air (placeholder art: a copy of the ground one)", "sprite": { "image": "sheets/absolve-recovery-air-placeholder.png", "columns": 3, "rows": 1, "count": 3, "frameW": 336, "frameH": 409, "originX": 176, "originY": 407, "scale": 0.5 }},
     { "id": "repel", "name": "Repel (placeholder art: a copy of the standing block)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/repel-placeholder.png", "columns": 2, "rows": 1, "count": 2, "frameW": 385, "frameH": 396, "originX": 156, "originY": 394, "scale": 0.5, "holds": [60] }},
     { "id": "draw", "name": "Draw (placeholder art: a copy of the standing block)", "timeline": [{ "at": 0, "sprite": 0 }], "sprite": { "image": "sheets/draw-placeholder.png", "columns": 2, "rows": 1, "count": 2, "frameW": 385, "frameH": 396, "originX": 156, "originY": 394, "scale": 0.5, "holds": [60] }},
-    { "id": "drawn", "name": "Pulled in by a Draw (placeholder art: the old design's hit drawing)", "sprite": { "image": "sheets/drawn-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 256, "frameH": 378, "originX": 128, "originY": 376, "scale": 0.5, "holds": [3,4,5,1] }},
+    { "id": "drawn", "name": "Pulled in by a Draw (placeholder art: a copy of the standing hit)", "sprite": { "image": "sheets/drawn-placeholder.png", "columns": 2, "rows": 1, "count": 2, "frameW": 262, "frameH": 384, "originX": 119, "originY": 382, "scale": 0.5, "holds": [6,1] }},
     { "id": "crumple", "name": "Crumple (hit by a Vow strike)", "sprite": { "image": "sheets/crumple.png", "columns": 6, "rows": 1, "count": 6, "frameW": 252, "frameH": 384, "originX": 127, "originY": 382, "scale": 0.5, "holds": [5,6,7,8,9,10] }}
   ]
 }
