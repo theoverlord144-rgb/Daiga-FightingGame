@@ -1,7 +1,7 @@
 {
   "engine": "Toska",
   "version": 2,
-  "notes": "Malik. Numbers are a first pass copied from Avner's matching moves; which drawing each hit lands on is Yahushua's call (5L: 3; 5M: 4 and 5; 5H: 4, drawn frames 5 and 6 left out; 2L: 2; 2M: 4; 2H: 4; j.L: 3; j.M: 3; j.H: 3, with the spirit hand's drawing 4 on the same frame; Back Heavy: 4; Spirit Orb: the spin hits on drawing 4, the orb leaves on drawing 5). Every stat is the system default. All art is cut to one body size (186 px tall standing). States without art (blocks, hit reactions) show the placeholder figure.",
+  "notes": "Malik. Numbers are a first pass copied from Avner's matching moves; which drawing each hit lands on is Yahushua's call (5L: 3; 5M: 4 and 5; 5H: 4, drawn frames 5 and 6 left out; 2L: 2; 2M: 4; 2H: 4; j.L: 3; j.M: 3; j.H: 3, with the spirit hand's drawing 4 on the same frame; Back Heavy: 4; Spirit Orb: the spin hits on drawing 4, the orb leaves on drawing 5). Every stat is the system default. All art is cut to one body size (186 px tall standing).",
   "character": {
     "id": "malik",
     "name": "Malik",
@@ -18,7 +18,7 @@
     "j.M": ["j.H"]
   },
   "states": {
-    "crouch": { "loopFrom": 3 }, "airdashEnd": { "loopFrom": 8 },
+    "crouch": { "loopFrom": 3 }, "tumble": { "duration": 12 }, "airdashEnd": { "loopFrom": 8 },
     "walkF": { "duration": 48 }, "walkB": { "duration": 48 },
     "jump": { "loopFrom": 59 }, "superJump": { "loopFrom": 59 }, "airJump": { "loopFrom": 59 }
   },
@@ -105,6 +105,17 @@
     { "id": "airdashF", "name": "Air dash (system state art; drawings 2 and 3 tilted forward 8 degrees)", "sprite": { "image": "sheets/airdash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 380, "frameH": 420, "originX": 190, "originY": 418, "scale": 0.5, "holds": [2, 5, 5, 2] } },
     { "id": "airdashB", "name": "Back air dash (system state art)", "sprite": { "image": "sheets/airdash-back.png", "columns": 4, "rows": 1, "count": 4, "frameW": 250, "frameH": 411, "originX": 125, "originY": 409, "scale": 0.5, "holds": [2, 4, 4, 2] } },
     { "id": "airdashEnd", "name": "After an air dash (system state art: the fall drawings)", "sprite": { "image": "sheets/fall.png", "columns": 2, "rows": 1, "count": 2, "frameW": 254, "frameH": 575, "originX": 127, "originY": 573, "scale": 0.5, "holds": [8, 52] } },
+    { "id": "blockStand", "name": "Standing block (system state art)", "sprite": { "image": "sheets/block-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 328, "frameH": 360, "originX": 164, "originY": 358, "scale": 0.5, "holds": [8, 1] } },
+    { "id": "blockCrouch", "name": "Crouching block (system state art)", "sprite": { "image": "sheets/block-crouch.png", "columns": 2, "rows": 1, "count": 2, "frameW": 344, "frameH": 246, "originX": 172, "originY": 244, "scale": 0.5, "holds": [8, 1] } },
+    { "id": "blockAir", "name": "Air block (system state art)", "sprite": { "image": "sheets/block-air.png", "columns": 2, "rows": 1, "count": 2, "frameW": 358, "frameH": 247, "originX": 179, "originY": 245, "scale": 0.5, "holds": [8, 1] } },
+    { "id": "hitStand", "name": "Hit, standing (system state art: drawing 1 for now; drawings 2 and 3 are on the sheet for per-strength reactions)", "timeline": [{ "at": 0, "sprite": 0 }], "sprite": { "image": "sheets/hit-stand.png", "columns": 3, "rows": 1, "count": 3, "frameW": 252, "frameH": 391, "originX": 126, "originY": 389, "scale": 0.5, "holds": [1] } },
+    { "id": "hitCrouch", "name": "Hit, crouching (system state art: drawing 1 only)", "sprite": { "image": "sheets/hit-crouch.png", "columns": 1, "rows": 1, "count": 1, "frameW": 228, "frameH": 301, "originX": 114, "originY": 299, "scale": 0.5, "holds": [1] } },
+    { "id": "hitAir", "name": "Hit in the air (system state art: drawings 1 and 2)", "sprite": { "image": "sheets/hit-air.png", "columns": 2, "rows": 1, "count": 2, "frameW": 302, "frameH": 433, "originX": 151, "originY": 431, "scale": 0.5, "holds": [5, 1] } },
+    { "id": "tumble", "name": "Tumbling after an air hit (system state art: drawings 4 and 5; drawn frame 3 left out)", "sprite": { "image": "sheets/tumble.png", "columns": 2, "rows": 1, "count": 2, "frameW": 348, "frameH": 388, "originX": 174, "originY": 386, "scale": 0.5, "holds": [6, 6] } },
+    { "id": "knockdown", "name": "Knocked down (system state art)", "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 346, "frameH": 186, "originX": 173, "originY": 184, "scale": 0.5, "holds": [6, 34] } },
+    { "id": "koDown", "name": "Down after a KO (system state art: lying flat)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 346, "frameH": 186, "originX": 173, "originY": 184, "scale": 0.5, "holds": [60] } },
+    { "id": "wakeup", "name": "Getting up (system state art)", "sprite": { "image": "sheets/wakeup.png", "columns": 3, "rows": 1, "count": 3, "frameW": 268, "frameH": 376, "originX": 134, "originY": 374, "scale": 0.5, "holds": [4, 4, 4] } },
+    { "id": "thrown", "name": "Held in a throw (system state art: the recoil drawing)", "sprite": { "image": "sheets/hit-stand.png", "columns": 3, "rows": 1, "count": 3, "frameW": 252, "frameH": 391, "originX": 126, "originY": 389, "scale": 0.5, "holds": [1] } },
     { "id": "crouch", "name": "Crouch (system state art)", "sprite": { "image": "sheets/crouch.png", "columns": 6, "rows": 1, "count": 6, "frameW": 298, "frameH": 368, "originX": 161, "originY": 366, "scale": 0.5, "holds": [3, 12, 12, 12, 12, 12] } },
     { "id": "jumpSquat", "name": "Jump squat (system state art)", "sprite": { "image": "sheets/jumpsquat.png", "columns": 1, "rows": 1, "count": 1, "frameW": 238, "frameH": 324, "originX": 119, "originY": 322, "scale": 0.5 } },
     { "id": "superJumpSquat", "name": "Super jump squat (system state art)", "sprite": { "image": "sheets/jumpsquat.png", "columns": 1, "rows": 1, "count": 1, "frameW": 238, "frameH": 324, "originX": 119, "originY": 322, "scale": 0.5 } },

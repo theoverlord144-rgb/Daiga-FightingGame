@@ -336,3 +336,16 @@ test('Malik: every dash has its own art, covering the whole state', () => {
     assert.equal(new Set(st.frames.map((fr) => fr.sprite.index)).size, count, name + ' shows all its drawings');
   }
 });
+
+test('Malik: blocks, hit reactions, knockdown and get-up have their own art', () => {
+  const c = loadChar('data/characters/malik/malik.toska.json');
+  // state -> how many different drawings it shows
+  const drawings = { blockStand: 2, blockCrouch: 2, blockAir: 2, hitStand: 1, hitCrouch: 1, hitAir: 2, tumble: 2, knockdown: 2, koDown: 1, wakeup: 3, thrown: 1 };
+  for (const [name, count] of Object.entries(drawings)) {
+    const st = c.states[name];
+    assert.ok(st.frames.every((fr) => fr.sprite), name + ' has art on every frame');
+    assert.equal(new Set(st.frames.map((fr) => fr.sprite.index)).size, count, name);
+  }
+  assert.equal(c.sheets[c.states.hitCrouch.frames[0].sprite.sheet].count, 1, 'crouching hit: one drawing only');
+  for (const sheet of Object.values(c.sheets)) assert.ok(fs.existsSync('data/characters/malik/' + sheet.image), sheet.image);
+});
