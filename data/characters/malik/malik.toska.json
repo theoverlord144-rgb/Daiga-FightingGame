@@ -5,7 +5,7 @@
   "character": {
     "id": "malik",
     "name": "Malik",
-    "stats": {}
+    "stats": { "airHurt": [[-28, 10, 60, 160]] }
   },
   "mechanic": {
     "name": "Spirit Install",
@@ -22,8 +22,9 @@
     "2M": ["5H", "backHeavy", "2H", "5S"],
     "5H": ["backHeavy", "2H", "5S"],
     "backHeavy": ["2H", "5S"],
-    "j.L": ["j.L", "j.M", "j.H"],
-    "j.M": ["j.H"]
+    "j.L": ["j.L", "j.M", "j.H", "j.S"],
+    "j.M": ["j.H", "j.S"],
+    "j.H": ["j.S"]
   },
   "states": {
     "installIdle": { "duration": 60, "loop": true, "sprite": { "image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 174, "frameH": 445, "originX": 87, "originY": 443, "scale": 0.5, "holds": [10, 10, 10, 10, 10, 10] } },
@@ -79,7 +80,7 @@
     { "id": "2L", "name": "Crouching Light", "input": "2L", "startup": 4, "active": 2, "recovery": 8,
       "damage": 350, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "low", "reach": 70,
       "starterProration": 8000,
-      "hitboxes": [[20, 10, 50, 45]],
+      "hitboxes": [[26, 7, 59, 49]],
       "sprite": { "image": "sheets/2L.png", "columns": 5, "rows": 1, "count": 5, "frameW": 411, "frameH": 267, "originX": 273, "originY": 265, "scale": 0.5, "holds": [3, 2, 3, 3, 2] } },
     { "id": "2M", "name": "Crouching Medium", "input": "2M", "startup": 7, "active": 3, "recovery": 13,
       "damage": 550, "hitstun": 17, "blockstun": 13, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18, "guard": "low", "reach": 170,
@@ -99,7 +100,7 @@
     { "id": "j.L", "name": "Jumping Light", "input": "j.L", "startup": 4, "active": 4, "recovery": 8,
       "damage": 400, "hitstun": 13, "untech": 20, "blockstun": 10, "hitstop": 8, "pushbackHit": 10, "pushbackBlock": 14, "selfPushback": 0, "guard": "high", "reach": 88,
       "jumpCancel": "hit", "airHit": { "x": 2, "y": 4 },
-      "hitboxes": [[40, 82, 50, 54]],
+      "hitboxes": [[47, 80, 46, 50]],
       "hitFx": { "hold": 2, "sprite": { "image": "sheets/air-hit-1.png", "columns": 10, "rows": 1, "count": 10, "frameW": 244, "frameH": 232, "originX": 122, "originY": 116, "scale": 0.5 } },
       "sprite": { "image": "sheets/jL.png", "columns": 5, "rows": 1, "count": 5, "frameW": 350, "frameH": 444, "originX": 175, "originY": 442, "scale": 0.5, "holds": [2, 1, 4, 4, 4] } },
     { "id": "j.M", "name": "Jumping Medium", "input": "j.M", "startup": 6, "active": 4, "recovery": 12,
@@ -115,6 +116,11 @@
       "layers": [{ "effect": "spiritHand" }],
       "hitFx": { "hold": 2, "sprite": { "image": "sheets/air-hit-3.png", "columns": 8, "rows": 1, "count": 8, "frameW": 244, "frameH": 274, "originX": 122, "originY": 137, "scale": 0.5 } },
       "sprite": { "image": "sheets/jH.png", "columns": 6, "rows": 1, "count": 6, "frameW": 418, "frameH": 436, "originX": 209, "originY": 434, "scale": 0.5, "holds": [4, 5, 3, 3, 3, 3] } },
+    { "id": "j.S", "name": "Air Axe Kick", "input": "j.S", "startup": 9, "active": 4, "recovery": 18,
+      "damage": 900, "hitstun": 22, "untech": 30, "blockstun": 14, "hitstop": 14, "pushbackHit": 0, "pushbackBlock": 18, "selfPushback": 0, "guard": "high", "reach": 90,
+      "airHit": { "x": 1, "y": -14 }, "groundBounce": { "y": 13 },
+      "hitboxes": [[15, -30, 75, 250]],
+      "sprite": { "image": "sheets/jS.png", "columns": 7, "rows": 1, "count": 7, "frameW": 376, "frameH": 603, "originX": 188, "originY": 514, "scale": 0.5, "holds": [3, 3, 2, 4, 6, 6, 6] } },
     { "id": "5S", "name": "Launcher", "input": "5S", "startup": 9, "active": 3, "recovery": 24,
       "damage": 700, "hitstun": 30, "untech": 50, "blockstun": 14, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 30, "selfPushback": 22, "guard": "mid", "reach": 64,
       "launcher": true, "launch": { "x": 0, "y": 24 },

@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', '5S', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'pillarH', 'pillarL', 'pillarM', 'spiritOrb', 'spiritOrbH', 'spiritOrbM']);
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', '5S', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'pillarH', 'pillarL', 'pillarM', 'spiritOrb', 'spiritOrbH', 'spiritOrbM']);
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -469,4 +469,20 @@ test('Malik: S is a launcher: the hit is on the smear (drawing 3), it sends them
   assert.deepEqual(seen.slice(0, 2), ['5H', '5S'], 'Standing Heavy chains into S');
   assert.ok(top > px(100), 'launched high');
   assert.ok(hp - game.players[1].health > 700);
+});
+
+test('Malik: Air S hits on drawing 4 (the big smear), Standing S on drawing 3, and the air normals chain into Air S', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const c = world.chars[0];
+  const hitDrawings = (id) => [...new Set(c.states[id].frames.filter((fr) => fr.hit.length).map((fr) => fr.sprite.index + 1))];
+  assert.deepEqual(hitDrawings('j.S'), [4]);
+  assert.deepEqual(hitDrawings('5S'), [3]);
+  assert.equal(c.states['j.S'].frames.at(-1).sprite.index + 1, 7);
+  assert.ok(fs.existsSync('data/characters/malik/sheets/jS.png'));
+  const file = JSON.parse(fs.readFileSync('data/characters/malik/malik.toska.json', 'utf8'));
+  for (const from of ['j.L', 'j.M', 'j.H']) assert.ok(file.gatlings[from].includes('j.S'), from + ' chains into j.S');
+  // In a match: jump, press S in the air.
+  const game = createGame(world); const seen = [];
+  for (const raw of script('8*3 5*14 5+S 5*40')) { step(game, [raw, 0], world); if (seen.at(-1) !== game.players[0].state) seen.push(game.players[0].state); }
+  assert.ok(seen.includes('j.S'), seen.join('>'));
 });
