@@ -65,6 +65,11 @@ changed, the page did not reload, the game had the new box), then with the mouse
 resized and moved it, added a box, saw the unsaved warning, undid everything and went back to the menu. My test
 edits were put back; Avner's file is unchanged.
 
+## The second page
+
+HIT SETTINGS (press T): damage, stun, pushback and launch as numbers, with the move playing against a dummy.
+See `docs/reports/hit-settings.md`.
+
 ## Not done
 
 - Push and throw boxes, projectile hitboxes.

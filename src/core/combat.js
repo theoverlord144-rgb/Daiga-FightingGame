@@ -327,6 +327,7 @@ function applyStrike(game, world, r) {
     d.stun = move.blockstun;
     if (body) pushback(world, a, d, away, move.pushbackBlock, move.selfPushback);
     else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackBlock, battle.pushbackFrames);
+    if (body) recoil(world, a, away, move);
     if (body && move.onBlockState) {
       // A branch when blocked (a baited Absolve's long recovery): still the same use of the move.
       enterState(a, world.chars[a.id], move.onBlockState);
@@ -448,6 +449,7 @@ function applyStrike(game, world, r) {
     if (body) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
     else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackHit, battle.pushbackFrames);
   }
+  if (body) recoil(world, a, away, move);
   if (body && move.onHitState) {
     // An animation branch on hit (a catch): still the same use of the move, so it keeps its contact.
     enterState(a, world.chars[a.id], move.onHitState);
@@ -530,6 +532,16 @@ function pushback(world, a, d, away, amount, self) {
   } else {
     startSlide(d, away * amount, frames);
   }
+}
+
+/**
+ * Recoil: a move with `recoil` slides its user back whenever it touches (hit or block), wherever the defender is
+ * and whatever happens to them (launched, cornered). It adds to a corner pushback that has just started.
+ */
+function recoil(world, a, away, move) {
+  if (!move.recoil || isAirborne(world.chars[a.id], a)) return;
+  const already = a.slideLeft > 0 && sign(a.slide) === -away ? Math.abs(a.slide) : 0;
+  startSlide(a, -away * (already + move.recoil), world.battle.pushbackFrames);
 }
 
 // ---------- Throws ----------

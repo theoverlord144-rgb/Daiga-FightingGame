@@ -41,6 +41,7 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `hitstun`, `blockstun`, `hitstop` | Frames. |
 | `pushbackHit`, `pushbackBlock` | How far the defender slides (px). |
 | `selfPushback` | How far the attacker slides back when the defender is cornered (px). |
+| `recoil` | How far the attacker slides back every time the move touches, on hit or block (px, default 0). Adds to the corner slide. Not for projectiles. |
 | `guard` | `high` (blocked standing only), `mid` (either), `low` (crouching only), `unblockable`. |
 | `reach` | How far forward the move reaches (px). Informational: the CPU and the frame readout use it. |
 | `hitboxes` | `[[x, y, w, h], ...]` during active frames. `x` is forward from the fighter's feet, `y` is up. |

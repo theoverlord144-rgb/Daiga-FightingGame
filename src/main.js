@@ -89,7 +89,7 @@ if (isGame) {
   ];
   const start = mode === 'training' ? ['training', { picks }]
     : mode === 'versus' ? ['versus', { mode: params.get('cpu') ? 'cpu' : 'versus', picks }]
-      : mode === 'editor' ? ['editor', { char: picks[0].id, state: params.get('move'), frame: Number(params.get('frame') ?? 0) }]
+      : mode === 'editor' ? ['editor', { char: picks[0].id, state: params.get('move'), frame: Number(params.get('frame') ?? 0), page: params.get('page') ?? 'boxes' }]
         : ['title', {}];
   app = createApp({
     ctx, ui, W, H, devices, chars, stage, battle: BATTLE, matchBase: MATCH, renderer, opts, time,

@@ -157,6 +157,7 @@ function compileMoveData(m, ctx = {}) {
     pushbackHit: px(m.pushbackHit ?? 0),
     pushbackBlock: px(m.pushbackBlock ?? 0),
     selfPushback: px(m.selfPushback ?? 0),
+    recoil: px(m.recoil ?? 0), // the attacker slides back this far whenever the move touches (hit or block)
     guard: m.guard ?? 'mid',
     reach: px(m.reach ?? 0),
     chip: m.chip ?? 0,

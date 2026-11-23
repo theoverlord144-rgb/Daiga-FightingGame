@@ -10,6 +10,7 @@ import { createFightRenderer } from '../../render/fight-renderer.js';
 import { SYSTEM, CHAR_SOURCES } from '../boot.js';
 import { sourcesAt, boxesOf, setBoxes, editable, overrideMove, overrideFromFrame, addHitboxField, removeSource, diffOps, stateInfo, projectileNames, projectileSource } from '../../editor/box-model.js';
 import { FONT, INK, DIM, GOLD } from './common.js';
+import { createTuner } from './move-tuner.js';
 
 const LIST_W = 176; // the state list, on the left
 const STAGE = { x: 184, y: 30, w: 768, h: 338 }; // where the fighter is drawn
@@ -24,7 +25,7 @@ const PROJ = 'proj:'; // list entries for projectiles
 const isProj = (name) => name.startsWith(PROJ);
 const sum = (list) => list.reduce((a, b) => a + b, 0);
 
-export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 } = {}) {
+export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0, page = 'boxes' } = {}) {
   const { ctx, W, H } = app;
   const canvas = ctx.canvas;
   const renderer = createFightRenderer(ctx, W, H); // its own, so the fight's effects and camera stay out of it
@@ -41,7 +42,10 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
   let leaveArmed = 0;
   let buttons = [];
   let tick = 0;
-  const mouse = { x: 0, y: 0 };
+  let mode = page === 'hit' ? 'hit' : 'boxes'; // which page: the boxes, or the hit settings (move-tuner.js)
+  let version = 0; // goes up every time the character is rebuilt from the file being edited
+  let hintText = ''; // what the thing under the mouse does (shown on the bottom line)
+  const mouse = { x: 0, y: 0, shift: false };
 
   const say = (text, color = INK, frames = 240) => { msg = { text, color, until: tick + frames }; };
   const dirty = () => JSON.stringify(raw) !== JSON.stringify(saved);
@@ -51,6 +55,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     saved = clone(CHAR_SOURCES[id].file);
     raw = clone(saved);
     def = compileCharacter(raw, SYSTEM);
+    version++;
     // Moves first (in the file's order), then the character's own states, then the system's.
     const rank = { move: 0, ex: 0, own: 1, system: 2, universal: 3 };
     names = Object.keys(def.states).map((n, i) => ({ n, i, r: rank[stateInfo(raw, SYSTEM, n).type] }))
@@ -128,6 +133,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
 
   function recompile() {
     def = compileCharacter(raw, SYSTEM);
+    version++;
     frame = Math.min(frame, stOf(names[sel]).frames.length - 1);
   }
 
@@ -285,6 +291,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
   function onDown(e) {
     if (e.button !== 0) return;
     const p = pos(e);
+    mouse.shift = e.shiftKey;
     if (p.x < LIST_W) {
       if (p.y < LIST_TOP - 14) { nextCharacter(); return; }
       const i = listScroll + Math.floor((p.y - (LIST_TOP - 11)) / ROW);
@@ -293,6 +300,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     }
     const btn = buttons.find((b) => inside(p, b));
     if (btn) { if (btn.on) btn.on(); else if (btn.why) say(btn.why, '#ffb86b'); return; }
+    if (mode === 'hit') { tuner.onDown(p); return; }
     if (inside(p, { ...BAR, y: BAR.y - 4, h: BAR.h + 8 })) { drag = { bar: true }; scrub(p); return; }
     if (!inside(p, STAGE)) return;
     const hit = boxAt(p);
@@ -312,6 +320,8 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     const p = pos(e);
     mouse.x = p.x;
     mouse.y = p.y;
+    mouse.shift = e.shiftKey;
+    if (mode === 'hit') { canvas.style.cursor = ''; tuner.onMove(p); return; }
     if (!drag) {
       const hit = inside(p, STAGE) ? boxAt(p) : null;
       const part = hit?.part;
@@ -345,6 +355,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
   }
 
   function onUp() {
+    tuner.onUp();
     if (drag && !drag.bar && JSON.stringify(raw) !== drag.before) { undo.push(drag.before); if (undo.length > 200) undo.shift(); }
     drag = null;
   }
@@ -354,6 +365,8 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     if (p.x < LIST_W) {
       const rows = Math.floor((H - 24 - LIST_TOP) / ROW);
       listScroll = Math.max(0, Math.min(Math.max(0, names.length - rows), listScroll + Math.sign(e.deltaY) * 3));
+    } else if (inside(p, STAGE) && mode === 'hit') {
+      tuner.onWheel(e);
     } else if (inside(p, STAGE)) {
       zoomMul = Math.max(0.5, Math.min(3, zoomMul * (e.deltaY < 0 ? 1.25 : 0.8)));
     } else return;
@@ -375,7 +388,15 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
   }
 
   /** A button, drawn now and remembered for clicks. on: what it does; why: what to say if it can't be used. */
-  function button(label, x, y, { on = null, why = '', lit = false } = {}) {
+  function button(label, x, y, { on = null, why = '', lit = false, small = false } = {}) {
+    if (small) {
+      const b = { x, y, w: 16, h: 14, on, why };
+      buttons.push(b);
+      ctx.fillStyle = inside(mouse, b) && on ? '#3d3154' : '#2a2238';
+      ctx.fillRect(x, y, 16, 14);
+      text(label, x + 8, y + 11, { color: INK, size: 11, weight: 700, align: 'center' });
+      return x + 19;
+    }
     ctx.font = `600 11px ${FONT}`;
     const w = Math.ceil(ctx.measureText(label).width) + 16;
     const b = { x, y, w, h: 20, on, why };
@@ -522,7 +543,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     const about = pd ? `projectile · speed ${pd.speed / UNIT} · lasts ${pd.lifetime} frames · released at forward ${offsetOf(c.name)[0]}, up ${offsetOf(c.name)[1]}`
       : m ? `startup ${m.startup} · active ${m.active} · recovery ${m.recovery} · ${c.st.stance}` : `${c.st.stance}${c.st.loop ? ' · loops' : ''}`;
     text(about, STAGE.x + 6 + ctx.measureText(title).width + 22, 20, { color: DIM, size: 11 });
-    text(`zoom ${v.z.toFixed(2)}×`, W - 10, 20, { color: '#5a516b', size: 10, align: 'right' });
+    text(`zoom ${v.z.toFixed(2)}×`, W - 210, 20, { color: '#5a516b', size: 10, align: 'right' });
     const legend = [['hurtbox', COLORS.hurt], ['hitbox', COLORS.hit], ['push / throw (not editable)', '#8f86a3']];
     let lx = W - 10;
     for (const [label, color] of legend.reverse()) {
@@ -606,8 +627,32 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     if (msg && tick < msg.until) text(msg.text, 190, 511, { color: msg.color, size: 12, weight: 600 });
   }
 
+  /** The page tabs, top right, on both pages. */
+  function drawTabs() {
+    let x = W - 200;
+    x = button('BOXES', x, 4, { on: () => { mode = 'boxes'; }, lit: mode === 'boxes' });
+    button('HIT SETTINGS', x, 4, { on: () => { mode = 'hit'; playing = false; picked = null; }, lit: mode === 'hit' });
+  }
+
+  const tuner = createTuner({
+    ctx, app, renderer, STAGE, W, H, text, button, say, mouse,
+    raw: () => raw, def: () => def, charId: () => charId, entry: () => names[sel], version: () => version,
+    change, undoOnce, undoCount: () => undo.length, dirty, saving: () => saving, save,
+    hint: (s, weak = false) => { if (!weak || !hintText) hintText = s; },
+    /** For a drag: many small changes that undo as one (snapshot before, apply as it moves, commit at the end). */
+    snapshot: () => JSON.stringify(raw),
+    apply(fn) {
+      const before = JSON.stringify(raw);
+      try { fn(); recompile(); } catch (err) { raw = JSON.parse(before); recompile(); say(err.message, '#ff6b6b'); }
+    },
+    commit(before) { if (JSON.stringify(raw) !== before) { undo.push(before); if (undo.length > 200) undo.shift(); } },
+  });
+
   return {
-    help: 'Drag a box to move it, an edge to resize · arrows nudge (Shift: resize, Ctrl: ×10) · , . frame · [ ] move · Space play · Ctrl+Z undo · Ctrl+S save · Esc back',
+    get help() {
+      return mode === 'hit' ? tuner.help : this.boxHelp;
+    },
+    boxHelp: 'T: hit settings page · Drag a box to move it, an edge to resize · arrows nudge (Shift: resize, Ctrl: ×10) · , . frame · [ ] move · Space play · Ctrl+Z undo · Ctrl+S save · Esc back',
     /** Ctrl+S (main.js sends it to the current screen under this name). */
     saveReplay: save,
     close() {
@@ -619,8 +664,10 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     },
     step(menu) {
       tick++;
-      if (playing && !drag) setFrame(frame + 1);
+      if (mode === 'hit') tuner.step();
+      else if (playing && !drag) setFrame(frame + 1);
       if (menu[0].escape) {
+        if (mode === 'hit' && tuner.cancel()) return;
         if (dirty() && tick > leaveArmed) {
           leaveArmed = tick + 180;
           say('Unsaved changes. Ctrl+S to save, or Esc again to leave without saving.', '#ffb86b', 180);
@@ -642,6 +689,15 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
       }
       if (e.code === 'KeyZ' && ctrl) { e.preventDefault(); undoOnce(); return; }
       if (ctrl) return;
+      if (e.code === 'KeyT' && !e.repeat) { mode = mode === 'hit' ? 'boxes' : 'hit'; playing = false; picked = null; return; }
+      if (mode === 'hit') {
+        if (tuner.onKey(e)) return;
+        if (e.code === 'ArrowUp' || e.code === 'ArrowDown') { e.preventDefault(); setState(sel + (e.code === 'ArrowUp' ? -1 : 1)); }
+        else if (e.code === 'BracketLeft' || e.code === 'PageUp') { e.preventDefault(); setState(sel - 1); }
+        else if (e.code === 'BracketRight' || e.code === 'PageDown') { e.preventDefault(); setState(sel + 1); }
+        else if (e.code === 'KeyC' && !e.repeat) nextCharacter();
+        return;
+      }
       if (e.code === 'Comma') { playing = false; setFrame(frame - 1); }
       else if (e.code === 'Period') { playing = false; setFrame(frame + 1); }
       else if (e.code === 'BracketLeft' || e.code === 'PageUp') { e.preventDefault(); setState(sel - 1); }
@@ -664,12 +720,30 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     draw() {
       buttons = [];
       const c = now();
-      const v = view();
-      drawStage(c, v);
-      ctx.fillStyle = '#150f20';
-      ctx.fillRect(LIST_W, STAGE.y + STAGE.h + 2, W - LIST_W, H - STAGE.y - STAGE.h - 2);
-      drawBar(c);
-      drawPanel(c);
+      hintText = '';
+      if (mode === 'hit') {
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#1b1726');
+        g.addColorStop(1, '#0d0b12');
+        ctx.fillStyle = g;
+        ctx.fillRect(LIST_W, 0, W - LIST_W, H);
+        tuner.draw(c);
+        // Messages, and what the setting under the mouse does, on a strip along the bottom of the fight.
+        const line = msg && tick < msg.until ? msg : hintText ? { text: hintText, color: INK } : null;
+        if (line) {
+          ctx.fillStyle = '#0d0b12dd';
+          ctx.fillRect(STAGE.x, STAGE.y + STAGE.h - 20, STAGE.w, 20);
+          text(line.text, STAGE.x + 8, STAGE.y + STAGE.h - 6, { color: line.color, size: 12, weight: 600 });
+        }
+      } else {
+        const v = view();
+        drawStage(c, v);
+        ctx.fillStyle = '#150f20';
+        ctx.fillRect(LIST_W, STAGE.y + STAGE.h + 2, W - LIST_W, H - STAGE.y - STAGE.h - 2);
+        drawBar(c);
+        drawPanel(c);
+      }
+      drawTabs();
       drawList();
     },
   };

@@ -39,6 +39,7 @@ export function setupCanvas() {
 export const SYSTEM = { defaults, common, meter, burst, systems };
 export const INPUT_RULES = inputRules;
 export const BATTLE = battle;
+export const COMBO = combo;
 export const MATCH = match;
 /** Every stage under data/stages, by id. */
 export const STAGES = Object.fromEntries(Object.values(STAGE_FILES).map((s) => [s.id, s]));
