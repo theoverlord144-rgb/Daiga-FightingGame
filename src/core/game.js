@@ -9,6 +9,7 @@ import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from
 import { createFighter, advanceAndDecide, move, land } from './fighter.js';
 import { separate, resolveHits, checkThrowBreaks, throwLands, moveProjectiles, resolveProjectiles } from './combat.js';
 import { px } from './fixed.js';
+import { compileSystems } from './systems.js';
 
 export const FPS = 60;
 
@@ -16,9 +17,10 @@ export const FPS = 60;
 export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown']);
 
 /** Bundle the system data and two compiled characters into the read-only world. */
-export function createWorld({ input, battle, combo, meter = null, burst = null, match = null, chars }) {
+export function createWorld({ input, battle, combo, meter = null, burst = null, match = null, systems = null, chars }) {
   return {
     input,
+    sys: compileSystems(systems), // counters, Witness, Perfect Link, ... (data/system/systems.json)
     match: compileMatch(match),
     combo: {
       ...combo,

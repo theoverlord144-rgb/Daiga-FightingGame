@@ -34,6 +34,9 @@ export function createFighter(def, side, x) {
     armorUsed: 0,
     consumed: [-1, -1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
     viaCancel: 0, // 1 = the current move was cancelled into (not started from a free state)
+    hsEnd: -1, // the game frame this fighter came out of the hitstop of its current move's hit (-1 = it hasn't)
+    hsLen: 0, // how long that hitstop was
+    link: 0, // 1 = the current move was a Perfect Link: its first hit adds nothing to the combo's scaling
     jumpDir: 8,
     airJumpsUsed: 0,
     airDashesUsed: 0,
@@ -127,6 +130,9 @@ export function enterState(p, def, name) {
   p.state = name;
   p.frame = 0;
   p.stateTime = 0;
+  p.hsEnd = -1;
+  p.hsLen = 0;
+  p.link = 0;
   p.contact = CONTACT.NONE;
   p.hitsDone = 0;
   p.armorUsed = 0;
@@ -318,11 +324,45 @@ function throwInRange(game, p, def, world, cmd) {
   return false;
 }
 
-/** Start a command's move: mark its presses used and pay its cost. */
-function startCommand(game, p, def, pick, viaCancel = p.viaCancel) {
+/**
+ * Perfect Link timing of a cancel after a hit: was the button pressed in the last `window` frames of the hit's
+ * hitstop? Returns { timing: 'early' | 'perfect' | 'late', frames } (frames = how far from the window), or null
+ * when the move being cancelled hasn't hit.
+ */
+function linkTiming(game, p, world, pick) {
+  if (p.contact !== CONTACT.HIT || p.hsEnd < 0) return null;
+  const f = Math.max(...[...pick.cmd.buttons].map((b) => pick.presses[b] ?? -1));
+  const first = p.hsEnd - Math.min(world.sys.link.window, p.hsLen);
+  if (f < first) return { timing: 'early', frames: first - f };
+  if (f < p.hsEnd) return { timing: 'perfect', frames: p.hsEnd - f };
+  return { timing: 'late', frames: f - p.hsEnd + 1 };
+}
+
+/**
+ * Start a command's move: mark its presses used and pay its cost. `link` = this is a cancel the player timed
+ * (not an EX upgrade or a launcher swap): check it for a Perfect Link.
+ */
+function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link = false) {
   p.viaCancel = viaCancel ? 1 : 0;
+  const timing = link ? linkTiming(game, p, world, pick) : null;
+  const keepLink = link ? 0 : p.link;
   for (const [b, f] of Object.entries(pick.presses)) p.consumed[BTN_INDEX[b]] = f;
   enterState(p, def, pick.cmd.move);
+  p.link = keepLink;
+  if (timing) {
+    // Perfect Link: the hit of this move adds nothing to the combo's scaling, a little Devotion, and an event for
+    // the flash and sound. At most `max` per combo; every timed cancel reports its timing (training mode shows it).
+    const c = game.players[1 - p.id].combo;
+    const rewarded = timing.timing === 'perfect' && !!c && c.links < world.sys.link.max;
+    if (rewarded) {
+      c.links++;
+      p.link = 1;
+      const amount = def.devotion.extras.perfectLink ?? world.meter?.gain.perfectLink ?? 0;
+      gainDevotion(game, p, def, pct(amount, def.devotion.give), 'link', true);
+      game.cues.push({ p: p.id, type: 'perfect', x: p.x, y: p.y });
+    }
+    game.cues.push({ p: p.id, type: 'link', timing: timing.timing, frames: timing.frames, rewarded });
+  }
   applyResources(p, def, negate(pick.cmd.cost));
   // Doing a special move builds a little Devotion (not its EX version, which costs a bar).
   const mv = def.states[pick.cmd.move].move;
@@ -353,6 +393,8 @@ function openCancels(st, p) {
 function decide(game, p, opp, def, world) {
   const st = def.states[p.state];
   const air = st.stance === 'air';
+  // First frame out of the hitstop of a hit this move landed: remember it, for Perfect Link timing.
+  if (p.freezeAge > 0 && p.contact === CONTACT.HIT && st.move) { p.hsEnd = game.frame; p.hsLen = p.freezeAge; }
 
   // EX upgrade: the second button of a chord arrived a frame or two after the one-button version started.
   const ups = def.upgrades[p.state];
@@ -371,7 +413,7 @@ function decide(game, p, opp, def, world) {
         applyResources(p, def, paid);
         undoSpecialGain(game, p);
         p.contact = CONTACT.HIT; // no on-whiff effects for the swap
-        startCommand(game, p, def, { cmd, presses });
+        startCommand(game, p, def, world, { cmd, presses });
         return;
       }
     }
@@ -388,7 +430,7 @@ function decide(game, p, opp, def, world) {
       applyResources(p, def, def.states[p.state].move.cost);
       undoSpecialGain(game, p);
       p.contact = CONTACT.HIT; // no on-whiff effects for the swap
-      startCommand(game, p, def, pick);
+      startCommand(game, p, def, world, pick);
       return;
     }
   }
@@ -419,7 +461,7 @@ function decide(game, p, opp, def, world) {
     : (cmd) => windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
-    startCommand(game, p, def, pick, !st.free);
+    startCommand(game, p, def, world, pick, !st.free, !st.free);
     return;
   }
   if (backOut()) return;
@@ -507,7 +549,7 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
   // Air tech: once the untechable time is over, any button recovers. And once a combo has run past techOutAt,
   // any button techs out of hitstun itself, in the air or on the ground.
   const st1 = def.states[p.state];
-  const late = !!p.combo && p.combo.time >= (world.combo.techOutAt ?? Infinity) && TECH_OUT_STATES.has(p.state);
+  const late = !!p.combo && p.combo.time - p.combo.extend >= (world.combo.techOutAt ?? Infinity) && TECH_OUT_STATES.has(p.state);
   if (st1.techable || late) {
     const buffer = world.input.pressBuffer + p.freezeAge;
     if ([BTN.L, BTN.M, BTN.H, BTN.S, BTN.R].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {

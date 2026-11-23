@@ -53,6 +53,7 @@ export function loadWorld(a = 'tests/fixtures/fighter.toska.json', b = a, { matc
     battle: loadJSON('data/system/battle.json'),
     combo: loadJSON('data/system/combo.json'),
     meter: SYSTEM.meter,
+    systems: loadJSON('data/system/systems.json'),
     burst: SYSTEM.burst,
     chars: [typeof a === 'string' ? loadChar(a) : a, typeof b === 'string' ? loadChar(b) : b],
   });

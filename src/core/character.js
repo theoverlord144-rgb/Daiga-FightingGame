@@ -320,9 +320,11 @@ function compileState(name, src, stats, extra = {}) {
       events.push({ at: first, throw: boxes(extra.throwboxes) });
       events.push({ at: first + m.active, throw: [] });
     }
+    // Counter state per frame: 1 = startup and active frames (a hit here is a counter hit), 2 = recovery (a hit
+    // here is a Witness counter), 0 = neither. counterHit: "none" turns both off for the move.
     const ch = extra.counterHit ?? 'all';
-    events.push({ at: 0, counter: ch !== 'none' });
-    if (ch === 'startup+active') events.push({ at: first + m.active, counter: false });
+    events.push({ at: 0, counter: ch !== 'none' ? 1 : 0 });
+    if (ch !== 'none') events.push({ at: first + m.active, counter: ch === 'startup+active' ? 0 : 2 });
   }
   for (const s of spriteEvents(extra.sheet, duration)) events.push({ at: s.at, sprite: { sheet: extra.sheetName, index: s.index } });
   for (const e of src.timeline || []) events.push(normalizeEvent(e, stats, extra.sheetName));
@@ -342,7 +344,7 @@ function compileState(name, src, stats, extra = {}) {
   sets.forEach((s, i) => (s.order = i));
   sets.sort((a, b) => a.at - b.at || a.order - b.order);
 
-  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: false, gravity: stance === 'air' };
+  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: 0, gravity: stance === 'air' };
   const frames = [];
   const onEnter = [];
   const reverts = []; // { at, fields }
@@ -380,7 +382,7 @@ function compileState(name, src, stats, extra = {}) {
       invStrike: !!cur.invuln?.strike,
       invThrow: !!cur.invuln?.throw,
       armor: cur.armor | 0,
-      counter: !!cur.counter,
+      counter: cur.counter === true ? 1 : cur.counter | 0,
       gravity: !!cur.gravity,
     });
     onEnter.push(shots);

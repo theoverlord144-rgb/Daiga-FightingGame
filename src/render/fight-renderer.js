@@ -441,11 +441,11 @@ export function createFightRenderer(ctx, W, H) {
       if (!SPARK[c.type]) continue;
       // A move (or projectile) with its own hit effect (art) shows that instead of the generic spark.
       const src = world.chars[c.p];
-      const fx = (c.type === 'hit' || c.type === 'counter') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
+      const fx = (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
       if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
       // The universal sheet: a hit spark sized by the move's base damage (a counter hit goes one size up), or the
       // block flash, which curves toward the attacker.
-      const isHit = c.type === 'hit' || c.type === 'counter';
+      const isHit = c.type === 'hit' || c.type === 'counter' || c.type === 'witness';
       let uni = false;
       if ((isHit && !fx) || c.type === 'block') {
         let row;
@@ -454,7 +454,7 @@ export function createFightRenderer(ctx, W, H) {
           const base = (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.damage ?? 0;
           let i = FX.hit.findIndex((h) => h.below === undefined || base < h.below);
           if (i < 0) i = FX.hit.length - 1;
-          if (c.type === 'counter') i = Math.min(FX.hit.length - 1, i + 1);
+          if (c.type === 'counter' || c.type === 'witness') i = Math.min(FX.hit.length - 1, i + 1);
           row = FX.hit[i].row;
         } else {
           row = FX.block.row;

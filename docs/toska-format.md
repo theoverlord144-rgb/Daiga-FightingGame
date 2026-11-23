@@ -239,6 +239,9 @@ Heights are pixels above the ground line.
 
 ## Universal mechanics (system data)
 
+- **Counters, Witness, Perfect Link** (`counter`, `witness`, `perfectLink` in `data/system/systems.json`; the file's
+  notes explain every number). A move's `counterHit: "none"` makes it immune to both kinds of counter;
+  `"startup+active"` makes its recovery safe from Witness only.
 - **Devotion** (the meter; `devotion` in `data/system/systems.json`, every field explained in that file's notes).
   Written in Devotion points: `barSize` 100, `exCost` 100, `superCost` by level `{ "1": 100, "3": 300 }`,
   `gain` (`hitPerPct` 3, `blockedPerPct` 1, `special` 5, `perfectLink` 2, `hurtPerPct` 2, `vowAbsorb` 0.5),

@@ -58,5 +58,5 @@ export function loadCharacters() {
 
 /** match: the match rules (rounds, timer), or null for free play (training). */
 export function makeWorld(a, b, matchRules = null) {
-  return createWorld({ input: inputRules, battle, combo, meter, burst, match: matchRules, chars: [a, b] });
+  return createWorld({ input: inputRules, battle, combo, meter, burst, match: matchRules, systems, chars: [a, b] });
 }

@@ -102,7 +102,7 @@ export function createFrameMeter({ length = 80 } = {}) {
 
     // Advantage: from a hit or block, the first frame each side can act again.
     for (const c of game.cues) {
-      if ((c.type !== 'hit' && c.type !== 'counter' && c.type !== 'block') || c.throw) continue;
+      if ((c.type !== 'hit' && c.type !== 'counter' && c.type !== 'witness' && c.type !== 'block') || c.throw) continue;
       adv = { attacker: c.p, kind: c.type === 'block' ? 'block' : 'hit', move: c.move, start: game.frame,
         aFree: null, dFree: null, value: null, done: false, note: null };
     }

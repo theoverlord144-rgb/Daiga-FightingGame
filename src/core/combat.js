@@ -4,6 +4,7 @@
 import { frameOf } from './character.js';
 import { CONTACT, enterState, isAirborne, startSlide, applyResources, meets, gainDevotion } from './fighter.js';
 import { perPercent } from './devotion.js';
+import { soften } from './systems.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
 import { pct, sign } from './fixed.js';
 
@@ -151,6 +152,19 @@ function blockKind(d, ddef, a, move, world) {
 
 // ---------- Hits ----------
 
+/**
+ * What a clean hit on this defender is: 'counter' (they were in the startup of a move, or the active frames of a
+ * normal), 'witness' (in recovery, or in the active frames of a special or super that has touched nothing), or
+ * plain 'hit'. fd = the defender's frame at the start of this step.
+ */
+export function hitKind(world, d, fd) {
+  if (!fd.counter) return 'hit';
+  if (fd.counter === 2) return 'witness';
+  const mv = world.chars[d.id].states[d.state].move;
+  if (mv && (mv.kind === 'special' || mv.kind === 'super') && d.frame >= mv.startup - 1 && d.contact === CONTACT.NONE && d.hitsDone === 0) return 'witness';
+  return 'counter';
+}
+
 function cue(game, type, p, rect, extra = {}) {
   const x = rect ? Math.trunc((rect[0] + rect[2]) / 2) : p.x;
   const y = rect ? Math.trunc((rect[1] + rect[3]) / 2) : p.y;
@@ -179,7 +193,7 @@ function resolveStrike(game, world, a, d, rect, snap) {
   } else if (block) {
     out.kind = 'block';
   } else {
-    out.kind = fd.counter ? 'counter' : 'hit';
+    out.kind = hitKind(world, d, fd);
   }
   return out;
 }
@@ -275,18 +289,24 @@ function applyStrike(game, world, r) {
     return;
   }
 
-  const counter = r.kind === 'counter';
-  const ch = battle.counterHit;
+  // Counter hit / Witness counter: only a hit that starts a combo can be one (r.witness: Vow's strike asks for it).
+  const starts = !d.combo;
+  const witness = starts && (r.kind === 'witness' || !!r.witness);
+  const counter = starts && r.kind === 'counter' && !witness;
+  const ch = witness ? world.sys.witness : world.sys.counter; // read only when one of the two is true
+  const special = counter || witness;
   const C = world.combo;
   if (body) a.contact = CONTACT.HIT;
 
   // The combo this hit belongs to (a new one if the defender wasn't already being comboed).
   const starter = !d.combo;
+  // links: Perfect Links so far; witness: it began with a Witness counter; extend: frames its decay timer runs late.
   // hard: hard launches so far; juggle: the juggle total (see combo.json).
   // took / gave: Devotion this combo has given its victim (capped) and its attacker (Absolve wipes it); by: the
   // same per source, for the training readouts.
   // cls / side: the last hit's guard class and the attacker's side, for the trickster's variety.
-  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0, took: 0, gave: 0, by: {}, cls: '', side: 0, hard: 0, juggle: 0 };
+  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0, took: 0, gave: 0, by: {}, cls: '', side: 0, hard: 0, juggle: 0, links: 0,
+    witness: witness ? 1 : 0, extend: witness ? world.sys.witness.decayExtend : 0 };
   const combo = d.combo;
   const moveId = r.moveId;
   // Earlier uses of this move in the combo (a multi-hit move's own later hits don't count as a new use).
@@ -294,7 +314,7 @@ function applyStrike(game, world, r) {
   const uses = r.firstOfUse ? used : Math.max(0, used - 1);
 
   // Damage: base (counter bonus) x combo scaling x same-move penalty, then guts.
-  let base = counter ? pct(move.damage, ch.damagePct) : move.damage;
+  let base = special ? pct(move.damage, ch.damagePct) : move.damage;
   base = pct(base, damageMod(world, a));
   base = pct(base, combo.scale);
   if (uses > 0) base = pct(base, C.repeatDamage); // a move used again in the same combo
@@ -302,9 +322,14 @@ function applyStrike(game, world, r) {
   applyDamage(d, ddef, dmg);
 
   // Proration for the hits that follow: the starter's own proration once, then every hit's combo proration.
+  // A Witness combo's first hits scale it less; a Perfect Link's hit doesn't scale it at all.
+  const linked = body && a.link === 1 && !starter;
+  if (linked) a.link = 0;
+  const easeBy = combo.witness && combo.hits < world.sys.witness.softHits ? world.sys.witness.softenPct : 0;
+  const ease = (p) => (easeBy ? soften(p, easeBy) : p);
   let scale = combo.scale;
-  if (starter) scale = pct(scale, move.starterProration ?? C.starterProration);
-  scale = pct(scale, move.comboProration ?? C.comboProration);
+  if (starter) scale = pct(scale, ease(move.starterProration ?? C.starterProration));
+  if (!linked) scale = pct(scale, ease(move.comboProration ?? C.comboProration));
   combo.scale = Math.max(C.minScale, scale);
   const cls = move.guard === 'high' || move.guard === 'low' ? move.guard : '';
   const side = a.x < d.x ? -1 : a.x > d.x ? 1 : -a.facing;
@@ -315,8 +340,9 @@ function applyStrike(game, world, r) {
   combo.damage += dmg;
   if (r.firstOfUse) combo.used[moveId] = used + 1;
   gains(game, world, a, d, move, 'hit', dmg, { fresh: uses === 0, switched });
+  if (witness) gainDevotion(game, a, world.chars[a.id], world.chars[a.id].devotion.extras.witness, 'witness', true);
 
-  d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
+  d.hitstop = move.hitstop + (special ? ch.hitstopAdd : 0);
   if (body) a.hitstop = d.hitstop;
   const airborne = isAirborne(ddef, d);
   // Launches. One hard launch per combo: another one acts as a soft launch.
@@ -330,9 +356,11 @@ function applyStrike(game, world, r) {
   const launches = !!move.launchType && !out;
   const inAir = launches || airborne;
   // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
-  let rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (counter ? ch.hitstunAdd : 0) + (r.stagger | 0);
+  let rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (r.stagger | 0);
+  if (special) rawStun = pct(rawStun, ch.hitstunPct);
   if (uses > 0) rawStun = pct(rawStun, C.repeatHitstun);
-  const stun = out && airborne ? 0 : Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, combo.time)));
+  const clock = Math.max(0, combo.time - combo.extend); // a Witness combo's decay timer runs late
+  const stun = out && airborne ? 0 : Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, clock)));
 
   // Bounces: armed by the move, each kind limited per combo.
   const limit = move.bounceLimit ?? C.bounceLimit;
@@ -366,7 +394,9 @@ function applyStrike(game, world, r) {
     enterState(a, world.chars[a.id], move.onHitState);
     a.contact = CONTACT.HIT;
   }
-  cue(game, counter ? 'counter' : 'hit', a, rect, { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale, stagger: r.stagger | 0, fellOut: out });
+  const extra = { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale, stagger: r.stagger | 0, fellOut: out, linked };
+  if (witness) extra.slow = world.sys.witness.slowFrames;
+  cue(game, witness ? 'witness' : counter ? 'counter' : 'hit', a, rect, extra);
 }
 
 // ---------- Projectiles ----------
@@ -407,7 +437,7 @@ export function resolveProjectiles(game, world) {
       const move = def.move;
       const away = pr.facing; // it pushes the way it flies, and is blocked by holding away from where it came from
       const block = blockKind(d, ddef, { x: d.x - away }, move, world);
-      const kind = !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : fd.counter ? 'counter' : 'hit';
+      const kind = !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
       const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
       applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: true, kind, stagger, proj: pr });
       gone[i] = kind === 'block' ? 'block' : 'hit';
