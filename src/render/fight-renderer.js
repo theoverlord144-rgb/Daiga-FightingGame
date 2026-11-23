@@ -345,7 +345,7 @@ export function createFightRenderer(ctx, W, H) {
     // An absorbed hit shows the vow_absorb drawing for a moment, if the character has one.
     if (p.state === 'vow_hold' && absorbUntil[p.id] > collected && def.sheets.vow_absorb) {
       const st = def.states.vow_absorb;
-      return { ...fr, sprite: st.frames[Math.min(st.frames.length - 1, Math.max(0, collected - absorbUntil[p.id] + SLOTS.absorbPoseFrames))].sprite };
+      return { ...fr, sprite: st.frames[Math.min(st.frames.length - 1, Math.max(0, collected - absorbUntil[p.id] + absorbLen[p.id]))].sprite };
     }
     for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
       const alt = v.art?.[p.state];
@@ -373,7 +373,7 @@ export function createFightRenderer(ctx, W, H) {
       const rel = d.anim?.release ?? [], loop = d.anim?.loop ?? [1];
       const relLen = rel.reduce((a, b) => a + b, 0);
       const index = pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0];
-      const [x, y] = toScreen(pr.x, pr.y);
+      const [x, y] = d.sprite.ground ? toScreen(groundX(pr, d), 0) : toScreen(pr.x, pr.y);
       ctx.save();
       if (d.sprite.additive) ctx.globalCompositeOperation = 'lighter';
       drawSheetFrame(def, d.sprite, index, x, y, pr.facing);
@@ -414,27 +414,64 @@ export function createFightRenderer(ctx, W, H) {
   let collected = -1;
   // The universal systems' effect slots (data/system/effects.json "slots").
   const SLOTS = FX.slots || { sheets: {}, absorbPoseFrames: 8, exTint: 0.45 };
+  const lastMove = [null, null]; // drawing only: last seen state and x, to notice a dash starting or a landing
   const absorbUntil = [-1, -1]; // drawing only: the game frame until which a fighter shows the vow_absorb drawing
-  function slotFx(name, x, y, facing = 1) {
-    const s = SLOTS.sheets[name];
-    if (s) effects.push({ motion: s, x, y, facing, age: 0, life: s.sprite.count * s.hold });
+  const absorbLen = [0, 0]; // and how many frames that drawing plays for
+  /** How far above the feet an effect sits: 'feet', 'body' or 'head'. */
+  const heightOf = (at) => (at === 'body' ? FX.motion.bodyY : at === 'head' ? SLOTS.headY ?? 200 : 0) * UNIT;
+  /** Play the effects a rule (or a list of rules) names. p = the fighter the cue is about, c = the cue. */
+  function slotPlay(rules, p, game, c) {
+    for (const rule of Array.isArray(rules) ? rules : rules ? [rules] : []) {
+      const s = SLOTS.sheets[rule.play];
+      if (!s) continue;
+      const o = game.players[1 - p.id];
+      const who = rule.on === 'other' ? o : p;
+      let x = who.x + who.facing * (rule.forward ?? 0) * UNIT, y = who.y + heightOf(rule.at);
+      if (rule.on === 'point' && c) { x = c.x; y = c.y; }
+      if (rule.on === 'between') x = (p.x + o.x) / 2;
+      effects.push({ motion: s, screen: rule.on === 'screen', x, y, facing: who.facing, age: 0, life: s.sprite.count * s.hold });
+    }
   }
-  const bodyOf = (p) => p.y + FX.motion.bodyY * UNIT;
-  function slotCue(c, game) {
+  function slotCue(c, game, world) {
     const p = game.players[c.p];
     if (!p) return;
+    const rules = SLOTS.cues || {};
     if (c.type === 'absorb') {
+      // The cue is the attacker's; the fighter holding Vow is the other one. Their absorb drawing starts over.
       const d = game.players[1 - c.p];
-      absorbUntil[d.id] = game.frame + SLOTS.absorbPoseFrames;
-      slotFx('vow_guard', d.x, bodyOf(d), d.facing);
-    } else if ((c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && String(c.move).startsWith('vow_strike')) slotFx('vow_strike', c.x, c.y, p.facing);
-    else if (c.type === 'burst') slotFx('absolve_burst', p.x, bodyOf(p), p.facing);
-    else if (c.type === 'repel') slotFx('repel_wave', p.x, bodyOf(p), p.facing);
-    else if (c.type === 'perfect') slotFx('perfect_flash', p.x, bodyOf(p), p.facing);
-    if (c.type === 'witness') slotFx('witness_flash', c.x, c.y, p.facing);
+      const own = world.chars[d.id];
+      absorbLen[d.id] = own.sheets.vow_absorb ? own.states.vow_absorb.frames.length : SLOTS.absorbPoseFrames;
+      absorbUntil[d.id] = game.frame + absorbLen[d.id];
+    }
+    if ((c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && String(c.move).startsWith('vow_strike')) slotPlay(rules.vowhit, p, game, c);
+    if (c.type === 'draw' && c.whiffed) return; // a Draw that caught nothing pulls nothing
+    slotPlay(rules[c.type], p, game, c);
   }
+  /** The effect looping on a fighter for as long as they are in a state (the Vow guard, the crumple stars...). */
+  function drawWhile(p, behind) {
+    const rule = SLOTS.while?.[p.state];
+    const s = rule && SLOTS.sheets[rule.play];
+    if (!s || !!rule.behind !== behind) return;
+    const t = (lastMove[p.id]?.state === p.state ? lastMove[p.id].since : 0) - (rule.after ?? 0);
+    if (t < 0) return;
+    const n = s.sprite.count, step = Math.floor(t / s.hold), from = Math.min(n - 1, rule.loopFrom ?? 0);
+    const index = step < n ? step : rule.once ? n - 1 : from + ((step - from) % (n - from));
+    const [x, y] = toScreen(p.x, p.y + (rule.y !== undefined ? rule.y * UNIT : heightOf(rule.at)));
+    ctx.save();
+    if (s.additive) ctx.globalCompositeOperation = 'lighter';
+    drawSheetFrame(null, s.sprite, index, x, y, p.facing);
+    ctx.restore();
+  }
+  /**
+   * Where a projectile drawn 'on the ground' stands (a hand rising out of the floor): the floor point its path
+   * starts from, or, for one coming down, the point it is heading for. Worked out from the game state alone.
+   */
+  function groundX(pr, d) {
+    if (d.speedY < 0 && pr.y > 0) return pr.x + pr.facing * d.speed * Math.ceil(pr.y / -d.speedY);
+    return pr.x - pr.facing * d.speed * pr.age;
+  }
+  const groundSeen = {}; // drawing only: where each kind of ground-drawn projectile last stood, for its ending frames
   const lastVars = [{}, {}]; // drawing only: last seen mechanic vars, to notice a mark running out
-  const lastMove = [null, null]; // drawing only: last seen state and x, to notice a dash starting or a landing
   // Movement effects (dash dust, air dash burst and trail, landing dust): data/system/effects.json "motion".
   function motionFx(rule, p, dx) {
     const M = FX.motion;
@@ -452,7 +489,7 @@ export function createFightRenderer(ctx, W, H) {
     collected = game.frame;
     hud.notice(game);
     for (const c of game.cues) {
-      slotCue(c, game);
+      slotCue(c, game, world);
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
         const at = named.at ?? [0, 0];
@@ -463,7 +500,8 @@ export function createFightRenderer(ctx, W, H) {
         const d = world.chars[c.p]?.projectiles[c.name];
         if (d?.sprite && d.anim?.impact) {
           const first = (d.anim.release?.length ?? 0) + (d.anim.loop?.length ?? 0);
-          effects.push({ proj: d, def: world.chars[c.p], first, x: c.x, y: c.y, facing: c.facing, age: 0, life: d.anim.impact.reduce((a, b) => a + b, 0) - 1 });
+          const onGround = d.sprite.ground ? groundSeen[`${c.p}:${c.name}`] : undefined;
+          effects.push({ proj: d, def: world.chars[c.p], first, x: onGround ?? c.x, y: onGround === undefined ? c.y : 0, facing: c.facing, age: 0, life: d.anim.impact.reduce((a, b) => a + b, 0) - 1 });
         }
       }
       if (!SPARK[c.type]) continue;
@@ -475,7 +513,8 @@ export function createFightRenderer(ctx, W, H) {
       // block flash, which curves toward the attacker.
       const isHit = c.type === 'hit' || c.type === 'counter' || c.type === 'witness';
       let uni = false;
-      if ((isHit && !fx) || c.type === 'block') {
+      const ownFlash = isHit && String(c.move).startsWith('vow_strike') && !!SLOTS.sheets[SLOTS.cues?.vowhit?.play];
+      if ((isHit && !fx && !ownFlash) || c.type === 'block') {
         let row;
         let facing = game.players[c.p].facing;
         if (isHit) {
@@ -493,7 +532,7 @@ export function createFightRenderer(ctx, W, H) {
       }
       // The drawn-in-code spark stays for what has no art (clash, armor, throw, tech, bounces, burst), and as the
       // COUNTER label over the art.
-      if (!uni && !fx) effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+      if (!uni && !fx && !ownFlash) effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
       else if (c.type === 'counter') effects.push({ ...SPARK.counter, labelOnly: true, x: c.x, y: c.y, age: 0 });
     }
     // A mark that runs out (the Brand fading by itself) plays its fizzle on the opponent.
@@ -511,16 +550,17 @@ export function createFightRenderer(ctx, W, H) {
     }
     for (const p of game.players) {
       const was = lastMove[p.id];
-      if (was && was.state !== p.state && p.state.endsWith('_ex')) slotFx('ex_flash', p.x, bodyOf(p), p.facing);
-      // The guard aura plays again and again while Vow is held.
-      const aura = SLOTS.sheets.vow_guard;
-      if (aura && p.state === 'vow_hold' && p.stateTime % (aura.sprite.count * aura.hold) === 0) slotFx('vow_guard', p.x, bodyOf(p), p.facing);
+      if (was && was.state !== p.state && p.state.endsWith('_ex')) slotPlay(SLOTS.cues?.ex, p, game);
       if (was && was.state !== p.state) {
         const dx = p.x - was.x;
         if (FX.motion.leave[was.state]) motionFx(FX.motion.leave[was.state], p, dx);
         if (FX.motion.enter[p.state]) motionFx(FX.motion.enter[p.state], p, dx);
       }
-      lastMove[p.id] = { state: p.state, x: p.x };
+      lastMove[p.id] = { state: p.state, x: p.x, since: was && was.state === p.state ? was.since + 1 : 0 }; // since: frames in this state
+    }
+    for (const pr of game.projectiles) {
+      const d = world.chars[pr.owner].projectiles[pr.kind];
+      if (d?.sprite?.ground) groundSeen[`${pr.owner}:${pr.kind}`] = groundX(pr, d);
     }
     // A trail rides its fighter and lasts as long as the state that started it.
     for (const e of effects) {
@@ -604,6 +644,25 @@ export function createFightRenderer(ctx, W, H) {
           ctx.fillStyle = glow;
           ctx.fillRect(fx - 160, fy - 160, 320, 320);
         }
+        // Speed lines over the whole screen (their empty middle is where the fighters stand).
+        const lines = SLOTS.sheets[SLOTS.flash?.lines];
+        if (lines) {
+          ctx.save();
+          ctx.globalAlpha = lines.alpha ?? 1;
+          const k = (W * 1.24) / lines.sprite.frameW, at = Math.floor(game.flash / lines.hold);
+          drawSheetFrame(null, { ...lines.sprite, scale: k, additive: lines.additive }, at % lines.sprite.count, W / 2, H / 2, 1);
+          drawSheetFrame(null, { ...lines.sprite, scale: k * 0.58, additive: lines.additive }, (at + 2) % lines.sprite.count, W / 2, H / 2, 1);
+          ctx.restore();
+        }
+      }
+      // Whole-screen effects (the super's slash) go behind the fighters: centred, stretched to the screen's width.
+      for (const e of effects) {
+        if (!e.screen) continue;
+        const m = e.motion;
+        ctx.save();
+        if (m.additive) ctx.globalCompositeOperation = 'lighter';
+        drawSheetFrame(null, { ...m.sprite, scale: (W * 1.04) / m.sprite.frameW }, Math.min(m.sprite.count - 1, Math.floor((e.age - 1) / m.hold)), W / 2, toScreen(e.x, e.y)[1], e.facing);
+        ctx.restore();
       }
       // Draw the attacker last so the whole move (wind-up, hit, follow-through) sits in front of the other fighter:
       // 2 = hitbox out, 1 = anywhere in an attack, 0 = anything else. A tie keeps whoever was in front, so nothing flickers.
@@ -627,6 +686,7 @@ export function createFightRenderer(ctx, W, H) {
         if (flashing && p.id !== game.flashBy) ctx.globalAlpha = 0.45;
         const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
         drawAuras(p, def, game.frame, true);
+        drawWhile(p, true);
         drawLayers(p, def, fr, true);
         const shown = artFrame(p, def, fr);
         if (!drawSprite(p, def, shown, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
@@ -640,6 +700,7 @@ export function createFightRenderer(ctx, W, H) {
         }
         drawLayers(p, def, fr, false);
         drawAuras(p, def, game.frame, false);
+        drawWhile(p, false);
         drawChain(p, def, game.players[1 - p.id]);
         ctx.globalAlpha = 1;
         drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame);
@@ -664,6 +725,7 @@ export function createFightRenderer(ctx, W, H) {
       // Sparks.
       for (const e of effects) {
         const [sx, sy] = toScreen(e.x, e.y);
+        if (e.screen) continue; // drawn behind the fighters, above
         if (e.proj) {
           ctx.save();
           if (e.proj.sprite.additive) ctx.globalCompositeOperation = 'lighter';

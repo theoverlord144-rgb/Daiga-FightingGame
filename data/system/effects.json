@@ -12,24 +12,50 @@
     "row": 3
   },
   "slots": {
-    "notes": "Effect slots of the universal systems (drawing only). Each is a sheet in data/effects/ in the same format as the motion sheets below; the ones with 'placeholder' in the file name are drawn by scripts/make-slot-placeholders.mjs and wait for real art: put the new sheet in data/effects/ and change the slot's sprite here. When they play: vow_guard = around a fighter holding Vow (again and again while it is held) and on each absorbed hit; vow_strike = where a Vow strike lands; absolve_burst = on the fighter who Absolves; repel_wave = on the fighter who Repels; perfect_flash = on the attacker at a Perfect Link; witness_flash = where a Witness counter lands; ex_flash = on a fighter starting an EX move. absorbPoseFrames = how long the vow_absorb drawing shows after an absorbed hit. exTint = how strongly an EX move with no art of its own is brightened (0 to 1).",
+    "notes": "Effects of the universal systems (drawing only). Each sheet is in data/effects/ (cut from the owner's art in data/UniversalEffects/ with scripts/sprite-prep.mjs), one row of drawings, each held 'hold' frames; 'additive' sheets are drawn as light, the others as painted. A sheet with 'placeholder' in its file name is drawn by scripts/make-slot-placeholders.mjs and waits for real art. 'cues' = what plays once when the game reports something: 'on' is whose position (self = the fighter the cue is about, other = their opponent, between = halfway between the two, point = where the hit landed, screen = across the whole screen at the fighter's height), 'at' is feet / body / head, 'forward' moves it that many px the way the fighter faces. 'while' = what loops on a fighter for as long as they are in a state: it plays through once, then repeats from drawing 'loopFrom' (or stops on the last drawing with 'once'); 'behind' draws it behind the fighter, 'after' makes it wait that many frames, 'y' puts it that many px above the feet. 'flash' = the super flash: 'lines' is stretched over the whole screen, behind the fighters, while the game is frozen (screen effects are behind the fighters too). bodyY is in 'motion' below; headY = how far above the feet 'head' is. absorbPoseFrames = how long the vow_absorb drawing shows after an absorbed hit when the character's own art does not say (a character's vow_absorb state length wins). exTint = how strongly an EX move with no art of its own is brightened (0 to 1).",
     "absorbPoseFrames": 8,
     "exTint": 0.45,
+    "headY": 200,
     "sheets": {
-      "vow_guard": { "sprite": { "image": "vow_guard-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2.2 }, "hold": 3, "additive": true },
-      "vow_strike": { "sprite": { "image": "vow_strike-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2 }, "hold": 3, "additive": true },
-      "absolve_burst": { "sprite": { "image": "absolve_burst-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 3.4 }, "hold": 3, "additive": true },
-      "repel_wave": { "sprite": { "image": "repel_wave-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2.8 }, "hold": 3, "additive": true },
+      "vow_guard": { "sprite": { "image": "vow-guard.png", "columns": 8, "rows": 1, "count": 8, "frameW": 346, "frameH": 498, "originX": 173, "originY": 249, "scale": 0.5 }, "hold": 4, "additive": true },
+      "vow_absorb": { "sprite": { "image": "vow-absorb.png", "columns": 4, "rows": 1, "count": 4, "frameW": 352, "frameH": 488, "originX": 176, "originY": 244, "scale": 0.5 }, "hold": 3, "additive": true },
+      "vow_strike": { "sprite": { "image": "vow-strike.png", "columns": 6, "rows": 1, "count": 6, "frameW": 238, "frameH": 444, "originX": 119, "originY": 222, "scale": 0.5 }, "hold": 3, "additive": true },
+      "crumple_stun": { "sprite": { "image": "crumple-stun.png", "columns": 4, "rows": 1, "count": 4, "frameW": 300, "frameH": 130, "originX": 150, "originY": 65, "scale": 0.5 }, "hold": 5, "additive": true },
+      "absolve_burst": { "sprite": { "image": "absolve-burst.png", "columns": 8, "rows": 1, "count": 8, "frameW": 596, "frameH": 766, "originX": 298, "originY": 383, "scale": 0.5 }, "hold": 3, "additive": true },
+      "absolve_shroud": { "sprite": { "image": "absolve-shroud.png", "columns": 6, "rows": 1, "count": 6, "frameW": 322, "frameH": 526, "originX": 161, "originY": 263, "scale": 0.5 }, "hold": 5 },
+      "repel_wave": { "sprite": { "image": "repel-wave.png", "columns": 6, "rows": 1, "count": 6, "frameW": 412, "frameH": 414, "originX": 206, "originY": 209, "scale": 0.5 }, "hold": 3, "additive": true },
+      "draw_pull": { "sprite": { "image": "draw-pull.png", "columns": 6, "rows": 1, "count": 6, "frameW": 330, "frameH": 204, "originX": 165, "originY": 113, "scale": 0.5 }, "hold": 3, "additive": true },
+      "super_flash": { "sprite": { "image": "super-flash.png", "columns": 8, "rows": 1, "count": 8, "frameW": 556, "frameH": 686, "originX": 278, "originY": 343, "scale": 0.5 }, "hold": 3, "additive": true },
+      "super_slash": { "sprite": { "image": "super-slash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 964, "frameH": 482, "originX": 482, "originY": 241, "scale": 1 }, "hold": 3 },
+      "super_lines": { "sprite": { "image": "super-lines.png", "columns": 4, "rows": 1, "count": 4, "frameW": 644, "frameH": 644, "originX": 322, "originY": 322, "scale": 1 }, "hold": 2, "additive": true, "alpha": 0.7 },
       "perfect_flash": { "sprite": { "image": "perfect_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 1.6 }, "hold": 3, "additive": true },
       "witness_flash": { "sprite": { "image": "witness_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2.4 }, "hold": 3, "additive": true },
       "ex_flash": { "sprite": { "image": "ex_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2 }, "hold": 3, "additive": true }
-    }
+    },
+    "cues": {
+      "absorb": { "play": "vow_absorb", "on": "other", "at": "body" },
+      "vowhit": { "play": "vow_strike", "on": "point" },
+      "burst": { "play": "absolve_burst", "on": "self", "at": "body" },
+      "repel": { "play": "repel_wave", "on": "self", "at": "body", "forward": 70 },
+      "draw": { "play": "draw_pull", "on": "between", "at": "body" },
+      "perfect": { "play": "perfect_flash", "on": "self", "at": "body" },
+      "witness": { "play": "witness_flash", "on": "point" },
+      "ex": { "play": "ex_flash", "on": "self", "at": "body" },
+      "superflash": [{ "play": "super_flash", "on": "self", "at": "body" }, { "play": "super_slash", "on": "screen", "at": "body" }]
+    },
+    "while": {
+      "vow_hold": { "play": "vow_guard", "at": "body", "loopFrom": 2 },
+      "crumple": { "play": "crumple_stun", "y": 135, "after": 10 },
+      "absolve_recovery": { "play": "absolve_shroud", "at": "body", "once": true, "behind": true }
+    },
+    "flash": { "lines": "super_lines" }
   },
   "motion": {
     "notes": "Movement effects (drawing only). The renderer watches each fighter's state: \"enter\" plays a sheet when a state starts, \"leave\" when it ends. \"at\": \"feet\" is the floor under the fighter, \"body\" is bodyY px above their feet. \"trail\" loops on the fighter for as long as the state lasts. \"back\": true draws it facing the other way (a move that travels backward). \"byDrift\" picks by which way the fighter was travelling: [forward, still, backward]. \"alpha\" thins a sheet. A fighter that jumped more than driftMax px in one frame was placed, not moving (a reset): it counts as still. Dust is drawn as painted and fades on its last drawing; \"additive\" sheets are drawn as light.",
     "bodyY": 95,
     "driftMax": 40,
     "sheets": {
+      "tech": { "sprite": { "image": "tech.png", "columns": 4, "rows": 1, "count": 4, "frameW": 324, "frameH": 294, "originX": 162, "originY": 147, "scale": 0.5 }, "hold": 3, "additive": true },
       "dashDustF": { "sprite": { "image": "dash-dust-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 225, "originX": 352, "originY": 225, "scale": 0.32 }, "hold": 3, "fade": true },
       "dashDustB": { "sprite": { "image": "dash-dust-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 224, "originX": 32, "originY": 224, "scale": 0.32 }, "hold": 3, "fade": true },
       "landF": { "sprite": { "image": "land-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 155, "originX": 192, "originY": 155, "scale": 0.32 }, "hold": 3, "fade": true },
@@ -45,7 +71,9 @@
       "airdashF": { "play": "airDashBurst", "at": "body", "trail": "airDashTrail" },
       "airdashB": { "play": "airDashBurst", "at": "body", "trail": "airDashTrail", "back": true },
       "land": { "byDrift": [ "landF", "landN", "landB" ], "at": "feet" },
-      "knockdown": { "play": "landN", "at": "feet" }
+      "knockdown": { "play": "landN", "at": "feet" },
+      "airTech": { "play": "tech", "at": "body" },
+      "groundTech": { "play": "tech", "at": "body" }
     },
     "leave": {
       "airdashF": { "play": "airDashPuff", "at": "body" },

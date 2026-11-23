@@ -6,9 +6,12 @@ clashes with what was there, which tests ran, what to play first, and every slot
 
 **The short version.** All twelve sections work and are tested: 349 tests, 347 pass. The two that fail are not from
 this work. They pin two Avner hitboxes that you have since changed in the box editor (see "Tests"). Rollback and the
-sync test pass with every system switched on. **Nobody has looked at this on a real screen yet.** A check that runs the
-real drawing code for 9,000 frames without a crash passes, but that proves it doesn't break, not that it looks right.
-Every number is a first guess, in data, waiting for you to tune it in training mode.
+sync test pass with every system switched on. Every number is a first guess, in data, waiting for you to tune it in
+training mode.
+
+**Update, same night: your art is in.** Malik's new animations and your universal effect sheets are cut and wired
+(see "Your art" below). 353 tests, 351 pass, the same two failing. I have now looked at real rendered frames of the
+fighters and effects (not the HUD: that is still unseen).
 
 ## What was built
 
@@ -93,8 +96,8 @@ These are the things the spec left open. Each is my call; change any of them.
 
 ## Tests
 
-349 tests, 347 pass. `npm run build` passes. New test files, one per part of the spec: `systems-input`, `devotion`,
-`combo-rules`, `witness-link`, `vow`, `absolve-guard`, `rite`, `systems-readout`. Each covers the cases the spec asked
+353 tests, 351 pass. `npm run build` passes. New test files, one per part of the spec: `systems-input`, `devotion`,
+`combo-rules`, `witness-link`, `vow`, `absolve-guard`, `rite`, `systems-readout`, and `slot-art` for the art wiring. Each covers the cases the spec asked
 for, including its own rollback run: thousands of frames rewound 8 frames every frame, with the mechanic happening
 for real.
 
@@ -105,14 +108,15 @@ for real.
 If those are the sizes you want, tell me and I will update the tests to match. Your Avner hitbox edits are still only
 on your disk; I kept them out of every commit.
 
-**What is not tested:** how any of it looks. The HUD and effects are drawing code; the only check is that it runs
-without crashing (`node scripts/draw-smoke.mjs`).
+**What is not tested:** how the HUD looks. It is drawing code nobody has seen on a screen; the only check is that it
+runs without crashing (`node scripts/draw-smoke.mjs`). The fighters and effects I have looked at in pictures
+(`node scripts/shots.mjs`), which is not the same as watching them move.
 
 ## What to play-test first
 
-1. **Does it look right at all.** Open training mode with Malik. Check the Debt stripe on the health bar, the Absolve
-   diamond, the Rite pips under the Devotion meter, and that the pop-up words sit somewhere sensible. I placed all of
-   these without seeing them.
+1. **The HUD.** Open training mode with Malik. Check the Debt stripe on the health bar, the Absolve diamond, the
+   Rite pips under the Devotion meter, and that the pop-up words sit somewhere sensible. I placed all of these
+   without seeing them. Then watch Malik's new animations in motion: I have only seen them as still frames.
 2. **Vow.** Hold M+H and let the dummy hit you. Does 4 frames of startup feel usable? Do the three release timings
    feel distinct? Is the +20% Debt penalty scary enough to matter?
 3. **Perfect Link.** Three frames is tight. The training readout tells you how many frames early or late you were.
@@ -124,20 +128,64 @@ without crashing (`node scripts/draw-smoke.mjs`).
 7. **Malik's Guardian Palm.** All four numbers are invented. The rising one (6R) most needs your eye as an anti-air.
 8. **Devotion flow.** Play a full round each way and see if meter comes at the pace you want.
 
-## Slots waiting for art
+## Your art
 
-Everything below plays now with a stand-in. To replace one, give the character's file an entry with that name and its
-own `sprite` (how is in `docs/toska-format.md`).
+**Malik.** Every sheet is cut to his standing size (186 px) and timed to the rules:
 
-**Your new sheets are not wired in yet.** You dropped in Malik's Vow hold and absorb, Vow strikes, Absolve and
-recovery, Crumple, Repel and Draw, the four Rite moves and their effects, plus the universal Absolve burst and
-recovery, Guard Repel and Draw, the Vow aura and crumple flash, the three super flashes and the tech effect. Cutting
-a sheet means looking at each drawing and lining it up to the character, and I did not do that in this pass. They
-sit untouched in `data/characters/malik/` and `data/UniversalEffects/`. That is the next job, and it removes most of
-the list below for Malik.
+| What | Drawings | How it plays |
+| --- | --- | --- |
+| Vow, guard coming up | 1 | the 4 startup frames |
+| Vow, holding | 4 | drawings 2 to 5 and back again, 6 frames each, as a breathing loop |
+| Vow, absorbed hit | 4 | **drawing 2 is the emphasis and holds**: 8 frames, through the whole hitstop; the others 2 frames each |
+| Vow strikes: quick, crumple, full | 5 each | the palm-out drawing lands exactly on the first hitting frame |
+| Absolve (ground and air) | 5 | curl, burst with arms out on the hit, land |
+| Absolve, baited recovery | 3 | over the 40 frames |
+| Repel, Draw | 4 each | guard, push or pull, back to stance |
+| Crumple | 6 | stagger, to his knees, collapse; the last drawing holds |
+| Rite: R, 2R, 6R, j.R | 4 each | the thrust shows on the frame the spirit hand appears |
+| Spirit hands | 7 each | appear, travel, burst on impact, fade |
 
-**Animation slots, per character.** For Avner and Malik each stand-in is a copy of one of their own sheets, saved as
-`sheets/<slot>-placeholder.png`. The test character has no art and draws the stick figure.
+**Universal effects**, the same for every character: the Vow guard aura (opens, then loops while held), the absorb
+flash, the Vow strike flash, the stars over a crumpled fighter, the Absolve burst, the dark smoke behind a fighter
+stuck in the baited recovery, the Repel wave, the Draw streams between the two fighters, the tech effect, and the
+super flash (star burst on the fighter, the black slash across the screen, speed lines around it).
+
+**How I checked it.** A new tool, `node scripts/shots.mjs <folder>`, plays scripted situations with the real rules
+and saves pictures of the frames drawn by the real drawing code. I looked at every one of the above in place. It
+does not draw the HUD, text or the stage, so those are still unseen.
+
+**Calls I made from the drawings. Change any of them.**
+- **6R and j.R: the hand comes out of the floor.** Your effect sheets for those two show a hand rising from the
+  ground, so that is how they are drawn. The rule underneath is unchanged: 6R's hitbox still rises, j.R's still comes
+  down from his palm (your spec says "j.R = downward"). For j.R the ground hand appears where his shot will land and
+  reaches back up toward him. If he is very high, the hitbox runs out before reaching the floor while the hand is
+  still drawn down there. Tell me if j.R should simply be "a hand erupts on the ground below him"; that is a rule
+  change I did not make on my own.
+- **6R barely drifts forward now** (2 px a frame, was 5), so the hitbox stays on the drawn hand.
+- **The Absolve recovery smoke is drawn as painted, dark, behind him.** In front it hid him completely. All the
+  other effects are drawn as light.
+- **The super's black slash and speed lines go behind the fighters**, so the two fighters stay readable.
+- **A Vow strike that lands shows your Vow flash only**, not the orange hit spark on top of it.
+- **Crumple stars** start 10 frames in (once he is going down) and sit just above a kneeling head.
+- **Malik's guard loop is 36 frames and his absorb pose 14**, set in his file to fit your drawings.
+- The Vow hold sheet came on a dark glowing background. I removed it by hand, like the Air S sheet. The edges are
+  clean at game size; look at them once zoomed in.
+
+**What is weak**
+- The smoke sheet's drawings touch each other, so two of its frames have a straight cut edge on one side.
+- The pre-existing heavy orange hit spark shows a faint square around it on a dark stage. Not from this work; I saw
+  it in the pictures. Worth a recut.
+- Avner has none of this art. Everything of his below is still a stand-in.
+
+## Slots still waiting for art
+
+To fill one, give the character's file an entry with that name and its own `sprite` (how is in
+`docs/toska-format.md`). Stand-ins are copies of the character's own sheets, saved as `sheets/<slot>-placeholder.png`.
+
+**Malik:** `drawn` (being pulled in by a Draw: uses his standing hit reaction) and `absolve_recovery_air` (the
+baited Absolve while falling: uses his fall).
+
+**Avner, all of them:**
 
 | Slot | Stand-in (a copy of) |
 | --- | --- |
@@ -149,20 +197,15 @@ the list below for Malik.
 | `absolve_air` | Jumping Heavy |
 | `absolve_recovery` | crouch |
 | `absolve_recovery_air` | fall |
-| `drawn` (pulled in by a Draw) | standing hit reaction |
+| `drawn` | standing hit reaction |
 | `crumple` | crouching hit reaction |
-| Malik `rite_5`, `rite_2`, `rite_6`, `rite_j` | Spirit Orb, Crouching Medium, Resilience Pillar, Jumping Heavy |
-| Malik's four spirit hand projectiles | the Spirit Orb |
-| `<move>_ex` | the normal move, brightened |
 
 Still waiting from before this work, for Avner: Snap, Anchor (and its catch and miss), the Vigil exit, the Brand burst
-and fizzle. There is also no art for the ground tech, for throws, or for Avner's and Malik's EX moves (which don't
-exist yet as moves either).
+and fizzle. There is also no art for the ground tech pose, for throws, or for EX moves (`<move>_ex` shows the normal
+move, brightened; Avner and Malik have no EX moves yet anyway).
 
-**Effect slots**, in `data/effects/`, each a simple ring or flash drawn by code:
-`vow_guard-placeholder.png`, `vow_strike-placeholder.png`, `absolve_burst-placeholder.png`,
-`repel_wave-placeholder.png`, `perfect_flash-placeholder.png`, `witness_flash-placeholder.png`,
-`ex_flash-placeholder.png`.
+**Effects still drawn by code** (a simple ring), in `data/effects/`: `perfect_flash-placeholder.png`,
+`witness_flash-placeholder.png`, `ex_flash-placeholder.png`.
 
 **Not built as a picture at all:** the Witness slow motion. The game sends the signal (10 frames) but the screen
 does not slow down yet.

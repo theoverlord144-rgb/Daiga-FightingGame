@@ -251,6 +251,11 @@ Heights are pixels above the ground line.
   For a move, the sprite's `holds` must add up to the move's length. `scripts/make-slot-placeholders.mjs` fills
   every empty slot with a copy of one of the character's own sheets, named `sheets/<slot>-placeholder.png`.
   Effect slots are in `data/system/effects.json` under `slots`.
+  A state's art-only entry goes with a `states` override when the drawings need a different length
+  (Malik: `"vow_hold": { "duration": 36 }` for his loop, `"vow_absorb": { "duration": 14 }` for the absorb pose).
+- **A projectile that stands on the floor**: `"ground": true` inside a projectile's `sprite` (drawing only). The
+  sheet is drawn on the floor, not at the projectile: where its path started, or, for one coming down, where it
+  will land. For a hand that grows out of the ground while its hitbox rises or dives as usual.
 - **Rite** (the R button), top level of the character file:
   `"rite": { "gauge": { "charges": 3, "rechargeFrames": 240, "unlimitedWhile": "install" } | null, "moves": ["rite_5", ...] }`.
   `moves` lists ids of moves in the character's own `moves` whose input uses R (`5R`, `2R`, `6R`, `j.R`); they count

@@ -13,11 +13,8 @@ import path from 'node:path';
 import { encodePng } from './png.mjs';
 
 // ---------- 1. effect slots ----------
+// (The Vow guard and strike, the Absolve burst and the Repel wave have the owner's art now.)
 const EFFECTS = {
-  vow_guard: { color: [120, 200, 255], core: 0 },
-  vow_strike: { color: [255, 230, 150], core: 1 },
-  absolve_burst: { color: [127, 224, 255], core: 1 },
-  repel_wave: { color: [200, 255, 220], core: 0 },
   perfect_flash: { color: [255, 255, 255], core: 1 },
   witness_flash: { color: [201, 162, 255], core: 1 },
   ex_flash: { color: [255, 211, 107], core: 0 },
