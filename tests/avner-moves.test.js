@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'spiritOrb']);
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'pillarH', 'pillarL', 'pillarM', 'spiritOrb', 'spiritOrbH', 'spiritOrbM']);
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -393,4 +393,63 @@ test('Malik: Spirit Install (down, down, S+H) costs a bar, runs 10 seconds, and 
   for (const l of v.aura) assert.ok(fs.existsSync('data/characters/malik/' + world.chars[0].effects[l.effect].sprite.image), l.effect);
   assert.deepEqual(v.art, { idle: 'installIdle' });
   assert.equal(world.chars[0].states.installIdle.frames.length, world.chars[0].states.idle.frames.length);
+});
+
+test('Malik: Resilience Pillar (623 + L / M / H): heavier is slower and hits harder; only Medium is upper-body invincible', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const c = world.chars[0];
+  const first = (id) => c.states[id].frames.findIndex((fr) => fr.hit.length);
+  assert.ok(first('pillarL') < first('pillarM') && first('pillarM') < first('pillarH'), 'L is fastest, H slowest');
+  const dmg = ['pillarL', 'pillarM', 'pillarH'].map((id) => c.states[id].move.damage);
+  assert.ok(dmg[0] < dmg[1] && dmg[1] < dmg[2], 'L hits lightest, H hardest');
+  // The pillar stands in front of him, from the floor up, and its effect plays from the slam.
+  for (const id of ['pillarL', 'pillarM', 'pillarH']) {
+    const st = c.states[id];
+    const box = st.frames[first(id)].hit[0];
+    assert.ok(box[0] > 0 && box[1] === 0 && box[3] > 20000, id + ': a tall box in front, on the floor');
+  }
+  assert.ok(fs.existsSync('data/characters/malik/' + c.effects.pillar.sprite.image));
+  // Upper body: Medium only has his lower half hittable until the pillar is gone; L and H keep the whole body.
+  const top = (id, f) => Math.max(...c.states[id].frames[f].hurt.map((b) => b[1] + b[3]));
+  assert.ok(top('pillarM', 0) < top('pillarL', 0) / 2 + 100);
+  assert.equal(top('pillarM', first('pillarM')), top('pillarM', 0));
+  assert.equal(top('pillarM', c.states.pillarM.frames.length - 1), top('pillarL', 0), 'full body again in recovery');
+  assert.equal(top('pillarH', 0), top('pillarL', 0));
+  // In a match: the shoryuken motion + M launches an opponent standing in front.
+  const game = createGame(world);
+  game.players[0].x = -px(48); game.players[1].x = px(48);
+  const hp = game.players[1].health; let air = false;
+  for (const raw of script('6 2 3+M 5*60')) { step(game, [raw, 0], world); air ||= game.players[1].y > 0; }
+  assert.equal(hp - game.players[1].health, 1000);
+  assert.ok(air, 'launched');
+});
+
+test('Malik: Spirit Orb M and H start slower and throw a slower orb; H slides back first', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const c = world.chars[0];
+  const run = (text) => {
+    const game = createGame(world);
+    game.players[0].x = -px(200); game.players[1].x = px(200);
+    const x0 = game.players[0].x; let spawn = -1, back = 0, speed = 0, last = null;
+    for (const raw of script(text)) {
+      step(game, [raw, 0], world);
+      if (spawn < 0 && game.projectiles.length) spawn = game.players[0].frame;
+      // Speed = how far the orb moved this step (once it is out and flying).
+      const orb = game.projectiles[0];
+      if (orb && last !== null) speed = Math.max(speed, Math.abs(orb.x - last));
+      last = orb ? orb.x : null;
+      back = Math.max(back, x0 - game.players[0].x);
+    }
+    return { spawn, back, speed };
+  };
+  const L = run('2 3 6+L 5*50'), M = run('2 3 6+M 5*50'), H = run('2 3 6+H 5*50');
+  assert.ok(L.spawn < M.spawn && M.spawn < H.spawn, 'L throws first, H last');
+  assert.ok(L.speed > M.speed && M.speed > H.speed && H.speed > 0, 'L orb fastest, H slowest');
+  assert.equal(L.back, 0); assert.equal(M.back, 0);
+  assert.ok(H.back >= px(20) && H.back <= px(45), 'H slides back a little');
+  // Every version still swipes on drawing 4, then throws on drawing 5.
+  for (const id of ['spiritOrb', 'spiritOrbM', 'spiritOrbH']) {
+    const hits = c.states[id].frames.filter((fr) => fr.hit.length);
+    assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4], id);
+  }
 });
