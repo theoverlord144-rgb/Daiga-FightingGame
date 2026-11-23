@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', 'backHeavy', 'j.H', 'j.L', 'j.M', 'spiritOrb']);
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'spiritOrb']);
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -360,4 +360,37 @@ test('Avner: Air Spike (j.S) has its art, and the hit lands on drawing 4', () =>
   assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4]);
   assert.ok(st.frames[st.move.startup - 1].hit.length > 0, 'first active frame');
   assert.ok(fs.existsSync('data/characters/avner/sheets/jS.png'));
+});
+
+test('Malik: Spirit Install (down, down, S+H) costs a bar, runs 10 seconds, and carries its aura and art', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const run = (meter, text) => {
+    const game = createGame(world);
+    game.players[0].meter = meter;
+    const seen = new Set(); let flashed = false, top = 0;
+    for (const raw of script(text)) { step(game, [raw, 0], world); seen.add(game.players[0].state); flashed ||= game.flash > 0; top = Math.max(top, game.players[0].vars.install); }
+    return { game, seen, flashed, top };
+  };
+  // With a bar: the super comes out, the screen flashes, the bar is spent, the timer starts at 10 seconds and runs down.
+  const a = run(10000, '2 5 2+HS 5*100');
+  assert.ok(a.seen.has('install'));
+  assert.ok(a.flashed, 'super flash');
+  assert.equal(a.top, 600);
+  assert.ok(a.game.players[0].meter < 1000, 'the bar is spent');
+  assert.ok(a.game.players[0].vars.install > 0 && a.game.players[0].vars.install < 600, 'counting down');
+  // It runs out by itself.
+  const b = run(10000, '2 5 2+HS 5*720');
+  assert.equal(b.game.players[0].vars.install, 0);
+  // Without a bar: no install.
+  const c = run(0, '2 5 2+HS 5*60');
+  assert.ok(!c.seen.has('install'));
+  // Already installed: it can't be done again (no bar wasted).
+  const d = run(20000, '2 5 2+HS 5*60 2 5 2+HS 5*30');
+  assert.ok(d.game.players[0].meter >= 10000, 'the second bar is kept');
+  // Drawing data: the guardian and half of the lights behind him, flames and the other lights in front; idle art swapped.
+  const v = world.chars[0].mechanic.vars.install;
+  assert.deepEqual(v.aura.map((l) => [l.effect, !!l.behind]), [['guardian', true], ['installMotesBack', true], ['installFlames', false], ['installMotesFront', false]]);
+  for (const l of v.aura) assert.ok(fs.existsSync('data/characters/malik/' + world.chars[0].effects[l.effect].sprite.image), l.effect);
+  assert.deepEqual(v.art, { idle: 'installIdle' });
+  assert.equal(world.chars[0].states.installIdle.frames.length, world.chars[0].states.idle.frames.length);
 });

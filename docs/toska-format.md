@@ -117,6 +117,10 @@ A var can also say how it's shown (drawing only): `"display": "timer"` shows fra
 nothing at 0), and `"mark"` puts a mark on the opponent while the var is above 0 (Avner's brand): a colour
 (`"#rrggbb"`, a drawn ring), or `{ color, at, hold, sprite }` (an animation looping on the opponent `at` px up,
 each drawing held `hold` frames). It fades out over the last second.
+For an install (a timer on the fighter themself) a var takes two more drawing-only fields, both active while it is
+above 0: `"aura": [{ effect, behind }]` loops named `effects` on the fighter (each drawing held the effect's `hold`
+frames; an effect may add `alpha`, `bob: { px, period }` to float up and down, and `"additive": true` on its sprite
+for light), and `"art": { "idle": "installIdle" }` draws one state with another state's drawings.
 Moves use them through `cost`, `requires`, `onHit`/`onBlock`/`onWhiff` and the `addVar`/`setVar`/`gauge`
 timeline events. **Modifiers** apply while their `when` holds; `damagePct` multiplies the damage dealt. A move or
 event naming a var that isn't declared is an error when the file loads. The HUD shows the gauge and every var with

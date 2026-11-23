@@ -222,7 +222,10 @@ function compileMechanic(src) {
   for (const [k, v] of Object.entries(src.vars || {})) {
     vars[k] = { start: v.start ?? 0, min: v.min ?? 0, max: v.max ?? 99, perFrame: v.perFrame ?? 0, label: v.label ?? k, show: v.show ?? true,
       display: v.display ?? 'count', // HUD only: 'count', or 'timer' (frames shown as a draining bar)
-      mark: v.mark ?? null }; // drawing only: a colour; while the var is above 0 the opponent glows with it (a brand)
+      mark: v.mark ?? null, // drawing only: a colour; while the var is above 0 the opponent glows with it (a brand)
+      // Drawing only, while the var is above 0 (an install): `aura` = [{ effect, behind }], named effects looping on the
+      // fighter; `art` = { state: otherState }, that state is drawn with the other state's drawings.
+      aura: v.aura ?? null, art: v.art ?? null };
   }
   const modifiers = (src.modifiers || []).map((x) => ({ when: x.when || {}, damagePct: x.damagePct ?? 10000 }));
   return { name: src.name ?? null, gauge, vars, modifiers };

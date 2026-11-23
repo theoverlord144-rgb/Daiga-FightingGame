@@ -162,6 +162,7 @@ export function createFightRenderer(ctx, W, H) {
     ctx.translate(x, y);
     if (angle) ctx.rotate(angle);
     ctx.scale(facing * k, k);
+    if (sheet.additive) ctx.globalCompositeOperation = 'lighter';
     ctx.drawImage(img, (index % cols) * fw, Math.floor(index / cols) * fh, fw, fh, -(sheet.originX ?? fw / 2), -(sheet.originY ?? fh / 2), fw, fh);
     ctx.restore();
     return true;
@@ -313,6 +314,40 @@ export function createFightRenderer(ctx, W, H) {
       const at2 = Math.min(st.duration - 1, p.frame);
       drawSheetFrame(def, e.sprite, Math.floor((at2 * e.sprite.count) / st.duration) % e.sprite.count, x, y, p.facing);
     }
+  }
+
+  /**
+   * Auras (a mechanic var with `aura`, e.g. an install): named effects looping on the fighter while the var is above
+   * 0, each drawing held the effect's `hold` frames, fading out over the last second. An effect may `bob` up and
+   * down ({ px, period }) and be see-through (`alpha`).
+   */
+  function drawAuras(p, def, frame, behind) {
+    for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
+      const n = p.vars?.[k];
+      if (!v.aura || !(n > 0)) continue;
+      for (const l of v.aura) {
+        if (!!l.behind !== behind) continue;
+        const e = def.effects[l.effect];
+        if (!e) continue;
+        const at = e.at ?? [0, 0];
+        const bob = e.bob ? Math.sin((frame * Math.PI * 2) / e.bob.period) * e.bob.px : 0;
+        const [x, y] = toScreen(p.x + p.facing * at[0] * UNIT, p.y + (at[1] + bob) * UNIT);
+        ctx.save();
+        ctx.globalAlpha *= Math.min(1, n / 60) * (e.alpha ?? 1);
+        drawSheetFrame(def, e.sprite, Math.floor(frame / (e.hold ?? 4)) % e.sprite.count, x, y, p.facing);
+        ctx.restore();
+      }
+    }
+  }
+
+  /** The frame to draw: a mechanic var with `art` swaps a state's drawings for another state's while it is above 0. */
+  function artFrame(p, def, fr) {
+    for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
+      const alt = v.art?.[p.state];
+      const st = alt && p.vars?.[k] > 0 && def.states[alt];
+      if (st) return { ...fr, sprite: st.frames[p.frame % st.frames.length].sprite };
+    }
+    return fr;
   }
 
   /** A sheet frame for an animation given as hold lengths, at age t: [index into the holds, finished?]. */
@@ -549,9 +584,11 @@ export function createFightRenderer(ctx, W, H) {
         ctx.fill();
         if (flashing && p.id !== game.flashBy) ctx.globalAlpha = 0.45;
         const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
+        drawAuras(p, def, game.frame, true);
         drawLayers(p, def, fr, true);
-        if (!drawSprite(p, def, fr, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
+        if (!drawSprite(p, def, artFrame(p, def, fr), pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
         drawLayers(p, def, fr, false);
+        drawAuras(p, def, game.frame, false);
         drawChain(p, def, game.players[1 - p.id]);
         ctx.globalAlpha = 1;
         drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame);
