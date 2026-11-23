@@ -83,6 +83,7 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
   (screen, mouse), `src/editor/box-model.js` (pure: which place in the Toska file a frame's hurt / hit boxes come
   from, mirroring `compileState`; edits; `diffOps`), `scripts/json-edit.mjs` (changes values inside the file's
   text without reformatting it), the `toska-editor` plugin in `vite.config.js` (POST `/__toska/save-character`).
+  Projectiles are list entries too (`proj:<name>`, `?move=proj:spiritOrb`): one hitbox each (`projectileSource`, a `single` path), drawn on the projectile's own sheet (`renderer.poseSheet`) at its spawn point; no add or delete.
   If `compileState`'s event order changes, `sourcesAt` must change with it (tests/box-editor.test.js catches it).
   Report: `docs/reports/box-editor.md`.
 - **Movement effects** (drawing only): `motion` in `data/system/effects.json`. The renderer watches each fighter's

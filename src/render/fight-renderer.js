@@ -524,6 +524,16 @@ export function createFightRenderer(ctx, W, H) {
       ctx.restore();
       [cam.x, cam.y] = keep;
     },
+    /** One frame of one of a character's sheets (a projectile, an effect) with its origin at screen x, y. For the box editor. */
+    poseSheet(def, sheet, index, x, y, zoom = 1) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(zoom, zoom);
+      if (sheet.additive) ctx.globalCompositeOperation = 'lighter';
+      const drawn = drawSheetFrame(def, sheet, index, 0, 0, 1);
+      ctx.restore();
+      return drawn;
+    },
     /** opts: { boxes: bool, labels: bool } */
     draw(game, world, opts = {}) {
       if (game.frame !== lastFrame) {

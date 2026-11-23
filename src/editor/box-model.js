@@ -89,9 +89,22 @@ export function sourcesAt(raw, system, name, stance, frame) {
 
 const getPath = (obj, path) => path.reduce((o, k) => (o == null ? undefined : o[k]), obj);
 
+/** The names of the projectiles this file defines. */
+export const projectileNames = (raw) => Object.keys(raw.projectiles || {});
+
+/**
+ * Where a projectile's hitbox lives: one box, [x, y, w, h] measured from the projectile's leading edge, the same
+ * for its whole flight. 'single' marks a place that holds one box, not a list.
+ */
+export function projectileSource(raw, id) {
+  if (!raw.projectiles?.[id]) throw new Error(`No projectile called ${id}`);
+  return { kind: 'path', path: ['projectiles', id, 'hitbox'], where: 'projectile', at: 0, single: true };
+}
+
 /** The boxes a source holds, in pixels: [[x, y, w, h], ...] (a copy). */
 export function boxesOf(raw, system, src) {
   if (src.kind === 'stat') return clone(raw.character.stats?.[src.stat] ?? system.defaults.stats[src.stat] ?? []);
+  if (src.kind === 'path' && src.single) return [clone(getPath(raw, src.path) ?? [0, 0, 0, 0])];
   if (src.kind === 'path') return clone(getPath(raw, src.path) ?? []);
   return clone(src.value ?? []);
 }
@@ -105,6 +118,9 @@ export function setBoxes(raw, src, list) {
   if (src.kind === 'stat') {
     raw.character.stats ||= {};
     raw.character.stats[src.stat] = value;
+  } else if (src.kind === 'path' && src.single) {
+    if (value.length !== 1) throw new Error('A projectile has exactly one hitbox');
+    getPath(raw, src.path.slice(0, -1))[src.path.at(-1)] = value[0];
   } else if (src.kind === 'path') {
     getPath(raw, src.path.slice(0, -1))[src.path.at(-1)] = value;
   } else throw new Error('These boxes are not set in this file');
@@ -147,7 +163,7 @@ export function removeSource(raw, src) {
     if (raw.character.stats) delete raw.character.stats[src.stat];
     return;
   }
-  if (src.kind !== 'path') throw new Error('Nothing to remove here');
+  if (src.kind !== 'path' || src.single) throw new Error('Nothing to remove here');
   const parent = getPath(raw, src.path.slice(0, -1));
   delete parent[src.path.at(-1)];
   if (src.where !== 'event') return;

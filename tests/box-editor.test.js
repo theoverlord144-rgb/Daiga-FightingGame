@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { loadJSON, SYSTEM } from './helpers.js';
 import { compileCharacter } from '../src/core/character.js';
 import { px } from '../src/core/fixed.js';
-import { sourcesAt, boxesOf, setBoxes, editable, overrideMove, overrideFromFrame, addHitboxField, removeSource, diffOps, applyOps, stateInfo } from '../src/editor/box-model.js';
+import { sourcesAt, boxesOf, setBoxes, editable, overrideMove, overrideFromFrame, addHitboxField, removeSource, diffOps, applyOps, stateInfo, projectileNames, projectileSource } from '../src/editor/box-model.js';
 import { editJSON, format } from '../scripts/json-edit.mjs';
 
 const FILES = ['data/characters/avner/avner.toska.json', 'data/characters/proto/proto.toska.json'];
@@ -156,4 +156,38 @@ test('saving: the text editor handles sets, adds and removes in objects and list
   assert.throws(() => run([{ op: 'set', path: ['nope'], value: 1 }]));
   assert.throws(() => run([{ op: 'add', path: ['b', 'x'], value: 1 }]));
   assert.equal(format({ at: 4, hurt: [[-1, 0, 2.5, 3]], s: 'a"b' }), '{ "at": 4, "hurt": [[-1, 0, 2.5, 3]], "s": "a\\"b" }');
+});
+
+test('projectiles: every one in the cast can be found, read, edited and saved as one box', () => {
+  for (const file of ['data/characters/avner/avner.toska.json', 'data/characters/malik/malik.toska.json']) {
+    const ids = projectileNames(loadJSON(file));
+    assert.ok(ids.length > 0, file + ' has projectiles');
+    for (const id of ids) {
+      const raw = loadJSON(file); // a fresh copy per projectile: each is edited and saved by itself
+      const src = projectileSource(raw, id);
+      assert.ok(editable(src));
+      // What the editor shows is what the game uses.
+      assert.deepEqual(units(boxesOf(raw, SYSTEM, src)), compileCharacter(raw, SYSTEM).projectiles[id].hitbox, id);
+      // Move and resize it: the game gets the new box, and nothing else in the file changes.
+      const before = clone(raw);
+      const [b] = boxesOf(raw, SYSTEM, src);
+      const moved = [b[0] - 7, b[1] + 3, b[2] + 20, b[3] + 11];
+      setBoxes(raw, src, [moved]);
+      assert.deepEqual(raw.projectiles[id].hitbox, moved);
+      assert.deepEqual(compileCharacter(raw, SYSTEM).projectiles[id].hitbox, units([moved]));
+      const ops = diffOps(before, raw);
+      assert.ok(ops.length > 0 && ops.every((o) => o.op === 'set' && o.path.slice(0, 3).join('/') === 'projectiles/' + id + '/hitbox'), JSON.stringify(ops));
+      // Saving: the file's text changes only in those numbers, and reads back as the edited character.
+      const text = fs.readFileSync(file, 'utf8');
+      const out = editJSON(text, ops);
+      assert.deepEqual(JSON.parse(out), raw);
+      assert.equal(out.split('\n').length, text.split('\n').length, 'no lines added or removed');
+      // One box, always: it can't be deleted, doubled, or removed as an override.
+      assert.throws(() => setBoxes(raw, src, []), /exactly one/);
+      assert.throws(() => setBoxes(raw, src, [moved, moved]), /exactly one/);
+      assert.throws(() => removeSource(raw, src), /Nothing to remove/);
+    }
+  }
+  assert.throws(() => projectileSource(loadJSON('data/characters/avner/avner.toska.json'), 'nope'), /No projectile/);
+  assert.deepEqual(projectileNames({ moves: [] }), []);
 });

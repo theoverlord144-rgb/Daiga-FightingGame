@@ -2,12 +2,13 @@
 // with the mouse. It edits a copy of the character's file; SAVE writes the changes into the real file through the
 // dev server (vite.config.js) and puts the new version into the running game, so Training shows it right away.
 // What each box "comes from" (the move, a frame of it, or the stance shared by many states) is worked out by
-// src/editor/box-model.js.
+// src/editor/box-model.js. Projectiles are in the list too ("proj:<name>"): one hitbox each, shown on the
+// projectile's own drawing at the spot it is released from.
 import { compileCharacter } from '../../core/character.js';
 import { UNIT } from '../../core/fixed.js';
 import { createFightRenderer } from '../../render/fight-renderer.js';
 import { SYSTEM, CHAR_SOURCES } from '../boot.js';
-import { sourcesAt, boxesOf, setBoxes, editable, overrideMove, overrideFromFrame, addHitboxField, removeSource, diffOps, stateInfo } from '../../editor/box-model.js';
+import { sourcesAt, boxesOf, setBoxes, editable, overrideMove, overrideFromFrame, addHitboxField, removeSource, diffOps, stateInfo, projectileNames, projectileSource } from '../../editor/box-model.js';
 import { FONT, INK, DIM, GOLD } from './common.js';
 
 const LIST_W = 176; // the state list, on the left
@@ -19,6 +20,9 @@ const LIST_TOP = 56;
 const COLORS = { hurt: '#36d27a', hit: '#ff3b3b', push: '#ffffff', throw: '#e0d050' };
 const NAMES = { hurt: 'Hurtbox', hit: 'Hitbox' };
 const clone = (v) => JSON.parse(JSON.stringify(v));
+const PROJ = 'proj:'; // list entries for projectiles
+const isProj = (name) => name.startsWith(PROJ);
+const sum = (list) => list.reduce((a, b) => a + b, 0);
 
 export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 } = {}) {
   const { ctx, W, H } = app;
@@ -51,6 +55,9 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     const rank = { move: 0, own: 1, system: 2, universal: 3 };
     names = Object.keys(def.states).map((n, i) => ({ n, i, r: rank[stateInfo(raw, SYSTEM, n).type] }))
       .sort((a, b) => a.r - b.r || a.i - b.i).map((x) => x.n);
+    // Projectiles go right after the moves.
+    const firstOther = names.findIndex((n) => stateInfo(raw, SYSTEM, n).type !== 'move');
+    names.splice(firstOther < 0 ? names.length : firstOther, 0, ...projectileNames(raw).map((id) => PROJ + id));
     sel = Math.max(0, names.indexOf(wantState ?? '5L'));
     frame = 0;
     listScroll = 0;
@@ -58,14 +65,41 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     undo = [];
     zoomMul = 1;
   }
+  /**
+   * The state behind a list entry. A projectile gets a stand-in: one frame per frame of its animation (release,
+   * flight loop, impact), every one carrying its single hitbox.
+   */
+  function stOf(name) {
+    if (!isProj(name)) return def.states[name];
+    const d = def.projectiles[name.slice(PROJ.length)];
+    const parts = [d.anim?.release ?? [], d.anim?.loop ?? [1], d.anim?.impact ?? []];
+    const frames = [];
+    let index = 0;
+    parts.forEach((holds, part) => {
+      for (const hold of holds) {
+        for (let k = 0; k < hold; k++) frames.push({ hurt: [], hit: part < 2 ? d.hitbox : [], push: [], throw: [], sprite: { index, sheet: 'projectile' } });
+        index++;
+      }
+    });
+    return { frames, stance: 'air', move: null, loop: false, projectile: d };
+  }
+  /** Where a list entry's boxes are measured from, relative to the fighter's feet (a projectile: where it is released). */
+  function offsetOf(name) {
+    return isProj(name) ? raw.projectiles[name.slice(PROJ.length)].spawn ?? [0, 0] : [0, 0];
+  }
+
   load(ids.includes(char) ? char : ids[0], state);
-  frame = Math.max(0, Math.min(def.states[names[sel]].frames.length - 1, startFrame | 0));
+  frame = Math.max(0, Math.min(stOf(names[sel]).frames.length - 1, startFrame | 0));
 
   /** Everything about the frame on screen. */
   function now() {
     const name = names[sel];
-    const st = def.states[name];
+    const st = stOf(name);
     const f = Math.min(frame, st.frames.length - 1);
+    if (isProj(name)) {
+      const src = { hurt: { kind: 'none', value: [] }, hit: st.frames[f].hit.length ? projectileSource(raw, name.slice(PROJ.length)) : { kind: 'none', value: [] } };
+      return { name, st, f, fr: st.frames[f], src, info: { type: 'projectile', moveIndex: -1 }, boxes: { hurt: [], hit: boxesOf(raw, SYSTEM, src.hit) } };
+    }
     const src = sourcesAt(raw, SYSTEM, name, st.stance, f);
     return { name, st, f, fr: st.frames[f], src, info: stateInfo(raw, SYSTEM, name),
       boxes: { hurt: boxesOf(raw, SYSTEM, src.hurt), hit: boxesOf(raw, SYSTEM, src.hit) } };
@@ -73,24 +107,28 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
 
   /** The zoom and where the fighter's feet go, so the whole state fits (every frame, every box). */
   function view() {
-    const st = def.states[names[sel]];
+    const st = stOf(names[sel]);
+    const [offX, offY] = offsetOf(names[sel]);
     let x0 = -70, x1 = 70, y1 = 170;
     for (const fr of st.frames) {
       for (const b of [...fr.hurt, ...fr.hit, ...fr.push, ...fr.throw]) {
-        x0 = Math.min(x0, b[0] / UNIT);
-        x1 = Math.max(x1, (b[0] + b[2]) / UNIT);
-        y1 = Math.max(y1, (b[1] + b[3]) / UNIT);
+        x0 = Math.min(x0, b[0] / UNIT + offX);
+        x1 = Math.max(x1, (b[0] + b[2]) / UNIT + offX);
+        y1 = Math.max(y1, (b[1] + b[3]) / UNIT + offY);
       }
     }
     const fit = Math.min((STAGE.w - 40) / (x1 - x0 + 40), (GY - STAGE.y - 14) / (y1 + 20), 3);
     const z = Math.max(0.5, Math.floor(fit * 4) / 4) * zoomMul;
     return { z, ox: STAGE.x + STAGE.w / 2 - (z * (x0 + x1)) / 2 };
   }
-  const rectOf = (b, v) => [v.ox + v.z * b[0], GY - v.z * (b[1] + b[3]), v.z * b[2], v.z * b[3]];
+  const rectOf = (b, v) => {
+    const [offX, offY] = offsetOf(names[sel]);
+    return [v.ox + v.z * (b[0] + offX), GY - v.z * (b[1] + offY + b[3]), v.z * b[2], v.z * b[3]];
+  };
 
   function recompile() {
     def = compileCharacter(raw, SYSTEM);
-    frame = Math.min(frame, def.states[names[sel]].frames.length - 1);
+    frame = Math.min(frame, stOf(names[sel]).frames.length - 1);
   }
 
   /** One undoable change. fn edits `raw`; if the result isn't a valid character, it is taken back. */
@@ -127,7 +165,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     if (sel >= listScroll + rows) listScroll = sel - rows + 1;
   }
   function setFrame(f) {
-    const n = def.states[names[sel]].frames.length;
+    const n = stOf(names[sel]).frames.length;
     frame = ((f % n) + n) % n;
     const c = now();
     if (picked && !c.boxes[picked.kind][picked.i]) picked = null;
@@ -135,6 +173,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
 
   /** Can a hitbox be added on this frame, and how? */
   function hitPlan(c) {
+    if (c.info.type === 'projectile') return { ok: false, why: 'A projectile has exactly one hitbox: drag or resize the one it has.' };
     if (c.info.type === 'universal') return { ok: false, why: 'This move is shared by every character (data/system).' };
     if (c.src.hit.kind === 'path') {
       if (c.src.hit.where === 'event' && !c.boxes.hit.length) return { ok: false, why: 'The hit ends on this frame.' };
@@ -151,6 +190,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
   function addBox(kind) {
     const c = now();
     if (kind === 'hurt') {
+      if (c.info.type === 'projectile') { say('A projectile has no hurtbox.', '#ffb86b'); return; }
       if (!editable(c.src.hurt)) { say('The hurtbox on this frame is set by the system for every character.', '#ffb86b'); return; }
       change(() => setBoxes(raw, c.src.hurt, [...c.boxes.hurt, [-20, 70, 40, 40]]));
       picked = { kind, i: c.boxes.hurt.length };
@@ -166,6 +206,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
   function deleteBox() {
     if (!picked) { say('Click a box first'); return; }
     const c = now();
+    if (c.info.type === 'projectile') { say('A projectile needs its hitbox: it can be moved and resized, not deleted.', '#ffb86b'); return; }
     const list = c.boxes[picked.kind].filter((_, i) => i !== picked.i);
     change(() => setBoxes(raw, c.src[picked.kind], list));
     picked = null;
@@ -262,7 +303,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
   }
 
   function scrub(p) {
-    const n = def.states[names[sel]].frames.length;
+    const n = stOf(names[sel]).frames.length;
     setFrame(Math.max(0, Math.min(n - 1, Math.floor(((p.x - BAR.x) / BAR.w) * n))));
     playing = false;
   }
@@ -351,6 +392,10 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
 
   function describe(key, c) {
     const s = c.src[key];
+    if (c.info.type === 'projectile') {
+      if (key === 'hurt') return 'a projectile has no hurtbox';
+      return s.kind === 'path' ? "this projectile's hitbox, for its whole flight (measured from its leading edge)" : 'none: the projectile has already hit (impact drawings)';
+    }
     const thing = c.info.type === 'move' ? 'move' : 'state';
     if (s.kind === 'stat') {
       const own = raw.character.stats?.[s.stat] ? "this character's" : 'the system default';
@@ -375,15 +420,16 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     for (let k = 0; k < rows && listScroll + k < names.length; k++) {
       const i = listScroll + k;
       const y = LIST_TOP + k * ROW;
-      const type = stateInfo(raw, SYSTEM, names[i]).type;
+      const proj = isProj(names[i]);
+      const type = proj ? 'projectile' : stateInfo(raw, SYSTEM, names[i]).type;
       if (i === sel) {
         ctx.fillStyle = '#ffd36b22';
         ctx.fillRect(0, y - 11, LIST_W, ROW);
         ctx.fillStyle = GOLD;
         ctx.fillRect(0, y - 11, 3, ROW);
       }
-      text(names[i], 12, y, { color: i === sel ? GOLD : type === 'move' ? INK : DIM, size: 11, weight: i === sel ? 700 : 400 });
-      if (type !== 'move') text(type === 'own' ? 'state' : type === 'system' ? 'system' : 'shared', LIST_W - 8, y, { color: '#5a516b', size: 9, align: 'right' });
+      text(proj ? names[i].slice(PROJ.length) : names[i], 12, y, { color: i === sel ? GOLD : type === 'move' || proj ? INK : DIM, size: 11, weight: i === sel ? 700 : 400 });
+      if (type !== 'move') text(proj ? 'projectile' : type === 'own' ? 'state' : type === 'system' ? 'system' : 'shared', LIST_W - 8, y, { color: proj ? '#8a6fc0' : '#5a516b', size: 9, align: 'right' });
     }
     if (names.length > rows) {
       const th = Math.max(20, ((H - LIST_TOP) * rows) / names.length);
@@ -421,7 +467,15 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     ctx.fillStyle = '#ffffff14';
     ctx.fillRect(Math.round(v.ox), STAGE.y, 1, GY - STAGE.y);
 
-    renderer.pose(def, c.name, c.f, v.ox, GY, v.z, 0);
+    if (c.info.type === 'projectile') {
+      // The projectile's own drawing, where it is released; a small cross marks that point.
+      const [offX, offY] = offsetOf(c.name);
+      const px0 = v.ox + v.z * offX, py0 = GY - v.z * offY;
+      if (c.st.projectile.sprite) renderer.poseSheet(def, c.st.projectile.sprite, c.fr.sprite.index, px0, py0, v.z);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(Math.round(px0) - 5, Math.round(py0), 11, 1);
+      ctx.fillRect(Math.round(px0), Math.round(py0) - 5, 1, 11);
+    } else renderer.pose(def, c.name, c.f, v.ox, GY, v.z, 0);
 
     // Boxes: the ones you can't edit here are faint; hurt green, hit red.
     const faint = [[c.fr.push, COLORS.push, 0.05, [3, 3]], [c.fr.throw, COLORS.throw, 0.15, [3, 3]]];
@@ -461,9 +515,13 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     }
     ctx.globalAlpha = 1;
     ctx.restore();
-    text(`${c.name}`, STAGE.x + 6, 20, { size: 15, weight: 800 });
+    const title = isProj(c.name) ? c.name.slice(PROJ.length) : c.name;
+    text(title, STAGE.x + 6, 20, { size: 15, weight: 800 });
     const m = c.st.move;
-    text(m ? `startup ${m.startup} · active ${m.active} · recovery ${m.recovery} · ${c.st.stance}` : `${c.st.stance}${c.st.loop ? ' · loops' : ''}`, STAGE.x + 6 + ctx.measureText(c.name).width + 22, 20, { color: DIM, size: 11 });
+    const pd = c.st.projectile;
+    const about = pd ? `projectile · speed ${pd.speed / UNIT} · lasts ${pd.lifetime} frames · released at forward ${offsetOf(c.name)[0]}, up ${offsetOf(c.name)[1]}`
+      : m ? `startup ${m.startup} · active ${m.active} · recovery ${m.recovery} · ${c.st.stance}` : `${c.st.stance}${c.st.loop ? ' · loops' : ''}`;
+    text(about, STAGE.x + 6 + ctx.measureText(title).width + 22, 20, { color: DIM, size: 11 });
     text(`zoom ${v.z.toFixed(2)}×`, W - 10, 20, { color: '#5a516b', size: 10, align: 'right' });
     const legend = [['hurtbox', COLORS.hurt], ['hitbox', COLORS.hit], ['push / throw (not editable)', '#8f86a3']];
     let lx = W - 10;
@@ -481,6 +539,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
       const fr = c.st.frames[f];
       let color = '#3a3347';
       if (m) color = f < m.startup - 1 ? '#3fae6a' : fr.hit.length || fr.throw.length ? '#e0483f' : '#3b7fd9';
+      else if (c.st.projectile) color = fr.hit.length ? '#e0483f' : '#3b7fd9';
       else if (!fr.hurt.length) color = '#6a5f80';
       ctx.fillStyle = color;
       ctx.globalAlpha = f === c.f ? 1 : 0.55;
@@ -506,7 +565,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     text(describe('hurt', c), 246, y + 14, { color: DIM, size: 11 });
     y += 22;
     let x = 246;
-    const can = c.info.type !== 'universal' && hs.kind !== 'system';
+    const can = c.info.type !== 'universal' && c.info.type !== 'projectile' && hs.kind !== 'system';
     if (hs.kind === 'stat' && c.info.type === 'move') {
       x = button('OWN HURTBOX FOR THIS MOVE', x, y, { on: () => change(() => overrideMove(raw, SYSTEM, c.name, c.boxes.hurt)) });
     }
@@ -524,9 +583,9 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     y = 478;
     x = 190;
     const plan = hitPlan(c);
-    x = button('+ HURTBOX', x, y, editable(hs) ? { on: () => addBox('hurt') } : { why: 'The hurtbox on this frame is set by the system for every character.' });
+    x = button('+ HURTBOX', x, y, editable(hs) ? { on: () => addBox('hurt') } : { why: c.info.type === 'projectile' ? 'A projectile has no hurtbox.' : 'The hurtbox on this frame is set by the system for every character.' });
     x = button('+ HITBOX', x, y, plan.ok ? { on: () => addBox('hit') } : { why: plan.why });
-    x = button('DELETE BOX', x, y, picked ? { on: deleteBox } : { why: 'Click a box first.' });
+    x = button('DELETE BOX', x, y, c.info.type === 'projectile' ? { why: 'A projectile needs its hitbox: it can be moved and resized, not deleted.' } : picked ? { on: deleteBox } : { why: 'Click a box first.' });
     x += 10;
     x = button('◀ FRAME', x, y, { on: () => { playing = false; setFrame(frame - 1); } });
     x = button(playing ? 'PAUSE' : 'PLAY', x, y, { on: () => { playing = !playing; }, lit: playing });
