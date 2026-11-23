@@ -9,7 +9,7 @@ import { compileCharacter } from '../src/core/character.js';
 import { px } from '../src/core/fixed.js';
 import { loadWorld, loadChar, loadJSON, script, SYSTEM } from './helpers.js';
 
-const AVNER = 'data/characters/avner/avner.toska.json';
+const AVNER = 'data/characters/_archive/avner_chain/avner.toska.json';
 
 function placed(w, gap) {
   const g = createGame(w);
@@ -359,7 +359,7 @@ test('Avner: Air Spike (j.S) has its art, and the hit lands on drawing 4', () =>
   assert.equal(hits.length, st.move.active);
   assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4]);
   assert.ok(st.frames[st.move.startup - 1].hit.length > 0, 'first active frame');
-  assert.ok(fs.existsSync('data/characters/avner/sheets/jS.png'));
+  assert.ok(fs.existsSync('data/characters/_archive/avner_chain/sheets/jS.png'));
 });
 
 // The cost follows the owner's universal systems spec: a level 1 super costs one bar (it was two for a while).

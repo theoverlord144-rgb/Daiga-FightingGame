@@ -10,7 +10,7 @@ import { px } from '../src/core/fixed.js';
 import { runSyncTest } from '../src/net/sync-test.js';
 import { loadWorld, loadChar, loadJSON, script, lcg, SYSTEM } from './helpers.js';
 
-const AVNER = loadChar('data/characters/avner/avner.toska.json');
+const AVNER = loadChar('data/characters/_archive/avner_chain/avner.toska.json');
 const MALIK = loadChar('data/characters/malik/malik.toska.json');
 const MALIK_FILE = loadJSON('data/characters/malik/malik.toska.json');
 const WA = loadWorld(AVNER, AVNER);

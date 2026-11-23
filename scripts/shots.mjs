@@ -95,7 +95,9 @@ try {
   const raw = (s) => [...(s || '')].reduce((a, c) => a | (B[c] ?? 0), 0);
 
   /** One situation: a = Player 1 (left, facing right), b = Player 2. gap = px between them. */
+  const ONLY = process.argv[3] || ''; // a second argument: only the scenes whose name starts with it
   function scene(name, a, b, gap, play) {
+    if (ONLY && !name.startsWith(ONLY)) return;
     const world = boot.makeWorld(chars[a], chars[b], null);
     const game = createGame(world);
     const c = canvas(W, H);
@@ -120,6 +122,42 @@ try {
     };
     play(api);
   }
+
+  // ----- Avner, the Lampbearer (node scripts/shots.mjs <folder> lamp) -----
+  const qcf = (s, b) => { s.go('D', '', 1); s.go('DF', '', 1); s.go('F' + b, '', 1); };
+  const qcb = (s, b) => { s.go('D', '', 1); s.go('DK', '', 1); s.go('K' + b, '', 1); };
+  const dp = (s, b) => { s.go('F', '', 1); s.go('D', '', 1); s.go('DF' + b, '', 1); };
+  scene('lamp-stand', 'avner', 'malik', 260, (s) => {
+    s.go('', '', 20); s.shot('idle');
+    s.go('D', '', 30); s.shot('crouch'); s.go('D', '', 70); s.shot('crouch-lantern-down'); s.go('', '', 2); s.shot('stand-up');
+    s.go('F', '', 12); s.shot('walk'); s.go('', '', 4);
+    s.go('U', '', 1); s.go('', '', 8); s.shot('jump-rising'); s.go('', '', 12); s.shot('jump-apex'); s.go('', '', 14); s.shot('jump-falling'); s.go('', '', 8); s.shot('landed');
+    s.go('K', 'L', 3); s.shot('guard'); s.go('K', '', 6); s.shot('pushed-back');
+  });
+  scene('lamp-normals', 'avner', 'malik', 170, (s) => {
+    for (const [name, input, frames] of [['5L', 'L', 5], ['5M', 'M', 9], ['5H', 'H', 15], ['4H', 'KH', 15], ['5S', 'S', 13], ['2M', 'DM', 10]]) {
+      s.go('', '', 50); s.game.players[1].x = s.game.players[0].x + 17000; s.go(input, '', 1); s.go(input.includes('D') ? 'D' : '', '', frames); s.shot(name);
+    }
+    s.go('', '', 60); s.go('U', '', 1); s.go('', '', 14); s.go('H', '', 1); s.go('', '', 13); s.shot('jH');
+  });
+  for (const [b, gap] of [['L', 140], ['M', 320], ['H', 520]]) scene('lamp-moon-' + b, 'avner', 'malik', gap, (s) => {
+    qcf(s, b); s.until('', '', s.cue('spawn'), 30); s.go('', '', 2); s.shot('warning'); s.go('', '', 5); s.shot('rising'); s.go('', '', 7); s.shot('surge'); s.go('', '', 10); s.shot('fading');
+  });
+  scene('lamp-halo', 'avner', 'malik', 90, (s) => {
+    for (const b of ['L', 'M', 'H']) { dp(s, b); s.until('', '', s.cue('fx'), 20); s.go('', '', 5); s.shot(b + '-burst'); s.go('', '', 8); s.shot(b + '-ring'); s.go('', '', 90); s.game.players[1].x = s.game.players[0].x + 9000; }
+  });
+  scene('lamp-tide', 'avner', 'malik', 380, (s) => {
+    qcb(s, 'H'); s.until('', '', s.cue('spawn'), 20); s.go('', '', 6); s.shot('wave-1'); s.go('', '', 12); s.shot('wave-2'); s.until('', '', s.cue('hit'), 40); s.go('', '', 4); s.shot('caught'); s.go('', '', 12); s.shot('pulled');
+  });
+  scene('lamp-rite', 'avner', 'malik', 150, (s) => {
+    s.go('R', '', 1); s.go('', '', 9); s.shot('cast'); s.go('', '', 8); s.shot('crescent-rising'); s.go('', '', 30); s.shot('light');
+    s.go('L', '', 1); s.go('', '', 14); s.shot('marked'); s.go('R', '', 1); s.go('', '', 9); s.shot('snap'); s.go('', '', 4); s.shot('beam'); s.go('', '', 40);
+    s.go('R', '', 1); s.go('', '', 6); s.shot('recall');
+  });
+  scene('lamp-supers', 'avner', 'malik', 240, (s) => {
+    qcf(s, ''); qcf(s, 'S'); s.go('', '', 3); s.shot('new-moon-flash'); s.until('', '', s.cue('hit'), 60); s.shot('new-moon-hit'); s.go('', '', 12); s.shot('new-moon-after'); s.go('', '', 90);
+    s.game.players[0].meter = 40000; qcb(s, ''); qcb(s, 'S'); s.go('', '', 6); s.shot('full-moon-flash'); s.until('', '', s.cue('hit'), 90); s.go('', '', 3); s.shot('full-moon-column');
+  });
 
   // ----- Vow: guard, an absorbed hit, the three strikes, the crumple -----
   scene('vow', 'malik', 'avner', 150, (s) => {

@@ -219,7 +219,8 @@ test('the cast: every command still compiles with five buttons, and no real move
     const c = loadChar(`data/characters/${id}/${id}.toska.json`);
     for (const cmd of c.commands) {
       const mv = c.states[cmd.move].move;
-      if (mv.kind === 'special') assert.equal(mv.ex, false, `${id} ${cmd.move}`);
+      // (An EX version made on purpose by a move's `ex` field carries `base`: Avner's specials have them now.)
+      if (mv.kind === 'special' && !cmd.base) assert.equal(mv.ex, false, `${id} ${cmd.move}`);
     }
     assert.ok(c.sOnly.has('5S') && c.sOnly.has('j.S'), `${id}: S alone is the launcher`);
   }

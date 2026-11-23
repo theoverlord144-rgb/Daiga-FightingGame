@@ -184,6 +184,25 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `toOpponent` | one-shot | `{ to, frames }`: slide to the opponent, stopping `to` px in front of them, over `frames` frames (never past them; pushboxes still apply). |
 | `spawn` | one-shot | A projectile name (top-level `projectiles`): one appears at its `spawn` offset, facing the way the fighter faces. |
 
+`spawn` may also be `{ "name": ..., "x": px, "y": px, "under": "opponent" }`: this one appears `x` px in front (instead
+of the projectile's own spawn offset), or directly under the opponent. `endProjectile` (one-shot): a projectile name;
+the fighter's own projectiles of that kind end this frame.
+
+More move fields: `oneAtATime` (a projectile name or a list: the move can't start while one is out), `needsOut` (a
+projectile name: the move only starts while one is out), `hitsAirborne: false` (the hit passes through a fighter in
+the air), `noZoneMark: true` (this hit never adds a zone's mark), `pinFx: { effect, fromSprite }` (drawing only: a
+named effect pinned to the lantern point of each drawing, from that drawing on).
+
+## `art` (top level): a character's own drawing rules
+
+Drawing only; the rules never read it. `byVy: { states, pick: [{ above, index }] }` picks an air drawing by vertical
+speed (px a frame, up positive; the first row whose `above` the speed is over). `exit: [{ from, into, after, sprite,
+frames, holds }]`: leaving `from` for one of `into` (after at least `after` frames there), those drawings play first.
+`guard: { range, stand, crouch, air }` (each `{ sprite, index }`): shown while holding back with the opponent
+attacking within `range` px. `lantern: { sprite, at }`: one drawing per full bar of Devotion, drawn at `at[sheet
+image][drawing]` = [px forward, px up] from the fighter. An effect (`effects`, `hitFx`) may give `holds` (frames per
+drawing) instead of one `hold`.
+
 ## `states` (top level): a character's own states
 
 Overrides for system states (`"walkF": { "duration": 48 }`), and new states of the character's own: stances and
@@ -206,6 +225,13 @@ frame data (the move fields: `damage`, `hitstun`, `blockstun`, `hitstop`, `guard
 `lifetime` frames. Its hit is its owner's hit (damage, meter, combo) but puts no hitstop or pushback on the owner.
 Drawing only: `sprite` (with `additive: true` for light on black) and `anim: { release, loop, impact }`, hold lists
 over the sheet's frames in that order; the impact frames play where it ended (cue `projectileEnd`).
+
+More projectile fields: `phases: [[fromAge, toAge, box or null]]` (the hitbox is out only at those ages; null = its
+`hitbox`), `persist: true` (it stays after its hit, hits once, never clashes), `noHit: true` (it never hits: a light,
+a beam that is only seen), `zone: { box, gravityPct, markVar }` (an opponent inside falls at that share of their
+gravity; a hit the owner lands on them there adds 1 to the owner's var), `onEnd: { setVar: { name: n } }` (set on the
+owner when it ends, however it ends), `ownerOnHit` (a state the owner switches to on hit, if still in the move that
+made it), `hitsAirborne`, `pull`.
 
 ## Making a sprite sheet
 

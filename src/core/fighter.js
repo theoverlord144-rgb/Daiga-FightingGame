@@ -185,6 +185,9 @@ const negate = (cost) => ({ meter: -cost.meter, gauge: -cost.gauge, vars: Object
 
 export const isAirborne = (def, p) => def.states[p.state].stance === 'air';
 
+/** Is fighter p inside a projectile's zone (a light cast on the ground)? box = [x, y, w, h] from the projectile, y from the floor. */
+export const inZone = (pr, zone, p) => p.x >= pr.x + zone.box[0] && p.x <= pr.x + zone.box[0] + zone.box[2] && p.y >= zone.box[1] && p.y <= zone.box[1] + zone.box[3];
+
 /** Switch state. Velocity rules: ground states stop the fighter unless the state keeps velocity. */
 export function enterState(p, def, name) {
   const st = def.states[name];
@@ -264,11 +267,21 @@ export function fireOnEnter(game, p, def) {
       }
       case 'spawn': {
         // A projectile: its own object in the game state from here on (see combat.js).
-        const d = def.projectiles[v];
-        game.projectiles.push({ owner: p.id, kind: v, x: p.x + p.facing * d.spawn[0], y: (d.fromGround ? 0 : p.y) + d.spawn[1], facing: p.facing, age: 0 });
-        game.cues.push({ p: p.id, type: 'spawn', name: v, x: p.x, y: p.y, facing: p.facing });
+        // v: its name, or { name, x, y, under } to place this one elsewhere (under the opponent; another distance).
+        const name = typeof v === 'string' ? v : v.name;
+        const d = def.projectiles[name];
+        const x = v.under === 'opponent' ? game.players[1 - p.id].x : p.x + p.facing * (v.x ?? d.spawn[0]);
+        const pr = { owner: p.id, kind: name, x, y: (d.fromGround ? 0 : p.y) + (v.y ?? d.spawn[1]), facing: p.facing, age: 0 };
+        if (d.persist) pr.hit = 0; // 1 once it has hit: it stays, and hits no more
+        if (d.ownerOnHit) pr.from = p.state; // the move that made it
+        game.projectiles.push(pr);
+        game.cues.push({ p: p.id, type: 'spawn', name, x: p.x, y: p.y, facing: p.facing });
         break;
       }
+      case 'endProjectile':
+        // The fighter's own projectiles of this kind end this frame (resolveProjectiles removes them).
+        for (const pr of game.projectiles) if (pr.owner === p.id && pr.kind === v) pr.end = 1;
+        break;
       case 'setVar':
         for (const [k, n] of Object.entries(v)) {
           const d = def.mechanic.vars[k];
@@ -350,7 +363,8 @@ function pickCommand(game, p, def, world, allowed, reuse = '') {
       if (cmd.rite && p.rite < 1 && !riteUnlimited(p, def)) continue;
       if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
       if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
-      if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.oneAtATime)) continue;
+      if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && cmd.oneAtATime.includes(q.kind))) continue;
+      if (cmd.needsOut && !game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.needsOut && !q.end)) continue;
       const presses = commandInput(game, p, cmd, world, buffer, reuse);
       if (!presses) continue;
       // An attack button's move takes the S pressed with it along, so that S can't start anything later.
@@ -711,6 +725,12 @@ export function move(game, p, def, world) {
     if (p.combo && (st.stun || st.techable)) {
       const C = world.combo;
       g = pct(g, 10000 + Math.min(C.juggleGravityMax, p.combo.hits * C.juggleGravityPerHit));
+    }
+    // Inside an opponent's light (a projectile with a zone) a fighter floats: a share of their gravity.
+    for (const pr of game.projectiles) {
+      if (pr.owner === p.id) continue;
+      const z = world.chars[pr.owner].projectiles[pr.kind].zone;
+      if (z && z.gravityPct !== 10000 && inZone(pr, z, p)) g = pct(g, z.gravityPct);
     }
     p.vy -= g;
   }

@@ -171,7 +171,7 @@ test('timing: shortening takes frames from the drawings without dropping any, an
   const v = settingsTarget(raw, SYSTEM, 'vow_strike');
   assert.throws(() => writeSetting(raw, v, 'startup', 5, RULES), /shared by every character/);
   // A move's own cancel window moves with its startup.
-  const a = loadJSON(AVNER);
+  const a = loadJSON('data/characters/_archive/avner_chain/avner.toska.json'); // Lightstep belongs to the old chain kit, kept in the archive
   const ls = a.moves.find((x) => x.id === 'lightstep');
   const win = clone(ls.cancels[0]);
   writeSetting(a, settingsTarget(a, SYSTEM, 'lightstep'), 'startup', ls.startup + 2, RULES);

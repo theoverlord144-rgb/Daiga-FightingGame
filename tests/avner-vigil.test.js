@@ -9,7 +9,7 @@ import { cloneState, hashState, serializeState, deserializeState } from '../src/
 import { px } from '../src/core/fixed.js';
 import { loadWorld, loadChar, script } from './helpers.js';
 
-const AVNER = 'data/characters/avner/avner.toska.json';
+const AVNER = 'data/characters/_archive/avner_chain/avner.toska.json';
 const C = loadChar(AVNER);
 const W = loadWorld(C, C);
 

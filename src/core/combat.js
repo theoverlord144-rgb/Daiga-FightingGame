@@ -2,7 +2,7 @@
 // throws and throw techs, hitstop, hitstun/blockstun, pushback (and corner pushback), damage with guts.
 
 import { frameOf } from './character.js';
-import { CONTACT, enterState, isAirborne, startSlide, applyResources, meets, gainDevotion } from './fighter.js';
+import { CONTACT, enterState, isAirborne, inZone, startSlide, applyResources, meets, gainDevotion } from './fighter.js';
 import { perPercent } from './devotion.js';
 import { soften } from './systems.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
@@ -341,6 +341,11 @@ function applyStrike(game, world, r) {
   const starts = !d.combo;
   // Absolve's own hit is never one: it only knocks the attacker away.
   const plain = move.kind === 'burst';
+  // Hit while standing in the attacker's light (a projectile with a zone): the attacker's mark var goes up.
+  for (const pr of game.projectiles) {
+    const z = pr.owner === a.id ? world.chars[a.id].projectiles[pr.kind].zone : null;
+    if (z?.markVar && !move.noZoneMark && inZone(pr, z, d)) applyResources(a, world.chars[a.id], { vars: { [z.markVar]: 1 } });
+  }
   const witness = starts && !plain && (r.kind === 'witness' || !!r.witness);
   const counter = starts && !plain && r.kind === 'counter' && !witness;
   const ch = witness ? world.sys.witness : world.sys.counter; // read only when one of the two is true
@@ -481,10 +486,14 @@ export function resolveProjectiles(game, world) {
   if (!list.length) return;
   const gone = new Array(list.length).fill('');
   const pdef = (pr) => world.chars[pr.owner].projectiles[pr.kind];
+  // The box a projectile has out right now: none for a marker, or outside its phases, or once a staying one has hit.
+  const boxOf = (pr, def) => (def.noHit || pr.hit ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
+  list.forEach((pr, i) => { if (pr.end) gone[i] = 'recall'; });
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
       if (gone[i] || gone[j] || list[i].owner === list[j].owner) continue;
-      if (contact(list[i], pdef(list[i]).hitbox, list[j], pdef(list[j]).hitbox)) gone[i] = gone[j] = 'clash';
+      const bi = pdef(list[i]).persist ? null : boxOf(list[i], pdef(list[i])), bj = pdef(list[j]).persist ? null : boxOf(list[j], pdef(list[j]));
+      if (bi && bj && contact(list[i], bi, list[j], bj)) gone[i] = gone[j] = 'clash';
     }
   }
   const half = world.battle.halfWidthUnits;
@@ -495,7 +504,8 @@ export function resolveProjectiles(game, world) {
     const d = game.players[1 - pr.owner];
     const ddef = world.chars[d.id];
     const fd = frameOf(ddef, d.state, d.frame);
-    const rect = fd.invStrike ? null : contact(pr, def.hitbox, d, fd.hurt);
+    const box = boxOf(pr, def);
+    const rect = !box || fd.invStrike || (!def.move.hitsAirborne && isAirborne(ddef, d)) ? null : contact(pr, box, d, fd.hurt);
     if (rect) {
       const move = def.move;
       const away = pr.facing; // it pushes the way it flies, and is blocked by holding away from where it came from
@@ -503,10 +513,22 @@ export function resolveProjectiles(game, world) {
       const kind = absorbs(ddef, d.state, move) ? 'absorb' : !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
       const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
       applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: true, kind, stagger, proj: pr });
-      gone[i] = kind === 'block' || kind === 'absorb' ? 'block' : 'hit';
+      if (def.persist) pr.hit = 1;
+      else gone[i] = kind === 'block' || kind === 'absorb' ? 'block' : 'hit';
+      // A catch: the owner, still in the move that made it, goes to a follow-up state.
+      if (def.ownerOnHit && kind !== 'block' && kind !== 'absorb' && kind !== 'armor' && a.state === pr.from) {
+        enterState(a, world.chars[a.id], def.ownerOnHit);
+        a.contact = CONTACT.HIT;
+      }
+      if (def.persist && pr.age >= def.lifetime) gone[i] = 'edge';
     } else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
   });
   list.forEach((pr, i) => {
+    const end = gone[i] ? pdef(pr).onEnd : null;
+    if (end) { // what its owner's vars are set to when it ends
+      const o = game.players[pr.owner], odef = world.chars[pr.owner];
+      for (const [k, n] of Object.entries(end)) { const v = odef.mechanic.vars[k]; if (v) o.vars[k] = Math.max(v.min, Math.min(v.max, n)); }
+    }
     if (gone[i]) game.cues.push({ type: 'projectileEnd', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, facing: pr.facing, why: gone[i] });
   });
   game.projectiles = list.filter((_, i) => !gone[i]);
@@ -632,6 +654,7 @@ export function resolveHits(game, world, frozen) {
     if (fq.invStrike) return null;
     const mv = world.chars[p.id].states[snap[p.id].state].move;
     if (mv?.hitRequires && !meets(p, mv.hitRequires)) return null; // e.g. only a branded opponent can be hit
+    if (mv && mv.hitsAirborne === false && isAirborne(world.chars[q.id], q)) return null; // a ground-only hit
     // A remote hit lands wherever the opponent is: the "contact" is their body (their position if they have no hurtbox).
     if (mv?.remote) return fq.hurt[0] ? worldBox(q, fq.hurt[0]) : [q.x, q.y, q.x, q.y];
     return contact(p, fp.hit, q, fq.hurt);

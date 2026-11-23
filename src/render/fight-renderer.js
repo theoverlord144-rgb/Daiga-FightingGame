@@ -3,6 +3,7 @@
 
 import { UNIT } from '../core/fixed.js';
 import { frameOf } from '../core/character.js';
+import { relDirAt } from '../core/input.js';
 import { createHud } from './hud.js';
 import { createStageRenderer } from './stage-renderer.js';
 import { paletteSheet, placeholderColors } from './palette.js';
@@ -278,7 +279,7 @@ export function createFightRenderer(ctx, W, H) {
   function drawSprite(p, def, fr, pal) {
     const s = fr.sprite;
     if (!s) return false;
-    const sheet = def.sheets[s.sheet];
+    const sheet = s.block ?? def.sheets[s.sheet]; // block: a sheet given outright (the art rules below)
     if (!sheet) return false;
     const raw = spriteImage(def.id, sheet.image);
     if (!raw) return false;
@@ -297,6 +298,60 @@ export function createFightRenderer(ctx, W, H) {
     ctx.drawImage(img, col * fw, row * fh, fw, fh, -ox, -oy, fw, fh); // img: the sheet in this palette
     ctx.restore();
     return true;
+  }
+
+  /**
+   * A character's own drawing rules (`art` in its file; drawing only):
+   *  - exit: leaving one state for another, a few drawings play first (the end of a landing, a dash stop, standing
+   *    up after setting the lantern down);
+   *  - byVy: air drawings picked by vertical speed;
+   *  - guard: the guard drawing while holding back from an attack that is coming.
+   */
+  const exitArt = [null, null]; // drawing only: { rule, t } the exit drawings a fighter is showing
+  function ruleFrame(p, def, fr, game, world) {
+    const art = def.art;
+    if (!art) return fr;
+    const ex = exitArt[p.id];
+    if (ex) return { ...fr, sprite: { block: ex.rule.sprite, index: ex.rule.frames[heldFrame(ex.rule.holds, ex.t, false)[0]] } };
+    const st = def.states[p.state];
+    if (art.guard && st.free && game && world) {
+      const o = game.players[1 - p.id];
+      const dir = relDirAt(p.input, 0, p.facing);
+      const coming = !!world.chars[o.id].states[o.state].move?.active || game.projectiles.some((pr) => pr.owner === o.id && !world.chars[o.id].projectiles[pr.kind].noHit);
+      const g = art.guard[st.stance];
+      if (g && coming && (dir === 4 || dir === 1 || dir === 7) && Math.abs(o.x - p.x) <= art.guard.range * UNIT) return { ...fr, sprite: { block: g.sprite, index: g.index } };
+    }
+    if (art.byVy && fr.sprite && art.byVy.states.includes(p.state)) {
+      const vy = p.vy / UNIT;
+      const row = art.byVy.pick.find((r) => r.above === undefined || vy > r.above);
+      return { ...fr, sprite: { ...fr.sprite, index: row.index } };
+    }
+    return fr;
+  }
+
+  /** Avner's lantern: its moon shows his Devotion (one drawing per full bar), and an effect can be pinned to it. */
+  function lanternAt(p, def, shown) {
+    const L = def.art?.lantern;
+    const s = shown.sprite;
+    const sheet = s && (s.block ?? def.sheets[s.sheet]);
+    const at = L && sheet && L.at[sheet.image]?.[s.index];
+    return at ? toScreen(p.x + p.facing * at[0] * UNIT, p.y + at[1] * UNIT) : null;
+  }
+  function drawLantern(p, def, shown) {
+    const at = lanternAt(p, def, shown);
+    if (!at) return;
+    const L = def.art.lantern;
+    const bars = Math.min(L.sprite.count - 1, Math.floor((p.meter * (def.stats?.meterBars ?? 4)) / Math.max(1, def.meterMax)));
+    drawSheetFrame(def, L.sprite, bars, at[0], at[1], p.facing);
+    // A move's pinned effect (the lantern flaring as the moon is called): from one drawing of the move on.
+    const st = def.states[p.state];
+    const pin = st.move?.pinFx, e = pin && def.effects[pin.effect];
+    if (!e) return;
+    const from = st.frames.findIndex((f) => f.sprite && f.sprite.index >= pin.fromSprite);
+    const t = p.frame - from;
+    const total = e.holds.reduce((a, b) => a + b, 0);
+    if (from < 0 || t < 0 || t >= total) return;
+    drawSheetFrame(def, e.sprite, heldFrame(e.holds, t, false)[0], at[0], at[1], p.facing);
   }
 
   /** Effects a state carries in step with its own drawings (a stance's aura behind, its light trail in front). */
@@ -372,7 +427,7 @@ export function createFightRenderer(ctx, W, H) {
       if (!d?.sprite) continue;
       const rel = d.anim?.release ?? [], loop = d.anim?.loop ?? [1];
       const relLen = rel.reduce((a, b) => a + b, 0);
-      const index = pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0];
+      const index = Math.min(d.sprite.count - 1, pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0]);
       const [x, y] = toScreen(...rootOf(pr, d));
       ctx.save();
       if (d.sprite.additive) ctx.globalCompositeOperation = 'lighter';
@@ -488,6 +543,8 @@ export function createFightRenderer(ctx, W, H) {
     const t = M.sheets[rule.trail];
     if (t) effects.push({ motion: t, follow: p.id, state: p.state, dy: y - p.y, x: p.x, y, facing, age: 0, life: 1 });
   }
+  /** How long a sheet effect lasts: its `holds` (frames per drawing), or one `hold` for every drawing. */
+  const lifeOf = (e) => (e.holds ? e.holds.reduce((a, b) => a + b, 0) : e.sprite.count * (e.hold ?? 3));
   function collect(game, world) {
     if (game.frame === collected) return;
     collected = game.frame;
@@ -497,7 +554,7 @@ export function createFightRenderer(ctx, W, H) {
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
         const at = named.at ?? [0, 0];
-        effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: named.sprite.count * (named.hold ?? 3) });
+        effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: lifeOf(named) });
       }
       if (c.type === 'projectileEnd') {
         // The projectile's impact frames play where it hit or vanished.
@@ -512,7 +569,7 @@ export function createFightRenderer(ctx, W, H) {
       // A move (or projectile) with its own hit effect (art) shows that instead of the generic spark.
       const src = world.chars[c.p];
       const fx = (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
-      if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
+      if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: lifeOf(fx) });
       // The universal sheet: a hit spark sized by the move's base damage (a counter hit goes one size up), or the
       // block flash, which curves toward the attacker.
       const isHit = c.type === 'hit' || c.type === 'counter' || c.type === 'witness';
@@ -555,7 +612,11 @@ export function createFightRenderer(ctx, W, H) {
     for (const p of game.players) {
       const was = lastMove[p.id];
       if (was && was.state !== p.state && p.state.endsWith('_ex')) slotPlay(SLOTS.cues?.ex, p, game);
+      const ex = exitArt[p.id];
+      if (ex && (!ex.rule.into.includes(p.state) || ++ex.t >= ex.total)) exitArt[p.id] = null;
       if (was && was.state !== p.state) {
+        const rule = world.chars[p.id].art?.exit?.find((r) => r.from === was.state && r.into.includes(p.state) && was.since >= (r.after ?? 0));
+        exitArt[p.id] = rule ? { rule, t: 0, total: rule.holds.reduce((a, b) => a + b, 0) } : null;
         const dx = p.x - was.x;
         if (FX.motion.leave[was.state]) motionFx(FX.motion.leave[was.state], p, dx);
         if (FX.motion.enter[p.state]) motionFx(FX.motion.enter[p.state], p, dx);
@@ -692,7 +753,7 @@ export function createFightRenderer(ctx, W, H) {
         drawAuras(p, def, game.frame, true);
         drawWhile(p, true);
         drawLayers(p, def, fr, true);
-        const shown = artFrame(p, def, fr);
+        const shown = ruleFrame(p, def, artFrame(p, def, fr), game, world);
         if (!drawSprite(p, def, shown, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
         else if (p.state.endsWith('_ex') && def.sheets[p.state]?.image === def.sheets[p.state.slice(0, -3)]?.image) {
           // An EX move with no art of its own: the normal animation, brightened.
@@ -702,6 +763,7 @@ export function createFightRenderer(ctx, W, H) {
           drawSprite(p, def, shown, pal);
           ctx.restore();
         }
+        drawLantern(p, def, shown);
         drawLayers(p, def, fr, false);
         drawAuras(p, def, game.frame, false);
         drawWhile(p, false);
@@ -758,7 +820,7 @@ export function createFightRenderer(ctx, W, H) {
           continue;
         }
         if (e.sheet) {
-          drawSheetFrame(e.def, e.sheet.sprite, Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
+          drawSheetFrame(e.def, e.sheet.sprite, e.sheet.holds ? heldFrame(e.sheet.holds, e.age, false)[0] : Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
           continue;
         }
         const t = e.age / e.life;
