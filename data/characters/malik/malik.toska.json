@@ -12,7 +12,7 @@
     "2L": ["5L", "2L", "5M", "2M", "5H", "backHeavy", "2H"],
     "5M": ["2M", "5H", "backHeavy", "2H"],
     "2M": ["5H", "backHeavy", "2H"],
-    "5H": ["2H"],
+    "5H": ["backHeavy", "2H"],
     "backHeavy": ["2H"],
     "j.L": ["j.L", "j.M", "j.H"],
     "j.M": ["j.H"]
@@ -62,7 +62,7 @@
     { "id": "2M", "name": "Crouching Medium", "input": "2M", "startup": 7, "active": 3, "recovery": 13,
       "damage": 550, "hitstun": 17, "blockstun": 13, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18, "guard": "low", "reach": 170,
       "starterProration": 9000,
-      "hitboxes": [[40, 12, 132, 28]],
+      "hitboxes": [[49, 14, 132, 28]],
       "sprite": { "image": "sheets/2M.png", "columns": 6, "rows": 1, "count": 6, "frameW": 490, "frameH": 276, "originX": 142, "originY": 274, "scale": 0.5, "holds": [2, 2, 2, 3, 6, 7] } },
     { "id": "2H", "name": "Sweep", "input": "2H", "startup": 9, "active": 3, "recovery": 22,
       "damage": 800, "hitstun": 22, "blockstun": 14, "hitstop": 12, "pushbackHit": 10, "pushbackBlock": 30, "selfPushback": 22, "guard": "low", "reach": 95,

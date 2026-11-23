@@ -316,3 +316,13 @@ test('Malik: Spirit Orb (236L) hits with the spin, then the orb leaves his hand 
   assert.equal(game.players[1].health, hp - 500);
   assert.equal(game.projectiles.length, 0);
 });
+
+test('Malik: Standing Heavy chains into Back Heavy on hit', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const game = createGame(world);
+  game.players[0].x = -px(30); game.players[1].x = px(30);
+  const seen = new Set(); let most = 0;
+  for (const raw of script('5+H 5*22 4+H 5*50')) { step(game, [raw, 0], world); seen.add(game.players[0].state); most = Math.max(most, game.players[1].combo?.hits ?? 0); }
+  assert.ok(seen.has('backHeavy'), 'Back Heavy came out of Standing Heavy');
+  assert.equal(most, 2, 'and it combos');
+});
