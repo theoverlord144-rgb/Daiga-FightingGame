@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['5H', '5L', '5M'], 'three punches so far');
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', 'backHeavy', 'j.H', 'j.L', 'j.M', 'spiritOrb']);
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -272,4 +272,47 @@ test('Malik: Standing Medium hits twice, on drawings 4 and 5; Standing Heavy hit
   most = 0;
   for (const raw of script('5+L 5*10 5+M 5*24 5+H 5*40')) { step(game, [raw, 0], world); most = Math.max(most, game.players[1].combo?.hits ?? 0); }
   assert.equal(most, 4, 'light, medium twice, heavy');
+});
+
+test('Malik: every new attack hits on the drawing Yahushua named, and every sheet exists', () => {
+  const c = loadChar('data/characters/malik/malik.toska.json');
+  // move -> the drawing (counted from 1) its hit lands on
+  const want = { '2L': 2, '2M': 4, '2H': 4, 'j.L': 3, 'j.M': 3, 'j.H': 3, backHeavy: 4, spiritOrb: 4 };
+  for (const [move, drawing] of Object.entries(want)) {
+    const st = c.states[move];
+    const hits = st.frames.filter((fr) => fr.hit.length);
+    assert.ok(hits.length > 0, move);
+    assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [drawing], move);
+    assert.equal(st.frames[st.move.startup - 1].hit.length > 0, true, move + ': first active frame');
+  }
+  for (const sheet of Object.values(c.sheets)) assert.ok(fs.existsSync('data/characters/malik/' + sheet.image), sheet.image);
+  for (const name of ['crouch', 'jumpSquat', 'jump', 'fall', 'land']) assert.ok(c.states[name].frames.every((fr) => fr.sprite), name + ' has art');
+  // Air Heavy: the spirit hand's drawing 4 (of 7) is on screen on the frame the hit comes out.
+  const jh = c.states['j.H'];
+  assert.deepEqual(jh.layers, [{ effect: 'spiritHand' }]);
+  const first = jh.move.startup - 1;
+  assert.equal(Math.floor((first * c.effects.spiritHand.sprite.count) / jh.duration) + 1, 4);
+});
+
+test('Malik: Spirit Orb (236L) hits with the spin, then the orb leaves his hand and hits from range', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  // Up close: the spin connects, then the orb: a two-hit combo.
+  let game = createGame(world);
+  game.players[0].x = -px(30); game.players[1].x = px(30);
+  let most = 0, spawned = -1;
+  for (const raw of script('2 3 6+L 5*60')) {
+    step(game, [raw, 0], world);
+    most = Math.max(most, game.players[1].combo?.hits ?? 0);
+    // Point blank the orb hits on the frame it appears, so look for it or for its ending.
+    if (spawned < 0 && (game.projectiles.length || game.cues.some((cue) => cue.type === 'projectileEnd'))) spawned = game.players[0].frame;
+  }
+  assert.equal(spawned, 14, 'the orb appears on drawing 5, right after the hit drawing');
+  assert.equal(most, 2);
+  // From range: only the orb reaches.
+  game = createGame(world);
+  game.players[0].x = -px(150); game.players[1].x = px(150);
+  const hp = game.players[1].health;
+  for (const raw of script('2 3 6+L 5*80')) step(game, [raw, 0], world);
+  assert.equal(game.players[1].health, hp - 500);
+  assert.equal(game.projectiles.length, 0);
 });
