@@ -203,9 +203,12 @@ test('Tide: a wave runs along the ground, farther by button; a touch drags the o
     const g = createGame(w);
     g.players[0].x = -px(150);
     g.players[1].x = px(150);
-    const p1 = script('5*4 2 1 4+M 5*18'), p2 = script('8 5*60');
-    let caught = false;
-    for (let i = 0; i < p1.length; i++) { step(g, [p1[i], p2[i] ?? 0], w); if (g.cues.some((c) => c.type === 'hit' && c.move === 'tideM')) caught = g.players[1].y > 0; }
+    const p1 = script('2 1 4+M 5*60'), p2 = script('8 5*90');
+    let caught = false, landed = false;
+    for (let i = 0; i < p1.length; i++) {
+      step(g, [p1[i], p2[i] ?? 0], w);
+      if (!landed && g.cues.some((c) => c.type === 'hit')) { caught = g.players[1].y > 0; landed = true; }
+    }
     assert.equal(caught, on, on ? 'switch on: caught in the air' : 'switch off: the wave passes under a jump');
   }
   assert.equal(A.projectiles.tideEx.move.hitsAirborne, true, 'EX always catches airborne opponents');
