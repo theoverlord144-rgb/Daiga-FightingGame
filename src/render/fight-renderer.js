@@ -342,6 +342,11 @@ export function createFightRenderer(ctx, W, H) {
 
   /** The frame to draw: a mechanic var with `art` swaps a state's drawings for another state's while it is above 0. */
   function artFrame(p, def, fr) {
+    // An absorbed hit shows the vow_absorb drawing for a moment, if the character has one.
+    if (p.state === 'vow_hold' && absorbUntil[p.id] > collected && def.sheets.vow_absorb) {
+      const st = def.states.vow_absorb;
+      return { ...fr, sprite: st.frames[Math.min(st.frames.length - 1, Math.max(0, collected - absorbUntil[p.id] + SLOTS.absorbPoseFrames))].sprite };
+    }
     for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
       const alt = v.art?.[p.state];
       const st = alt && p.vars?.[k] > 0 && def.states[alt];
@@ -407,6 +412,27 @@ export function createFightRenderer(ctx, W, H) {
   // slow display runs several steps between two draws and the cues of the earlier ones would be lost (effects and
   // sparks that never appear); draw() picks up the frame it sees if nobody did.
   let collected = -1;
+  // The universal systems' effect slots (data/system/effects.json "slots").
+  const SLOTS = FX.slots || { sheets: {}, absorbPoseFrames: 8, exTint: 0.45 };
+  const absorbUntil = [-1, -1]; // drawing only: the game frame until which a fighter shows the vow_absorb drawing
+  function slotFx(name, x, y, facing = 1) {
+    const s = SLOTS.sheets[name];
+    if (s) effects.push({ motion: s, x, y, facing, age: 0, life: s.sprite.count * s.hold });
+  }
+  const bodyOf = (p) => p.y + FX.motion.bodyY * UNIT;
+  function slotCue(c, game) {
+    const p = game.players[c.p];
+    if (!p) return;
+    if (c.type === 'absorb') {
+      const d = game.players[1 - c.p];
+      absorbUntil[d.id] = game.frame + SLOTS.absorbPoseFrames;
+      slotFx('vow_guard', d.x, bodyOf(d), d.facing);
+    } else if ((c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && String(c.move).startsWith('vow_strike')) slotFx('vow_strike', c.x, c.y, p.facing);
+    else if (c.type === 'burst') slotFx('absolve_burst', p.x, bodyOf(p), p.facing);
+    else if (c.type === 'repel') slotFx('repel_wave', p.x, bodyOf(p), p.facing);
+    else if (c.type === 'perfect') slotFx('perfect_flash', p.x, bodyOf(p), p.facing);
+    if (c.type === 'witness') slotFx('witness_flash', c.x, c.y, p.facing);
+  }
   const lastVars = [{}, {}]; // drawing only: last seen mechanic vars, to notice a mark running out
   const lastMove = [null, null]; // drawing only: last seen state and x, to notice a dash starting or a landing
   // Movement effects (dash dust, air dash burst and trail, landing dust): data/system/effects.json "motion".
@@ -426,6 +452,7 @@ export function createFightRenderer(ctx, W, H) {
     collected = game.frame;
     hud.notice(game);
     for (const c of game.cues) {
+      slotCue(c, game);
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
         const at = named.at ?? [0, 0];
@@ -484,6 +511,10 @@ export function createFightRenderer(ctx, W, H) {
     }
     for (const p of game.players) {
       const was = lastMove[p.id];
+      if (was && was.state !== p.state && p.state.endsWith('_ex')) slotFx('ex_flash', p.x, bodyOf(p), p.facing);
+      // The guard aura plays again and again while Vow is held.
+      const aura = SLOTS.sheets.vow_guard;
+      if (aura && p.state === 'vow_hold' && p.stateTime % (aura.sprite.count * aura.hold) === 0) slotFx('vow_guard', p.x, bodyOf(p), p.facing);
       if (was && was.state !== p.state) {
         const dx = p.x - was.x;
         if (FX.motion.leave[was.state]) motionFx(FX.motion.leave[was.state], p, dx);
@@ -597,7 +628,16 @@ export function createFightRenderer(ctx, W, H) {
         const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
         drawAuras(p, def, game.frame, true);
         drawLayers(p, def, fr, true);
-        if (!drawSprite(p, def, artFrame(p, def, fr), pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
+        const shown = artFrame(p, def, fr);
+        if (!drawSprite(p, def, shown, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
+        else if (p.state.endsWith('_ex') && def.sheets[p.state]?.image === def.sheets[p.state.slice(0, -3)]?.image) {
+          // An EX move with no art of its own: the normal animation, brightened.
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = SLOTS.exTint;
+          drawSprite(p, def, shown, pal);
+          ctx.restore();
+        }
         drawLayers(p, def, fr, false);
         drawAuras(p, def, game.frame, false);
         drawChain(p, def, game.players[1 - p.id]);

@@ -106,6 +106,7 @@ export function universalContent(system) {
       specialCancel: false, superCancel: false };
     states.vow_hold = { stance: 'stand', loop: true, duration: 60, vow: true };
     states.crumple = { stance: 'stand', stun: true, next: 'idle' };
+    states.vow_absorb = { stance: 'stand', duration: 6, next: 'vow_hold', vow: true }; // drawing only: shown for a moment on each absorbed hit
     for (const [id, m] of Object.entries(v.moves || {})) {
       moves[id] = { specialCancel: false, superCancel: false, ...m, kind: 'vow', vowStrike: true };
     }

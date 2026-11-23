@@ -244,6 +244,13 @@ Heights are pixels above the ground line.
   hit puts the opponent in the crumple). To give a character its own art or boxes for Vow, list a move with the id
   `vow_start`, `vow_strike_quick`, `vow_strike` or `vow_strike_full` (only the fields you write replace the
   universal ones), or a state `vow_hold` / `crumple` under `states`.
+- **Art slots of the universal systems.** Every character has these states and moves whether it lists them or not:
+  `vow_start`, `vow_hold`, `vow_absorb`, `vow_strike_quick`, `vow_strike`, `vow_strike_full`, `absolve`,
+  `absolve_air`, `absolve_recovery`, `absolve_recovery_air`, `repel`, `draw`, `drawn`, `crumple`. To give one its art,
+  list an entry in `moves` with that `id` and a `sprite` (nothing else is needed; the rules stay the universal ones).
+  For a move, the sprite's `holds` must add up to the move's length. `scripts/make-slot-placeholders.mjs` fills
+  every empty slot with a copy of one of the character's own sheets, named `sheets/<slot>-placeholder.png`.
+  Effect slots are in `data/system/effects.json` under `slots`.
 - **Rite** (the R button), top level of the character file:
   `"rite": { "gauge": { "charges": 3, "rechargeFrames": 240, "unlimitedWhile": "install" } | null, "moves": ["rite_5", ...] }`.
   `moves` lists ids of moves in the character's own `moves` whose input uses R (`5R`, `2R`, `6R`, `j.R`); they count

@@ -11,6 +11,20 @@
   "block": {
     "row": 3
   },
+  "slots": {
+    "notes": "Effect slots of the universal systems (drawing only). Each is a sheet in data/effects/ in the same format as the motion sheets below; the ones with 'placeholder' in the file name are drawn by scripts/make-slot-placeholders.mjs and wait for real art: put the new sheet in data/effects/ and change the slot's sprite here. When they play: vow_guard = around a fighter holding Vow (again and again while it is held) and on each absorbed hit; vow_strike = where a Vow strike lands; absolve_burst = on the fighter who Absolves; repel_wave = on the fighter who Repels; perfect_flash = on the attacker at a Perfect Link; witness_flash = where a Witness counter lands; ex_flash = on a fighter starting an EX move. absorbPoseFrames = how long the vow_absorb drawing shows after an absorbed hit. exTint = how strongly an EX move with no art of its own is brightened (0 to 1).",
+    "absorbPoseFrames": 8,
+    "exTint": 0.45,
+    "sheets": {
+      "vow_guard": { "sprite": { "image": "vow_guard-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2.2 }, "hold": 3, "additive": true },
+      "vow_strike": { "sprite": { "image": "vow_strike-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2 }, "hold": 3, "additive": true },
+      "absolve_burst": { "sprite": { "image": "absolve_burst-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 3.4 }, "hold": 3, "additive": true },
+      "repel_wave": { "sprite": { "image": "repel_wave-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2.8 }, "hold": 3, "additive": true },
+      "perfect_flash": { "sprite": { "image": "perfect_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 1.6 }, "hold": 3, "additive": true },
+      "witness_flash": { "sprite": { "image": "witness_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2.4 }, "hold": 3, "additive": true },
+      "ex_flash": { "sprite": { "image": "ex_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2 }, "hold": 3, "additive": true }
+    }
+  },
   "motion": {
     "notes": "Movement effects (drawing only). The renderer watches each fighter's state: \"enter\" plays a sheet when a state starts, \"leave\" when it ends. \"at\": \"feet\" is the floor under the fighter, \"body\" is bodyY px above their feet. \"trail\" loops on the fighter for as long as the state lasts. \"back\": true draws it facing the other way (a move that travels backward). \"byDrift\" picks by which way the fighter was travelling: [forward, still, backward]. \"alpha\" thins a sheet. A fighter that jumped more than driftMax px in one frame was placed, not moving (a reset): it counts as still. Dust is drawn as painted and fades on its last drawing; \"additive\" sheets are drawn as light.",
     "bodyY": 95,

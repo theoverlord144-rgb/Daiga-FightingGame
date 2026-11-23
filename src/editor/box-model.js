@@ -14,6 +14,9 @@ const moveId = (m) => m.id ?? m.input ?? m.name;
 export function stateInfo(raw, system, name) {
   const moveIndex = raw.moves.findIndex((m) => moveId(m) === name);
   if (universalContent(system).states[name]) return { type: 'system', moveIndex };
+  // A universal move (Vow's strikes, Absolve) that the character only gives art to is still the universal one.
+  const artOnly = moveIndex >= 0 && Object.keys(raw.moves[moveIndex]).every((k) => k === 'id' || k === 'name' || k === 'sprite');
+  if (artOnly && universalContent(system).moves[name]) return { type: 'universal', moveIndex: -1 };
   if (moveIndex >= 0) return { type: 'move', moveIndex };
   if (raw.states?.[name]) return { type: 'own', moveIndex: -1 };
   // An EX version (<move>_ex): the move's `ex` overrides laid over the move itself.
