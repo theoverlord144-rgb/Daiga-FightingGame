@@ -5,7 +5,7 @@ import { createGame, step } from '../src/core/game.js';
 import { CONTACT, enterState } from '../src/core/fighter.js';
 import { worldBox, gutsDamage, cornered } from '../src/core/combat.js';
 import { RAW } from '../src/core/input.js';
-import { px } from '../src/core/fixed.js';
+import { px, pct } from '../src/core/fixed.js';
 import { loadWorld, SYSTEM } from './helpers.js';
 
 // A test character with one move per rule. Hurtboxes are the defaults: standing [-30, 0, 60, 160].
@@ -167,14 +167,16 @@ test('knockdown moves knock a standing opponent down', () => {
 
 // ---------- Counter hit, clash, trade, armor ----------
 
+// A counter hit used to add 4 frames of hitstun. The owner's universal systems spec (section 10) made it +20%
+// (tests/witness-link.test.js has the full set, with Witness counters).
 test('counter hit: hitting a fighter mid-move adds hitstun and hitstop', () => {
   const g = setup();
   arrange(g, 1, 'slow', 3); // P2 in the startup of a slow move: counter-hit state
   strike(g, '5L');
   const d = g.players[1];
   assert.equal(g.cues[0].type, 'counter');
-  assert.equal(d.stun, 12 + W.battle.counterHit.hitstunAdd);
-  assert.equal(d.hitstop, 8 + W.battle.counterHit.hitstopAdd);
+  assert.equal(d.stun, pct(12, W.sys.counter.hitstunPct));
+  assert.equal(d.hitstop, 8 + W.sys.counter.hitstopAdd);
 });
 
 test('clash: hitboxes meet, neither reaches a hurtbox', () => {

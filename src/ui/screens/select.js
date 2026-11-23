@@ -53,7 +53,7 @@ export function createSelectScreen(app, { mode = 'versus', last = null } = {}) {
           else { app.go('title', { index: { versus: 0, cpu: 1, training: 2 }[mode] }); return; }
           menu[0].back = false;
         } else if (sides[i].done) sides[i].done = false;
-        else { app.go('title', { index: 0 }); return; }
+        else { app.go('sides', {}); return; }
       }
       for (const i of [0, 1]) {
         const s = sides[i];

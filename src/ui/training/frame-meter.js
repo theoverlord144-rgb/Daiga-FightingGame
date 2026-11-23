@@ -8,7 +8,7 @@
 import { frameOf } from '../../core/character.js';
 
 /** States in which a fighter is stuck because they were hit, blocked or knocked down. */
-export const STUN_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'wakeup',
+export const STUN_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'wakeup', 'crumple', 'repel', 'draw', 'drawn',
   'blockStand', 'blockCrouch', 'blockAir', 'thrown']);
 
 /** Frame advantage straight from the data: hitstun (or blockstun) minus the attacker's frames left after contact. */
@@ -102,7 +102,7 @@ export function createFrameMeter({ length = 80 } = {}) {
 
     // Advantage: from a hit or block, the first frame each side can act again.
     for (const c of game.cues) {
-      if ((c.type !== 'hit' && c.type !== 'counter' && c.type !== 'block') || c.throw) continue;
+      if ((c.type !== 'hit' && c.type !== 'counter' && c.type !== 'witness' && c.type !== 'block') || c.throw) continue;
       adv = { attacker: c.p, kind: c.type === 'block' ? 'block' : 'hit', move: c.move, start: game.frame,
         aFree: null, dFree: null, value: null, done: false, note: null };
     }

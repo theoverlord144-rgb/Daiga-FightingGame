@@ -28,67 +28,79 @@ const states = (g, s, who = 0) => script(s).map((r) => { step(g, who === 0 ? [r,
 
 // ---------- Meter ----------
 
-test('meter builds on hit, on block and on whiff by the amounts in the data; the defender builds from damage', () => {
-  const N = M.gain.normal;
+// This test used to pin the old meter (fixed amounts per move kind, whiff meter, the defender building half the
+// damage). The owner's universal systems spec, section 2, replaced those rules; tests/devotion.test.js covers every
+// source and archetype. Here: the same jab, by the new rules, in Devotion points (100 units each).
+test('Devotion builds from damage dealt, from a blocked hit and from health lost; a whiff builds nothing', () => {
+  const D = 100;
   let g = setup(600);
   run(g, '5+L 5*20');
-  assert.equal(g.players[0].meter, N.whiff, 'whiffed jab');
+  assert.equal(g.players[0].meter, 0, 'whiffed jab: nothing');
   g = setup();
   run(g, '5+L 5*20');
-  assert.equal(g.players[0].meter, N.hit, 'jab hit (no whiff meter on top)');
-  assert.equal(g.players[1].meter, pct(400, M.victimGainPct), 'defender: half the 400 damage');
+  assert.equal(g.players[0].meter, 12 * D, 'jab hit: 400 damage is 4% of 10000 health, 3 per 1%');
+  assert.equal(g.players[1].meter, 8 * D, 'the defender: 2 per 1% of their health lost');
   g = setup();
   run(g, '5+L 5*20', '6*25');
   assert.equal(g.players[1].state.startsWith('block') || g.players[1].state === 'walkB' || g.players[1].state === 'idle', true);
-  assert.equal(g.players[0].meter, N.block, 'jab blocked');
-  assert.equal(g.players[1].meter, 0, 'blocking builds nothing for the defender');
-  // Specials build their own (larger) amounts.
+  assert.equal(g.players[0].meter, 4 * D, 'jab blocked: 1 per 1% it would have done');
+  assert.equal(g.players[1].meter, 0, 'blocking builds nothing for a balanced defender');
+  // Doing a special gives 5, and its hit builds from its damage like any other.
   g = setup();
   run(g, '2 3 6+L 5*40');
-  assert.equal(g.players[0].meter, M.gain.special.hit);
+  assert.equal(g.players[0].meter, 5 * D + 24 * D, '5 for the special, then 800 damage = 8% x 3');
 });
 
 test('a move can set its own meter gain, and meter never passes the maximum', () => {
   const c = compileCharacter({ engine: 'Toska', version: 2, character: { id: 'x', stats: { meterBars: 1 } }, moves: [
-    { id: '5L', input: '5L', startup: 3, active: 2, recovery: 5, damage: 100, hitstun: 30, hitboxes: [[0, 50, 200, 100]], meter: { hit: 4000 } },
+    { id: '5L', input: '5L', startup: 3, active: 2, recovery: 5, damage: 100, hitstun: 30, hitboxes: [[0, 50, 200, 100]], meter: { hit: 40 } },
   ] }, SYSTEM);
   const w = loadWorld(c, c);
   const g = createGame(w);
   g.players[0].x = -px(40); g.players[1].x = px(40);
-  for (const r of script('5+L 5*12 5+L 5*12 5+L 5*12 5+L 5*12')) step(g, [r, 0], w);
+  for (const r of script('5+L 5*12 5+L 5*12')) step(g, [r, 0], w);
+  assert.equal(g.players[0].meter, 8000, 'two hits at the 40 Devotion the move names (not the 3 its damage would give)');
+  for (const r of script('5+L 5*12 5+L 5*12')) step(g, [r, 0], w);
   assert.equal(c.meterMax, 10000);
   assert.equal(g.players[0].meter, 10000, 'capped at one bar');
 });
 
 // ---------- Specials, EX, chords ----------
 
-test('specials come out from motions; the EX version needs meter and costs it', () => {
+// The EX input was motion + two attack buttons for half a bar (236LM). The owner's universal systems spec
+// (docs/specs/universal-systems.md, sections 1 and 3) replaced it: motion + attack button + S, one full bar.
+test('specials come out from motions; the EX version (attack + S) needs a full bar and costs it', () => {
+  assert.equal(M.exCost, M.barSize, 'an EX costs one bar');
   let g = setup(300);
   assert.ok(states(g, '2 3 6+L 5').includes('236L'));
   g = setup(300);
-  assert.ok(states(g, '2 3 6+LM 5').includes('236L'), 'no meter: the EX input gives the plain version');
+  assert.ok(states(g, '2 3 6+LS 5').includes('236L'), 'no meter: the EX input gives the plain version');
+  g = setup(300);
+  g.players[0].meter = M.exCost - 1;
+  assert.ok(states(g, '2 3 6+LS 5').includes('236L'), 'just short of a bar: still the plain version');
+  assert.equal(g.players[0].meter, M.exCost - 1 + M.gain.special, 'nothing is spent (and the special gives its 5)');
   g = setup(300);
   g.players[0].meter = 12000;
-  assert.ok(states(g, '2 3 6+LM 5').includes('236LM'));
+  assert.ok(states(g, '2 3 6+LS 5').includes('236L_ex'));
   assert.equal(g.players[0].meter, 12000 - M.exCost);
 });
 
 test('a chord works with the buttons up to chordWindow frames apart, in either order; not further apart', () => {
   const W8 = W.input.chordWindow;
   for (const gap of [0, 1, 2, W8]) {
-    for (const [first, second] of [['L', 'M'], ['M', 'L']]) {
+    for (const [first, second] of [['L', 'S'], ['S', 'L']]) {
       const g = setup(300);
       g.players[0].meter = 10000;
       const seq = gap === 0 ? `2 3 6+${first}${second} 5*40` : `2 3 6+${first} ${gap > 1 ? `6*${gap - 1} ` : ''}6+${second} 5*40`;
       const seen = states(g, seq);
-      assert.ok(seen.includes('236LM'), `${first} then ${second}, ${gap} apart: ${[...new Set(seen)].join(' ')}`);
-      assert.equal(g.players[0].meter, 10000 - M.exCost + M.gain.special.whiff, 'paid once (then whiff meter when it ended)');
+      assert.ok(seen.includes('236L_ex'), `${first} then ${second}, ${gap} apart: ${[...new Set(seen)].join(' ')}`);
+      assert.equal(g.players[0].meter, 10000 - M.exCost, 'paid once, and the EX gives no Devotion for being a special');
     }
   }
   const g = setup(300);
   g.players[0].meter = 10000;
-  const seen = states(g, `2 3 6+L 6*${W8 + 1} 6+M 5*20`);
-  assert.ok(!seen.includes('236LM'), 'too far apart');
+  const seen = states(g, `2 3 6+L 6*${W8 + 1} 6+S 5*20`);
+  assert.ok(!seen.includes('236L_ex'), 'too far apart');
 });
 
 test('supers: a super flash freezes the whole game, and presses made during it come out right after', () => {
@@ -97,7 +109,7 @@ test('supers: a super flash freezes the whole game, and presses made during it c
   run(g, '2 3 6 2 3 6+H');
   const [a, d] = g.players;
   assert.equal(a.state, 'super');
-  assert.equal(a.meter, 0, 'a full bar spent');
+  assert.equal(a.meter, 0, 'one bar spent (a level 1 super)');
   const flash = g.flash;
   assert.ok(flash > 0);
   const before = hashState({ ...g, frame: 0, flash: 0, cues: [], players: g.players.map((p) => ({ ...p, input: null, freezeAge: 0 })) });
@@ -114,7 +126,7 @@ test('supers: a super flash freezes the whole game, and presses made during it c
 
 test('specials super-cancel on hit; normals special-cancel', () => {
   const g = setup(80);
-  g.players[0].meter = 10000;
+  g.players[0].meter = 20000;
   // The super's input is finished before 236L connects; it stays buffered through the hitstop and comes out after.
   const seen = states(g, '5+M 5*7 2 3 6+L 5*8 2 3 6 2 3 6+H 5*20');
   const order = [...new Set(seen)];
@@ -182,82 +194,94 @@ test('mechanic gauge, per-frame ticks, on-hit effects and requirements, all from
     moves: [{ id: 'x', input: '5L', startup: 1, timeline: [{ at: 0, addVar: { typo: 1 } }] }] }, SYSTEM), /var "typo"/);
 });
 
-// ---------- Burst ----------
+// ---------- Absolve (was: burst) ----------
+
+// These tests pinned the old burst: H+S, free, a launching hit. The owner's universal systems spec, section 7,
+// replaced it with Absolve: R+S, 200 Devotion, once per round, a knock back of half a screen. The same checks, by
+// the new rules; tests/absolve-guard.test.js has the full set (costs, the slate wipe, the bait).
 
 function comboedDummy() {
   const g = setup();
+  g.players[1].meter = 300 * 100; // Devotion to pay for it
   run(g, '5+M 5*7'); // 5M connects on its 6th frame
   assert.equal(g.players[1].state, 'hitStand');
   return g;
 }
 
-test('burst: from a combo with a full gauge, H+S breaks out and knocks the attacker away', () => {
+test('Absolve: from a combo with the gauge full, R+S breaks out and knocks the attacker away', () => {
   const g = comboedDummy();
   const [a, d] = g.players;
   assert.ok(d.combo);
-  run(g, '5', '5+HS'); // pressed during hitstop: it comes out the moment hitstop ends
+  const x = a.x;
+  run(g, '5', '5+RS'); // pressed during hitstop: it comes out the moment hitstop ends
   run(g, '5*10');
-  assert.equal(d.state, 'burst');
+  assert.equal(d.state, 'absolve');
   assert.equal(d.burst, 0, 'the gauge is spent');
   assert.equal(d.combo, null, 'the combo is over');
   run(g, '5*20');
-  assert.equal(a.state, 'hitAir', 'the attacker was blown away');
-  assert.ok(a.y > 0);
+  assert.equal(a.state, 'hitStand', 'the attacker was knocked away');
+  assert.ok(x - a.x > px(300), 'far back');
 });
 
-test('burst is invincible: it beats the attacker\'s next hit', () => {
+test('Absolve is invincible: it beats the attacker\'s next hit', () => {
   const g = comboedDummy();
   const [a, d] = g.players;
-  // Player 1 has 5M still running and chains 5H; Player 2 bursts at the same moment.
-  run(g, '5+H', '5+HS');
+  // Player 1 has 5M still running and chains 5H; Player 2 Absolves at the same moment.
+  run(g, '5+H', '5+RS');
   run(g, '5*10');
-  assert.equal(d.state, 'burst');
+  assert.equal(d.state, 'absolve');
   const hp = d.health;
   run(g, '5*20');
-  assert.equal(d.health, hp, 'the burst took no damage');
-  assert.equal(a.state, 'hitAir');
+  assert.equal(d.health, hp, 'the Absolve took no damage');
+  assert.equal(a.state, 'hitStand');
 });
 
-test('no burst without a full gauge, outside a combo, or with the wrong buttons', () => {
+test('no Absolve without a full gauge, outside a combo, or with the wrong buttons', () => {
   let g = comboedDummy();
   g.players[1].burst = B.gaugeMax - 1;
-  run(g, '5', '5+HS');
-  assert.notEqual(g.players[1].state, 'burst', 'gauge not full');
+  run(g, '5', '5+RS');
+  assert.notEqual(g.players[1].state, 'absolve', 'gauge not full');
   g = setup(200);
-  run(g, '5', '5+HS');
-  assert.notEqual(g.players[1].state, 'burst', 'not being comboed');
-  g = comboedDummy();
-  run(g, '5', '5+LM');
-  assert.notEqual(g.players[1].state, 'burst', 'wrong buttons');
+  g.players[1].meter = 300 * 100;
+  run(g, '5', '5+RS');
+  assert.notEqual(g.players[1].state, 'absolve', 'not being comboed');
+  for (const wrong of ['5+LM', '5+HS']) { // H+S was the old burst
+    g = comboedDummy();
+    run(g, '5', wrong);
+    run(g, '5*10');
+    assert.notEqual(g.players[1].state, 'absolve', `wrong buttons: ${wrong}`);
+  }
 });
 
-test('air burst while juggled hangs in the air', () => {
+test('air Absolve while juggled hangs in the air', () => {
   const g = setup();
+  g.players[1].meter = 300 * 100;
   run(g, '5+S 5*20');
   const d = g.players[1];
   assert.equal(d.state, 'hitAir');
-  run(g, '5', '5+HS');
-  assert.equal(d.state, 'burstAir');
+  run(g, '5', '5+RS');
+  assert.equal(d.state, 'absolve_air');
   const y = d.y;
   run(g, '5*6');
-  assert.equal(d.y, y, 'no gravity during the burst');
+  assert.equal(d.y, y, 'no gravity during it');
 });
 
-test('the burst rules are data: a version with burst disabled never bursts', () => {
+test('the Absolve rules are data: a version with it disabled never Absolves', () => {
   const w = { ...W, burst: { ...W.burst, enabled: false } };
   const g = createGame(w);
   g.players[0].x = -px(30); g.players[1].x = px(30);
+  g.players[1].meter = 300 * 100;
   for (const r of script('5+M 5*7')) step(g, [r, 0], w);
-  for (const r of script('5+HS 5*3')) step(g, [0, r], w);
-  assert.notEqual(g.players[1].state, 'burst');
-  assert.notEqual(g.players[1].state, 'burstAir');
+  for (const r of script('5+RS 5*3')) step(g, [0, r], w);
+  assert.notEqual(g.players[1].state, 'absolve');
+  assert.notEqual(g.players[1].state, 'absolve_air');
 });
 
 // ---------- Rollback safety ----------
 
 test('sync test with specials, EX, supers, chains, the mechanic and burst: identical after every 8-frame rewind', () => {
   const rnd = lcg(808);
-  const plans = ['2 3 6+L', '2 3 6+LM', '2 3 6 2 3 6+H', '2 1 4+L 5*6 5+L 5*6 5+L', '2 5 2+S', '2 3 6+S', '6 2 3+H', '5+M', '2+L', '5+S', '5+HS', '6*10', '4*6', '9', '5*4'];
+  const plans = ['2 3 6+L', '2 3 6+LS', '2 3 6+MS', '5+LS', '5+S 5+M', '5+R', '2 3 6 2 3 6+H', '2 1 4+L 5*6 5+L 5*6 5+L', '2 5 2+S', '2 3 6+S', '6 2 3+H', '5+M', '2+L', '5+S', '5+RS', '6*10', '4*6', '9', '5*4'];
   const queues = [[], []];
   let flashes = 0;
   let bursts = 0;
@@ -266,7 +290,9 @@ test('sync test with specials, EX, supers, chains, the mechanic and burst: ident
     for (const c of g.cues) { if (c.type === 'superflash') flashes++; if (c.type === 'burst') bursts++; }
     for (const i of [0, 1]) {
       const p = g.players[i];
-      if (p.meter < 10000 && rnd() % 50 === 0) p.meter += 0; // (no cheating: meter comes from play)
+      // Both start the run with two bars (set before the first step, so every rewind sees it), so supers and EX
+      // moves happen early. After that, meter only comes from play.
+      if (g.frame === 0) p.meter = 20000;
       if (!queues[i].length) {
         let raws = script(plans[rnd() % plans.length]);
         if (p.facing < 0) raws = raws.map((x) => (x & ~3) | ((x & 1) << 1) | ((x & 2) >> 1));

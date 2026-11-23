@@ -3,17 +3,20 @@ import { createStageRenderer } from '../../render/stage-renderer.js';
 import { drawMenu, title, hint, FONT, DIM, GOLD } from './common.js';
 
 const ITEMS = [
-  { label: 'VERSUS', go: ['select', { mode: 'versus' }] },
+  { label: 'VERSUS', go: ['sides', {}] },
   { label: 'VERSUS CPU', go: ['select', { mode: 'cpu' }] },
   { label: 'TRAINING', go: ['select', { mode: 'training' }] },
   { label: 'SETTINGS', go: ['settings', {}] },
 ];
+// The box editor writes character files through the dev server, so it is only offered there (npm run dev).
+if (import.meta.env.DEV) ITEMS.push({ label: 'BOX EDITOR', go: ['editor', {}] });
 
 export function createTitleScreen(app, { index = 0 } = {}) {
   const { ctx, W, H } = app;
   const bg = createStageRenderer(app.stage, W, H, H - 70, app.battle.stage.halfWidth);
   let sel = index;
   let t = 0;
+  app.devices.setSeats(null); // back at the title: every device steers the menus again
   return {
     help: '',
     step(menu) {

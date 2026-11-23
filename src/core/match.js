@@ -115,6 +115,7 @@ function endRound(game, world) {
   m.ko = [false, false];
   game.flash = 0;
   game.flashBy = -1;
+  game.projectiles = [];
   for (const p of game.players) {
     const def = world.chars[p.id];
     const keep = { input: p.input, meter: p.meter, burst: p.burst };

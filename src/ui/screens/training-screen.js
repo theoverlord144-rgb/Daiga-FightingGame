@@ -3,6 +3,7 @@ import { step } from '../../core/game.js';
 import { createTraining } from '../training/training.js';
 import { createFrameMeter } from '../training/frame-meter.js';
 import { drawTrainingOverlay } from '../training/overlay.js';
+import { createSystemsReadout } from '../training/systems-readout.js';
 import { openTrainingPanel, loadTrainingSettings } from '../training/training-panel.js';
 import { drawMenu, shade, title, hint } from './common.js';
 
@@ -13,6 +14,7 @@ export function createTrainingScreen(app, { picks }) {
   const world = app.makeWorld(app.chars[picks[0].id], app.chars[picks[1].id], null);
   const training = createTraining(world, loadTrainingSettings());
   const meter = createFrameMeter();
+  const readout = createSystemsReadout();
   const palettes = picks.map((p) => p.pal);
   let game = training.newGame();
   let paused = false;
@@ -46,10 +48,11 @@ export function createTrainingScreen(app, { picks }) {
       app.renderer.notice(game, world);
       training.afterStep(game);
       meter.update(game, world);
+      readout.update(game, world);
     },
     draw() {
       app.renderer.draw(game, world, { ...app.opts, stage: app.stage, palettes, marks: true });
-      if (app.opts.meter) drawTrainingOverlay(ctx, W, H, meter, training);
+      if (app.opts.meter) drawTrainingOverlay(ctx, W, H, meter, training, readout, game);
       app.drawHistories(game);
       if (paused) {
         shade(ctx, W, H);

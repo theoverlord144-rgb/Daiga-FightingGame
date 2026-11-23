@@ -1,5 +1,5 @@
 {
-  "notes": "States every character has. 'free' = the player can act. 'loop' = repeats until something changes it. 'stun' = lasts as long as the fighter's stun counter (hitstun, blockstun). Characters override any of these. throwVictim: the engine applies the pending throw when this state ends. Durations, timeline frames (at, from, to, for) and cancel windows can name a stat with @. tumble = the untechable time is over: any button air-techs (airTech).",
+  "notes": "States every character has. 'free' = the player can act. 'loop' = repeats until something changes it. 'stun' = lasts as long as the fighter's stun counter (hitstun, blockstun). Characters override any of these. throwVictim: the engine applies the pending throw when this state ends. Durations, timeline frames (at, from, to, for) and cancel windows can name a stat with @. tumble = the untechable time is over: any button air-techs (airTech). groundTech = the tech out of a combo that has run past combo.json techOutAt, on the ground (a short invincible hop back).",
   "states": {
     "idle": {"stance": "stand", "free": true, "loop": true, "duration": 60},
     "crouch": {"stance": "crouch", "free": true, "loop": true, "duration": 60},
@@ -24,6 +24,7 @@
     "hitAir": {"stance": "air", "stun": true, "next": "tumble", "keepVel": true, "landTo": "knockdown"},
     "tumble": {"stance": "air", "loop": true, "duration": 60, "techable": true, "landTo": "knockdown"},
     "airTech": {"stance": "air", "duration": "@airTech", "next": "fall", "timeline": [{"at": 0, "vel": {"x": -2, "y": 5}}, {"from": 0, "for": "@airTechInvuln", "invuln": {"strike": true, "throw": true}}]},
+    "groundTech": {"stance": "stand", "duration": 16, "next": "idle", "timeline": [{"at": 0, "vel": {"x": -5}}, {"at": 8, "vel": {"x": 0}}, {"from": 0, "for": 12, "invuln": {"strike": true, "throw": true}}]},
     "blockStand": {"stance": "stand", "stun": true, "next": "idle"},
     "blockCrouch": {"stance": "crouch", "stun": true, "next": "crouch"},
     "blockAir": {"stance": "air", "stun": true, "next": "fall", "keepVel": true},

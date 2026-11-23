@@ -16,7 +16,9 @@ test('sync test: 6000 frames of real fighting, rewinding 8 frames every frame, n
   const inputs = fightInputs(11);
   let hits = 0;
   const r = runSyncTest(W, (g) => {
-    hits += g.cues.filter((c) => c.type === 'hit' || c.type === 'block').length;
+    // Every kind of contact counts: since the universal systems, a hit can also be reported as a counter, a Witness
+    // counter, or a hit absorbed by Vow's guard (random button presses hold M+H often).
+    hits += g.cues.filter((c) => ['hit', 'counter', 'witness', 'block', 'absorb'].includes(c.type)).length;
     return inputs(g);
   }, { frames: 6000, distance: 8 });
   assert.ok(r.ok, `desync at frame ${r.failFrame}: ${r.diff}`);

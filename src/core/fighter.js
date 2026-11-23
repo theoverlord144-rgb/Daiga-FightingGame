@@ -4,11 +4,71 @@
 //   land              -> touching the ground ends air states
 // All fighter data lives on the player object in the game state; the character definition is read-only.
 
-import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow, chordWithin, motionAt } from './input.js';
+import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow, chordWithin, motionAt, held as isHeld } from './input.js';
 import { pct } from './fixed.js';
 
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
-const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3 };
+const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3, R: 4 };
+const ATTACK = ['L', 'M', 'H'];
+/** Is the Rite gauge unlimited right now (the character's `unlimitedWhile` var is running)? */
+export const riteUnlimited = (p, def) => !!def.rite?.gauge?.unlimitedWhile && (p.vars[def.rite.gauge.unlimitedWhile] | 0) > 0;
+
+/** The Rite gauge refills one charge at a time, each taking rechargeFrames. */
+export function tickRite(p, def) {
+  const g = def.rite?.gauge;
+  if (!g) return;
+  if (p.rite >= g.charges) { p.riteTimer = 0; return; }
+  if (++p.riteTimer >= g.rechargeFrames) { p.rite++; p.riteTimer = 0; }
+}
+
+/** The button pairs that Repel or Draw during blockstun: any two of the three attack buttons. */
+const GUARD_PAIRS = [['M', 'H'], ['L', 'M'], ['L', 'H']];
+
+/**
+ * Apply this frame's Repel and Draw requests (p.guardAct), after both fighters have advanced and decided.
+ * Repel: the attacker slides far away; free; locked out for a while after. Draw: costs Devotion; an attacker on
+ * the ground and in an attack is pulled a step closer and left at a disadvantage; otherwise nothing happens.
+ */
+export function resolveGuardActions(game, world) {
+  for (const p of game.players) {
+    const act = p.guardAct;
+    if (!act) continue;
+    p.guardAct = 0;
+    const opp = game.players[1 - p.id];
+    const def = world.chars[p.id];
+    const odef = world.chars[opp.id];
+    const away = opp.x > p.x || (opp.x === p.x && p.facing > 0) ? 1 : -1; // from the defender toward the attacker
+    const stun = p.stun;
+    if (act === 1) {
+      const R = world.sys.repel;
+      p.repelAt = game.frame;
+      startSlide(opp, away * R.push, R.frames);
+      enterState(p, def, 'repel');
+      p.stun = Math.max(1, stun); // the blockstun runs on as it was
+      gainDevotion(game, p, def, def.devotion.extras.repel, 'repel');
+      game.cues.push({ p: p.id, type: 'repel', x: p.x, y: p.y });
+      continue;
+    }
+    const D = world.sys.draw;
+    p.meter = Math.max(0, p.meter - D.cost);
+    const ost = odef.states[opp.state];
+    const works = !!ost.move && ost.move.active > 0 && !isAirborne(odef, opp);
+    if (works) {
+      p.drawAt = game.frame;
+      const gap = Math.abs(opp.x - p.x);
+      startSlide(opp, -away * Math.max(0, Math.min(D.step, gap - D.minGap)), D.frames);
+      enterState(opp, odef, 'drawn');
+      opp.stun = D.stun + D.advantage;
+      opp.hitstop = 0;
+      enterState(p, def, 'draw');
+      p.stun = D.stun;
+    }
+    game.cues.push({ p: p.id, type: 'draw', x: p.x, y: p.y, whiffed: !works });
+  }
+}
+
+/** Hitstun states a fighter can tech out of once the combo has run past combo.json techOutAt. */
+const TECH_OUT_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'crumple']);
 
 /** Fighter fields, merged into a player object. */
 export function createFighter(def, side, x) {
@@ -21,6 +81,7 @@ export function createFighter(def, side, x) {
     facing: side === 0 ? 1 : -1,
     state: 'idle',
     frame: 0,
+    stateTime: 0, // frames spent in the current state, loops included (held stances time out on it)
     stun: 0,
     hitstop: 0,
     freezeAge: 0, // hitstop frames since this fighter last acted: presses made during hitstop stay buffered
@@ -28,7 +89,20 @@ export function createFighter(def, side, x) {
     contact: CONTACT.NONE,
     hitsDone: 0, // bitmask of this move's hit ids that already connected (multi-hit moves)
     armorUsed: 0,
-    consumed: [-1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
+    consumed: [-1, -1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
+    viaCancel: 0, // 1 = the current move was cancelled into (not started from a free state)
+    string: {}, // reverse beat: how many times each normal has come out in the current string of chained normals
+    hsEnd: -1, // the game frame this fighter came out of the hitstop of its current move's hit (-1 = it hasn't)
+    hsLen: 0, // how long that hitstop was
+    link: 0, // 1 = the current move was a Perfect Link: its first hit adds nothing to the combo's scaling
+    debt: 0, // Vow: damage absorbed and still owed (health units)
+    debtRate: 0, // how much of it drains away per frame once Vow is over
+    atkFrame: -1000, // the last game frame this fighter was in an attack's active or recovery frames
+    repelAt: -1000, // the game frame of this fighter's last Repel (its lockout counts from here)
+    drawAt: -1000, // the game frame of this fighter's last Draw that pulled the attacker in (for the punish refund)
+    rite: def.rite?.gauge ? def.rite.gauge.charges : 0, // Rite gauge: charges ready
+    riteTimer: 0, // frames into refilling the next charge
+    guardAct: 0, // this frame's request: 1 = Repel, 2 = Draw (resolved after both fighters have acted)
     jumpDir: 8,
     airJumpsUsed: 0,
     airDashesUsed: 0,
@@ -42,7 +116,8 @@ export function createFighter(def, side, x) {
     gbY: 0, // pending ground bounce (upward speed, units; 0 = none)
     throwBy: -1, // while being thrown: the attacker's id
     throwMove: '',
-    meter: def.stats.meterStart ?? 0, // super meter, units (a bar is meter.json barSize)
+    meter: def.meterStart ?? 0, // Devotion, game units (one point is 100 units; a bar is 10000)
+    spGain: 0, // Devotion the current move gave for being a special (taken back if it turns into its EX version)
     burst: 0, // burst gauge (set from burst.json when the game is created)
     gauge: def.mechanic?.gauge ? def.mechanic.gauge.start : 0, // the character mechanic's gauge
     vars: Object.fromEntries(Object.entries(def.mechanic?.vars || {}).map(([k, v]) => [k, v.start])), // its counters
@@ -63,6 +138,27 @@ export function applyResources(p, def, r) {
     const v = def.mechanic.vars[k];
     if (v) p.vars[k] = clampTo(p.vars[k] + n, v.min, v.max);
   }
+}
+
+/**
+ * Give a fighter Devotion from a named source. `give` = it came from the Give side (attacking): the opponent's
+ * current combo keeps the total, because Absolve wipes it. The combo it belongs to (the opponent's for Give, the
+ * fighter's own for Take) also keeps a tally per source, for the training readouts. Returns what was actually
+ * gained (the meter may be full).
+ */
+export function gainDevotion(game, p, def, amount, source, give = false) {
+  if (amount <= 0) return 0;
+  const before = p.meter;
+  applyResources(p, def, { meter: amount });
+  const got = p.meter - before;
+  if (got > 0) {
+    const c = give ? game.players[1 - p.id].combo : p.combo;
+    if (c) {
+      if (give) c.gave += got;
+      c.by[source] = (c.by[source] || 0) + got;
+    }
+  }
+  return got;
 }
 
 /** Do the fighter's resources satisfy a requirement { meter, gauge, vars: { name: [min, max] or min } }? */
@@ -93,15 +189,16 @@ export const isAirborne = (def, p) => def.states[p.state].stance === 'air';
 export function enterState(p, def, name) {
   const st = def.states[name];
   if (!st) throw new Error(`${def.id}: no state ${name}`);
-  // Leaving a move that never touched anyone: whiff meter and the move's on-whiff effects. (Not when the fighter
-  // is knocked out of it by a hit, a block or a throw: that's an interruption, not a whiff.)
+  // Leaving a move that never touched anyone: the move's on-whiff effects (a whiff builds no Devotion). Not when
+  // the fighter is knocked out of it by a hit, a block or a throw: that's an interruption, not a whiff.
   const old = def.states[p.state]?.move;
-  if (old && p.contact === CONTACT.NONE && p.hitsDone === 0 && !st.stun && !st.throwVictim) {
-    applyResources(p, def, { meter: old.meterGain.whiff });
-    applyResources(p, def, old.onWhiff);
-  }
+  if (old && p.contact === CONTACT.NONE && p.hitsDone === 0 && !st.stun && !st.throwVictim) applyResources(p, def, old.onWhiff);
   p.state = name;
   p.frame = 0;
+  p.stateTime = 0;
+  p.hsEnd = -1;
+  p.hsLen = 0;
+  p.link = 0;
   p.contact = CONTACT.NONE;
   p.hitsDone = 0;
   p.armorUsed = 0;
@@ -165,6 +262,13 @@ export function fireOnEnter(game, p, def) {
         startSlide(p, dist > 0 ? dir * dist : 0, v.frames);
         break;
       }
+      case 'spawn': {
+        // A projectile: its own object in the game state from here on (see combat.js).
+        const d = def.projectiles[v];
+        game.projectiles.push({ owner: p.id, kind: v, x: p.x + p.facing * d.spawn[0], y: (d.fromGround ? 0 : p.y) + d.spawn[1], facing: p.facing, age: 0 });
+        game.cues.push({ p: p.id, type: 'spawn', name: v, x: p.x, y: p.y, facing: p.facing });
+        break;
+      }
       case 'setVar':
         for (const [k, n] of Object.entries(v)) {
           const d = def.mechanic.vars[k];
@@ -178,7 +282,7 @@ export function fireOnEnter(game, p, def) {
 /** Is a command's direction/stance satisfied right now? */
 function stanceOk(cmd, def, p, dir) {
   if (cmd.air !== isAirborne(def, p)) return false;
-  if (cmd.motion) return true;
+  if (cmd.motion || cmd.anyDir) return true;
   const d = cmd.dir;
   if (d === '5') return cmd.air ? true : dir >= 4; // any non-down
   if (d === '2') return dir <= 3;
@@ -188,10 +292,11 @@ function stanceOk(cmd, def, p, dir) {
 /**
  * Is this command's input there? Returns the press frame per button used ({ L: frame, ... }) or null.
  * One button: the usual press (or release, for negative edge) within the buffer, after the motion if any.
- * Several buttons (a chord, e.g. EX 236LM): all pressed within chordWindow frames of each other.
+ * Several buttons (a chord, e.g. EX 236LS): all pressed within chordWindow frames of each other.
  */
-// reuse = true (EX upgrade only): a press already used by the move being upgraded may be used again.
-function commandInput(game, p, cmd, world, buffer, reuse = false) {
+// reuse = button letters whose press may be used again although the move being replaced already used it (EX
+// upgrades, and an S launcher swapped for what the attack button pressed with it asks for).
+function commandInput(game, p, cmd, world, buffer, reuse = '') {
   const inp = p.input;
   const rules = world.input;
   if (cmd.buttons.length === 1) {
@@ -201,7 +306,7 @@ function commandInput(game, p, cmd, world, buffer, reuse = false) {
       : pressedWithin(inp, BTN[b], buffer, cmd.negativeEdge);
     if (age < 0) return null;
     const f = game.frame - age;
-    return f < p.consumed[BTN_INDEX[b]] || (f === p.consumed[BTN_INDEX[b]] && !reuse) ? null : { [b]: f };
+    return f < p.consumed[BTN_INDEX[b]] || (f === p.consumed[BTN_INDEX[b]] && !reuse.includes(b)) ? null : { [b]: f };
   }
   const bs = [...cmd.buttons];
   const ch = chordWithin(inp, bs.map((b) => BTN[b]), buffer, rules.chordWindow ?? 3);
@@ -211,28 +316,58 @@ function commandInput(game, p, cmd, world, buffer, reuse = false) {
   for (let i = 0; i < bs.length; i++) {
     const f = game.frame - ch.ages[i];
     const used = p.consumed[BTN_INDEX[bs[i]]];
-    if (f < used || (f === used && !reuse)) return null;
+    if (f < used || (f === used && !reuse.includes(bs[i]))) return null;
     out[bs[i]] = f;
   }
   return out;
 }
 
-/** Find the command to start this frame, if any. `allowed(cmd)` filters by cancel rules. */
-function pickCommand(game, p, def, world, allowed) {
+/**
+ * Find the command to start this frame, if any. `allowed(cmd)` filters by cancel rules.
+ *
+ * S next to an attack button: S pressed within chordWindow frames of L, M or H is never the S move. With a motion
+ * the pair is the EX version (a two-button command, found first); otherwise the attack button's own move comes out
+ * and the S press is used up with it. The S move only comes out if nothing the attack button asks for can.
+ */
+function pickCommand(game, p, def, world, allowed, reuse = '') {
+  const inp = p.input;
+  const cw = world.input.chordWindow ?? 3;
   const buffer = world.input.pressBuffer + p.freezeAge;
-  const dir = relDirAt(p.input, 0, p.facing);
-  for (const cmd of def.commands) {
-    if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
-    if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
-    if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
-    if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
-    const presses = commandInput(game, p, cmd, world, buffer);
-    if (presses) return { cmd, presses };
+  const dir = relDirAt(inp, 0, p.facing);
+  const sAge = pressedWithin(inp, BTN.S, buffer + cw);
+  const sFrame = game.frame - sAge;
+  const sFree = sAge >= 0 && sFrame > p.consumed[BTN_INDEX.S];
+  const near = (f) => (f > sFrame ? f - sFrame : sFrame - f) <= cw;
+  const withAttack = sAge >= 0 && ATTACK.some((b) => {
+    const a = pressedWithin(inp, BTN[b], buffer + cw);
+    return a >= 0 && game.frame - a > p.consumed[BTN_INDEX[b]] && near(game.frame - a);
+  });
+  for (const pass of withAttack ? [0, 1] : [1]) {
+    for (const cmd of def.commands) {
+      if (pass === 0 && cmd.buttons === 'S' && !cmd.motion) continue; // first, everything but the plain S moves
+      if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
+      if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
+      if (cmd.rite && p.rite < 1 && !riteUnlimited(p, def)) continue;
+      if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
+      if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
+      if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.oneAtATime)) continue;
+      const presses = commandInput(game, p, cmd, world, buffer, reuse);
+      if (!presses) continue;
+      // An attack button's move takes the S pressed with it along, so that S can't start anything later.
+      if (sFree && presses.S === undefined && ATTACK.some((b) => presses[b] !== undefined && near(presses[b]))) presses.S = sFrame;
+      return { cmd, presses };
+    }
   }
   return null;
 }
 
 /** The opponent's current combo already took this move as many times as it's allowed. */
+/** Reverse beat's limit: a normal already used its share of times in this string of chained normals. */
+function usedUp(p, cmd, world) {
+  const rule = world.combo.chainUses;
+  if (!rule || cmd.kind !== 'normal') return false;
+  return (p.string[cmd.move] || 0) >= (rule[cmd.buttons] ?? rule.default ?? 1);
+}
 const overCombo = (o, cmd) => !!o.combo && (o.combo.used[cmd.move] || 0) >= cmd.perCombo;
 
 /**
@@ -262,11 +397,65 @@ function throwInRange(game, p, def, world, cmd) {
   return false;
 }
 
-/** Start a command's move: mark its presses used and pay its cost. */
-function startCommand(p, def, pick) {
+/**
+ * Perfect Link timing of a cancel after a hit: was the button pressed in the last `window` frames of the hit's
+ * hitstop? Returns { timing: 'early' | 'perfect' | 'late', frames } (frames = how far from the window), or null
+ * when the move being cancelled hasn't hit.
+ */
+function linkTiming(game, p, world, pick) {
+  if (p.contact !== CONTACT.HIT || p.hsEnd < 0) return null;
+  const f = Math.max(...[...pick.cmd.buttons].map((b) => pick.presses[b] ?? -1));
+  const first = p.hsEnd - Math.min(world.sys.link.window, p.hsLen);
+  if (f < first) return { timing: 'early', frames: first - f };
+  if (f < p.hsEnd) return { timing: 'perfect', frames: p.hsEnd - f };
+  return { timing: 'late', frames: f - p.hsEnd + 1 };
+}
+
+/**
+ * Start a command's move: mark its presses used and pay its cost. `link` = this is a cancel the player timed
+ * (not an EX upgrade or a launcher swap): check it for a Perfect Link.
+ */
+function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link = false) {
+  // A string is normals chained one into the next. Anything else before this move starts a new one.
+  if (!viaCancel || def.states[p.state].kind !== 'normal') p.string = {};
+  if (pick.cmd.kind === 'normal') p.string[pick.cmd.move] = (p.string[pick.cmd.move] || 0) + 1;
+  p.viaCancel = viaCancel ? 1 : 0;
+  const timing = link ? linkTiming(game, p, world, pick) : null;
+  const keepLink = link ? 0 : p.link;
   for (const [b, f] of Object.entries(pick.presses)) p.consumed[BTN_INDEX[b]] = f;
   enterState(p, def, pick.cmd.move);
+  p.link = keepLink;
+  if (timing) {
+    // Perfect Link: the hit of this move adds nothing to the combo's scaling, a little Devotion, and an event for
+    // the flash and sound. At most `max` per combo; every timed cancel reports its timing (training mode shows it).
+    const c = game.players[1 - p.id].combo;
+    const rewarded = timing.timing === 'perfect' && !!c && c.links < world.sys.link.max;
+    if (rewarded) {
+      c.links++;
+      p.link = 1;
+      const amount = def.devotion.extras.perfectLink ?? world.meter?.gain.perfectLink ?? 0;
+      gainDevotion(game, p, def, pct(amount, def.devotion.give), 'link', true);
+      game.cues.push({ p: p.id, type: 'perfect', x: p.x, y: p.y });
+    }
+    game.cues.push({ p: p.id, type: 'link', timing: timing.timing, frames: timing.frames, rewarded });
+  }
   applyResources(p, def, negate(pick.cmd.cost));
+  // A Rite move spends a charge of the Rite gauge (none while the gauge is unlimited).
+  if (pick.cmd.rite && !riteUnlimited(p, def)) p.rite = Math.max(0, p.rite - 1);
+  // Vow is free from neutral; cancelling a normal into it costs Devotion.
+  if (pick.cmd.move === 'vow_start' && p.viaCancel) p.meter = Math.max(0, p.meter - world.sys.vow.cancelCost);
+  // Doing a special move builds a little Devotion (not its EX version, which costs a bar).
+  const mv = def.states[pick.cmd.move].move;
+  p.spGain = mv.kind === 'special' && !mv.ex ? gainDevotion(game, p, def, def.devotion.special, 'special', true) : 0;
+}
+
+/** Take back what the current move gave for being a special (it is being replaced before it did anything). */
+function undoSpecialGain(game, p) {
+  if (!p.spGain) return;
+  p.meter -= p.spGain;
+  const c = game.players[1 - p.id].combo;
+  if (c) { c.gave = Math.max(0, c.gave - p.spGain); c.by.special = Math.max(0, (c.by.special || 0) - p.spGain); }
+  p.spGain = 0;
 }
 
 /** Cancel windows of the current state that are open on this frame for this contact. */
@@ -284,6 +473,8 @@ function openCancels(st, p) {
 function decide(game, p, opp, def, world) {
   const st = def.states[p.state];
   const air = st.stance === 'air';
+  // First frame out of the hitstop of a hit this move landed: remember it, for Perfect Link timing.
+  if (p.freezeAge > 0 && p.contact === CONTACT.HIT && st.move) { p.hsEnd = game.frame; p.hsLen = p.freezeAge; }
 
   // EX upgrade: the second button of a chord arrived a frame or two after the one-button version started.
   const ups = def.upgrades[p.state];
@@ -292,35 +483,92 @@ function decide(game, p, opp, def, world) {
     for (const cmd of ups) {
       if (!meets(p, cmd.requires)) continue;
       const paid = def.states[p.state].move.cost;
-      const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter, gauge: p.gauge + paid.gauge };
+      // What the fighter had before the one-button version started: its cost back, and without the Devotion it
+      // gave for being a special (that must never be what pays for the EX).
+      const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter - p.spGain, gauge: p.gauge + paid.gauge };
       if (!affords(refunded, cmd.cost)) continue;
-      const presses = commandInput(game, p, cmd, world, buffer, true);
+      if (cmd.move === 'vow_start' && p.viaCancel && refunded.meter < world.sys.vow.cancelCost) continue;
+      const presses = commandInput(game, p, cmd, world, buffer, cmd.buttons);
       if (presses) {
-        // Refund the one-button version's cost, then start the chord version (no whiff meter for the swap).
+        // Refund the one-button version's cost (and take back its Devotion), then start the chord version.
         applyResources(p, def, paid);
-        p.contact = CONTACT.HIT;
-        startCommand(p, def, { cmd, presses });
+        undoSpecialGain(game, p);
+        p.contact = CONTACT.HIT; // no on-whiff effects for the swap
+        startCommand(game, p, def, world, { cmd, presses });
         return;
       }
     }
   }
 
+  if (st.vow) {
+    // Vow's guard: no blocking, walking or jumping. Dash out (for Devotion), keep holding, or let go to strike.
+    const V = world.sys.vow;
+    if (p.meter >= V.dashCost) {
+      const f = dirMotionNow(p.input, world.input, '66', p.facing);
+      if (f || dirMotionNow(p.input, world.input, '44', p.facing)) {
+        p.meter -= V.dashCost;
+        enterState(p, def, f ? 'dashF' : 'backdash');
+        return;
+      }
+    }
+    const heldFor = V.startup + p.stateTime;
+    if (heldFor >= V.maxHold || !(isHeld(p.input, BTN.M) || isHeld(p.input, BTN.H))) {
+      enterState(p, def, heldFor < V.strikeAt ? 'vow_strike_quick' : heldFor < V.fullAt ? 'vow_strike' : 'vow_strike_full');
+      game.cues.push({ p: p.id, type: 'vowrelease', held: heldFor, x: p.x, y: p.y });
+    }
+    return;
+  }
+
+  const cw = world.input.chordWindow ?? 3;
+  if (def.sOnly.has(p.state) && p.frame <= cw && p.hitsDone === 0) {
+    // The S move started, and an attack button arrived a frame or two later: the two were pressed together, so
+    // S doesn't count. The S move is swapped for what the attack button asks for (the EX version with a motion and
+    // the meter, else its special, else its normal). After a cancel only specials and supers may take over.
+    const pick = pickCommand(game, p, def, world,
+      (cmd) => cmd.neutral && cmd.buttons !== 'S' && ATTACK.some((b) => cmd.buttons.includes(b)) && (!p.viaCancel || cmd.kind !== 'normal'), 'S');
+    if (pick) {
+      applyResources(p, def, def.states[p.state].move.cost);
+      undoSpecialGain(game, p);
+      p.contact = CONTACT.HIT; // no on-whiff effects for the swap
+      startCommand(game, p, def, world, pick);
+      return;
+    }
+  }
+  if (def.attackOnly.has(p.state) && p.frame <= cw) {
+    // An attack button's move started and S arrived a frame or two later (and it wasn't an EX): S is ignored.
+    const a = pressedWithin(p.input, BTN.S, cw + 1 + p.freezeAge);
+    if (a >= 0 && game.frame - a > p.consumed[BTN_INDEX.S]) p.consumed[BTN_INDEX.S] = game.frame - a;
+  }
+
+  // A held stance: holding back steps out of it (a pressed follow-up wins, below).
+  const backOut = () => {
+    if (!st.onBack) return false;
+    const d = relDirAt(p.input, 0, p.facing);
+    if (d !== 1 && d !== 4 && d !== 7) return false;
+    enterState(p, def, st.onBack);
+    return true;
+  };
   const windows = st.free ? null : openCancels(st, p);
-  if (!st.free && !windows.length) return;
+  if (!st.free && !windows.length) { backOut(); return; }
   if (st.free && !air) {
     if (opp.x > p.x) p.facing = 1;
     else if (opp.x < p.x) p.facing = -1;
   }
 
   // A move with neutral: false only comes out of a cancel window that names it (chains, follow-ups).
+  // Vow: from neutral, or cancelled from a normal wherever a special could be (that costs Devotion).
+  const vowOk = world.sys.vow.enabled && (st.free
+    ? true
+    : st.kind === 'normal' && p.meter >= world.sys.vow.cancelCost && windows.some((w) => w.into.has('#special')));
   const allowed = st.free
-    ? (cmd) => cmd.neutral
-    : (cmd) => windows.some((w) => w.into.has(cmd.move) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
+    ? (cmd) => cmd.neutral && (cmd.kind !== 'vow' || vowOk)
+    : (cmd) => (cmd.kind === 'vow' ? vowOk : false) || (!(st.kind === 'normal' && usedUp(p, cmd, world)) && windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`))));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
-    startCommand(p, def, pick);
+    startCommand(game, p, def, world, pick, !st.free, !st.free);
     return;
   }
+  if (backOut()) return;
 
   const inp = p.input;
   const rules = world.input;
@@ -380,32 +628,66 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
     }
   } else {
     p.frame++;
-    if (p.frame >= st.duration) {
+    p.stateTime++;
+    if (st.timeout && p.stateTime >= st.timeout) enterState(p, def, st.timeoutTo);
+    else if (p.frame >= st.duration) {
       if (st.loop) p.frame = st.loopFrom;
-      else enterState(p, def, st.next);
+      else enterState(p, def, (st.nextIf.find((b) => meets(p, b.when)) || { to: st.next }).to);
     }
   }
-  // Burst: from a combo, with a full gauge, the burst buttons together.
+  // Absolve: while being comboed, once per round (the gauge), with enough Devotion, the Absolve buttons together.
   const B = world.burst;
-  if (B && B.enabled && p.burst >= B.gaugeMax && B.stateSet.has(p.state)) {
+  const absolveCost = p.combo && p.combo.witness ? world.sys.absolve.witnessCost : world.sys.absolve.cost;
+  if (B && B.enabled && p.burst >= B.gaugeMax && B.stateSet.has(p.state) && p.meter >= absolveCost) {
     const ch = chordWithin(p.input, B.bits, world.input.pressBuffer + p.freezeAge, world.input.chordWindow ?? 3);
     if (ch && ch.ages.every((a, i) => game.frame - a > p.consumed[BTN_INDEX[B.buttons[i]]])) {
       ch.ages.forEach((a, i) => { p.consumed[BTN_INDEX[B.buttons[i]]] = game.frame - a; });
       p.burst = 0;
+      p.meter -= absolveCost;
+      // The slate is wiped: the attacker loses the Devotion this combo gave them.
+      const wiped = p.combo ? Math.min(opp.meter, p.combo.gave) : 0;
+      opp.meter -= wiped;
       p.stun = 0;
       p.wbX = p.wbY = p.gbY = 0;
-      enterState(p, def, isAirborne(def, p) ? 'burstAir' : 'burst');
-      game.cues.push({ p: p.id, type: 'burst', x: p.x, y: p.y });
+      enterState(p, def, isAirborne(def, p) ? 'absolve_air' : 'absolve');
+      game.cues.push({ p: p.id, type: 'burst', x: p.x, y: p.y, cost: absolveCost, wiped });
       p.freezeAge = 0;
       return;
     }
   }
-  // Air tech: once the untechable time is over, any button recovers.
+  // Repel and Draw: two attack buttons together during ground blockstun, holding back or forward. Only the
+  // request is noted here; resolveGuardActions applies it once both fighters have acted, so neither goes first.
+  const R = world.sys.repel;
+  const Dw = world.sys.draw;
+  if ((R.enabled || Dw.enabled) && (p.state === 'blockStand' || p.state === 'blockCrouch')) {
+    const dir = relDirAt(p.input, 0, p.facing);
+    const back = dir === 4 || dir === 1 || dir === 7;
+    const fwd = dir === 6 || dir === 3 || dir === 9;
+    const can = (back && R.enabled && game.frame - p.repelAt >= R.lockout) || (fwd && Dw.enabled && p.meter >= Dw.cost);
+    if (can) {
+      for (const pair of GUARD_PAIRS) {
+        const ch = chordWithin(p.input, pair.map((b) => BTN[b]), world.input.pressBuffer + p.freezeAge, world.input.chordWindow ?? 3);
+        if (!ch || !ch.ages.every((a, i) => game.frame - a > p.consumed[BTN_INDEX[pair[i]]])) continue;
+        ch.ages.forEach((a, i) => { p.consumed[BTN_INDEX[pair[i]]] = game.frame - a; });
+        p.guardAct = back ? 1 : 2;
+        p.freezeAge = 0;
+        return;
+      }
+    }
+  }
+  // Air tech: once the untechable time is over, any button recovers. And once a combo has run past techOutAt,
+  // any button techs out of hitstun itself, in the air or on the ground.
   const st1 = def.states[p.state];
-  if (st1.techable) {
+  const late = !!p.combo && p.combo.time - p.combo.extend >= (world.combo.techOutAt ?? Infinity) && TECH_OUT_STATES.has(p.state);
+  if (st1.techable || late) {
     const buffer = world.input.pressBuffer + p.freezeAge;
-    if ([BTN.L, BTN.M, BTN.H, BTN.S].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {
-      enterState(p, def, 'airTech');
+    if ([BTN.L, BTN.M, BTN.H, BTN.S, BTN.R].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {
+      const air = st1.stance === 'air';
+      p.stun = 0;
+      p.wbX = p.wbY = p.gbY = 0;
+      if (!air) { p.slide = 0; p.slideLeft = 0; }
+      enterState(p, def, air ? 'airTech' : 'groundTech');
+      if (late) game.cues.push({ p: p.id, type: 'techout', x: p.x, y: p.y });
     }
   }
   if (p.state === 'jumpSquat' || p.state === 'superJumpSquat') {

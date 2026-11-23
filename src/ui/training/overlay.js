@@ -12,7 +12,28 @@ export const BAR_COLORS = {
 
 const sign = (n) => (n > 0 ? `+${n}` : `${n}`);
 
-export function drawTrainingOverlay(ctx, W, H, meter, training) {
+/** The universal systems readouts: one column per player, under the frame bar at the sides. */
+function drawSystemsReadout(ctx, W, readout, game) {
+  ctx.font = '600 12px system-ui';
+  for (const i of [0, 1]) {
+    const lines = readout.lines(i, game);
+    if (!lines.length) continue;
+    const left = i === 0;
+    const x = left ? 12 : W - 12;
+    const y0 = 262;
+    const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 16;
+    ctx.fillStyle = '#0b091090';
+    ctx.fillRect(left ? x - 6 : x - w + 6, y0 - 15, w, lines.length * 16 + 8);
+    ctx.textAlign = left ? 'left' : 'right';
+    lines.forEach((l, n) => {
+      ctx.fillStyle = /PERFECT|COUNTER|WITNESS/.test(l) ? '#ffe9a8' : l.startsWith('Debt') ? '#ff6b7f' : '#e8e2d4';
+      ctx.fillText(l, x, y0 + n * 16);
+    });
+  }
+}
+
+export function drawTrainingOverlay(ctx, W, H, meter, training, readout = null, game = null) {
+  if (readout) drawSystemsReadout(ctx, W, readout, game);
   const cells = 80;
   const cw = Math.floor((W - 260) / cells);
   const x0 = Math.round((W - cw * cells) / 2);

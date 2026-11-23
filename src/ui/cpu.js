@@ -20,7 +20,7 @@ export const CPU_LEVELS = {
   normal: { block: 6500, punish: 6500, poke: 250, backOff: 90 },
   hard: { block: 9500, punish: 9500, poke: 400, backOff: 120 },
 };
-const BUTTON_RAW = { L: RAW.L, M: RAW.M, H: RAW.H, S: RAW.S };
+const BUTTON_RAW = { L: RAW.L, M: RAW.M, H: RAW.H, S: RAW.S, R: RAW.R };
 const ORDER = ['L', 'M', 'H', 'S'];
 const UNIT = 100;
 

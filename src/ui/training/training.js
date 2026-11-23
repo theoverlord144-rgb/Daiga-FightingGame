@@ -16,12 +16,13 @@ export const OPTIONS = {
   blockGuard: ['correct', 'stand only', 'crouch only'],
   tech: ['air tech', 'no tech'],
   refill: ['on', 'off'],
-  meter: ['normal', 'always full'],
+  meter: ['normal', 'always full'], // infinite meter: Devotion, the Rite gauge, the mechanic gauge
+  absolve: ['normal', 'always available'],
   position: ['center', 'left corner', 'right corner'],
 };
 
 export function defaultSettings() {
-  return { stance: 'stand', block: 'none', blockGuard: 'correct', tech: 'air tech', refill: 'on', meter: 'normal', position: 'center' };
+  return { stance: 'stand', block: 'none', blockGuard: 'correct', tech: 'air tech', refill: 'on', meter: 'normal', absolve: 'normal', position: 'center' };
 }
 
 const DIRS = RAW.LEFT | RAW.RIGHT | RAW.UP | RAW.DOWN;
@@ -130,9 +131,12 @@ export function createTraining(world, settings = defaultSettings(), { seed = 123
         for (const p of game.players) {
           const def = world.chars[p.id];
           p.meter = def.meterMax;
-          if (world.burst) p.burst = world.burst.gaugeMax;
+          if (def.rite?.gauge) p.rite = def.rite.gauge.charges;
           if (def.mechanic.gauge) p.gauge = def.mechanic.gauge.max;
         }
+      }
+      if (settings.absolve === 'always available' && world.burst) {
+        for (const p of game.players) p.burst = world.burst.gaugeMax;
       }
       if (settings.refill !== 'on') return;
       const free = game.players.every((p) => world.chars[p.id].states[p.state].free && !p.combo);

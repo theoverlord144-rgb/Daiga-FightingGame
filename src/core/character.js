@@ -3,6 +3,8 @@
 // Format reference: docs/toska-format.md.
 
 import { px } from './fixed.js';
+import { compileArchetype } from './devotion.js';
+import { universalContent } from './systems.js';
 
 export const LATEST_VERSION = 2;
 const SUPPORTED = [1, 2];
@@ -38,7 +40,7 @@ function upgrade1to2(f) {
 
 // ---------- Commands (numpad notation) ----------
 
-const BUTTON_LETTERS = 'LMHS';
+const BUTTON_LETTERS = 'LMHSR';
 
 /** "j.236L" -> { air, motion, dir, buttons }. motion = "236" etc., dir = single digit for normals. */
 export function parseInput(input) {
@@ -55,7 +57,7 @@ export function parseInput(input) {
   return { air, motion: dirs, dir: null, buttons };
 }
 
-const KIND_RANK = { super: 3, special: 2, normal: 1 };
+const KIND_RANK = { super: 3, special: 2, vow: 1.5, normal: 1 };
 
 function inferKind(m, parsed) {
   if (m.kind) return m.kind;
@@ -108,28 +110,43 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
-/** Resource changes: { meter, gauge, vars: { name: n } } -> the same with defaults filled in. */
-function resources(r) {
+/**
+ * Resource changes: { meter, gauge, vars: { name: n } } -> the same with defaults filled in. `meter` is written
+ * in Devotion points; `unit` turns it into game units.
+ */
+function resources(r, unit = 1) {
   if (!r) return null;
-  return { meter: r.meter | 0, gauge: r.gauge | 0, vars: { ...(r.vars || {}) } };
+  return { meter: Math.round((r.meter ?? 0) * unit), gauge: r.gauge | 0, vars: { ...(r.vars || {}) } };
 }
 
-/** Frame data of a move, converted to units (distances) and frames. ctx = { kind, meter (system meter.json) }. */
+/** Frame data of a move, converted to units (distances) and frames. ctx = { kind, meter (the Devotion rules) }. */
 function compileMoveData(m, ctx = {}) {
   const kind = ctx.kind ?? 'normal';
   const M = ctx.meter;
-  const ex = m.ex ?? (kind === 'special' && ctx.chord === true);
-  const gain = M ? { ...(M.gain[kind] ?? M.gain.normal), ...(m.meter || {}) } : { hit: 0, block: 0, whiff: 0 };
-  const cost = resources(m.cost) ?? { meter: 0, gauge: 0, vars: {} };
-  if (m.meterCost !== undefined) cost.meter = m.meterCost;
-  else if (!m.cost?.meter && M) cost.meter = kind === 'super' ? M.superCost : ex ? M.exCost : 0;
+  const U = M?.unit ?? 1;
+  // An EX move: flagged (`ex: true`), or a special done with two buttons (attack + S). An `ex` OBJECT is the EX
+  // version's overrides on a normal special (see exVersions), not a flag on the move that carries it.
+  const ex = typeof m.ex === 'boolean' ? m.ex : kind === 'special' && ctx.chord === true;
+  const cost = resources(m.cost, U) ?? { meter: 0, gauge: 0, vars: {} };
+  // A super's level (1 or 3) sets its cost; an EX costs exCost; a move may name its own (`meterCost`, Devotion).
+  const level = kind === 'super' ? m.level ?? 1 : 0;
+  if (M && level && M.superCost[level] === undefined) throw new Error(`A super's level must be one of ${Object.keys(M.superCost).join(', ')} (got ${level})`);
+  if (m.meterCost !== undefined) cost.meter = Math.round(m.meterCost * U);
+  else if (!m.cost?.meter && M) cost.meter = kind === 'super' ? M.superCost[level] : ex ? M.exCost : 0;
+  const own = (v) => (v === undefined ? null : Math.round(v * U));
+  // Launch: "hard" | "soft" (the system's speeds) or { type, x, y } (its own). No type = soft; `launcher: true` = hard.
+  const lsrc = m.launch;
+  const launchType = typeof lsrc === 'string' ? lsrc : lsrc ? lsrc.type ?? (m.launcher ? 'hard' : 'soft') : null;
+  if (launchType && launchType !== 'hard' && launchType !== 'soft') throw new Error(`launch must be "hard", "soft" or { type, x, y } (got ${JSON.stringify(lsrc)})`);
+  const launchVel = lsrc && typeof lsrc === 'object' && (lsrc.x !== undefined || lsrc.y !== undefined) ? { x: px(lsrc.x ?? 0), y: px(lsrc.y ?? 0) } : null;
   return {
     kind,
     ex: !!ex,
+    level,
     startup: m.startup ?? 1,
     active: m.active ?? 0,
     recovery: m.recovery ?? 0,
@@ -140,13 +157,16 @@ function compileMoveData(m, ctx = {}) {
     pushbackHit: px(m.pushbackHit ?? 0),
     pushbackBlock: px(m.pushbackBlock ?? 0),
     selfPushback: px(m.selfPushback ?? 0),
+    recoil: px(m.recoil ?? 0), // the attacker slides back this far whenever the move touches (hit or block)
     guard: m.guard ?? 'mid',
     reach: px(m.reach ?? 0),
     chip: m.chip ?? 0,
     blockHitstop: m.blockHitstop ?? m.hitstop ?? 0,
     airBlockable: m.airBlockable ?? true,
     knockdown: !!m.knockdown,
-    launch: m.launch ? { x: px(m.launch.x ?? 0), y: px(m.launch.y ?? 0) } : null,
+    launchType, // 'hard' | 'soft' | null (no launch)
+    launch: launchVel, // its own launch speeds; null with a launchType = the system's (combo.json)
+    juggleCost: m.juggleCost ?? null, // null = the default in combo.json
     airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
     throwSwap: !!m.throwSwap,
     throwDistance: px(m.throwDistance ?? 70),
@@ -154,24 +174,63 @@ function compileMoveData(m, ctx = {}) {
     starterProration: m.starterProration ?? null,
     comboProration: m.comboProration ?? null,
     untech: m.untech ?? null,
-    launcher: !!m.launcher,
+    launcher: launchType === 'hard',
     wallBounce: m.wallBounce ? { x: px(m.wallBounce.x ?? 0), y: px(m.wallBounce.y ?? 0) } : null,
     groundBounce: m.groundBounce ? { y: px(m.groundBounce.y ?? 0) } : null,
     bounceLimit: m.bounceLimit ?? null,
     // Pull-in: on hit the defender slides toward the attacker, ending `to` px in front of them, over `frames`.
     pull: m.pull ? { to: px(m.pull.to ?? 70), frames: Math.max(1, m.pull.frames ?? 8) } : null,
     perCombo: m.perCombo ?? 0, // > 0: the move can hit at most this many times in one combo (no loops)
+    // Conditions on the attacker's own resources (same shape as `requires`), read at the moment of the hit:
+    hitRequires: m.hitRequires ? condition(m.hitRequires) : null, // unmet: the hitbox touches nothing at all
+    stagger: m.stagger ? { when: condition(m.stagger.when), hitstun: m.stagger.hitstun | 0 } : null, // met: extra hitstun
+    onBlockState: m.onBlockState ?? null, // when it is blocked the attacker switches to this state (Absolve's bait)
+    onHitState: m.onHitState ?? null, // on hit (not block) the attacker switches to this state (an animation branch)
+    remote: !!m.remote, // the hit lands wherever the opponent is (no box check)
+    pierce: !!m.pierce, // hits through Vow's guard (supers always do)
+    crumple: !!m.crumple, // a grounded hit puts the opponent in the crumple (Vow's stronger strikes)
+    vowStrike: !!m.vowStrike, // Vow's release strike: landing it forgives the Debt
+    oneAtATime: m.oneAtATime ?? null, // a projectile name: the move can't start while the fighter has one out
     // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
     chain: m.chain ?? null,
     hitFx: m.hitFx ?? null,
-    // Meter and the character mechanic (Phase 8).
-    meterGain: { hit: gain.hit | 0, block: gain.block | 0, whiff: gain.whiff | 0 },
+    // Devotion and the character mechanic. `meter: { hit, block }` on a move replaces the usual gain from damage
+    // (Devotion points, before the character's give); null = the usual rule.
+    devGain: m.meter ? { hit: own(m.meter.hit), block: own(m.meter.block) } : null,
     cost, // paid when the move starts: { meter, gauge, vars }
-    requires: m.requires ? { meter: m.requires.meter | 0, gauge: m.requires.gauge | 0, vars: { ...(m.requires.vars || {}) } } : null,
-    onHit: resources(m.onHit),
-    onBlock: resources(m.onBlock),
-    onWhiff: resources(m.onWhiff),
+    requires: m.requires ? resources(m.requires, U) : null,
+    onHit: resources(m.onHit, U),
+    onBlock: resources(m.onBlock, U),
+    onWhiff: resources(m.onWhiff, U),
   };
+}
+
+/** A condition on a fighter's resources: { meter, gauge, vars: { name: min or [min, max] } }. */
+const condition = (r) => ({ meter: r?.meter | 0, gauge: r?.gauge | 0, vars: { ...(r?.vars || {}) } });
+
+/**
+ * Projectiles: objects a move spawns with a `spawn` timeline event. Each lives in the game state (position, age),
+ * flies straight, and hits once with its own frame data (the same fields as a move's).
+ *   projectiles: { name: { speed, spawn: [x, y], hitbox: [x, y, w, h] (from its leading edge), lifetime, ...frame data } }
+ */
+function compileProjectiles(src, meter) {
+  const out = {};
+  for (const [name, p] of Object.entries(src || {})) {
+    const sp = p.spawn ?? [0, 0];
+    out[name] = {
+      name,
+      speed: px(p.speed ?? 0),
+      speedY: px(p.speedY ?? 0), // per frame, up is positive (a rising or diving projectile)
+      spawn: [px(sp[0]), px(sp[1])],
+      fromGround: !!p.fromGround, // spawn[1] is a height above the floor, not above the fighter (it erupts from the ground)
+      hitbox: boxes([p.hitbox ?? [0, 0, 0, 0]]),
+      lifetime: p.lifetime ?? 600,
+      move: compileMoveData(p, { kind: 'special', meter }),
+      sprite: p.sprite ?? null, // drawing only
+      anim: p.anim ?? null,
+    };
+  }
+  return out;
 }
 
 /**
@@ -190,10 +249,34 @@ function compileMechanic(src) {
   for (const [k, v] of Object.entries(src.vars || {})) {
     vars[k] = { start: v.start ?? 0, min: v.min ?? 0, max: v.max ?? 99, perFrame: v.perFrame ?? 0, label: v.label ?? k, show: v.show ?? true,
       display: v.display ?? 'count', // HUD only: 'count', or 'timer' (frames shown as a draining bar)
-      mark: v.mark ?? null }; // drawing only: a colour; while the var is above 0 the opponent glows with it (a brand)
+      mark: v.mark ?? null, // drawing only: a colour; while the var is above 0 the opponent glows with it (a brand)
+      // Drawing only, while the var is above 0 (an install): `aura` = [{ effect, behind }], named effects looping on the
+      // fighter; `art` = { state: otherState }, that state is drawn with the other state's drawings.
+      aura: v.aura ?? null, art: v.art ?? null };
   }
   const modifiers = (src.modifiers || []).map((x) => ({ when: x.when || {}, damagePct: x.damagePct ?? 10000 }));
   return { name: src.name ?? null, gauge, vars, modifiers };
+}
+
+/**
+ * EX versions. A special with `ex: { ...overrides }` gets a second move, `<id>_ex`, made of the normal move with
+ * the overrides laid over it (a field the overrides name replaces the normal one whole). Its input is the same
+ * motion and attack button plus S, so the attack button still picks the strength.
+ */
+function exVersions(charId, moves) {
+  const out = [];
+  for (const m of moves) {
+    if (!m.ex || typeof m.ex !== 'object') continue;
+    const p = parseInput(m.input);
+    if (!p || !p.motion || p.buttons.length !== 1 || !'LMH'.includes(p.buttons)) {
+      throw new Error(`${charId}: move ${m.id} has an EX version, so its input must be a motion and one of L, M, H (got ${m.input})`);
+    }
+    const { ex, ...base } = m;
+    const input = `${m.input}S`;
+    if (moves.some((o) => o.input === input)) throw new Error(`${charId}: move ${m.id} has an EX version, but another move already uses ${input}`);
+    out.push({ ...base, ...ex, id: `${m.id}_ex`, name: ex.name ?? `${m.name ?? m.id} (EX)`, input, exOf: m.id });
+  }
+  return out;
 }
 
 /** Sprite timeline from a sheet: [{ at, index }]. holds[i] frames per sprite; missing = spread evenly. */
@@ -235,17 +318,21 @@ function compileState(name, src, stats, extra = {}) {
     const m = extra.move;
     const first = m.startup - 1;
     if (extra.hurtboxes) events.push({ at: 0, hurt: boxes(extra.hurtboxes) });
-    if (extra.hitboxes && m.active > 0) {
-      events.push({ at: first, hit: boxes(extra.hitboxes) });
+    // A remote hit has no real box: an empty-sized one keeps the usual "a hit is out" bookkeeping (hit ids).
+    const hb = extra.hitboxes ?? (m.remote ? [[0, 0, 0, 0]] : null);
+    if (hb && m.active > 0) {
+      events.push({ at: first, hit: boxes(hb) });
       events.push({ at: first + m.active, hit: [] });
     }
     if (extra.throwboxes && m.active > 0) {
       events.push({ at: first, throw: boxes(extra.throwboxes) });
       events.push({ at: first + m.active, throw: [] });
     }
+    // Counter state per frame: 1 = startup and active frames (a hit here is a counter hit), 2 = recovery (a hit
+    // here is a Witness counter), 0 = neither. counterHit: "none" turns both off for the move.
     const ch = extra.counterHit ?? 'all';
-    events.push({ at: 0, counter: ch !== 'none' });
-    if (ch === 'startup+active') events.push({ at: first + m.active, counter: false });
+    events.push({ at: 0, counter: ch !== 'none' ? 1 : 0 });
+    if (ch !== 'none') events.push({ at: first + m.active, counter: ch === 'startup+active' ? 0 : 2 });
   }
   for (const s of spriteEvents(extra.sheet, duration)) events.push({ at: s.at, sprite: { sheet: extra.sheetName, index: s.index } });
   for (const e of src.timeline || []) events.push(normalizeEvent(e, stats, extra.sheetName));
@@ -265,7 +352,7 @@ function compileState(name, src, stats, extra = {}) {
   sets.forEach((s, i) => (s.order = i));
   sets.sort((a, b) => a.at - b.at || a.order - b.order);
 
-  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: false, gravity: stance === 'air' };
+  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: 0, gravity: stance === 'air' };
   const frames = [];
   const onEnter = [];
   const reverts = []; // { at, fields }
@@ -303,7 +390,7 @@ function compileState(name, src, stats, extra = {}) {
       invStrike: !!cur.invuln?.strike,
       invThrow: !!cur.invuln?.throw,
       armor: cur.armor | 0,
-      counter: !!cur.counter,
+      counter: cur.counter === true ? 1 : cur.counter | 0,
       gravity: !!cur.gravity,
     });
     onEnter.push(shots);
@@ -328,8 +415,16 @@ function compileState(name, src, stats, extra = {}) {
     stun: !!src.stun,
     keepVel: !!src.keepVel,
     throwVictim: !!src.throwVictim,
+    vow: !!src.vow, // Vow's guard: hits are absorbed into Debt
+    blocking: !!src.blocking, // counts as a block state (Repel's and Draw's poses): further hits can be blocked
     techable: !!src.techable,
     next: src.next ?? (stance === 'air' ? 'fall' : 'idle'),
+    // Branches and held stances (all optional):
+    nextIf: (src.nextIf || []).map((b) => ({ when: condition(b.when), to: b.to })), // at the end: the first whose condition holds, else `next`
+    timeout: src.timeout ?? 0, // frames in the state (loops included) before it leaves by itself to timeoutTo
+    timeoutTo: src.timeoutTo ?? src.next ?? 'idle',
+    onBack: src.onBack ?? null, // holding back leaves to this state (a pressed follow-up wins)
+    layers: src.layers ?? null, // drawing only: effects drawn in step with the state's sprite
     landTo: src.landTo ?? 'land',
     duration,
     move: extra.move ?? null,
@@ -352,7 +447,11 @@ function normalizeEvent(e, stats, sheetName) {
       if (v.y !== undefined) out[k].y = ref(v.y, stats, 'px');
     } else if (k === 'sprite') out[k] = typeof v === 'number' ? { sheet: sheetName, index: v } : v;
     // A hit's own frame data: converted like the move's (distances to units), keeping only the fields it names.
-    else if (k === 'hitProps') { const full = compileMoveData(v); out[k] = Object.fromEntries(Object.keys(v).filter((f) => f in full).map((f) => [f, full[f]])); }
+    else if (k === 'hitProps') {
+      const full = compileMoveData(v);
+      out[k] = Object.fromEntries(Object.keys(v).filter((f) => f in full).map((f) => [f, full[f]]));
+      if ('launch' in v) { out[k].launchType = full.launchType; out[k].launcher = full.launcher; }
+    }
     else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
     else out[k] = v;
   }
@@ -372,11 +471,13 @@ export function compileCharacter(file, system) {
   const sheets = {};
   const commands = [];
   const mechanic = compileMechanic(t.mechanic ?? file.mechanic);
-  const moveIds = new Set(t.moves.map((m) => m.id));
-  if (moveIds.size !== t.moves.length) throw new Error(`${ch.id}: duplicate move ids`);
+  const exMoves = exVersions(ch.id, t.moves);
+  const moveIds = new Set([...t.moves, ...exMoves].map((m) => m.id));
+  if (moveIds.size !== t.moves.length + exMoves.length) throw new Error(`${ch.id}: duplicate move ids`);
 
   // System states, with character overrides (v2 "states") and v1-style sprite moves sharing a system name.
-  const common = system.common.states;
+  const content = universalContent(system);
+  const common = content.states;
   for (const [name, base] of Object.entries(common)) {
     const over = t.states?.[name] || {};
     const spriteMove = t.moves.find((m) => m.id === name);
@@ -384,34 +485,60 @@ export function compileCharacter(file, system) {
     if (spriteMove?.sprite) sheets[name] = spriteMove.sprite;
     states[name] = compileState(name, src, stats, { sheet: spriteMove?.sprite, sheetName: name });
   }
+  // A character's own states (stances, animation branches) can carry art, like moves do.
   for (const [name, src] of Object.entries(t.states || {})) {
-    if (!states[name]) states[name] = compileState(name, src, stats, {});
+    if (states[name]) continue;
+    if (src.sprite) sheets[name] = src.sprite;
+    states[name] = compileState(name, src, stats, { sheet: src.sprite, sheetName: name });
   }
+  const projectiles = compileProjectiles(t.projectiles ?? file.projectiles, system.meter);
+  for (const p of Object.values(projectiles)) checkVars(ch.id, p.name, mechanic, [p.move.onHit, p.move.onBlock, p.move.stagger?.when]);
 
-  // Universal moves (burst), unless the character defines its own with the same id.
-  const universal = Object.entries(system.burst?.moves || {}).filter(([id]) => !moveIds.has(id))
-    .map(([id, m]) => ({ ...m, id, kind: 'burst', input: undefined }));
+  // Universal moves (burst, Vow). A character's own move with the same id is laid over the universal one, so it
+  // can give just the art, or its own boxes and frame data.
+  const universal = Object.entries(content.moves).filter(([id]) => !moveIds.has(id)).map(([id, m]) => ({ ...m, id }));
+  // Rite moves (the R button): `rite: { gauge: { charges, rechargeFrames, unlimitedWhile } | null, moves: [ids] }`.
+  // The ids name moves in the list above whose input uses R. They count as specials unless they say otherwise, and
+  // each use spends a charge when there is a gauge.
+  const riteSrc = t.rite ?? file.rite ?? null;
+  const riteIds = new Set(riteSrc?.moves || []);
+  for (const id of riteIds) {
+    const m = t.moves.find((x) => x.id === id);
+    if (!m) throw new Error(`${ch.id}: rite names unknown move ${id}`);
+    if (!String(m.input || '').includes('R')) throw new Error(`${ch.id}: Rite move ${id} must use the R button (its input is "${m.input}")`);
+  }
+  const rg = riteSrc?.gauge ?? null;
+  if (rg && rg.unlimitedWhile && !mechanic.vars[rg.unlimitedWhile]) throw new Error(`${ch.id}: rite gauge names unknown var ${rg.unlimitedWhile}`);
+  const rite = riteSrc ? { moves: [...riteIds],
+    gauge: rg ? { charges: rg.charges ?? 1, rechargeFrames: rg.rechargeFrames ?? 60, unlimitedWhile: rg.unlimitedWhile ?? null } : null } : null;
+  const own = t.moves.map((m) => (content.moves[m.id] ? { ...content.moves[m.id], ...m } : m))
+    .map((m) => (riteIds.has(m.id) && !m.kind ? { ...m, kind: 'special' } : m));
 
   // Moves.
-  for (const m of [...t.moves, ...universal]) {
+  for (const m of [...own, ...exMoves, ...universal]) {
     if (common[m.id]) continue; // a sprite for a system state, handled above
     const parsed = parseInput(m.input);
     const kind = inferKind(m, parsed);
     const stance = inferStance(m, parsed);
     const move = compileMoveData(m, { kind, meter: system.meter, chord: !!parsed && parsed.buttons.length > 1 });
-    checkVars(ch.id, m.id, mechanic, [move.cost, move.requires, move.onHit, move.onBlock, move.onWhiff]);
+    checkVars(ch.id, m.id, mechanic, [move.cost, move.requires, move.onHit, move.onBlock, move.onWhiff, move.hitRequires, move.stagger?.when]);
+    if (move.oneAtATime && !projectiles[move.oneAtATime]) throw new Error(`${ch.id}: move ${m.id} names unknown projectile ${move.oneAtATime}`);
     if (m.sprite) sheets[m.id] = m.sprite;
-    const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id], kind, move)];
+    const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id] ?? t.gatlings?.[m.exOf], kind, move)];
     states[m.id] = compileState(m.id, { ...m, stance, next: m.next ?? (stance === 'air' ? 'fall' : stance === 'crouch' ? 'crouch' : 'idle') }, stats, {
       move, kind, sheet: m.sprite, sheetName: m.id, hitboxes: m.hitboxes, throwboxes: m.throwboxes, hurtboxes: m.hurtboxes, counterHit: m.counterHit, cancels,
     });
     if (parsed) {
       commands.push({
         move: m.id,
+        base: m.exOf ?? null, // an EX version: the normal move it is laid over (it goes wherever that move can)
         kind,
         air: parsed.air,
         motion: parsed.motion,
         dir: parsed.dir,
+        anyDir: !!m.anyDir, // a plain button that works whatever direction is held (stance follow-ups)
+        rite: riteIds.has(m.id) && !!rite.gauge, // spends a charge of the Rite gauge
+        oneAtATime: move.oneAtATime,
         buttons: parsed.buttons,
         negativeEdge: !!m.negativeEdge,
         neutral: m.neutral !== false, // false: only reachable from a cancel window that names it (chains, follow-ups)
@@ -428,10 +555,15 @@ export function compileCharacter(file, system) {
     for (const shots of st.onEnter) {
       for (const s of shots) {
         if (s.type === 'addVar' || s.type === 'setVar') checkVars(ch.id, st.name, mechanic, [{ vars: s.value }]);
+        if (s.type === 'meter') s.value = Math.round(s.value * (system.meter?.unit ?? 1)); // written in Devotion points
         if (s.type === 'gauge' && !mechanic.gauge) throw new Error(`${ch.id}: ${st.name} changes the gauge, but the mechanic has none`);
+        if (s.type === 'spawn' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value}`);
       }
     }
-    if (!states[st.next]) throw new Error(`${ch.id}: state ${st.name} goes to unknown state ${st.next}`);
+    for (const to of [st.next, st.timeout ? st.timeoutTo : null, st.onBack, st.move?.onHitState, st.move?.onBlockState, ...st.nextIf.map((b) => b.to)]) {
+      if (to && !states[to]) throw new Error(`${ch.id}: state ${st.name} goes to unknown state ${to}`);
+    }
+    for (const b of st.nextIf) checkVars(ch.id, st.name, mechanic, [b.when]);
     for (const c of st.cancels) {
       for (const into of c.into) {
         if (!into.startsWith('#') && !states[into]) throw new Error(`${ch.id}: ${st.name} cancels into unknown move ${into}`);
@@ -447,20 +579,29 @@ export function compileCharacter(file, system) {
     b.buttons.length - a.buttons.length ||
     dirRank(a.dir) - dirRank(b.dir));
 
-  // EX upgrades: a chord command (236LM) can take over its one-button version (236L or 236M) during the chord
+  // EX upgrades: a chord command (236LS) can take over its one-button version (236L) during the chord
   // window, because a player's two buttons rarely land on the very same frame.
   const upgrades = {};
   for (const c of commands) {
     if (c.buttons.length < 2) continue;
     for (const d of commands) {
-      if (d === c || d.buttons.length !== 1 || d.motion !== c.motion || d.dir !== c.dir || d.air !== c.air) continue;
+      if (d === c || d.buttons.length !== 1 || d.motion !== c.motion || d.air !== c.air) continue;
+      // Same direction; or a two-button move that takes any direction (Vow) over a plain normal.
+      if (d.dir !== c.dir && !(c.anyDir && d.kind === 'normal' && d.neutral && !d.anyDir)) continue;
       if (c.buttons.includes(d.buttons)) (upgrades[d.move] ||= []).push(c);
     }
   }
 
+  // S next to an attack button. `sOnly`: moves started by S alone with no motion (the launchers); `attackOnly`:
+  // moves started by one attack button. fighter.js uses them so "attack + S" never reads as the S move.
+  const sOnly = new Set(commands.filter((c) => c.buttons === 'S' && !c.motion && c.neutral).map((c) => c.move));
+  const attackOnly = new Set(commands.filter((c) => c.buttons.length === 1 && 'LMH'.includes(c.buttons)).map((c) => c.move));
+
   const meterMax = stats.units.meterBars * (system.meter?.barSize ?? 10000);
+  const meterStart = stats.units.meterStart * (system.meter?.unit ?? 1);
+  const devotion = compileArchetype(system.meter, t.meter ?? file.meter, ch.id);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, upgrades, palettes: compilePalettes(ch.id, t.palettes),
+    sheets, mechanic, meterMax, meterStart, devotion, rite, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
     effects: t.effects ?? file.effects ?? {} }; // drawing only: named sheet effects for `fx` cues
 }
 
@@ -500,7 +641,8 @@ function compilePalettes(id, src) {
  *   specialCancel: normals default to true (on hit or block); "hit" = on hit only; false = never
  *   superCancel: defaults to specialCancel
  *   jumpCancel: "hit" | "block" | true (both) | false (default)
- *   launcher: true adds a super-jump cancel on hit
+ *   a hard launch (launch: "hard", or launcher: true) adds a super-jump cancel on hit
+ *   a soft launch adds a jump cancel on hit, unless the move sets jumpCancel itself
  */
 function gatlingCancels(m, gatling, kind, move) {
   const from = m.cancelFrom ?? move.startup - 1;
@@ -516,9 +658,9 @@ function gatlingCancels(m, gatling, kind, move) {
   if (sp.length) out.push({ from, to, into: ['#special'], on: sp });
   const su = on(m.superCancel, kind === 'super' ? [] : sp.length ? sp : ['hit', 'block']);
   if (su.length && kind !== 'super') out.push({ from, to, into: ['#super'], on: su });
-  const jc = on(m.jumpCancel, []);
+  const jc = on(m.jumpCancel, move.launchType === 'soft' ? ['hit'] : []);
   if (jc.length) out.push({ from, to, into: ['#jump'], on: jc });
-  if (m.launcher) out.push({ from, to, into: ['#superjump'], on: ['hit'] });
+  if (move.launchType === 'hard') out.push({ from, to, into: ['#superjump'], on: ['hit'] });
   return out;
 }
 

@@ -4,11 +4,15 @@ import battle from '../../data/system/battle.json';
 import combo from '../../data/system/combo.json';
 import defaults from '../../data/system/fighter-defaults.json';
 import common from '../../data/system/common-states.json';
-import meter from '../../data/system/meter.json';
+import systems from '../../data/system/systems.json';
 import burst from '../../data/system/burst.json';
 import match from '../../data/system/match.json';
 import { compileCharacter } from '../core/character.js';
 import { createWorld } from '../core/game.js';
+import { compileDevotion } from '../core/devotion.js';
+
+/** The Devotion rules in game units (data/system/systems.json "devotion"). */
+const meter = compileDevotion(systems.devotion);
 
 const STAGE_FILES = import.meta.glob('../../data/stages/*.json', { eager: true, import: 'default' });
 const CHAR_FILES = import.meta.glob('../../data/characters/*/*.toska.json', { eager: true, import: 'default' });
@@ -32,12 +36,16 @@ export function setupCanvas() {
   return { canvas, ctx, ui: document.getElementById('ui') };
 }
 
-export const SYSTEM = { defaults, common, meter, burst };
+export const SYSTEM = { defaults, common, meter, burst, systems };
 export const INPUT_RULES = inputRules;
 export const BATTLE = battle;
+export const COMBO = combo;
 export const MATCH = match;
 /** Every stage under data/stages, by id. */
 export const STAGES = Object.fromEntries(Object.values(STAGE_FILES).map((s) => [s.id, s]));
+
+/** Every character file as written (the raw Toska JSON) and where it lives, by id: the box editor edits these. */
+export const CHAR_SOURCES = Object.fromEntries(Object.entries(CHAR_FILES).map(([key, file]) => [file.character.id, { file, path: key.slice(key.indexOf('data/')) }]));
 
 /** Every character file found under data/characters, compiled, by id. */
 export function loadCharacters() {
@@ -51,5 +59,5 @@ export function loadCharacters() {
 
 /** match: the match rules (rounds, timer), or null for free play (training). */
 export function makeWorld(a, b, matchRules = null) {
-  return createWorld({ input: inputRules, battle, combo, meter, burst, match: matchRules, chars: [a, b] });
+  return createWorld({ input: inputRules, battle, combo, meter, burst, match: matchRules, systems, chars: [a, b] });
 }
