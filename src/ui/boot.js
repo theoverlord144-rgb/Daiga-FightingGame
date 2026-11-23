@@ -4,11 +4,15 @@ import battle from '../../data/system/battle.json';
 import combo from '../../data/system/combo.json';
 import defaults from '../../data/system/fighter-defaults.json';
 import common from '../../data/system/common-states.json';
-import meter from '../../data/system/meter.json';
+import systems from '../../data/system/systems.json';
 import burst from '../../data/system/burst.json';
 import match from '../../data/system/match.json';
 import { compileCharacter } from '../core/character.js';
 import { createWorld } from '../core/game.js';
+import { compileDevotion } from '../core/devotion.js';
+
+/** The Devotion rules in game units (data/system/systems.json "devotion"). */
+const meter = compileDevotion(systems.devotion);
 
 const STAGE_FILES = import.meta.glob('../../data/stages/*.json', { eager: true, import: 'default' });
 const CHAR_FILES = import.meta.glob('../../data/characters/*/*.toska.json', { eager: true, import: 'default' });

@@ -1,5 +1,5 @@
 {
-  "notes": "Defaults for every character stat. Pixels, pixels per frame, and frames. meterBars is how many bars of super meter the character can hold (a bar is meter.json barSize). airdashKeep is a percentage out of 10000 of the airdash speed kept after it ends. A character's own stats override these.",
+  "notes": "Defaults for every character stat. Pixels, pixels per frame, and frames. meterBars is how many bars of super meter the character can hold (a bar is 100 Devotion, see systems.json). airdashKeep is a percentage out of 10000 of the airdash speed kept after it ends. A character's own stats override these.",
   "stats": {
     "health": 10000,
     "walkForward": 5,

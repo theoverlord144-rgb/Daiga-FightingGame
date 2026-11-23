@@ -7,6 +7,7 @@
     "name": "Avner",
     "stats": { "airJumps": 1, "standHurt": [[-23, 1, 69, 160]] }
   },
+  "meter": { "archetype": "balanced" },
   "mechanic": {
     "name": "Brand of Light",
     "vars": {

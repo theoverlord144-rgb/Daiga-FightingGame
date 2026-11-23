@@ -72,7 +72,7 @@ test('motion + attack button: the normal special of that strength', () => {
   for (const b of ['L', 'M', 'H']) {
     const g = setup(900, 30000);
     assert.ok(seen(g, `2 3 6+${b} 5*60`).includes(`236${b}`), b);
-    assert.equal(g.players[0].meter, 30000 + M.gain.special.whiff, 'a normal special costs nothing');
+    assert.equal(g.players[0].meter, 30000 + M.gain.special, 'a normal special costs nothing (and gives its 5 Devotion)');
   }
 });
 
@@ -92,7 +92,7 @@ test('EX without a full bar: the normal version of that strength, and nothing is
       const g = setup(300, meter);
       const s = seen(g, `2 3 6+${b}S 5`);
       assert.ok(s.includes(`236${b}`) && !s.includes(`236${b}_ex`), `${b} with ${meter}: ${s.join(' ')}`);
-      assert.equal(g.players[0].meter, meter);
+      assert.equal(g.players[0].meter, meter + M.gain.special, 'nothing spent; the normal special gives its 5');
       // The S of the pair is used up: it never starts the S move afterwards.
       assert.ok(!seen(g, '5*60').some((x) => x === '5S' || x === '236S'));
     }
@@ -106,7 +106,7 @@ test('EX: the two buttons may land up to chordWindow frames apart, in either ord
         const g = setup(300, 20000);
         const s = seen(g, pair('2 3', '6', first, second, gap, '5*50'));
         assert.ok(s.includes(`236${b}_ex`), `${first} then ${second}, ${gap} apart: ${s.join(' ')}`);
-        assert.equal(g.players[0].meter, 20000 - M.barSize + M.gain.special.whiff, 'paid once, and only the EX builds whiff meter');
+        assert.equal(g.players[0].meter, 20000 - M.barSize, 'paid once, and nothing gained on the way (not even the 5 of the normal version it replaced)');
       }
     }
   }
@@ -164,7 +164,7 @@ test('L / M / H + S with no motion: just the attack button\'s normal, S ignored,
           const allowed = first === 'S' && gap > 0 ? [[`${pre ? 'j.' : dir}S`, want], [want]] : [[want]];
           assert.ok(allowed.some((a) => a.join() === moves.join()), `${first} then ${second}, ${gap} apart, ${dir}: ${moves.join(' ')}`);
           assert.equal(moves.at(-1), want);
-          assert.equal(g.players[0].meter, 30000 + M.gain.normal.whiff, 'no meter spent, one whiff');
+          assert.equal(g.players[0].meter, 30000, 'no meter spent');
         }
       }
     }
@@ -201,7 +201,7 @@ test('overlaps: two attack buttons with a motion are a special, and M + S with a
   let moves = seen(g, '2 3 6+MH 5*40').filter((x) => P.states[x].move);
   assert.equal(moves.length, 1);
   assert.ok(['236M', '236H'].includes(moves[0]), moves.join(' '));
-  assert.equal(g.players[0].meter, 30000 + M.gain.special.whiff, 'not an EX: nothing spent');
+  assert.equal(g.players[0].meter, 30000 + M.gain.special, 'not an EX: nothing spent');
   g = setup(300, 30000);
   moves = seen(g, '2 3 6+MHS 5*40').filter((x) => P.states[x].move);
   assert.equal(moves.length, 1);
@@ -211,7 +211,7 @@ test('overlaps: two attack buttons with a motion are a special, and M + S with a
   g.players[0].vars.charge = 1;
   moves = seen(g, '2 3 6+S 5*40').filter((x) => P.states[x].move);
   assert.deepEqual(moves, ['236S']);
-  assert.equal(g.players[0].meter, 30000 + M.gain.special.whiff);
+  assert.equal(g.players[0].meter, 30000 + M.gain.special);
 });
 
 test('the cast: every command still compiles with five buttons, and no real move is an EX by accident', () => {

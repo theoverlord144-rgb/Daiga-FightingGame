@@ -3,6 +3,7 @@
 // Format reference: docs/toska-format.md.
 
 import { px } from './fixed.js';
+import { compileArchetype } from './devotion.js';
 
 export const LATEST_VERSION = 2;
 const SUPPORTED = [1, 2];
@@ -112,26 +113,34 @@ const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlas
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
-/** Resource changes: { meter, gauge, vars: { name: n } } -> the same with defaults filled in. */
-function resources(r) {
+/**
+ * Resource changes: { meter, gauge, vars: { name: n } } -> the same with defaults filled in. `meter` is written
+ * in Devotion points; `unit` turns it into game units.
+ */
+function resources(r, unit = 1) {
   if (!r) return null;
-  return { meter: r.meter | 0, gauge: r.gauge | 0, vars: { ...(r.vars || {}) } };
+  return { meter: Math.round((r.meter ?? 0) * unit), gauge: r.gauge | 0, vars: { ...(r.vars || {}) } };
 }
 
-/** Frame data of a move, converted to units (distances) and frames. ctx = { kind, meter (system meter.json) }. */
+/** Frame data of a move, converted to units (distances) and frames. ctx = { kind, meter (the Devotion rules) }. */
 function compileMoveData(m, ctx = {}) {
   const kind = ctx.kind ?? 'normal';
   const M = ctx.meter;
+  const U = M?.unit ?? 1;
   // An EX move: flagged (`ex: true`), or a special done with two buttons (attack + S). An `ex` OBJECT is the EX
   // version's overrides on a normal special (see exVersions), not a flag on the move that carries it.
   const ex = typeof m.ex === 'boolean' ? m.ex : kind === 'special' && ctx.chord === true;
-  const gain = M ? { ...(M.gain[kind] ?? M.gain.normal), ...(m.meter || {}) } : { hit: 0, block: 0, whiff: 0 };
-  const cost = resources(m.cost) ?? { meter: 0, gauge: 0, vars: {} };
-  if (m.meterCost !== undefined) cost.meter = m.meterCost;
-  else if (!m.cost?.meter && M) cost.meter = kind === 'super' ? M.superCost : ex ? M.exCost : 0;
+  const cost = resources(m.cost, U) ?? { meter: 0, gauge: 0, vars: {} };
+  // A super's level (1 or 3) sets its cost; an EX costs exCost; a move may name its own (`meterCost`, Devotion).
+  const level = kind === 'super' ? m.level ?? 1 : 0;
+  if (M && level && M.superCost[level] === undefined) throw new Error(`A super's level must be one of ${Object.keys(M.superCost).join(', ')} (got ${level})`);
+  if (m.meterCost !== undefined) cost.meter = Math.round(m.meterCost * U);
+  else if (!m.cost?.meter && M) cost.meter = kind === 'super' ? M.superCost[level] : ex ? M.exCost : 0;
+  const own = (v) => (v === undefined ? null : Math.round(v * U));
   return {
     kind,
     ex: !!ex,
+    level,
     startup: m.startup ?? 1,
     active: m.active ?? 0,
     recovery: m.recovery ?? 0,
@@ -172,13 +181,14 @@ function compileMoveData(m, ctx = {}) {
     // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
     chain: m.chain ?? null,
     hitFx: m.hitFx ?? null,
-    // Meter and the character mechanic (Phase 8).
-    meterGain: { hit: gain.hit | 0, block: gain.block | 0, whiff: gain.whiff | 0 },
+    // Devotion and the character mechanic. `meter: { hit, block }` on a move replaces the usual gain from damage
+    // (Devotion points, before the character's give); null = the usual rule.
+    devGain: m.meter ? { hit: own(m.meter.hit), block: own(m.meter.block) } : null,
     cost, // paid when the move starts: { meter, gauge, vars }
-    requires: m.requires ? { meter: m.requires.meter | 0, gauge: m.requires.gauge | 0, vars: { ...(m.requires.vars || {}) } } : null,
-    onHit: resources(m.onHit),
-    onBlock: resources(m.onBlock),
-    onWhiff: resources(m.onWhiff),
+    requires: m.requires ? resources(m.requires, U) : null,
+    onHit: resources(m.onHit, U),
+    onBlock: resources(m.onBlock, U),
+    onWhiff: resources(m.onWhiff, U),
   };
 }
 
@@ -190,7 +200,7 @@ const condition = (r) => ({ meter: r?.meter | 0, gauge: r?.gauge | 0, vars: { ..
  * flies straight, and hits once with its own frame data (the same fields as a move's).
  *   projectiles: { name: { speed, spawn: [x, y], hitbox: [x, y, w, h] (from its leading edge), lifetime, ...frame data } }
  */
-function compileProjectiles(src) {
+function compileProjectiles(src, meter) {
   const out = {};
   for (const [name, p] of Object.entries(src || {})) {
     const sp = p.spawn ?? [0, 0];
@@ -200,7 +210,7 @@ function compileProjectiles(src) {
       spawn: [px(sp[0]), px(sp[1])],
       hitbox: boxes([p.hitbox ?? [0, 0, 0, 0]]),
       lifetime: p.lifetime ?? 600,
-      move: compileMoveData(p, { kind: 'special' }),
+      move: compileMoveData(p, { kind: 'special', meter }),
       sprite: p.sprite ?? null, // drawing only
       anim: p.anim ?? null,
     };
@@ -457,7 +467,7 @@ export function compileCharacter(file, system) {
     if (src.sprite) sheets[name] = src.sprite;
     states[name] = compileState(name, src, stats, { sheet: src.sprite, sheetName: name });
   }
-  const projectiles = compileProjectiles(t.projectiles ?? file.projectiles);
+  const projectiles = compileProjectiles(t.projectiles ?? file.projectiles, system.meter);
   for (const p of Object.values(projectiles)) checkVars(ch.id, p.name, mechanic, [p.move.onHit, p.move.onBlock, p.move.stagger?.when]);
 
   // Universal moves (burst), unless the character defines its own with the same id.
@@ -504,6 +514,7 @@ export function compileCharacter(file, system) {
     for (const shots of st.onEnter) {
       for (const s of shots) {
         if (s.type === 'addVar' || s.type === 'setVar') checkVars(ch.id, st.name, mechanic, [{ vars: s.value }]);
+        if (s.type === 'meter') s.value = Math.round(s.value * (system.meter?.unit ?? 1)); // written in Devotion points
         if (s.type === 'gauge' && !mechanic.gauge) throw new Error(`${ch.id}: ${st.name} changes the gauge, but the mechanic has none`);
         if (s.type === 'spawn' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value}`);
       }
@@ -544,8 +555,10 @@ export function compileCharacter(file, system) {
   const attackOnly = new Set(commands.filter((c) => c.buttons.length === 1 && 'LMH'.includes(c.buttons)).map((c) => c.move));
 
   const meterMax = stats.units.meterBars * (system.meter?.barSize ?? 10000);
+  const meterStart = stats.units.meterStart * (system.meter?.unit ?? 1);
+  const devotion = compileArchetype(system.meter, t.meter ?? file.meter, ch.id);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
+    sheets, mechanic, meterMax, meterStart, devotion, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
     effects: t.effects ?? file.effects ?? {} }; // drawing only: named sheet effects for `fx` cues
 }
 

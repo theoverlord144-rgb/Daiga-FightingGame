@@ -45,7 +45,8 @@ export function createFighter(def, side, x) {
     gbY: 0, // pending ground bounce (upward speed, units; 0 = none)
     throwBy: -1, // while being thrown: the attacker's id
     throwMove: '',
-    meter: def.stats.meterStart ?? 0, // super meter, units (a bar is meter.json barSize)
+    meter: def.meterStart ?? 0, // Devotion, game units (one point is 100 units; a bar is 10000)
+    spGain: 0, // Devotion the current move gave for being a special (taken back if it turns into its EX version)
     burst: 0, // burst gauge (set from burst.json when the game is created)
     gauge: def.mechanic?.gauge ? def.mechanic.gauge.start : 0, // the character mechanic's gauge
     vars: Object.fromEntries(Object.entries(def.mechanic?.vars || {}).map(([k, v]) => [k, v.start])), // its counters
@@ -66,6 +67,27 @@ export function applyResources(p, def, r) {
     const v = def.mechanic.vars[k];
     if (v) p.vars[k] = clampTo(p.vars[k] + n, v.min, v.max);
   }
+}
+
+/**
+ * Give a fighter Devotion from a named source. `give` = it came from the Give side (attacking): the opponent's
+ * current combo keeps the total, because Absolve wipes it. The combo it belongs to (the opponent's for Give, the
+ * fighter's own for Take) also keeps a tally per source, for the training readouts. Returns what was actually
+ * gained (the meter may be full).
+ */
+export function gainDevotion(game, p, def, amount, source, give = false) {
+  if (amount <= 0) return 0;
+  const before = p.meter;
+  applyResources(p, def, { meter: amount });
+  const got = p.meter - before;
+  if (got > 0) {
+    const c = give ? game.players[1 - p.id].combo : p.combo;
+    if (c) {
+      if (give) c.gave += got;
+      c.by[source] = (c.by[source] || 0) + got;
+    }
+  }
+  return got;
 }
 
 /** Do the fighter's resources satisfy a requirement { meter, gauge, vars: { name: [min, max] or min } }? */
@@ -96,13 +118,10 @@ export const isAirborne = (def, p) => def.states[p.state].stance === 'air';
 export function enterState(p, def, name) {
   const st = def.states[name];
   if (!st) throw new Error(`${def.id}: no state ${name}`);
-  // Leaving a move that never touched anyone: whiff meter and the move's on-whiff effects. (Not when the fighter
-  // is knocked out of it by a hit, a block or a throw: that's an interruption, not a whiff.)
+  // Leaving a move that never touched anyone: the move's on-whiff effects (a whiff builds no Devotion). Not when
+  // the fighter is knocked out of it by a hit, a block or a throw: that's an interruption, not a whiff.
   const old = def.states[p.state]?.move;
-  if (old && p.contact === CONTACT.NONE && p.hitsDone === 0 && !st.stun && !st.throwVictim) {
-    applyResources(p, def, { meter: old.meterGain.whiff });
-    applyResources(p, def, old.onWhiff);
-  }
+  if (old && p.contact === CONTACT.NONE && p.hitsDone === 0 && !st.stun && !st.throwVictim) applyResources(p, def, old.onWhiff);
   p.state = name;
   p.frame = 0;
   p.stateTime = 0;
@@ -298,11 +317,23 @@ function throwInRange(game, p, def, world, cmd) {
 }
 
 /** Start a command's move: mark its presses used and pay its cost. */
-function startCommand(p, def, pick, viaCancel = p.viaCancel) {
+function startCommand(game, p, def, pick, viaCancel = p.viaCancel) {
   p.viaCancel = viaCancel ? 1 : 0;
   for (const [b, f] of Object.entries(pick.presses)) p.consumed[BTN_INDEX[b]] = f;
   enterState(p, def, pick.cmd.move);
   applyResources(p, def, negate(pick.cmd.cost));
+  // Doing a special move builds a little Devotion (not its EX version, which costs a bar).
+  const mv = def.states[pick.cmd.move].move;
+  p.spGain = mv.kind === 'special' && !mv.ex ? gainDevotion(game, p, def, def.devotion.special, 'special', true) : 0;
+}
+
+/** Take back what the current move gave for being a special (it is being replaced before it did anything). */
+function undoSpecialGain(game, p) {
+  if (!p.spGain) return;
+  p.meter -= p.spGain;
+  const c = game.players[1 - p.id].combo;
+  if (c) { c.gave = Math.max(0, c.gave - p.spGain); c.by.special = Math.max(0, (c.by.special || 0) - p.spGain); }
+  p.spGain = 0;
 }
 
 /** Cancel windows of the current state that are open on this frame for this contact. */
@@ -328,14 +359,17 @@ function decide(game, p, opp, def, world) {
     for (const cmd of ups) {
       if (!meets(p, cmd.requires)) continue;
       const paid = def.states[p.state].move.cost;
-      const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter, gauge: p.gauge + paid.gauge };
+      // What the fighter had before the one-button version started: its cost back, and without the Devotion it
+      // gave for being a special (that must never be what pays for the EX).
+      const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter - p.spGain, gauge: p.gauge + paid.gauge };
       if (!affords(refunded, cmd.cost)) continue;
       const presses = commandInput(game, p, cmd, world, buffer, cmd.buttons);
       if (presses) {
-        // Refund the one-button version's cost, then start the chord version (no whiff meter for the swap).
+        // Refund the one-button version's cost (and take back its Devotion), then start the chord version.
         applyResources(p, def, paid);
-        p.contact = CONTACT.HIT;
-        startCommand(p, def, { cmd, presses });
+        undoSpecialGain(game, p);
+        p.contact = CONTACT.HIT; // no on-whiff effects for the swap
+        startCommand(game, p, def, { cmd, presses });
         return;
       }
     }
@@ -350,8 +384,9 @@ function decide(game, p, opp, def, world) {
       (cmd) => cmd.neutral && cmd.buttons !== 'S' && ATTACK.some((b) => cmd.buttons.includes(b)) && (!p.viaCancel || cmd.kind !== 'normal'), 'S');
     if (pick) {
       applyResources(p, def, def.states[p.state].move.cost);
-      p.contact = CONTACT.HIT; // no whiff meter for the swap
-      startCommand(p, def, pick);
+      undoSpecialGain(game, p);
+      p.contact = CONTACT.HIT; // no on-whiff effects for the swap
+      startCommand(game, p, def, pick);
       return;
     }
   }
@@ -382,7 +417,7 @@ function decide(game, p, opp, def, world) {
     : (cmd) => windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
-    startCommand(p, def, pick, !st.free);
+    startCommand(game, p, def, pick, !st.free);
     return;
   }
   if (backOut()) return;

@@ -362,7 +362,8 @@ test('Avner: Air Spike (j.S) has its art, and the hit lands on drawing 4', () =>
   assert.ok(fs.existsSync('data/characters/avner/sheets/jS.png'));
 });
 
-test('Malik: Spirit Install (down, down, S+H) costs two bars, runs 10 seconds, and carries its aura and art', () => {
+// The cost follows the owner's universal systems spec: a level 1 super costs one bar (it was two for a while).
+test('Malik: Spirit Install (down, down, S+H) costs one bar, runs 10 seconds, and carries its aura and art', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const run = (meter, text) => {
     const game = createGame(world);
@@ -372,23 +373,23 @@ test('Malik: Spirit Install (down, down, S+H) costs two bars, runs 10 seconds, a
     return { game, seen, flashed, top };
   };
   // With a bar: the super comes out, the screen flashes, the bar is spent, the timer starts at 10 seconds and runs down.
-  const a = run(20000, '2 5 2+HS 5*100');
+  const a = run(10000, '2 5 2+HS 5*100');
   assert.ok(a.seen.has('install'));
   assert.ok(a.flashed, 'super flash');
   assert.equal(a.top, 600);
-  assert.ok(a.game.players[0].meter < 1000, 'both bars are spent');
+  assert.equal(a.game.players[0].meter, 0, 'the bar is spent');
   assert.ok(a.game.players[0].vars.install > 0 && a.game.players[0].vars.install < 600, 'counting down');
   // It runs out by itself.
-  const b = run(20000, '2 5 2+HS 5*720');
+  const b = run(10000, '2 5 2+HS 5*720');
   assert.equal(b.game.players[0].vars.install, 0);
-  // Without two bars: no install.
+  // Without a full bar: no install.
   const c = run(0, '2 5 2+HS 5*60');
   assert.ok(!c.seen.has('install'));
-  const c1 = run(19999, '2 5 2+HS 5*60');
-  assert.ok(!c1.seen.has('install'), 'one bar is not enough');
+  const c1 = run(9999, '2 5 2+HS 5*60');
+  assert.ok(!c1.seen.has('install'), 'just short of a bar is not enough');
   // Already installed: it can't be done again (no bar wasted).
   const d = run(40000, '2 5 2+HS 5*60 2 5 2+HS 5*30');
-  assert.ok(d.game.players[0].meter >= 20000, 'the other two bars are kept');
+  assert.equal(d.game.players[0].meter, 30000, 'the other three bars are kept');
   // Drawing data: the guardian and half of the lights behind him, flames and the other lights in front; idle art swapped.
   const v = world.chars[0].mechanic.vars.install;
   assert.deepEqual(v.aura.map((l) => [l.effect, !!l.behind]), [['guardian', true], ['installMotesBack', true], ['installFlames', false], ['installMotesFront', false]]);
@@ -489,11 +490,13 @@ test('Malik: Air S hits on drawing 4 (the big smear), Standing S on drawing 3, a
   assert.ok(seen.includes('j.S'), seen.join('>'));
 });
 
-test('Devotion meter: four bars, a super costs two, and every piece of the meter art is there with a slot per bar', () => {
+// Costs follow the owner's universal systems spec (section 2): a bar is 100 Devotion, the meter holds 400, an EX
+// costs 100, a super 100 (level 1) or 300 (level 3). (For a while every super cost two bars.)
+test('Devotion meter: four bars of 100, supers cost one or three, and every piece of the meter art is there with a slot per bar', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
-  const meter = JSON.parse(fs.readFileSync('data/system/meter.json', 'utf8'));
-  assert.equal(meter.superCost, 2 * meter.barSize);
-  for (const c of world.chars) assert.equal(c.meterMax, 4 * meter.barSize, c.id);
+  const meter = JSON.parse(fs.readFileSync('data/system/systems.json', 'utf8')).devotion;
+  assert.deepEqual([meter.barSize, meter.exCost, meter.superCost[1], meter.superCost[3]], [100, 100, 100, 300]);
+  for (const c of world.chars) assert.equal(c.meterMax, 4 * meter.barSize * meter.unit, c.id);
   const D = JSON.parse(fs.readFileSync('data/system/effects.json', 'utf8')).devotion;
   assert.equal(D.windows.length, 4, 'a slot per bar');
   for (const name of [D.frame.image, D.fill, D.fillFull, D.glow, D.glowFull, D.digits.image, D.plate.image]) assert.ok(fs.existsSync('data/effects/' + name), name);

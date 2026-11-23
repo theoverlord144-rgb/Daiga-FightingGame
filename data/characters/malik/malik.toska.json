@@ -7,6 +7,7 @@
     "name": "Malik",
     "stats": { "airHurt": [[-28, 5, 67, 165]], "standHurt": [[-39, -1, 80, 175]] }
   },
+  "meter": { "archetype": "penitent" },
   "mechanic": {
     "name": "Spirit Install",
     "vars": {

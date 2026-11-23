@@ -94,10 +94,11 @@ Version 2 adds per move:
 
 | Field | Meaning |
 | --- | --- |
-| `meter` | `{ hit, block, whiff }`: super meter this move builds. Default by `kind` in `data/system/meter.json`. Whiff meter is paid when the move ends without touching anything. |
-| `cost` | `{ meter, gauge, vars: { name: n } }`: paid when the move starts; the move can't be done without it. Default: `superCost` (one bar) for supers, `exCost` (one bar) for EX moves, nothing otherwise. If an EX can't be afforded, the one-button version comes out instead. |
+| `meter` | `{ hit, block }`: Devotion points this move builds on hit / when blocked, in place of the usual amount from its damage (still times the character's give). Leave it out for the usual rule (`data/system/systems.json`). A whiff builds nothing. |
+| `cost` | `{ meter, gauge, vars: { name: n } }`: paid when the move starts; the move can't be done without it. `meter` is in Devotion points (a bar is 100). Default: by `level` for supers, `exCost` (100) for EX moves, nothing otherwise. `meterCost: n` is a short way to set just the Devotion cost. If an EX can't be afforded, the one-button version comes out instead. |
+| `level` | Supers only: `1` (costs 100 Devotion, the default) or `3` (costs 300). The costs are `superCost` in `data/system/systems.json`. |
 | `requires` | `{ gauge: n, vars: { name: n or [min, max] } }`: must be true to start the move; nothing is spent. |
-| `onHit`, `onBlock`, `onWhiff` | `{ meter, gauge, vars: { name: +n } }`: changes to the attacker's resources when the move hits, is blocked or whiffs. |
+| `onHit`, `onBlock`, `onWhiff` | `{ meter, gauge, vars: { name: +n } }`: changes to the attacker's resources when the move hits, is blocked or whiffs (`meter` in Devotion points, added as written: no give multiplier). |
 | `neutral` | `false`: the move only comes out from a cancel window that names it. For chain follow-ups ("214L, then L, then L"): the follow-up's input can be a plain button without taking that button over in neutral. |
 
 **EX upgrade:** if the one-button version starts and the second button arrives within `chordWindow` frames, the move
@@ -176,7 +177,7 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `sound`, `fx` | one-shot | Cue names for the renderer and audio. An `fx` name listed in the file's top-level `effects` plays that sheet: `{ "haloArc": { hold, at: [x, y], sprite } }` (drawing only; `at` is px from the feet, x forward; `hold` = game frames per drawing). |
 | `jump` | one-shot | Engine hook: launch a jump from the stats (`"normal"`). |
 | `superFlash` | one-shot | Frames of super flash: the whole game freezes and the screen dims (presses made during it are kept). |
-| `meter`, `gauge` | one-shot | Add meter / mechanic gauge (negative to spend). |
+| `meter`, `gauge` | one-shot | Add Devotion (points) / mechanic gauge (negative to spend). |
 | `addVar`, `setVar` | one-shot | `{ name: n }`: change a mechanic var. |
 | `toOpponent` | one-shot | `{ to, frames }`: slide to the opponent, stopping `to` px in front of them, over `frames` frames (never past them; pushboxes still apply). |
 | `spawn` | one-shot | A projectile name (top-level `projectiles`): one appears at its `spawn` offset, facing the way the fighter faces. |
@@ -237,9 +238,16 @@ Heights are pixels above the ground line.
 
 ## Universal mechanics (system data)
 
-- **Meter** (`data/system/meter.json`): `barSize`, gains by kind, `victimGainPct` (the defender builds this
-  share of the damage taken), `exCost`, `superCost`. Bars per character: `stats.meterBars` (default 3),
-  `stats.meterStart`.
+- **Devotion** (the meter; `devotion` in `data/system/systems.json`, every field explained in that file's notes).
+  Written in Devotion points: `barSize` 100, `exCost` 100, `superCost` by level `{ "1": 100, "3": 300 }`,
+  `gain` (`hitPerPct` 3, `blockedPerPct` 1, `special` 5, `perfectLink` 2, `hurtPerPct` 2, `vowAbsorb` 0.5),
+  `takeCapPerCombo` 150, and the `archetypes` presets (balanced, martyr, zealot, penitent, trickster: `give`,
+  `take`, `extras`). `unit` (100) is how many game units a point is: the game keeps whole numbers only, so a bar
+  is 10000 units in `p.meter`. Bars per character: `stats.meterBars` (default 4), `stats.meterStart` (points).
+- **A character's Devotion profile**: top-level `"meter": { "archetype": "penitent" }` in its file (default
+  balanced). Optional overrides beside it: `give`, `take` (plain multipliers, `0.6`) and `extras` (any of
+  `vowAbsorb`, `perfectLink`, `witness`, `guardPerPct`, `repel`, `drawRefund`, `variety { newMove, repeat,
+  switch }`), each replacing the preset's value.
 - **Burst** (`data/system/burst.json`): `enabled`, `buttons` (default `"HS"` pressed together), `gaugeMax`,
   `start`, `perFrame`, `hurtPct` (gauge from damage taken), `states` (where it's allowed: being comboed) and the
   `burst` / `burstAir` moves every character gets (invincible, knocks the attacker away, ends the combo).

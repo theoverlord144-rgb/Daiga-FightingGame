@@ -2,7 +2,8 @@
 // throws and throw techs, hitstop, hitstun/blockstun, pushback (and corner pushback), damage with guts.
 
 import { frameOf } from './character.js';
-import { CONTACT, enterState, isAirborne, startSlide, applyResources, meets } from './fighter.js';
+import { CONTACT, enterState, isAirborne, startSlide, applyResources, meets, gainDevotion } from './fighter.js';
+import { perPercent } from './devotion.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
 import { pct, sign } from './fixed.js';
 
@@ -183,20 +184,45 @@ function resolveStrike(game, world, a, d, rect, snap) {
   return out;
 }
 
-/** Meter and mechanic gains when a strike connects: attacker by the move, defender by the damage taken. */
-function gains(world, a, d, move, kind, dmg) {
+/**
+ * Devotion and mechanic gains when a strike connects.
+ * Devotion (rules in data/system/systems.json): the attacker builds from the damage dealt, or from what a blocked
+ * hit would have done, times their give; the defender builds from the health lost, times their take, capped per
+ * combo. info = { fresh, switched } for the trickster's variety (a move new to the combo; a high / low / side switch).
+ */
+function gains(game, world, a, d, move, kind, dmg, info = {}) {
   const adef = world.chars[a.id];
   const ddef = world.chars[d.id];
   const g = adef.mechanic.gauge;
+  const M = world.meter;
+  const A = adef.devotion;
+  const D = ddef.devotion;
+  const maxHp = ddef.stats.health;
   if (kind === 'block') {
-    applyResources(a, adef, { meter: move.meterGain.block, gauge: g ? g.onBlock : 0 });
+    applyResources(a, adef, { gauge: g ? g.onBlock : 0 });
     applyResources(a, adef, move.onBlock);
+    if (M) {
+      gainDevotion(game, a, adef, pct(move.devGain?.block ?? perPercent(move.damage, maxHp, M.gain.blockedPerPct), A.give), 'blocked', true);
+      if (D.extras.guardPerPct) gainDevotion(game, d, ddef, pct(perPercent(move.damage, maxHp, D.extras.guardPerPct), D.take), 'guard');
+    }
     return;
   }
-  applyResources(a, adef, { meter: move.meterGain.hit, gauge: g ? g.onHit : 0 });
+  applyResources(a, adef, { gauge: g ? g.onHit : 0 });
   applyResources(a, adef, move.onHit);
-  const M = world.meter;
-  if (M && dmg > 0) applyResources(d, ddef, { meter: pct(dmg, M.victimGainPct) });
+  if (M) {
+    let give = pct(move.devGain?.hit ?? perPercent(dmg, maxHp, M.gain.hitPerPct), A.give);
+    const v = A.extras.variety;
+    if (v && d.combo) {
+      give = pct(give, info.fresh ? v.newMove : v.repeat);
+      if (info.switched) give += v.switch;
+    }
+    gainDevotion(game, a, adef, give, 'hit', true);
+    // The defender: from the health lost, with a cap on what one combo can hand them.
+    let take = pct(perPercent(dmg, maxHp, M.gain.hurtPerPct), D.take);
+    if (d.combo) take = Math.min(take, Math.max(0, M.takeCap - d.combo.took));
+    gainDevotion(game, d, ddef, take, 'hurt');
+    if (d.combo) d.combo.took += take;
+  }
   const dg = ddef.mechanic.gauge;
   if (dg && dg.onHurt) applyResources(d, ddef, { gauge: dg.onHurt });
   const B = world.burst;
@@ -223,8 +249,9 @@ function applyStrike(game, world, r) {
   if (r.kind === 'armor') {
     d.armorUsed++;
     if (body) a.contact = CONTACT.HIT;
-    gains(world, a, d, move, 'hit', 0);
-    applyDamage(d, ddef, gutsDamage(pct(move.damage, battle.armorDamagePct), d.health, maxHp, battle));
+    const armorDmg = gutsDamage(pct(move.damage, battle.armorDamagePct), d.health, maxHp, battle);
+    gains(game, world, a, d, move, 'hit', armorDmg);
+    applyDamage(d, ddef, armorDmg);
     d.hitstop = move.hitstop;
     if (body) a.hitstop = move.hitstop;
     cue(game, 'armor', a, rect, { move: r.moveId });
@@ -236,7 +263,7 @@ function applyStrike(game, world, r) {
 
   if (r.kind === 'block') {
     if (body) a.contact = CONTACT.BLOCK;
-    gains(world, a, d, move, 'block', 0);
+    gains(game, world, a, d, move, 'block', 0);
     applyDamage(d, ddef, move.chip);
     d.hitstop = move.blockHitstop;
     if (body) a.hitstop = move.blockHitstop;
@@ -255,7 +282,10 @@ function applyStrike(game, world, r) {
 
   // The combo this hit belongs to (a new one if the defender wasn't already being comboed).
   const starter = !d.combo;
-  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0 };
+  // took / gave: Devotion this combo has given its victim (capped) and its attacker (Absolve wipes it); by: the
+  // same per source, for the training readouts.
+  // cls / side: the last hit's guard class and the attacker's side, for the trickster's variety.
+  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0, took: 0, gave: 0, by: {}, cls: '', side: 0 };
   const combo = d.combo;
   const moveId = r.moveId;
   // Earlier uses of this move in the combo (a multi-hit move's own later hits don't count as a new use).
@@ -275,10 +305,15 @@ function applyStrike(game, world, r) {
   if (starter) scale = pct(scale, move.starterProration ?? C.starterProration);
   scale = pct(scale, move.comboProration ?? C.comboProration);
   combo.scale = Math.max(C.minScale, scale);
+  const cls = move.guard === 'high' || move.guard === 'low' ? move.guard : '';
+  const side = a.x < d.x ? -1 : a.x > d.x ? 1 : -a.facing;
+  const switched = combo.hits > 0 && ((cls !== '' && combo.cls !== '' && cls !== combo.cls) || (combo.side !== 0 && side !== combo.side));
+  if (cls) combo.cls = cls;
+  combo.side = side;
   combo.hits++;
   combo.damage += dmg;
   if (r.firstOfUse) combo.used[moveId] = used + 1;
-  gains(world, a, d, move, 'hit', dmg);
+  gains(game, world, a, d, move, 'hit', dmg, { fresh: uses === 0, switched });
 
   d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
   if (body) a.hitstop = d.hitstop;
@@ -444,7 +479,7 @@ export function throwLands(game, world, d) {
   if (move) {
     const dmg = gutsDamage(pct(move.damage, damageMod(world, a)), d.health, ddef.stats.health, world.battle);
     applyDamage(d, ddef, dmg);
-    gains(world, a, d, move, 'hit', dmg);
+    gains(game, world, a, d, move, 'hit', dmg, { fresh: true });
     if (move.throwSwap) {
       d.x = a.x - a.facing * move.throwDistance;
       a.facing = -a.facing;

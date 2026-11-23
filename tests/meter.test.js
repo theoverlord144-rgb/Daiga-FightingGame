@@ -28,34 +28,39 @@ const states = (g, s, who = 0) => script(s).map((r) => { step(g, who === 0 ? [r,
 
 // ---------- Meter ----------
 
-test('meter builds on hit, on block and on whiff by the amounts in the data; the defender builds from damage', () => {
-  const N = M.gain.normal;
+// This test used to pin the old meter (fixed amounts per move kind, whiff meter, the defender building half the
+// damage). The owner's universal systems spec, section 2, replaced those rules; tests/devotion.test.js covers every
+// source and archetype. Here: the same jab, by the new rules, in Devotion points (100 units each).
+test('Devotion builds from damage dealt, from a blocked hit and from health lost; a whiff builds nothing', () => {
+  const D = 100;
   let g = setup(600);
   run(g, '5+L 5*20');
-  assert.equal(g.players[0].meter, N.whiff, 'whiffed jab');
+  assert.equal(g.players[0].meter, 0, 'whiffed jab: nothing');
   g = setup();
   run(g, '5+L 5*20');
-  assert.equal(g.players[0].meter, N.hit, 'jab hit (no whiff meter on top)');
-  assert.equal(g.players[1].meter, pct(400, M.victimGainPct), 'defender: half the 400 damage');
+  assert.equal(g.players[0].meter, 12 * D, 'jab hit: 400 damage is 4% of 10000 health, 3 per 1%');
+  assert.equal(g.players[1].meter, 8 * D, 'the defender: 2 per 1% of their health lost');
   g = setup();
   run(g, '5+L 5*20', '6*25');
   assert.equal(g.players[1].state.startsWith('block') || g.players[1].state === 'walkB' || g.players[1].state === 'idle', true);
-  assert.equal(g.players[0].meter, N.block, 'jab blocked');
-  assert.equal(g.players[1].meter, 0, 'blocking builds nothing for the defender');
-  // Specials build their own (larger) amounts.
+  assert.equal(g.players[0].meter, 4 * D, 'jab blocked: 1 per 1% it would have done');
+  assert.equal(g.players[1].meter, 0, 'blocking builds nothing for a balanced defender');
+  // Doing a special gives 5, and its hit builds from its damage like any other.
   g = setup();
   run(g, '2 3 6+L 5*40');
-  assert.equal(g.players[0].meter, M.gain.special.hit);
+  assert.equal(g.players[0].meter, 5 * D + 24 * D, '5 for the special, then 800 damage = 8% x 3');
 });
 
 test('a move can set its own meter gain, and meter never passes the maximum', () => {
   const c = compileCharacter({ engine: 'Toska', version: 2, character: { id: 'x', stats: { meterBars: 1 } }, moves: [
-    { id: '5L', input: '5L', startup: 3, active: 2, recovery: 5, damage: 100, hitstun: 30, hitboxes: [[0, 50, 200, 100]], meter: { hit: 4000 } },
+    { id: '5L', input: '5L', startup: 3, active: 2, recovery: 5, damage: 100, hitstun: 30, hitboxes: [[0, 50, 200, 100]], meter: { hit: 40 } },
   ] }, SYSTEM);
   const w = loadWorld(c, c);
   const g = createGame(w);
   g.players[0].x = -px(40); g.players[1].x = px(40);
-  for (const r of script('5+L 5*12 5+L 5*12 5+L 5*12 5+L 5*12')) step(g, [r, 0], w);
+  for (const r of script('5+L 5*12 5+L 5*12')) step(g, [r, 0], w);
+  assert.equal(g.players[0].meter, 8000, 'two hits at the 40 Devotion the move names (not the 3 its damage would give)');
+  for (const r of script('5+L 5*12 5+L 5*12')) step(g, [r, 0], w);
   assert.equal(c.meterMax, 10000);
   assert.equal(g.players[0].meter, 10000, 'capped at one bar');
 });
@@ -73,7 +78,7 @@ test('specials come out from motions; the EX version (attack + S) needs a full b
   g = setup(300);
   g.players[0].meter = M.exCost - 1;
   assert.ok(states(g, '2 3 6+LS 5').includes('236L'), 'just short of a bar: still the plain version');
-  assert.equal(g.players[0].meter, M.exCost - 1, 'and nothing is spent');
+  assert.equal(g.players[0].meter, M.exCost - 1 + M.gain.special, 'nothing is spent (and the special gives its 5)');
   g = setup(300);
   g.players[0].meter = 12000;
   assert.ok(states(g, '2 3 6+LS 5').includes('236L_ex'));
@@ -89,7 +94,7 @@ test('a chord works with the buttons up to chordWindow frames apart, in either o
       const seq = gap === 0 ? `2 3 6+${first}${second} 5*40` : `2 3 6+${first} ${gap > 1 ? `6*${gap - 1} ` : ''}6+${second} 5*40`;
       const seen = states(g, seq);
       assert.ok(seen.includes('236L_ex'), `${first} then ${second}, ${gap} apart: ${[...new Set(seen)].join(' ')}`);
-      assert.equal(g.players[0].meter, 10000 - M.exCost + M.gain.special.whiff, 'paid once (then whiff meter when it ended)');
+      assert.equal(g.players[0].meter, 10000 - M.exCost, 'paid once, and the EX gives no Devotion for being a special');
     }
   }
   const g = setup(300);
@@ -100,11 +105,11 @@ test('a chord works with the buttons up to chordWindow frames apart, in either o
 
 test('supers: a super flash freezes the whole game, and presses made during it come out right after', () => {
   const g = setup(120);
-  g.players[0].meter = 20000;
+  g.players[0].meter = 10000;
   run(g, '2 3 6 2 3 6+H');
   const [a, d] = g.players;
   assert.equal(a.state, 'super');
-  assert.equal(a.meter, 0, 'two full bars spent');
+  assert.equal(a.meter, 0, 'one bar spent (a level 1 super)');
   const flash = g.flash;
   assert.ok(flash > 0);
   const before = hashState({ ...g, frame: 0, flash: 0, cues: [], players: g.players.map((p) => ({ ...p, input: null, freezeAge: 0 })) });
@@ -273,8 +278,8 @@ test('sync test with specials, EX, supers, chains, the mechanic and burst: ident
     for (const c of g.cues) { if (c.type === 'superflash') flashes++; if (c.type === 'burst') bursts++; }
     for (const i of [0, 1]) {
       const p = g.players[i];
-      // A super costs two bars, which random play rarely saves up: both start the run with two (set before the
-      // first step, so every rewind sees it). After that, meter only comes from play.
+      // Both start the run with two bars (set before the first step, so every rewind sees it), so supers and EX
+      // moves happen early. After that, meter only comes from play.
       if (g.frame === 0) p.meter = 20000;
       if (!queues[i].length) {
         let raws = script(plans[rnd() % plans.length]);
