@@ -101,8 +101,13 @@ test('combo time counts frames while the combo is alive, not during hitstop', ()
   assert.equal(g.players[1].combo.time, 10);
 });
 
-test('a long combo ends on its own: a self-chaining jab with no pushback eventually drops', () => {
+test('a long combo ends on its own: a self-chaining jab with no pushback eventually drops', (t) => {
   // P2 is in the corner holding back: helpless in hitstun, but the first frame they're free, they block.
+  // This test repeats one normal many times to exercise another rule, so the once-per-string limit
+  // (reverse beat, tests/reverse-beat.test.js) is switched off for it.
+  const uses = W.combo.chainUses;
+  W.combo.chainUses = null;
+  t.after(() => { W.combo.chainUses = uses; });
   const wall = W.battle.halfWidthUnits / 100;
   const g = setup(wall - 122, wall - 22);
   hit(g, '5L');

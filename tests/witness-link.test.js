@@ -298,7 +298,12 @@ test('Perfect Link: that hit adds nothing to damage scaling, +2 Devotion, and th
   assert.equal(plain.players[1].health, linked.players[1].health);
 });
 
-test('Perfect Link: at most 3 per combo; the fourth still comes out, with no reward', () => {
+test('Perfect Link: at most 3 per combo; the fourth still comes out, with no reward', (t) => {
+  // This test repeats one normal many times to exercise another rule, so the once-per-string limit
+  // (reverse beat, tests/reverse-beat.test.js) is switched off for it.
+  const uses = W.combo.chainUses;
+  W.combo.chainUses = null;
+  t.after(() => { W.combo.chainUses = uses; });
   const g = setup();
   strike(g);
   const d = g.players[1];

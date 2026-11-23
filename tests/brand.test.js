@@ -93,7 +93,10 @@ test('toOpponent: the fighter slides to `to` px in front of the opponent, either
 test('perCombo: a move limited to once per combo cannot hit twice in one combo, and is fine again after', () => {
   const moves = (perCombo) => [{ id: '5L', input: '5L', startup: 3, active: 2, recovery: 14, damage: 100, hitstun: 30, hitstop: 0, pushbackHit: 0,
     perCombo, hitboxes: [[0, 50, 120, 100]] }];
-  const most = (w) => {
+  // This test repeats one normal many times to exercise another rule, so the once-per-string limit
+  // (reverse beat, tests/reverse-beat.test.js) is switched off for it.
+  const most = (world) => {
+    const w = { ...world, combo: { ...world.combo, chainUses: null } };
     const g = placed(w, 60);
     let max = 0;
     for (const r of script('5+L 5*6 5+L 5*6 5+L 5*6 5+L 5*40')) {

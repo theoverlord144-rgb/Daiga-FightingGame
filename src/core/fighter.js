@@ -91,6 +91,7 @@ export function createFighter(def, side, x) {
     armorUsed: 0,
     consumed: [-1, -1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
     viaCancel: 0, // 1 = the current move was cancelled into (not started from a free state)
+    string: {}, // reverse beat: how many times each normal has come out in the current string of chained normals
     hsEnd: -1, // the game frame this fighter came out of the hitstop of its current move's hit (-1 = it hasn't)
     hsLen: 0, // how long that hitstop was
     link: 0, // 1 = the current move was a Perfect Link: its first hit adds nothing to the combo's scaling
@@ -361,6 +362,12 @@ function pickCommand(game, p, def, world, allowed, reuse = '') {
 }
 
 /** The opponent's current combo already took this move as many times as it's allowed. */
+/** Reverse beat's limit: a normal already used its share of times in this string of chained normals. */
+function usedUp(p, cmd, world) {
+  const rule = world.combo.chainUses;
+  if (!rule || cmd.kind !== 'normal') return false;
+  return (p.string[cmd.move] || 0) >= (rule[cmd.buttons] ?? rule.default ?? 1);
+}
 const overCombo = (o, cmd) => !!o.combo && (o.combo.used[cmd.move] || 0) >= cmd.perCombo;
 
 /**
@@ -409,6 +416,9 @@ function linkTiming(game, p, world, pick) {
  * (not an EX upgrade or a launcher swap): check it for a Perfect Link.
  */
 function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link = false) {
+  // A string is normals chained one into the next. Anything else before this move starts a new one.
+  if (!viaCancel || def.states[p.state].kind !== 'normal') p.string = {};
+  if (pick.cmd.kind === 'normal') p.string[pick.cmd.move] = (p.string[pick.cmd.move] || 0) + 1;
   p.viaCancel = viaCancel ? 1 : 0;
   const timing = link ? linkTiming(game, p, world, pick) : null;
   const keepLink = link ? 0 : p.link;
@@ -552,7 +562,7 @@ function decide(game, p, opp, def, world) {
     : st.kind === 'normal' && p.meter >= world.sys.vow.cancelCost && windows.some((w) => w.into.has('#special')));
   const allowed = st.free
     ? (cmd) => cmd.neutral && (cmd.kind !== 'vow' || vowOk)
-    : (cmd) => (cmd.kind === 'vow' ? vowOk : false) || windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
+    : (cmd) => (cmd.kind === 'vow' ? vowOk : false) || (!(st.kind === 'normal' && usedUp(p, cmd, world)) && windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`))));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
     startCommand(game, p, def, world, pick, !st.free, !st.free);

@@ -184,6 +184,7 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
   `airTech`. Wall/ground bounces are armed by the move (`wbX/wbY/gbY` on the victim), fire in `separate` / `land`,
   and are limited per combo. A combo ends (→ `lastCombo`) the moment the victim is out of `COMBO_STATES`, checked
   before the frame's hits.
+- **Reverse beat** (owner, Nov 23; report `docs/reports/reverse-beat.md`, tests `tests/reverse-beat.test.js`): chain tables may point strong → weak, and `combo.json` `chainUses` (`{ default: 1, L: 2 }`, keyed by the command's buttons; remove it = no limit) caps how often one normal comes out in a string. `p.string` (game state) counts normals started since the string began; `startCommand` clears it unless the move was cancelled into from a normal; `usedUp` in fighter.js refuses a used-up normal in a normal's cancel window, on hit or block. Tests that repeat one normal on purpose set `chainUses: null` on their world. In the cast's tables the plain normals chain freely (ground with ground, air with air); launchers, sweeps, ground-bounce moves and throws are targets only.
 - **Gatlings** compile into cancel windows (`gatlingCancels` in character.js): the table plus `specialCancel`,
   `superCancel`, `jumpCancel`, `launcher` (`#superjump`: up on hit → `superJump` with no pre-jump).
 

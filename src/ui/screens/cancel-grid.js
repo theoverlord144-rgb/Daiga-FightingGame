@@ -1,6 +1,7 @@
 // The box editor's CANCELS page: every move down the side, what it can be cancelled into across the top.
 // Click a square to add or remove a route. The rules are in src/editor/cancel-model.js; the box editor owns the
 // file, undo and save, and passes them in.
+import { COMBO } from '../boot.js';
 import { cancelMoves, cancelTargets, readCancels, reachedFrom, chainMakesSense, toggleChain, setChainOn, setGroup, setWindow, WHEN, WHEN_NAMES } from '../../editor/cancel-model.js';
 
 const INK = '#e8e3f0';
@@ -57,7 +58,10 @@ export function createCancelGrid(env) {
     }
 
     text(`CANCELS · ${env.charId().toUpperCase()}`, 190, 20, { size: 13, weight: 700 });
-    text('Down the side: the move being done. Across the top: what it may be cancelled into.', 190, 38, { color: DIM, size: 11 });
+    const uses = COMBO.chainUses;
+    const limit = !uses ? 'No limit on repeating a normal in a string.'
+      : `In one string each normal comes out ${uses.default === 1 ? 'once' : `${uses.default} times`}${uses.L && uses.L !== uses.default ? `, lights ${uses.L === 2 ? 'twice' : `${uses.L} times`}` : ''}.`;
+    text(`Down the side: the move being done. Across the top: what it may be cancelled into. ${limit}`, 190, 38, { color: DIM, size: 11 });
 
     // Column names, tilted so long ones fit.
     d.targets.forEach((t, i) => {
