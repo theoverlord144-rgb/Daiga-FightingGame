@@ -54,6 +54,7 @@ export function openControlsPanel(root, devices, onClose) {
           <h3>Player ${i + 1}</h3>
           <div class="row" style="margin:0 0 8px">Gamepad:
             <select data-pad="${i}">
+              <option value="auto" ${b.players[i].pad.index === 'auto' ? 'selected' : ''}>Auto (${i === 0 ? 'first' : 'second'} one used)</option>
               ${[0, 1, 2, 3].map((n) => {
                 const g = pads.find((p) => p.index === n);
                 return `<option value="${n}" ${b.players[i].pad.index === n ? 'selected' : ''}>Pad ${n + 1}${g ? ` (${g.id.slice(0, 24)})` : ' (not connected)'}</option>`;
@@ -75,7 +76,7 @@ export function openControlsPanel(root, devices, onClose) {
     const t = e.target;
     if (t.dataset.pad !== undefined) {
       const b = structuredClone(devices.bindings);
-      b.players[Number(t.dataset.pad)].pad.index = Number(t.value);
+      b.players[Number(t.dataset.pad)].pad.index = t.value === 'auto' ? 'auto' : Number(t.value);
       devices.setBindings(b);
     }
   });
@@ -103,15 +104,15 @@ export function openControlsPanel(root, devices, onClose) {
       t.classList.add('wait');
       t.textContent = 'press a button…';
       const want = devices.bindings.players[Number(i)].pad.index;
+      // On "Auto" any connected controller may answer. Buttons already held when the box was clicked don't count.
+      const mine = () => devices.pads().filter((p) => want === 'auto' || p.index === want);
       const before = new Set();
-      const pad0 = devices.pads().find((p) => p.index === want);
-      if (pad0) pad0.buttons.forEach((bt, n) => bt.pressed && before.add(n));
+      for (const p of mine()) p.buttons.forEach((bt, n) => bt.pressed && before.add(p.index + ':' + n));
       stopPadPoll();
       const poll = () => {
-        const pad = devices.pads().find((p) => p.index === want);
-        if (pad) {
-          const n = pad.buttons.findIndex((bt, k) => bt.pressed && !before.has(k));
-          for (const k of [...before]) if (!pad.buttons[k].pressed) before.delete(k);
+        for (const pad of mine()) {
+          const n = pad.buttons.findIndex((bt, k) => bt.pressed && !before.has(pad.index + ':' + k));
+          pad.buttons.forEach((bt, k) => { if (!bt.pressed) before.delete(pad.index + ':' + k); });
           if (n >= 0) {
             const b = structuredClone(devices.bindings);
             b.players[Number(i)].pad.buttons[a] = n;

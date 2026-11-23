@@ -2,6 +2,7 @@
 // Every screen gets the menu input each step and draws itself; `app.go(name, params)` switches screens.
 import { createTitleScreen } from './screens/title.js';
 import { createSelectScreen } from './screens/select.js';
+import { createSidesScreen } from './screens/sides.js';
 import { createFightScreen } from './screens/fight.js';
 import { createTrainingScreen } from './screens/training-screen.js';
 import { createSettingsScreen } from './screens/settings-screen.js';
@@ -11,6 +12,7 @@ import { loadSettings } from './settings.js';
 
 const SCREENS = {
   title: createTitleScreen,
+  sides: createSidesScreen,
   select: createSelectScreen,
   versus: createFightScreen,
   training: createTrainingScreen,

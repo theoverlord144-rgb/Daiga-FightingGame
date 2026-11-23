@@ -3,7 +3,7 @@ import { createStageRenderer } from '../../render/stage-renderer.js';
 import { drawMenu, title, hint, FONT, DIM, GOLD } from './common.js';
 
 const ITEMS = [
-  { label: 'VERSUS', go: ['select', { mode: 'versus' }] },
+  { label: 'VERSUS', go: ['sides', {}] },
   { label: 'VERSUS CPU', go: ['select', { mode: 'cpu' }] },
   { label: 'TRAINING', go: ['select', { mode: 'training' }] },
   { label: 'SETTINGS', go: ['settings', {}] },
@@ -16,6 +16,7 @@ export function createTitleScreen(app, { index = 0 } = {}) {
   const bg = createStageRenderer(app.stage, W, H, H - 70, app.battle.stage.halfWidth);
   let sel = index;
   let t = 0;
+  app.devices.setSeats(null); // back at the title: every device steers the menus again
   return {
     help: '',
     step(menu) {
