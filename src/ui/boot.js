@@ -36,7 +36,7 @@ export function setupCanvas() {
   return { canvas, ctx, ui: document.getElementById('ui') };
 }
 
-export const SYSTEM = { defaults, common, meter, burst };
+export const SYSTEM = { defaults, common, meter, burst, systems };
 export const INPUT_RULES = inputRules;
 export const BATTLE = battle;
 export const MATCH = match;

@@ -4,6 +4,7 @@
 
 import { px } from './fixed.js';
 import { compileArchetype } from './devotion.js';
+import { universalContent } from './systems.js';
 
 export const LATEST_VERSION = 2;
 const SUPPORTED = [1, 2];
@@ -56,7 +57,7 @@ export function parseInput(input) {
   return { air, motion: dirs, dir: null, buttons };
 }
 
-const KIND_RANK = { super: 3, special: 2, normal: 1 };
+const KIND_RANK = { super: 3, special: 2, vow: 1.5, normal: 1 };
 
 function inferKind(m, parsed) {
   if (m.kind) return m.kind;
@@ -184,6 +185,9 @@ function compileMoveData(m, ctx = {}) {
     stagger: m.stagger ? { when: condition(m.stagger.when), hitstun: m.stagger.hitstun | 0 } : null, // met: extra hitstun
     onHitState: m.onHitState ?? null, // on hit (not block) the attacker switches to this state (an animation branch)
     remote: !!m.remote, // the hit lands wherever the opponent is (no box check)
+    pierce: !!m.pierce, // hits through Vow's guard (supers always do)
+    crumple: !!m.crumple, // a grounded hit puts the opponent in the crumple (Vow's stronger strikes)
+    vowStrike: !!m.vowStrike, // Vow's release strike: landing it forgives the Debt
     oneAtATime: m.oneAtATime ?? null, // a projectile name: the move can't start while the fighter has one out
     // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
     chain: m.chain ?? null,
@@ -407,6 +411,7 @@ function compileState(name, src, stats, extra = {}) {
     stun: !!src.stun,
     keepVel: !!src.keepVel,
     throwVictim: !!src.throwVictim,
+    vow: !!src.vow, // Vow's guard: hits are absorbed into Debt
     techable: !!src.techable,
     next: src.next ?? (stance === 'air' ? 'fall' : 'idle'),
     // Branches and held stances (all optional):
@@ -466,7 +471,8 @@ export function compileCharacter(file, system) {
   if (moveIds.size !== t.moves.length + exMoves.length) throw new Error(`${ch.id}: duplicate move ids`);
 
   // System states, with character overrides (v2 "states") and v1-style sprite moves sharing a system name.
-  const common = system.common.states;
+  const content = universalContent(system);
+  const common = content.states;
   for (const [name, base] of Object.entries(common)) {
     const over = t.states?.[name] || {};
     const spriteMove = t.moves.find((m) => m.id === name);
@@ -483,12 +489,13 @@ export function compileCharacter(file, system) {
   const projectiles = compileProjectiles(t.projectiles ?? file.projectiles, system.meter);
   for (const p of Object.values(projectiles)) checkVars(ch.id, p.name, mechanic, [p.move.onHit, p.move.onBlock, p.move.stagger?.when]);
 
-  // Universal moves (burst), unless the character defines its own with the same id.
-  const universal = Object.entries(system.burst?.moves || {}).filter(([id]) => !moveIds.has(id))
-    .map(([id, m]) => ({ ...m, id, kind: 'burst', input: undefined }));
+  // Universal moves (burst, Vow). A character's own move with the same id is laid over the universal one, so it
+  // can give just the art, or its own boxes and frame data.
+  const universal = Object.entries(content.moves).filter(([id]) => !moveIds.has(id)).map(([id, m]) => ({ ...m, id }));
+  const own = t.moves.map((m) => (content.moves[m.id] ? { ...content.moves[m.id], ...m } : m));
 
   // Moves.
-  for (const m of [...t.moves, ...exMoves, ...universal]) {
+  for (const m of [...own, ...exMoves, ...universal]) {
     if (common[m.id]) continue; // a sprite for a system state, handled above
     const parsed = parseInput(m.input);
     const kind = inferKind(m, parsed);
@@ -557,7 +564,9 @@ export function compileCharacter(file, system) {
   for (const c of commands) {
     if (c.buttons.length < 2) continue;
     for (const d of commands) {
-      if (d === c || d.buttons.length !== 1 || d.motion !== c.motion || d.dir !== c.dir || d.air !== c.air) continue;
+      if (d === c || d.buttons.length !== 1 || d.motion !== c.motion || d.air !== c.air) continue;
+      // Same direction; or a two-button move that takes any direction (Vow) over a plain normal.
+      if (d.dir !== c.dir && !(c.anyDir && d.kind === 'normal' && d.neutral && !d.anyDir)) continue;
       if (c.buttons.includes(d.buttons)) (upgrades[d.move] ||= []).push(c);
     }
   }

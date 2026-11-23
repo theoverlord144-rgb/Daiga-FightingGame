@@ -4,14 +4,14 @@
 //   land              -> touching the ground ends air states
 // All fighter data lives on the player object in the game state; the character definition is read-only.
 
-import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow, chordWithin, motionAt } from './input.js';
+import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow, chordWithin, motionAt, held as isHeld } from './input.js';
 import { pct } from './fixed.js';
 
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
 const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3, R: 4 };
 const ATTACK = ['L', 'M', 'H'];
 /** Hitstun states a fighter can tech out of once the combo has run past combo.json techOutAt. */
-const TECH_OUT_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir']);
+const TECH_OUT_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'crumple']);
 
 /** Fighter fields, merged into a player object. */
 export function createFighter(def, side, x) {
@@ -37,6 +37,9 @@ export function createFighter(def, side, x) {
     hsEnd: -1, // the game frame this fighter came out of the hitstop of its current move's hit (-1 = it hasn't)
     hsLen: 0, // how long that hitstop was
     link: 0, // 1 = the current move was a Perfect Link: its first hit adds nothing to the combo's scaling
+    debt: 0, // Vow: damage absorbed and still owed (health units)
+    debtRate: 0, // how much of it drains away per frame once Vow is over
+    atkFrame: -1000, // the last game frame this fighter was in an attack's active or recovery frames
     jumpDir: 8,
     airJumpsUsed: 0,
     airDashesUsed: 0,
@@ -364,6 +367,8 @@ function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link =
     game.cues.push({ p: p.id, type: 'link', timing: timing.timing, frames: timing.frames, rewarded });
   }
   applyResources(p, def, negate(pick.cmd.cost));
+  // Vow is free from neutral; cancelling a normal into it costs Devotion.
+  if (pick.cmd.move === 'vow_start' && p.viaCancel) p.meter = Math.max(0, p.meter - world.sys.vow.cancelCost);
   // Doing a special move builds a little Devotion (not its EX version, which costs a bar).
   const mv = def.states[pick.cmd.move].move;
   p.spGain = mv.kind === 'special' && !mv.ex ? gainDevotion(game, p, def, def.devotion.special, 'special', true) : 0;
@@ -407,6 +412,7 @@ function decide(game, p, opp, def, world) {
       // gave for being a special (that must never be what pays for the EX).
       const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter - p.spGain, gauge: p.gauge + paid.gauge };
       if (!affords(refunded, cmd.cost)) continue;
+      if (cmd.move === 'vow_start' && p.viaCancel && refunded.meter < world.sys.vow.cancelCost) continue;
       const presses = commandInput(game, p, cmd, world, buffer, cmd.buttons);
       if (presses) {
         // Refund the one-button version's cost (and take back its Devotion), then start the chord version.
@@ -417,6 +423,25 @@ function decide(game, p, opp, def, world) {
         return;
       }
     }
+  }
+
+  if (st.vow) {
+    // Vow's guard: no blocking, walking or jumping. Dash out (for Devotion), keep holding, or let go to strike.
+    const V = world.sys.vow;
+    if (p.meter >= V.dashCost) {
+      const f = dirMotionNow(p.input, world.input, '66', p.facing);
+      if (f || dirMotionNow(p.input, world.input, '44', p.facing)) {
+        p.meter -= V.dashCost;
+        enterState(p, def, f ? 'dashF' : 'backdash');
+        return;
+      }
+    }
+    const heldFor = V.startup + p.stateTime;
+    if (heldFor >= V.maxHold || !(isHeld(p.input, BTN.M) || isHeld(p.input, BTN.H))) {
+      enterState(p, def, heldFor < V.strikeAt ? 'vow_strike_quick' : heldFor < V.fullAt ? 'vow_strike' : 'vow_strike_full');
+      game.cues.push({ p: p.id, type: 'vowrelease', held: heldFor, x: p.x, y: p.y });
+    }
+    return;
   }
 
   const cw = world.input.chordWindow ?? 3;
@@ -456,9 +481,13 @@ function decide(game, p, opp, def, world) {
   }
 
   // A move with neutral: false only comes out of a cancel window that names it (chains, follow-ups).
+  // Vow: from neutral, or cancelled from a normal wherever a special could be (that costs Devotion).
+  const vowOk = world.sys.vow.enabled && (st.free
+    ? true
+    : st.kind === 'normal' && p.meter >= world.sys.vow.cancelCost && windows.some((w) => w.into.has('#special')));
   const allowed = st.free
-    ? (cmd) => cmd.neutral
-    : (cmd) => windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
+    ? (cmd) => cmd.neutral && (cmd.kind !== 'vow' || vowOk)
+    : (cmd) => (cmd.kind === 'vow' ? vowOk : false) || windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
     startCommand(game, p, def, world, pick, !st.free, !st.free);

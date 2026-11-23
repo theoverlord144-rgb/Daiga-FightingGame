@@ -239,6 +239,11 @@ Heights are pixels above the ground line.
 
 ## Universal mechanics (system data)
 
+- **Vow** (`vow` in `data/system/systems.json`: its numbers and the three strikes as ordinary moves). Move fields:
+  `pierce: true` (the move hits through Vow's guard; supers and throws always do) and `crumple: true` (a grounded
+  hit puts the opponent in the crumple). To give a character its own art or boxes for Vow, list a move with the id
+  `vow_start`, `vow_strike_quick`, `vow_strike` or `vow_strike_full` (only the fields you write replace the
+  universal ones), or a state `vow_hold` / `crumple` under `states`.
 - **Counters, Witness, Perfect Link** (`counter`, `witness`, `perfectLink` in `data/system/systems.json`; the file's
   notes explain every number). A move's `counterHit: "none"` makes it immune to both kinds of counter;
   `"startup+active"` makes its recovery safe from Witness only.

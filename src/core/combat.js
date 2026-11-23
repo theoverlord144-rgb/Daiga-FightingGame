@@ -188,7 +188,12 @@ function resolveStrike(game, world, a, d, rect, snap) {
   const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0; // read before the hit's own gains
   const out = { a, d, move, block, away, rect, moveId: snap[a.id].state, firstOfUse, stagger };
 
-  if (!block && fd.armor > d.armorUsed) {
+  // Vow's strike is a Witness counter if the opponent was mid-string moments ago.
+  if (move.vowStrike && game.frame - d.atkFrame <= world.sys.vow.witnessWindow) out.witness = true;
+  if (absorbs(ddef, snap[d.id].state, move)) {
+    out.kind = 'absorb';
+    out.block = null;
+  } else if (!block && fd.armor > d.armorUsed) {
     out.kind = 'armor';
   } else if (block) {
     out.kind = 'block';
@@ -196,6 +201,22 @@ function resolveStrike(game, world, a, d, rect, snap) {
     out.kind = hitKind(world, d, fd);
   }
   return out;
+}
+
+/** Is this hit absorbed by the defender's Vow guard? Supers and moves flagged `pierce` go through it. */
+const absorbs = (ddef, stateName, move) => ddef.states[stateName].vow && move.kind !== 'super' && !move.pierce;
+
+/**
+ * A fighter with Debt is really hit: the Debt comes due at once, with a penalty on top. Returns the damage.
+ */
+function cashDebt(game, world, d) {
+  if (d.debt <= 0) return 0;
+  const extra = d.debt + pct(d.debt, world.sys.vow.penaltyPct);
+  d.health = Math.max(0, d.health - extra);
+  d.debt = 0;
+  d.debtRate = 0;
+  game.cues.push({ type: 'debt', p: d.id, damage: extra, x: d.x, y: d.y });
+  return extra;
 }
 
 /**
@@ -260,12 +281,33 @@ function applyStrike(game, world, r) {
   // of it: no contact flag, no hitstop and no pushback on them.
   const body = !r.proj;
 
+  if (r.kind === 'absorb') {
+    // Vow: no hitstun, a short freeze, and the damage becomes Debt instead of being taken.
+    const V = world.sys.vow;
+    const M = world.meter;
+    const adef = world.chars[a.id];
+    const owed = gutsDamage(pct(move.damage, damageMod(world, a)), d.health, maxHp, battle);
+    d.debt += owed;
+    d.debtRate = Math.max(1, Math.ceil(d.debt / V.drainFrames));
+    d.hitstop = V.absorbHitstop;
+    if (body) { a.contact = CONTACT.BLOCK; a.hitstop = V.absorbHitstop; }
+    if (M) {
+      // The attacker builds as from a blocked hit; the guard builds a share of what taking the hit would give.
+      gainDevotion(game, a, adef, pct(perPercent(move.damage, maxHp, M.gain.blockedPerPct), adef.devotion.give), 'blocked', true);
+      const share = ddef.devotion.extras.vowAbsorb ?? M.gain.vowAbsorb;
+      gainDevotion(game, d, ddef, pct(pct(perPercent(owed, maxHp, M.gain.hurtPerPct), share), ddef.devotion.take), 'vow');
+    }
+    cue(game, 'absorb', a, rect, { move: r.moveId, damage: owed, debt: d.debt });
+    return;
+  }
+
   if (r.kind === 'armor') {
     d.armorUsed++;
     if (body) a.contact = CONTACT.HIT;
     const armorDmg = gutsDamage(pct(move.damage, battle.armorDamagePct), d.health, maxHp, battle);
     gains(game, world, a, d, move, 'hit', armorDmg);
     applyDamage(d, ddef, armorDmg);
+    cashDebt(game, world, d);
     d.hitstop = move.hitstop;
     if (body) a.hitstop = move.hitstop;
     cue(game, 'armor', a, rect, { move: r.moveId });
@@ -320,6 +362,8 @@ function applyStrike(game, world, r) {
   if (uses > 0) base = pct(base, C.repeatDamage); // a move used again in the same combo
   const dmg = gutsDamage(base, d.health, maxHp, battle);
   applyDamage(d, ddef, dmg);
+  combo.damage += cashDebt(game, world, d); // hit while Debt remains: it comes due, with the penalty
+  if (move.vowStrike && body) { a.debt = 0; a.debtRate = 0; } // landing Vow's strike forgives the Debt
 
   // Proration for the hits that follow: the starter's own proration once, then every hit's combo proration.
   // A Witness combo's first hits scale it less; a Perfect Link's hit doesn't scale it at all.
@@ -376,10 +420,12 @@ function applyStrike(game, world, r) {
     if (d.y === 0 && d.vy > 0) d.y = 1; // leave the ground this frame
   } else if (move.knockdown) {
     enterState(d, ddef, 'knockdown');
+  } else if (move.crumple && ddef.states.crumple) {
+    enterState(d, ddef, 'crumple');
   } else {
     enterState(d, ddef, ddef.states[d.state].stance === 'crouch' ? 'hitCrouch' : 'hitStand');
   }
-  d.stun = stun;
+  d.stun = d.state === 'crumple' ? world.sys.vow.crumpleStun : stun;
   if (move.pull) {
     // Pull-in: the defender slides toward the attacker (instead of pushback), ending pull.to in front of them.
     if (inAir) d.vx = 0;
@@ -437,10 +483,10 @@ export function resolveProjectiles(game, world) {
       const move = def.move;
       const away = pr.facing; // it pushes the way it flies, and is blocked by holding away from where it came from
       const block = blockKind(d, ddef, { x: d.x - away }, move, world);
-      const kind = !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
+      const kind = absorbs(ddef, d.state, move) ? 'absorb' : !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
       const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
       applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: true, kind, stagger, proj: pr });
-      gone[i] = kind === 'block' ? 'block' : 'hit';
+      gone[i] = kind === 'block' || kind === 'absorb' ? 'block' : 'hit';
     } else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
   });
   list.forEach((pr, i) => {
@@ -521,6 +567,7 @@ export function throwLands(game, world, d) {
   if (move) {
     const dmg = gutsDamage(pct(move.damage, damageMod(world, a)), d.health, ddef.stats.health, world.battle);
     applyDamage(d, ddef, dmg);
+    cashDebt(game, world, d); // a throw goes through Vow and makes the Debt come due
     gains(game, world, a, d, move, 'hit', dmg, { fresh: true });
     if (move.throwSwap) {
       d.x = a.x - a.facing * move.throwDistance;

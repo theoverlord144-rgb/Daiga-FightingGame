@@ -41,6 +41,7 @@ export const SYSTEM = {
   common: loadJSON('data/system/common-states.json'),
   meter: compileDevotion(loadJSON('data/system/systems.json').devotion), // the Devotion rules, in game units
   burst: loadJSON('data/system/burst.json'),
+  systems: loadJSON('data/system/systems.json'),
 };
 
 export const loadChar = (rel) => compileCharacter(loadJSON(rel), SYSTEM);
@@ -53,7 +54,7 @@ export function loadWorld(a = 'tests/fixtures/fighter.toska.json', b = a, { matc
     battle: loadJSON('data/system/battle.json'),
     combo: loadJSON('data/system/combo.json'),
     meter: SYSTEM.meter,
-    systems: loadJSON('data/system/systems.json'),
+    systems: SYSTEM.systems,
     burst: SYSTEM.burst,
     chars: [typeof a === 'string' ? loadChar(a) : a, typeof b === 'string' ? loadChar(b) : b],
   });

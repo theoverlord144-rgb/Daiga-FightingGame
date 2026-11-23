@@ -5,13 +5,15 @@
 const STANCE_HURT = { stand: 'standHurt', crouch: 'crouchHurt', air: 'airHurt' };
 const KEYS = ['hurt', 'hit'];
 
+import { universalContent } from '../core/systems.js';
+
 const clone = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
 const moveId = (m) => m.id ?? m.input ?? m.name;
 
 /** What kind of state `name` is in this file: a move, a system state, one of the character's own, or universal. */
 export function stateInfo(raw, system, name) {
   const moveIndex = raw.moves.findIndex((m) => moveId(m) === name);
-  if (system.common.states[name]) return { type: 'system', moveIndex };
+  if (universalContent(system).states[name]) return { type: 'system', moveIndex };
   if (moveIndex >= 0) return { type: 'move', moveIndex };
   if (raw.states?.[name]) return { type: 'own', moveIndex: -1 };
   // An EX version (<move>_ex): the move's `ex` overrides laid over the move itself.
@@ -58,12 +60,16 @@ export function sourcesAt(raw, system, name, stance, frame) {
   if (info.type === 'move' || info.type === 'universal' || info.type === 'ex') {
     const own = info.type === 'universal' ? null : raw.moves[info.moveIndex];
     const ex = info.type === 'ex' ? own.ex : null;
-    const m = ex ? { ...own, ...ex } : own ?? system.burst.moves[name];
+    // A universal move (burst, Vow's strikes): the system's, with the character's own entry of that id laid over it.
+    const uni = info.type === 'ex' ? null : universalContent(system).moves[name] ?? null;
+    const m = ex ? { ...own, ...ex } : { ...(uni || {}), ...(own || {}) };
     const root = own ? ['moves', info.moveIndex] : null;
     // A field the EX version overrides lives under the move's `ex`; the rest it shares with the normal version.
+    // A field of a universal move the character hasn't set comes from data/system (not editable here).
     const place = (key) => (ex && key in ex ? [...root, 'ex', key] : [...root, key]);
-    const base = root ? { timeline: place('timeline') } : null;
-    const here = (key) => (root ? { kind: 'path', path: place(key), where: 'field', at: 0 } : { kind: 'system', value: clone(m[key]) });
+    const fromSystem = (key) => !root || (uni && !(key in own));
+    const base = fromSystem('timeline') ? null : { timeline: place('timeline') };
+    const here = (key) => (fromSystem(key) ? { kind: 'system', value: clone(m[key]) } : { kind: 'path', path: place(key), where: 'field', at: 0 });
     const first = (m.startup ?? 1) - 1;
     const active = m.active ?? 0;
     if (m.hurtboxes) add(0, 'hurt', here('hurtboxes'));
@@ -73,7 +79,7 @@ export function sourcesAt(raw, system, name, stance, frame) {
     }
     timeline(m.timeline, base ? base.timeline : null);
   } else if (info.type === 'system') {
-    timeline(system.common.states[name].timeline, null);
+    timeline(universalContent(system).states[name].timeline, null);
     timeline(raw.states?.[name]?.timeline, ['states', name, 'timeline']);
     if (info.moveIndex >= 0) timeline(raw.moves[info.moveIndex].timeline, ['moves', info.moveIndex, 'timeline']);
   } else {

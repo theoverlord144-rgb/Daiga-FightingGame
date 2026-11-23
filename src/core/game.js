@@ -14,7 +14,7 @@ import { compileSystems } from './systems.js';
 export const FPS = 60;
 
 /** States a fighter can be in while still being comboed. */
-export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown']);
+export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown', 'crumple']);
 
 /** Bundle the system data and two compiled characters into the read-only world. */
 export function createWorld({ input, battle, combo, meter = null, burst = null, match = null, systems = null, chars }) {
@@ -95,6 +95,12 @@ export function step(state, rawInputs, world) {
     }
     const B = world.burst;
     if (B && B.enabled && B.perFrame) p.burst = Math.min(B.gaugeMax, p.burst + B.perFrame);
+    // Debt drains away once Vow is over (not while guarding or striking: landing the strike forgives it; and not
+    // while held in a throw: the throw makes all of it come due).
+    if (p.debt > 0) {
+      const st = def.states[p.state];
+      if (!st.vow && st.kind !== 'vow' && p.state !== 'thrown') p.debt = Math.max(0, p.debt - p.debtRate);
+    }
   }
 
   // Hitstop: a frozen fighter skips everything this frame.
@@ -110,6 +116,11 @@ export function step(state, rawInputs, world) {
 
   const hooks = { throwLands: (p) => throwLands(state, world, p) };
   for (const p of ps) if (!frozen[p.id]) advanceAndDecide(state, p, ps[1 - p.id], world.chars[p.id], world, hooks);
+  // Remember when each fighter was last in an attack's active or recovery frames ("mid-string", for Vow's strike).
+  for (const p of ps) {
+    const mv = world.chars[p.id].states[p.state].move;
+    if (mv && mv.active > 0 && mv.kind !== 'vow' && p.frame >= mv.startup - 1) p.atkFrame = state.frame;
+  }
   moveProjectiles(state, world);
   for (const p of ps) if (!frozen[p.id]) move(state, p, world.chars[p.id], world);
   separate(state, world);
