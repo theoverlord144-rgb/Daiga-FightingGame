@@ -11,6 +11,7 @@ import { SYSTEM, CHAR_SOURCES } from '../boot.js';
 import { sourcesAt, boxesOf, setBoxes, editable, overrideMove, overrideFromFrame, addHitboxField, removeSource, diffOps, stateInfo, projectileNames, projectileSource } from '../../editor/box-model.js';
 import { FONT, INK, DIM, GOLD } from './common.js';
 import { createTuner } from './move-tuner.js';
+import { createCancelGrid } from './cancel-grid.js';
 
 const LIST_W = 176; // the state list, on the left
 const STAGE = { x: 184, y: 30, w: 768, h: 338 }; // where the fighter is drawn
@@ -42,7 +43,8 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
   let leaveArmed = 0;
   let buttons = [];
   let tick = 0;
-  let mode = page === 'hit' ? 'hit' : 'boxes'; // which page: the boxes, or the hit settings (move-tuner.js)
+  const PAGES = ['boxes', 'hit', 'cancel']; // the boxes, the hit settings (move-tuner.js), the cancels (cancel-grid.js)
+  let mode = PAGES.includes(page) ? page : 'boxes';
   let version = 0; // goes up every time the character is rebuilt from the file being edited
   let hintText = ''; // what the thing under the mouse does (shown on the bottom line)
   const mouse = { x: 0, y: 0, shift: false };
@@ -301,6 +303,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     const btn = buttons.find((b) => inside(p, b));
     if (btn) { if (btn.on) btn.on(); else if (btn.why) say(btn.why, '#ffb86b'); return; }
     if (mode === 'hit') { tuner.onDown(p); return; }
+    if (mode === 'cancel') { grid.onDown(p); return; }
     if (inside(p, { ...BAR, y: BAR.y - 4, h: BAR.h + 8 })) { drag = { bar: true }; scrub(p); return; }
     if (!inside(p, STAGE)) return;
     const hit = boxAt(p);
@@ -322,6 +325,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     mouse.y = p.y;
     mouse.shift = e.shiftKey;
     if (mode === 'hit') { canvas.style.cursor = ''; tuner.onMove(p); return; }
+    if (mode === 'cancel') { canvas.style.cursor = ''; return; }
     if (!drag) {
       const hit = inside(p, STAGE) ? boxAt(p) : null;
       const part = hit?.part;
@@ -629,9 +633,10 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
 
   /** The page tabs, top right, on both pages. */
   function drawTabs() {
-    let x = W - 200;
+    let x = W - 276;
     x = button('BOXES', x, 4, { on: () => { mode = 'boxes'; }, lit: mode === 'boxes' });
-    button('HIT SETTINGS', x, 4, { on: () => { mode = 'hit'; playing = false; picked = null; }, lit: mode === 'hit' });
+    x = button('HIT SETTINGS', x, 4, { on: () => { mode = 'hit'; playing = false; picked = null; }, lit: mode === 'hit' });
+    button('CANCELS', x, 4, { on: () => { mode = 'cancel'; playing = false; picked = null; }, lit: mode === 'cancel' });
   }
 
   const tuner = createTuner({
@@ -648,11 +653,19 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     commit(before) { if (JSON.stringify(raw) !== before) { undo.push(before); if (undo.length > 200) undo.shift(); } },
   });
 
+  const grid = createCancelGrid({
+    ctx, W, H, text, button, say, mouse,
+    raw: () => raw, def: () => def, charId: () => charId, entry: () => names[sel], version: () => version,
+    change, undoOnce, undoCount: () => undo.length, dirty, saving: () => saving, save,
+    hint: (s) => { hintText = s; },
+    select: (id) => { const i = names.indexOf(id); if (i >= 0) setState(i); },
+  });
+
   return {
     get help() {
-      return mode === 'hit' ? tuner.help : this.boxHelp;
+      return mode === 'hit' ? tuner.help : mode === 'cancel' ? grid.help : this.boxHelp;
     },
-    boxHelp: 'T: hit settings page · Drag a box to move it, an edge to resize · arrows nudge (Shift: resize, Ctrl: ×10) · , . frame · [ ] move · Space play · Ctrl+Z undo · Ctrl+S save · Esc back',
+    boxHelp: 'T: next page · Drag a box to move it, an edge to resize · arrows nudge (Shift: resize, Ctrl: ×10) · , . frame · [ ] move · Space play · Ctrl+Z undo · Ctrl+S save · Esc back',
     /** Ctrl+S (main.js sends it to the current screen under this name). */
     saveReplay: save,
     close() {
@@ -683,13 +696,20 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
       if (arrows[e.code]) {
         e.preventDefault();
         const [dx, dy] = arrows[e.code];
+        if (mode === 'cancel') { if (dy) grid.move(-dy); return; }
         if (picked) nudge(dx, dy, e.shiftKey, step);
         else if (dx) { playing = false; setFrame(frame + dx); } else setState(sel - dy);
         return;
       }
       if (e.code === 'KeyZ' && ctrl) { e.preventDefault(); undoOnce(); return; }
       if (ctrl) return;
-      if (e.code === 'KeyT' && !e.repeat) { mode = mode === 'hit' ? 'boxes' : 'hit'; playing = false; picked = null; return; }
+      if (e.code === 'KeyT' && !e.repeat) { mode = PAGES[(PAGES.indexOf(mode) + 1) % PAGES.length]; playing = false; picked = null; return; }
+      if (mode === 'cancel') {
+        if (e.code === 'BracketLeft' || e.code === 'PageUp') { e.preventDefault(); grid.move(-1); }
+        else if (e.code === 'BracketRight' || e.code === 'PageDown') { e.preventDefault(); grid.move(1); }
+        else if (e.code === 'KeyC' && !e.repeat) nextCharacter();
+        return;
+      }
       if (mode === 'hit') {
         if (tuner.onKey(e)) return;
         if (e.code === 'ArrowUp' || e.code === 'ArrowDown') { e.preventDefault(); setState(sel + (e.code === 'ArrowUp' ? -1 : 1)); }
@@ -735,6 +755,12 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
           ctx.fillRect(STAGE.x, STAGE.y + STAGE.h - 20, STAGE.w, 20);
           text(line.text, STAGE.x + 8, STAGE.y + STAGE.h - 6, { color: line.color, size: 12, weight: 600 });
         }
+      } else if (mode === 'cancel') {
+        ctx.fillStyle = '#1b1726';
+        ctx.fillRect(LIST_W, 0, W - LIST_W, H);
+        grid.draw();
+        const line = msg && tick < msg.until ? msg : hintText ? { text: hintText, color: INK } : null;
+        if (line) text(line.text, 190, 56, { color: line.color, size: 12, weight: 600 });
       } else {
         const v = view();
         drawStage(c, v);

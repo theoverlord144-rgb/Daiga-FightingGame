@@ -67,9 +67,9 @@ only, standing only, cannot be).
 
 ## What is not in it
 
-- **Startup, active and recovery frames.** Changing those changes the move's length, and the drawings are timed to
-  the length, so the animation would break. That needs a "retime the drawings with it" step. Say the word.
-- **Combo scaling, meter gain, cancels, wall and ground bounces.** All in the file, none on this page yet.
+- Startup, active and recovery are on the page since Nov 23, and cancels have their own page: see
+  `docs/reports/cancel-editor.md`.
+- **Combo scaling, meter gain, wall and ground bounces.** All in the file, none on this page yet.
 - **Shared rules** (gravity, how long pushback takes, the default launch speeds) live in `data/system`, not here.
 - The two fighters in the preview are the same character, so it does not show how a move looks on Avner's body
   when Malik does it.

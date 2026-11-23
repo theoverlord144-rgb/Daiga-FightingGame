@@ -13,6 +13,9 @@ export const PROJ = 'proj:'; // a list entry for a projectile: "proj:<name>"
  * only: 'projectile' = projectiles only, 'move' = not on projectiles.
  */
 export const FIELDS = [
+  { key: 'startup', group: 'timing', label: 'Startup', unit: 'f', min: 1, max: 120, fallback: 1, only: 'move', help: 'Frames until it can hit, counting the first hitting frame. The drawings and timed events move with it.' },
+  { key: 'active', group: 'timing', label: 'Active', unit: 'f', min: 0, max: 120, only: 'move', help: 'Frames the hitbox is out.' },
+  { key: 'recovery', group: 'timing', label: 'Recovery', unit: 'f', min: 0, max: 240, only: 'move', help: 'Frames after the hitbox is gone before the fighter can act.' },
   { key: 'damage', group: 'hit', label: 'Damage', min: 0, max: 20000, step: 10, big: 100 },
   { key: 'hitstop', group: 'hit', label: 'Freeze on hit', unit: 'f', min: 0, max: 60, help: 'Hitstop: both fighters freeze this many frames when it lands.' },
   { key: 'hitstun', group: 'hit', label: 'Hitstun', unit: 'f', min: 0, max: 240, help: 'How long a grounded opponent is stuck after the hit.' },
@@ -120,12 +123,71 @@ export function readSetting(raw, target, key, rules) {
 
 const clamp = (field, v) => Math.max(field.min ?? -Infinity, Math.min(field.max ?? Infinity, Math.round(v)));
 
+const TIMING = ['startup', 'active', 'recovery'];
+const sum = (list) => list.reduce((a, b) => a + b, 0);
+
+/**
+ * Change a move's startup, active or recovery, and keep everything that is timed to it in step: the drawings
+ * (the one on screen at the end of that part is held longer or shorter), timeline events, cancel windows.
+ * Frames are added or taken at the END of the part that changes, so everything after it moves by the same amount.
+ */
+export function retime(target, key, value) {
+  const w = target.write;
+  if (target.kind !== 'move') throw new Error(target.kind === 'ex' ? 'An EX version follows the timing of its normal version: change it there.' : 'Only a move has startup, active and recovery.');
+  if (target.layers.length > 1 && !(key in w)) throw new Error('This move is shared by every character: its timing is set in data/system.');
+  if (w.duration !== undefined) throw new Error('This move sets its own length (duration) in the file, so its timing is not editable here.');
+  const field = fieldOf(key);
+  const now = { startup: w.startup ?? 1, active: w.active ?? 0, recovery: w.recovery ?? 0 };
+  const next = Math.max(field.min, Math.min(field.max, Math.round(value)));
+  const d = next - now[key];
+  if (!d) return;
+  const total = now.startup - 1 + now.active + now.recovery;
+  if (total + d < 1) throw new Error('A move needs at least one frame.');
+  // Everything at or after this frame moves by d.
+  const pivot = key === 'startup' ? now.startup - 1 : key === 'active' ? now.startup - 1 + now.active : total;
+  const holds = w.sprite?.holds;
+  if (Array.isArray(holds) && holds.length && sum(holds) === total) {
+    const next = [...holds];
+    // The drawing on screen on the last frame before the pivot.
+    let at = 0;
+    for (let t = 0; at < next.length - 1 && t + next[at] <= Math.max(0, pivot - 1); at++) t += next[at];
+    if (d > 0) next[at] += d;
+    else {
+      // Shorten that drawing; if it runs out, the ones before it, then the ones after (each keeps one frame).
+      let left = -d;
+      for (const i of [...Array(at + 1).keys()].reverse().concat([...Array(next.length - at - 1).keys()].map((k) => k + at + 1))) {
+        const take = Math.min(left, next[i] - 1);
+        next[i] -= take;
+        left -= take;
+        if (!left) break;
+      }
+      if (left) throw new Error(`Too short for its ${next.length} drawings: each needs at least one frame.`);
+    }
+    w.sprite.holds = next;
+  }
+  const last = Math.max(0, total + d - 1);
+  const move = (n) => (typeof n === 'number' && n >= pivot ? Math.max(0, Math.min(last, n + d)) : n);
+  const shift = (list, keys) => {
+    for (const e of list || []) {
+      // A from / for range that spans the changed part grows or shrinks with it.
+      if (typeof e.for === 'number' && typeof e.from === 'number' && e.from < pivot && e.from + e.for > pivot) e.for = Math.max(1, e.for + d);
+      for (const k of keys) if (k in e) e[k] = move(e[k]);
+    }
+  };
+  shift(w.timeline, ['at', 'from', 'to']);
+  shift(w.cancels, ['from', 'to']);
+  if (w.ex && typeof w.ex === 'object' && !TIMING.some((k) => k in w.ex)) { shift(w.ex.timeline, ['at', 'from', 'to']); shift(w.ex.cancels, ['from', 'to']); }
+  for (const k of ['cancelFrom', 'cancelTo']) if (k in w) w[k] = move(w[k]);
+  w[key] = next;
+}
+
 /** Write a setting (changes `raw` through target.write). */
 export function writeSetting(raw, target, key, value, rules) {
   const w = target.write;
   if (!w) throw new Error(target.why || 'Not editable here');
   const field = fieldOf(key);
   if (!field || !applies(field, target)) throw new Error(`${key} is not a setting of this entry`);
+  if (TIMING.includes(key)) return retime(target, key, value);
   if (key === 'launch.type') {
     if (!field.choices.includes(value)) throw new Error(`Launch must be one of ${field.choices.join(', ')}`);
     const l = launchOf(target.layers);
@@ -178,6 +240,7 @@ export function writeSetting(raw, target, key, value, rules) {
 export function resetSetting(raw, target, key) {
   const w = target.write;
   if (!w) throw new Error(target.why || 'Not editable here');
+  if (TIMING.includes(key)) throw new Error('Startup, active and recovery have no default to go back to. Use UNDO.');
   if (key === 'launch.type') { delete w.launch; delete w.launcher; return; }
   if (key.startsWith('launch.')) {
     if (w.launch && typeof w.launch === 'object') w.launch = launchOf([w, ...target.layers.slice(1)]).type; // back to the system's speeds

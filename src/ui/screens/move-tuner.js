@@ -10,10 +10,10 @@ import { createPreview, reachOf, hitOwner, DUMMIES } from '../../editor/preview.
 import { INK, DIM, GOLD } from './common.js';
 
 const RULES = { combo: COMBO, battle: BATTLE };
-const GROUPS = [['hit', 'ON HIT'], ['block', 'ON BLOCK'], ['launch', 'LAUNCH AND AIR'], ['flight', 'FLIGHT']];
+const GROUPS = [['timing', 'TIMING'], ['hit', 'ON HIT'], ['block', 'ON BLOCK'], ['launch', 'LAUNCH AND AIR'], ['flight', 'FLIGHT']];
 const K = 0.8; // the fight is drawn at this size inside the stage
 const ARROW = 7; // screen px of arrow per px-a-frame of launch speed
-const COL_W = 192;
+const COL_W = 190;
 const ROW_H = 17;
 const TOP = 388;
 
@@ -230,7 +230,7 @@ export function createTuner(env) {
   // ---------- The screen's hooks ----------
 
   return {
-    help: 'Click a setting, then ← → to change it (Shift: bigger) or type a number + Enter · Backspace: default · drag the arrow to aim the launch · D dummy · Space pause · T boxes page',
+    help: 'Click a setting, then ← → to change it (Shift: bigger) or type a number + Enter · Backspace: default · drag the arrow to aim the launch · D dummy · Space pause · T next page',
     step() {
       sync();
       if (!pv || paused || !pv.state) return;

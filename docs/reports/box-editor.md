@@ -70,6 +70,8 @@ edits were put back; Avner's file is unchanged.
 HIT SETTINGS (press T): damage, stun, pushback and launch as numbers, with the move playing against a dummy.
 See `docs/reports/hit-settings.md`.
 
+A third page, CANCELS: what each move can be cancelled into. See `docs/reports/cancel-editor.md`.
+
 ## Not done
 
 - Push and throw boxes, projectile hitboxes.
