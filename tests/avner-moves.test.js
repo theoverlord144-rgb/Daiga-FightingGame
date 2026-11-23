@@ -349,3 +349,15 @@ test('Malik: blocks, hit reactions, knockdown and get-up have their own art', ()
   assert.equal(c.sheets[c.states.hitCrouch.frames[0].sprite.sheet].count, 1, 'crouching hit: one drawing only');
   for (const sheet of Object.values(c.sheets)) assert.ok(fs.existsSync('data/characters/malik/' + sheet.image), sheet.image);
 });
+
+test('Avner: Air Spike (j.S) has its art, and the hit lands on drawing 4', () => {
+  const c = loadChar(AVNER);
+  const st = c.states['j.S'];
+  assert.ok(st.frames.every((fr) => fr.sprite), 'art on every frame');
+  assert.equal(new Set(st.frames.map((fr) => fr.sprite.index)).size, 7, 'all seven drawings show');
+  const hits = st.frames.filter((fr) => fr.hit.length);
+  assert.equal(hits.length, st.move.active);
+  assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4]);
+  assert.ok(st.frames[st.move.startup - 1].hit.length > 0, 'first active frame');
+  assert.ok(fs.existsSync('data/characters/avner/sheets/jS.png'));
+});
