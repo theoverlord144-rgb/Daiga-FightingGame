@@ -47,7 +47,7 @@ const SPARK = {
   tech: { color: '#e0d050', size: 26, life: 18, text: 'TECH' },
   wallbounce: { color: '#ff9a3c', size: 40, life: 18, text: 'WALL BOUNCE' },
   groundbounce: { color: '#ff9a3c', size: 40, life: 18, text: 'GROUND BOUNCE' },
-  burst: { color: '#7fe0ff', size: 70, life: 26, text: 'BURST' },
+  burst: { color: '#7fe0ff', size: 70, life: 26, text: 'ABSOLVE' },
   superflash: { color: '#ffffff', size: 80, life: 22, text: '' },
 };
 

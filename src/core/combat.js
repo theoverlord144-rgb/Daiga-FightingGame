@@ -138,7 +138,7 @@ function guardDir(d, a) {
 /** Can the defender block this hit, and how? Returns 'stand' | 'crouch' | 'air' | null. */
 function blockKind(d, ddef, a, move, world) {
   const st = ddef.states[d.state];
-  const blocking = st.free || st.name.startsWith('block');
+  const blocking = st.free || st.name.startsWith('block') || st.blocking;
   if (!blocking || move.guard === 'unblockable') return null;
   const g = guardDir(d, a);
   const back = g === 1 || g === 4 || g === 7;
@@ -327,14 +327,21 @@ function applyStrike(game, world, r) {
     d.stun = move.blockstun;
     if (body) pushback(world, a, d, away, move.pushbackBlock, move.selfPushback);
     else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackBlock, battle.pushbackFrames);
+    if (body && move.onBlockState) {
+      // A branch when blocked (a baited Absolve's long recovery): still the same use of the move.
+      enterState(a, world.chars[a.id], move.onBlockState);
+      a.contact = CONTACT.BLOCK;
+    }
     cue(game, 'block', a, rect, { move: r.moveId });
     return;
   }
 
   // Counter hit / Witness counter: only a hit that starts a combo can be one (r.witness: Vow's strike asks for it).
   const starts = !d.combo;
-  const witness = starts && (r.kind === 'witness' || !!r.witness);
-  const counter = starts && r.kind === 'counter' && !witness;
+  // Absolve's own hit is never one: it only knocks the attacker away.
+  const plain = move.kind === 'burst';
+  const witness = starts && !plain && (r.kind === 'witness' || !!r.witness);
+  const counter = starts && !plain && r.kind === 'counter' && !witness;
   const ch = witness ? world.sys.witness : world.sys.counter; // read only when one of the two is true
   const special = counter || witness;
   const C = world.combo;
@@ -364,6 +371,12 @@ function applyStrike(game, world, r) {
   applyDamage(d, ddef, dmg);
   combo.damage += cashDebt(game, world, d); // hit while Debt remains: it comes due, with the penalty
   if (move.vowStrike && body) { a.debt = 0; a.debtRate = 0; } // landing Vow's strike forgives the Debt
+  // A punish soon after a Draw gives back a share of its cost (the penitent's extra).
+  if (starter && game.frame - a.drawAt <= world.sys.draw.punishWindow) {
+    const adef = world.chars[a.id];
+    a.drawAt = -1000;
+    gainDevotion(game, a, adef, pct(world.sys.draw.cost, adef.devotion.extras.drawRefund), 'draw', true);
+  }
 
   // Proration for the hits that follow: the starter's own proration once, then every hit's combo proration.
   // A Witness combo's first hits scale it less; a Perfect Link's hit doesn't scale it at all.

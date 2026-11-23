@@ -194,82 +194,94 @@ test('mechanic gauge, per-frame ticks, on-hit effects and requirements, all from
     moves: [{ id: 'x', input: '5L', startup: 1, timeline: [{ at: 0, addVar: { typo: 1 } }] }] }, SYSTEM), /var "typo"/);
 });
 
-// ---------- Burst ----------
+// ---------- Absolve (was: burst) ----------
+
+// These tests pinned the old burst: H+S, free, a launching hit. The owner's universal systems spec, section 7,
+// replaced it with Absolve: R+S, 200 Devotion, once per round, a knock back of half a screen. The same checks, by
+// the new rules; tests/absolve-guard.test.js has the full set (costs, the slate wipe, the bait).
 
 function comboedDummy() {
   const g = setup();
+  g.players[1].meter = 300 * 100; // Devotion to pay for it
   run(g, '5+M 5*7'); // 5M connects on its 6th frame
   assert.equal(g.players[1].state, 'hitStand');
   return g;
 }
 
-test('burst: from a combo with a full gauge, H+S breaks out and knocks the attacker away', () => {
+test('Absolve: from a combo with the gauge full, R+S breaks out and knocks the attacker away', () => {
   const g = comboedDummy();
   const [a, d] = g.players;
   assert.ok(d.combo);
-  run(g, '5', '5+HS'); // pressed during hitstop: it comes out the moment hitstop ends
+  const x = a.x;
+  run(g, '5', '5+RS'); // pressed during hitstop: it comes out the moment hitstop ends
   run(g, '5*10');
-  assert.equal(d.state, 'burst');
+  assert.equal(d.state, 'absolve');
   assert.equal(d.burst, 0, 'the gauge is spent');
   assert.equal(d.combo, null, 'the combo is over');
   run(g, '5*20');
-  assert.equal(a.state, 'hitAir', 'the attacker was blown away');
-  assert.ok(a.y > 0);
+  assert.equal(a.state, 'hitStand', 'the attacker was knocked away');
+  assert.ok(x - a.x > px(300), 'far back');
 });
 
-test('burst is invincible: it beats the attacker\'s next hit', () => {
+test('Absolve is invincible: it beats the attacker\'s next hit', () => {
   const g = comboedDummy();
   const [a, d] = g.players;
-  // Player 1 has 5M still running and chains 5H; Player 2 bursts at the same moment.
-  run(g, '5+H', '5+HS');
+  // Player 1 has 5M still running and chains 5H; Player 2 Absolves at the same moment.
+  run(g, '5+H', '5+RS');
   run(g, '5*10');
-  assert.equal(d.state, 'burst');
+  assert.equal(d.state, 'absolve');
   const hp = d.health;
   run(g, '5*20');
-  assert.equal(d.health, hp, 'the burst took no damage');
-  assert.equal(a.state, 'hitAir');
+  assert.equal(d.health, hp, 'the Absolve took no damage');
+  assert.equal(a.state, 'hitStand');
 });
 
-test('no burst without a full gauge, outside a combo, or with the wrong buttons', () => {
+test('no Absolve without a full gauge, outside a combo, or with the wrong buttons', () => {
   let g = comboedDummy();
   g.players[1].burst = B.gaugeMax - 1;
-  run(g, '5', '5+HS');
-  assert.notEqual(g.players[1].state, 'burst', 'gauge not full');
+  run(g, '5', '5+RS');
+  assert.notEqual(g.players[1].state, 'absolve', 'gauge not full');
   g = setup(200);
-  run(g, '5', '5+HS');
-  assert.notEqual(g.players[1].state, 'burst', 'not being comboed');
-  g = comboedDummy();
-  run(g, '5', '5+LM');
-  assert.notEqual(g.players[1].state, 'burst', 'wrong buttons');
+  g.players[1].meter = 300 * 100;
+  run(g, '5', '5+RS');
+  assert.notEqual(g.players[1].state, 'absolve', 'not being comboed');
+  for (const wrong of ['5+LM', '5+HS']) { // H+S was the old burst
+    g = comboedDummy();
+    run(g, '5', wrong);
+    run(g, '5*10');
+    assert.notEqual(g.players[1].state, 'absolve', `wrong buttons: ${wrong}`);
+  }
 });
 
-test('air burst while juggled hangs in the air', () => {
+test('air Absolve while juggled hangs in the air', () => {
   const g = setup();
+  g.players[1].meter = 300 * 100;
   run(g, '5+S 5*20');
   const d = g.players[1];
   assert.equal(d.state, 'hitAir');
-  run(g, '5', '5+HS');
-  assert.equal(d.state, 'burstAir');
+  run(g, '5', '5+RS');
+  assert.equal(d.state, 'absolve_air');
   const y = d.y;
   run(g, '5*6');
-  assert.equal(d.y, y, 'no gravity during the burst');
+  assert.equal(d.y, y, 'no gravity during it');
 });
 
-test('the burst rules are data: a version with burst disabled never bursts', () => {
+test('the Absolve rules are data: a version with it disabled never Absolves', () => {
   const w = { ...W, burst: { ...W.burst, enabled: false } };
   const g = createGame(w);
   g.players[0].x = -px(30); g.players[1].x = px(30);
+  g.players[1].meter = 300 * 100;
   for (const r of script('5+M 5*7')) step(g, [r, 0], w);
-  for (const r of script('5+HS 5*3')) step(g, [0, r], w);
-  assert.notEqual(g.players[1].state, 'burst');
-  assert.notEqual(g.players[1].state, 'burstAir');
+  for (const r of script('5+RS 5*3')) step(g, [0, r], w);
+  assert.notEqual(g.players[1].state, 'absolve');
+  assert.notEqual(g.players[1].state, 'absolve_air');
 });
 
 // ---------- Rollback safety ----------
 
 test('sync test with specials, EX, supers, chains, the mechanic and burst: identical after every 8-frame rewind', () => {
   const rnd = lcg(808);
-  const plans = ['2 3 6+L', '2 3 6+LS', '2 3 6+MS', '5+LS', '5+S 5+M', '5+R', '2 3 6 2 3 6+H', '2 1 4+L 5*6 5+L 5*6 5+L', '2 5 2+S', '2 3 6+S', '6 2 3+H', '5+M', '2+L', '5+S', '5+HS', '6*10', '4*6', '9', '5*4'];
+  const plans = ['2 3 6+L', '2 3 6+LS', '2 3 6+MS', '5+LS', '5+S 5+M', '5+R', '2 3 6 2 3 6+H', '2 1 4+L 5*6 5+L 5*6 5+L', '2 5 2+S', '2 3 6+S', '6 2 3+H', '5+M', '2+L', '5+S', '5+RS', '6*10', '4*6', '9', '5*4'];
   const queues = [[], []];
   let flashes = 0;
   let bursts = 0;

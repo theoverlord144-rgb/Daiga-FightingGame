@@ -6,7 +6,7 @@
 
 import { createInputState, pushInput, BTN } from './input.js';
 import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from './match.js';
-import { createFighter, advanceAndDecide, move, land } from './fighter.js';
+import { createFighter, advanceAndDecide, move, land, resolveGuardActions } from './fighter.js';
 import { separate, resolveHits, checkThrowBreaks, throwLands, moveProjectiles, resolveProjectiles } from './combat.js';
 import { px } from './fixed.js';
 import { compileSystems } from './systems.js';
@@ -116,6 +116,7 @@ export function step(state, rawInputs, world) {
 
   const hooks = { throwLands: (p) => throwLands(state, world, p) };
   for (const p of ps) if (!frozen[p.id]) advanceAndDecide(state, p, ps[1 - p.id], world.chars[p.id], world, hooks);
+  resolveGuardActions(state, world);
   // Remember when each fighter was last in an attack's active or recovery frames ("mid-string", for Vow's strike).
   for (const p of ps) {
     const mv = world.chars[p.id].states[p.state].move;

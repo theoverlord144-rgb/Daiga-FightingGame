@@ -183,6 +183,7 @@ function compileMoveData(m, ctx = {}) {
     // Conditions on the attacker's own resources (same shape as `requires`), read at the moment of the hit:
     hitRequires: m.hitRequires ? condition(m.hitRequires) : null, // unmet: the hitbox touches nothing at all
     stagger: m.stagger ? { when: condition(m.stagger.when), hitstun: m.stagger.hitstun | 0 } : null, // met: extra hitstun
+    onBlockState: m.onBlockState ?? null, // when it is blocked the attacker switches to this state (Absolve's bait)
     onHitState: m.onHitState ?? null, // on hit (not block) the attacker switches to this state (an animation branch)
     remote: !!m.remote, // the hit lands wherever the opponent is (no box check)
     pierce: !!m.pierce, // hits through Vow's guard (supers always do)
@@ -412,6 +413,7 @@ function compileState(name, src, stats, extra = {}) {
     keepVel: !!src.keepVel,
     throwVictim: !!src.throwVictim,
     vow: !!src.vow, // Vow's guard: hits are absorbed into Debt
+    blocking: !!src.blocking, // counts as a block state (Repel's and Draw's poses): further hits can be blocked
     techable: !!src.techable,
     next: src.next ?? (stance === 'air' ? 'fall' : 'idle'),
     // Branches and held stances (all optional):
@@ -539,7 +541,7 @@ export function compileCharacter(file, system) {
         if (s.type === 'spawn' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value}`);
       }
     }
-    for (const to of [st.next, st.timeout ? st.timeoutTo : null, st.onBack, st.move?.onHitState, ...st.nextIf.map((b) => b.to)]) {
+    for (const to of [st.next, st.timeout ? st.timeoutTo : null, st.onBack, st.move?.onHitState, st.move?.onBlockState, ...st.nextIf.map((b) => b.to)]) {
       if (to && !states[to]) throw new Error(`${ch.id}: state ${st.name} goes to unknown state ${to}`);
     }
     for (const b of st.nextIf) checkVars(ch.id, st.name, mechanic, [b.when]);

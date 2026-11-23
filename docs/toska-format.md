@@ -244,6 +244,10 @@ Heights are pixels above the ground line.
   hit puts the opponent in the crumple). To give a character its own art or boxes for Vow, list a move with the id
   `vow_start`, `vow_strike_quick`, `vow_strike` or `vow_strike_full` (only the fields you write replace the
   universal ones), or a state `vow_hold` / `crumple` under `states`.
+- **Absolve, Repel, Draw** (`absolve`, `repel`, `draw` in `data/system/systems.json`; the Absolve move itself is in
+  `data/system/burst.json`, whose notes explain it). Move field `onBlockState`: when the move is blocked the attacker
+  switches to that state. State field `blocking: true`: the state counts as a block state. Like Vow, a character can
+  lay its own art or boxes over `absolve`, `absolve_air`, or the states `absolve_recovery`, `repel`, `draw`, `drawn`.
 - **Counters, Witness, Perfect Link** (`counter`, `witness`, `perfectLink` in `data/system/systems.json`; the file's
   notes explain every number). A move's `counterHit: "none"` makes it immune to both kinds of counter;
   `"startup+active"` makes its recovery safe from Witness only.

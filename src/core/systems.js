@@ -1,6 +1,8 @@
 // The universal systems' rules (data/system/systems.json), turned into the whole numbers the game reads:
 // multipliers become percentages out of 10000, distances become units. Devotion has its own file (devotion.js).
 
+import { px } from './fixed.js';
+
 const toPct = (n) => Math.round(n * 10000);
 
 /** raw = the parsed systems.json (or nothing: every rule then takes its default). */
@@ -10,6 +12,9 @@ export function compileSystems(raw) {
   const w = r.witness || {};
   const l = r.perfectLink || {};
   const v = r.vow || {};
+  const ab = r.absolve || {};
+  const rp = r.repel || {};
+  const dr = r.draw || {};
   const unit = r.devotion?.unit ?? 100;
   return {
     // Counter hit: a hit during the opponent's startup (or a normal's active frames).
@@ -33,6 +38,28 @@ export function compileSystems(raw) {
     link: {
       window: l.window ?? 3,
       max: l.maxPerCombo ?? 3,
+    },
+    // Absolve: what the combo breaker costs (the move and its once-per-round gauge are burst.json).
+    absolve: {
+      cost: Math.round((ab.cost ?? 0) * unit),
+      witnessCost: Math.round((ab.witnessCost ?? ab.cost ?? 0) * unit),
+    },
+    // Repel and Draw: two attack buttons during blockstun.
+    repel: {
+      enabled: !!r.repel,
+      push: px(rp.push ?? 320),
+      frames: rp.pushFrames ?? 12,
+      lockout: rp.lockout ?? 20,
+    },
+    draw: {
+      enabled: !!r.draw,
+      cost: Math.round((dr.cost ?? 100) * unit),
+      step: px(dr.step ?? 60),
+      frames: dr.stepFrames ?? 6,
+      minGap: px(dr.minGap ?? 70),
+      stun: dr.stun ?? 12,
+      advantage: dr.advantage ?? 4,
+      punishWindow: dr.punishWindow ?? 30,
     },
     // Vow: the M+H guard that absorbs hits into Debt, and its release strike.
     vow: {
@@ -64,6 +91,13 @@ export function universalContent(system) {
   const states = { ...(system.common?.states || {}) };
   const moves = {};
   for (const [id, m] of Object.entries(system.burst?.moves || {})) moves[id] = { ...m, kind: 'burst' };
+  Object.assign(states, system.burst?.recovery || {}); // Absolve's baited recovery
+  if (system.systems?.repel || system.systems?.draw) {
+    // Repel and Draw: the defender's two poses (still blocking), and the attacker pulled in by a Draw.
+    states.repel = { stance: 'stand', stun: true, next: 'idle', blocking: true };
+    states.draw = { stance: 'stand', stun: true, next: 'idle', blocking: true };
+    states.drawn = { stance: 'stand', stun: true, next: 'idle' };
+  }
   const v = system.systems?.vow;
   if (v) {
     // Vow: M+H starts it (a command like any other, so it obeys buffers and cancel rules); the guard is a held

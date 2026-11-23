@@ -105,7 +105,7 @@ test('box editor: what cannot be edited says so', () => {
   const raw = loadJSON(FILES[0]);
   assert.equal(sourcesAt(raw, SYSTEM, 'knockdown', 'crouch', 5).hurt.kind, 'system', 'no hurtbox on the floor is a system rule');
   assert.equal(sourcesAt(raw, SYSTEM, '5L', 'stand', 0).hit.kind, 'none', 'no hitbox during startup');
-  assert.equal(stateInfo(raw, SYSTEM, 'burst').type, 'universal');
+  assert.equal(stateInfo(raw, SYSTEM, 'absolve').type, 'universal');
   assert.throws(() => setBoxes(raw, { kind: 'none', value: [] }, [[0, 0, 1, 1]]));
   assert.throws(() => overrideMove(raw, SYSTEM, 'idle', []));
   // A move with active frames but no hitboxes can be given some.

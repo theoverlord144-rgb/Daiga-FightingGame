@@ -10,6 +10,52 @@ import { pct } from './fixed.js';
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
 const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3, R: 4 };
 const ATTACK = ['L', 'M', 'H'];
+/** The button pairs that Repel or Draw during blockstun: any two of the three attack buttons. */
+const GUARD_PAIRS = [['M', 'H'], ['L', 'M'], ['L', 'H']];
+
+/**
+ * Apply this frame's Repel and Draw requests (p.guardAct), after both fighters have advanced and decided.
+ * Repel: the attacker slides far away; free; locked out for a while after. Draw: costs Devotion; an attacker on
+ * the ground and in an attack is pulled a step closer and left at a disadvantage; otherwise nothing happens.
+ */
+export function resolveGuardActions(game, world) {
+  for (const p of game.players) {
+    const act = p.guardAct;
+    if (!act) continue;
+    p.guardAct = 0;
+    const opp = game.players[1 - p.id];
+    const def = world.chars[p.id];
+    const odef = world.chars[opp.id];
+    const away = opp.x > p.x || (opp.x === p.x && p.facing > 0) ? 1 : -1; // from the defender toward the attacker
+    const stun = p.stun;
+    if (act === 1) {
+      const R = world.sys.repel;
+      p.repelAt = game.frame;
+      startSlide(opp, away * R.push, R.frames);
+      enterState(p, def, 'repel');
+      p.stun = Math.max(1, stun); // the blockstun runs on as it was
+      gainDevotion(game, p, def, def.devotion.extras.repel, 'repel');
+      game.cues.push({ p: p.id, type: 'repel', x: p.x, y: p.y });
+      continue;
+    }
+    const D = world.sys.draw;
+    p.meter = Math.max(0, p.meter - D.cost);
+    const ost = odef.states[opp.state];
+    const works = !!ost.move && ost.move.active > 0 && !isAirborne(odef, opp);
+    if (works) {
+      p.drawAt = game.frame;
+      const gap = Math.abs(opp.x - p.x);
+      startSlide(opp, -away * Math.max(0, Math.min(D.step, gap - D.minGap)), D.frames);
+      enterState(opp, odef, 'drawn');
+      opp.stun = D.stun + D.advantage;
+      opp.hitstop = 0;
+      enterState(p, def, 'draw');
+      p.stun = D.stun;
+    }
+    game.cues.push({ p: p.id, type: 'draw', x: p.x, y: p.y, whiffed: !works });
+  }
+}
+
 /** Hitstun states a fighter can tech out of once the combo has run past combo.json techOutAt. */
 const TECH_OUT_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'crumple']);
 
@@ -40,6 +86,9 @@ export function createFighter(def, side, x) {
     debt: 0, // Vow: damage absorbed and still owed (health units)
     debtRate: 0, // how much of it drains away per frame once Vow is over
     atkFrame: -1000, // the last game frame this fighter was in an attack's active or recovery frames
+    repelAt: -1000, // the game frame of this fighter's last Repel (its lockout counts from here)
+    drawAt: -1000, // the game frame of this fighter's last Draw that pulled the attacker in (for the punish refund)
+    guardAct: 0, // this frame's request: 1 = Repel, 2 = Draw (resolved after both fighters have acted)
     jumpDir: 8,
     airJumpsUsed: 0,
     airDashesUsed: 0,
@@ -560,19 +609,44 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
       else enterState(p, def, (st.nextIf.find((b) => meets(p, b.when)) || { to: st.next }).to);
     }
   }
-  // Burst: from a combo, with a full gauge, the burst buttons together.
+  // Absolve: while being comboed, once per round (the gauge), with enough Devotion, the Absolve buttons together.
   const B = world.burst;
-  if (B && B.enabled && p.burst >= B.gaugeMax && B.stateSet.has(p.state)) {
+  const absolveCost = p.combo && p.combo.witness ? world.sys.absolve.witnessCost : world.sys.absolve.cost;
+  if (B && B.enabled && p.burst >= B.gaugeMax && B.stateSet.has(p.state) && p.meter >= absolveCost) {
     const ch = chordWithin(p.input, B.bits, world.input.pressBuffer + p.freezeAge, world.input.chordWindow ?? 3);
     if (ch && ch.ages.every((a, i) => game.frame - a > p.consumed[BTN_INDEX[B.buttons[i]]])) {
       ch.ages.forEach((a, i) => { p.consumed[BTN_INDEX[B.buttons[i]]] = game.frame - a; });
       p.burst = 0;
+      p.meter -= absolveCost;
+      // The slate is wiped: the attacker loses the Devotion this combo gave them.
+      const wiped = p.combo ? Math.min(opp.meter, p.combo.gave) : 0;
+      opp.meter -= wiped;
       p.stun = 0;
       p.wbX = p.wbY = p.gbY = 0;
-      enterState(p, def, isAirborne(def, p) ? 'burstAir' : 'burst');
-      game.cues.push({ p: p.id, type: 'burst', x: p.x, y: p.y });
+      enterState(p, def, isAirborne(def, p) ? 'absolve_air' : 'absolve');
+      game.cues.push({ p: p.id, type: 'burst', x: p.x, y: p.y, cost: absolveCost, wiped });
       p.freezeAge = 0;
       return;
+    }
+  }
+  // Repel and Draw: two attack buttons together during ground blockstun, holding back or forward. Only the
+  // request is noted here; resolveGuardActions applies it once both fighters have acted, so neither goes first.
+  const R = world.sys.repel;
+  const Dw = world.sys.draw;
+  if ((R.enabled || Dw.enabled) && (p.state === 'blockStand' || p.state === 'blockCrouch')) {
+    const dir = relDirAt(p.input, 0, p.facing);
+    const back = dir === 4 || dir === 1 || dir === 7;
+    const fwd = dir === 6 || dir === 3 || dir === 9;
+    const can = (back && R.enabled && game.frame - p.repelAt >= R.lockout) || (fwd && Dw.enabled && p.meter >= Dw.cost);
+    if (can) {
+      for (const pair of GUARD_PAIRS) {
+        const ch = chordWithin(p.input, pair.map((b) => BTN[b]), world.input.pressBuffer + p.freezeAge, world.input.chordWindow ?? 3);
+        if (!ch || !ch.ages.every((a, i) => game.frame - a > p.consumed[BTN_INDEX[pair[i]]])) continue;
+        ch.ages.forEach((a, i) => { p.consumed[BTN_INDEX[pair[i]]] = game.frame - a; });
+        p.guardAct = back ? 1 : 2;
+        p.freezeAge = 0;
+        return;
+      }
     }
   }
   // Air tech: once the untechable time is over, any button recovers. And once a combo has run past techOutAt,

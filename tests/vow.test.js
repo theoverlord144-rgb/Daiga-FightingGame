@@ -419,7 +419,7 @@ test('the strike is a Witness counter if the opponent was in an attack within th
   assert.equal(g3.players[1].atkFrame, g3.frame);
 });
 
-test('Vow survives rollback: 3000 frames of fighting full of Vow, rewinding 8 frames every frame', () => {
+test('Vow survives rollback: 6000 frames of fighting full of Vow, rewinding 8 frames every frame', () => {
   const rnd = lcg(77);
   const held = [0, 0];
   const dirs = [0, RAW.LEFT, RAW.RIGHT, RAW.RIGHT, RAW.DOWN, RAW.UP];
@@ -436,7 +436,7 @@ test('Vow survives rollback: 3000 frames of fighting full of Vow, rewinding 8 fr
       const b = roll < 40 ? [RAW.L, RAW.M, RAW.H, RAW.S][rnd() % 4] : 0;
       return dir | b;
     });
-  }, { frames: 3000, distance: 8 });
+  }, { frames: 6000, distance: 8 });
   assert.ok(r.ok, `desync at frame ${r.failFrame}: ${r.diff}`);
   assert.ok(strikes >= 15, `Vow was released ${strikes} times`);
   assert.ok(absorbs >= 3, `${absorbs} hits were absorbed`);

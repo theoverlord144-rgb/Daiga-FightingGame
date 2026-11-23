@@ -1,30 +1,32 @@
 {
-  "notes": "Burst (combo breaker), the same for every character. While in one of 'states' with a full gauge, pressing 'buttons' together (within input.json chordWindow frames) bursts: the gauge empties and the burst move starts (burstAir when airborne). The gauge starts at 'start' and refills by perFrame each frame and by hurtPct (out of 10000) of the damage taken. The two moves use the normal move format: frame data, hitboxes, launch, timeline (invincibility etc.).",
+  "notes": "Absolve (the combo breaker; docs/specs/universal-systems.md section 7), the same for every character. While in one of 'states' (being comboed) with the gauge full and enough Devotion (systems.json 'absolve': cost, or witnessCost against a combo that began with a Witness counter), pressing 'buttons' together (within input.json chordWindow frames) Absolves: the Devotion is paid, the gauge empties, the attacker loses the Devotion that combo gave them, and the absolve move starts (absolve_air when airborne). ONCE PER ROUND is the gauge: it starts full ('start'), does not refill by itself (perFrame 0, hurtPct 0) and is refilled at the start of each round (match.json burstRefillsEachRound). The two moves use the normal move format; what the spec asks of them is in their data: invincible for 20 frames (the timeline's invuln), knocks the attacker back half a screen (pushbackHit 480 of a 960 screen), and if the attacker BLOCKS it the burster goes to 'onBlockState', one of 'recovery' below: 40 frames of recovery that can be punished (in the air: a helpless fall, then the 40 frames on landing).",
   "enabled": true,
-  "buttons": "HS",
+  "buttons": "RS",
   "gaugeMax": 10000,
   "start": 10000,
   "perFrame": 0,
   "hurtPct": 0,
-  "states": ["hitStand", "hitCrouch", "hitAir", "tumble"],
+  "states": ["hitStand", "hitCrouch", "hitAir", "tumble", "crumple"],
+  "recovery": {
+    "absolve_recovery": { "stance": "stand", "duration": 40, "next": "idle" },
+    "absolve_recovery_air": { "stance": "air", "loop": true, "duration": 40, "landTo": "absolve_recovery" }
+  },
   "moves": {
-    "burst": {
-      "stance": "stand", "startup": 8, "active": 4, "recovery": 26,
-      "damage": 0, "hitstun": 30, "untech": 40, "blockstun": 12, "hitstop": 6, "pushbackHit": 0, "pushbackBlock": 60, "selfPushback": 0,
-      "guard": "mid", "counterHit": "none", "specialCancel": false,
-      "launch": { "x": 14, "y": 14 },
+    "absolve": {
+      "stance": "stand", "startup": 8, "active": 4, "recovery": 12,
+      "damage": 0, "hitstun": 30, "untech": 40, "blockstun": 12, "hitstop": 6, "pushbackHit": 480, "pushbackBlock": 60, "selfPushback": 0,
+      "guard": "mid", "counterHit": "none", "specialCancel": false, "onBlockState": "absolve_recovery",
       "hitboxes": [[-110, 0, 220, 220]],
-      "timeline": [{ "from": 0, "to": 11, "invuln": { "strike": true, "throw": true } }, { "at": 0, "fx": "burst" }]
+      "timeline": [{ "from": 0, "to": 19, "invuln": { "strike": true, "throw": true } }, { "at": 0, "fx": "burst" }]
     },
-    "burstAir": {
-      "stance": "air", "startup": 8, "active": 4, "recovery": 20,
-      "damage": 0, "hitstun": 30, "untech": 40, "blockstun": 12, "hitstop": 6, "pushbackHit": 0, "pushbackBlock": 60, "selfPushback": 0,
-      "guard": "mid", "counterHit": "none", "specialCancel": false,
-      "launch": { "x": 14, "y": 14 },
+    "absolve_air": {
+      "stance": "air", "startup": 8, "active": 4, "recovery": 12,
+      "damage": 0, "hitstun": 30, "untech": 40, "blockstun": 12, "hitstop": 6, "pushbackHit": 480, "pushbackBlock": 60, "selfPushback": 0,
+      "guard": "mid", "counterHit": "none", "specialCancel": false, "onBlockState": "absolve_recovery_air",
       "hitboxes": [[-110, -60, 220, 260]],
       "timeline": [
         { "at": 0, "vel": { "x": 0, "y": 0 } },
-        { "from": 0, "to": 11, "gravity": false, "invuln": { "strike": true, "throw": true } },
+        { "from": 0, "to": 19, "gravity": false, "invuln": { "strike": true, "throw": true } },
         { "at": 0, "fx": "burst" }
       ]
     }

@@ -8,7 +8,7 @@
 import { frameOf } from '../../core/character.js';
 
 /** States in which a fighter is stuck because they were hit, blocked or knocked down. */
-export const STUN_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'wakeup', 'crumple',
+export const STUN_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'wakeup', 'crumple', 'repel', 'draw', 'drawn',
   'blockStand', 'blockCrouch', 'blockAir', 'thrown']);
 
 /** Frame advantage straight from the data: hitstun (or blockstun) minus the attacker's frames left after contact. */
