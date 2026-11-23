@@ -76,8 +76,8 @@ Current through **Phase 9** (all phases of the brief done), plus **Avner: Brand 
   `data/UniversalEffects/`), rules in `data/system/effects.json` (hit row by the move's base damage, counter one
   size up, block row; additive). `collect` in fight-renderer.js pushes them from hit/counter/block cues; a move's
   own `hitFx` wins; the code-drawn sparks remain for clash, armor, throws, bounces and burst.
-- **Malik** (`data/characters/malik/`): second cast character, idle, walks, crouch, jump / fall / land, 5L, 5M (two hits), 5H, 2L, 2M, 2H, Back Heavy (4H),
-  j.L, j.M, j.H (move `layers`: the `spiritHand` effect, synced so its drawing 4 shows on the hit frame; air attacks have their own `hitFx`), and Spirit Orb (236L: a melee hit, then `spawn`s projectile `spiritOrb`). All art cut to one body size (186 px tall standing; two-row sheets are laid into one strip first; air attack sheets realigned on the torso). Numbers are a first pass copied from Avner; default stats; no art yet for dashes, blocks or hit reactions.
+- **Malik** (`data/characters/malik/`): second cast character, idle, walks, dashes (ground and air, both ways; air forward dash drawings 2 and 3 are tilted 8 degrees forward with `--tilt`), crouch, jump / fall / land, 5L, 5M (two hits), 5H, 2L, 2M, 2H, Back Heavy (4H),
+  j.L, j.M, j.H (move `layers`: the `spiritHand` effect, synced so its drawing 4 shows on the hit frame; air attacks have their own `hitFx`), and Spirit Orb (236L: a melee hit, then `spawn`s projectile `spiritOrb`). All art cut to one body size (186 px tall standing; two-row sheets are laid into one strip first; air attack sheets realigned on the torso). Numbers are a first pass copied from Avner; default stats; no art yet for blocks or hit reactions.
 - **Box editor** (title menu, dev server only; `?mode=editor&move=5H&frame=8`): `src/ui/screens/box-editor.js`
   (screen, mouse), `src/editor/box-model.js` (pure: which place in the Toska file a frame's hurt / hit boxes come
   from, mirroring `compileState`; edits; `diffOps`), `scripts/json-edit.mjs` (changes values inside the file's

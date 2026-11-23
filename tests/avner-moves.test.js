@@ -326,3 +326,13 @@ test('Malik: Standing Heavy chains into Back Heavy on hit', () => {
   assert.ok(seen.has('backHeavy'), 'Back Heavy came out of Standing Heavy');
   assert.equal(most, 2, 'and it combos');
 });
+
+test('Malik: every dash has its own art, covering the whole state', () => {
+  const c = loadChar('data/characters/malik/malik.toska.json');
+  const drawings = { dashF: 4, dashStop: 2, backdash: 3, backdashStop: 2, airdashF: 4, airdashB: 4, airdashEnd: 2 };
+  for (const [name, count] of Object.entries(drawings)) {
+    const st = c.states[name];
+    assert.ok(st.frames.every((fr) => fr.sprite), name + ' has art on every frame');
+    assert.equal(new Set(st.frames.map((fr) => fr.sprite.index)).size, count, name + ' shows all its drawings');
+  }
+});
