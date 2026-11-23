@@ -177,13 +177,25 @@ j.H and j.S; the lantern flash on 2L; ground bounce and tech roll drawings of hi
 16. **This task edited code without stopping to ask**, on its own branch, because your message was the instruction.
     Nothing is merged into `main`.
 
+## Added after your first look (same day)
+
+- **Tide and Rising Moon cancel into Moonlit.** From the frame after the wave or the moon is released (Tide frame 8;
+  Rising Moon frame 11 / 15 / 19; their EX versions too) until the move ends, R, 6R and 2R place the crescent. If a
+  crescent is already out, R is the Snap or the Recall as usual. It works whether anything hit or not. A Tide catch
+  (the pull) is not cancellable. These windows are written by hand in his file; the CANCELS page does not show them.
+- **"Hits airborne" is a switch on the HIT SETTINGS page** (under the hit settings, for any move or projectile). To
+  make Tide catch jumpers: open `proj:tideL` (and M, H), set it to yes, and make the wave's box taller in the box
+  editor: it is 70 px tall, so it only reaches someone very low.
+- Your editor tuning since the first commit is committed with this (hitboxes, hitstop, 5M jump cancel, 5H air hit,
+  the Crescent Kick's box brought back to the drawing). The test no longer pins the Crescent Kick's reach.
+
 ## Tests
 
-`npm test`: 394 tests, 392 pass. The two that fail are old-kit tests (Back Heavy's reach, the Vigil crescent) that
+`npm test`: 396 tests, 394 pass. The two that fail are old-kit tests (Back Heavy's reach, the Vigil crescent) that
 were already failing before this task, since your tuning pass; they now run against the archive.
 `npm run build` passes. `node scripts/draw-smoke.mjs` passes (the real renderer, 9000 frames, no crash).
 
-New: `tests/lampbearer.test.js`, 15 tests. Every frame number, distance and cost in the table above that your spec
+New: `tests/lampbearer.test.js`, 16 tests. Every frame number, distance and cost in the table above that your spec
 fixes is checked in the real game, plus: the old kit is gone and archived; every sheet the file names exists;
 the rollback sync test over the whole kit (rewinding 8 frames every frame, 2400 frames) and two Avners fighting at
 random (3000 frames) never differ.
