@@ -10,7 +10,8 @@ const LABEL = {
   blockGuard: 'Block height',
   tech: 'Air recovery',
   refill: 'Health refill',
-  meter: 'Meter, burst, gauge',
+  meter: 'Devotion, Rite, gauge',
+  absolve: 'Absolve',
   position: 'Start position (R)',
 };
 

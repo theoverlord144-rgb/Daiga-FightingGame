@@ -1,6 +1,8 @@
 // The fight HUD: health bars (with a red trail showing the damage just taken), names, the timer, round markers,
-// burst gauge, super meter, the character mechanic, and the round banners (ROUND 1, FIGHT, K.O., TIME, WINS).
-// It only reads the game; the only thing it remembers is presentation (how far the red trail has drained).
+// Debt, the Absolve icon, the Devotion meter, the Rite gauge, the character mechanic, the pop-up words (PERFECT,
+// COUNTER, WITNESS) and the round banners (ROUND 1, FIGHT, K.O., TIME, WINS).
+// It only reads the game; the only things it remembers are presentation (how far the red trail has drained, and
+// the pop-up words still on screen).
 import FX from '../../data/system/effects.json';
 
 const FONT = 'system-ui, sans-serif';
@@ -8,6 +10,9 @@ const FONT = 'system-ui, sans-serif';
 /** image(name): a loaded picture from data/effects/, or null while it loads. */
 export function createHud(ctx, W, image = () => null) {
   const trail = [null, null]; // the red damage trail, per player (visual only)
+  const popups = []; // { p, text, color, frame }: words shown for a moment (visual only)
+  const POPUP_LIFE = 50;
+  const POPUP = { perfect: ['PERFECT', '#ffffff'], counter: ['COUNTER', '#ff9a4a'], witness: ['WITNESS', '#c9a2ff'] };
   const BAR_W = 360;
   const BAR_Y = 22;
   const BAR_H = 18;
@@ -34,6 +39,15 @@ export function createHud(ctx, W, image = () => null) {
     g.addColorStop(1, low ? '#e0482c' : '#e0a93a');
     ctx.fillStyle = g;
     ctx.fillRect(left ? x + BAR_W - hw : x, BAR_Y, hw, BAR_H);
+    // Debt (Vow): the part of the health that is owed, in red at the draining end of the bar.
+    if (p.debt > 0) {
+      const dw = Math.min(hw, Math.max(2, fill(Math.min(p.debt, p.health))));
+      const dx = left ? x + BAR_W - hw : x + hw - dw;
+      ctx.fillStyle = '#ff2f4f';
+      ctx.fillRect(dx, BAR_Y, dw, BAR_H);
+      ctx.fillStyle = '#7a0f22';
+      for (let sx = dx + 3; sx < dx + dw; sx += 6) ctx.fillRect(sx, BAR_Y, 2, BAR_H);
+    }
     // Name.
     ctx.font = `700 15px ${FONT}`;
     ctx.fillStyle = '#f2ecdf';
@@ -140,27 +154,70 @@ export function createHud(ctx, W, image = () => null) {
     return y0;
   }
 
-  /** Burst gauge (thin bar under the health bar), super meter (bottom corners), the mechanic. */
+  /** The Rite gauge: one pip per charge, the next one filling, under the Devotion meter beside its name plate. */
+  function riteGauge(p, def, H) {
+    const g = def.rite?.gauge;
+    if (!g) return;
+    const D = FX.devotion;
+    const left = p.id === 0;
+    const mid = D.margin + (D.frame.w * D.scale) / 2;
+    const start = mid + (D.plate.w * D.plate.scale) / 2 + 14; // distance from the screen edge to the first pip
+    const y = H - D.bottom + D.plate.gap + (D.plate.h * D.plate.scale) / 2;
+    const unlimited = !!g.unlimitedWhile && (p.vars[g.unlimitedWhile] | 0) > 0;
+    for (let i = 0; i < g.charges; i++) {
+      const cx = left ? start + i * 18 : W - start - i * 18;
+      const full = unlimited || i < p.rite;
+      ctx.beginPath();
+      ctx.arc(cx, y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = full ? (unlimited ? '#ffe9a8' : '#8fe3ff') : '#1c1826';
+      ctx.fill();
+      if (!full && i === p.rite) { // the charge that is refilling
+        ctx.beginPath();
+        ctx.moveTo(cx, y);
+        ctx.arc(cx, y, 6, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * p.riteTimer) / g.rechargeFrames);
+        ctx.closePath();
+        ctx.fillStyle = '#3f6f80';
+        ctx.fill();
+      }
+      ctx.strokeStyle = '#0b0910';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.font = `700 10px ${FONT}`;
+    ctx.fillStyle = '#8fe3ff';
+    ctx.textAlign = left ? 'left' : 'right';
+    ctx.fillText('RITE', left ? start + g.charges * 18 : W - start - g.charges * 18, y + 4);
+  }
+
+  /** The Absolve icon (by the health bar), the Devotion meter (bottom corners), the Rite gauge, the mechanic. */
   function resources(p, def, world, H, game) {
     const left = p.id === 0;
     const B = world.burst;
     if (B && B.enabled) {
-      const bwMax = 150;
-      const bx = left ? W / 2 - 44 - bwMax : W / 2 + 44;
-      const by = BAR_Y + BAR_H + 26;
-      const full = p.burst >= B.gaugeMax;
-      const bw = Math.round((bwMax * p.burst) / B.gaugeMax);
-      ctx.fillStyle = '#1c1826';
-      ctx.fillRect(bx, by, bwMax, 5);
-      ctx.fillStyle = full ? '#7fe0ff' : '#3f6f80';
-      ctx.fillRect(left ? bx + bwMax - bw : bx, by, bw, 5);
-      if (full) {
-        ctx.font = `700 10px ${FONT}`;
-        ctx.textAlign = left ? 'right' : 'left';
-        ctx.fillText('BURST', left ? bx - 5 : bx + bwMax + 5, by + 6);
-      }
+      // A diamond: bright while Absolve is still unused this round, hollow once it is spent; dimmer while there
+      // is not enough Devotion to pay for it.
+      const cx = left ? W / 2 - 44 - 132 : W / 2 + 44 + 132;
+      const cy = BAR_Y + BAR_H + 13;
+      const ready = p.burst >= B.gaugeMax;
+      const canPay = p.meter >= (world.sys?.absolve.cost ?? 0);
+      ctx.save();
+      ctx.globalAlpha = ready && !canPay ? 0.55 : 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 8); ctx.lineTo(cx + 7, cy); ctx.lineTo(cx, cy + 8); ctx.lineTo(cx - 7, cy);
+      ctx.closePath();
+      ctx.fillStyle = ready ? '#7fe0ff' : '#1c1826';
+      ctx.fill();
+      ctx.strokeStyle = ready ? '#e9fbff' : '#3f6f80';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.font = `700 10px ${FONT}`;
+      ctx.fillStyle = ready ? '#7fe0ff' : '#3f6f80';
+      ctx.textAlign = left ? 'right' : 'left';
+      ctx.fillText('ABSOLVE', left ? cx - 12 : cx + 12, cy + 4);
+      ctx.restore();
     }
     const top = devotion(p, def, world, H, game.frame);
+    riteGauge(p, def, H);
     // The mechanic: its gauge as a percentage, its counters as pips.
     const mech = def.mechanic;
     let line = '';
@@ -226,7 +283,40 @@ export function createHud(ctx, W, image = () => null) {
     }
   }
 
+  /** PERFECT / COUNTER / WITNESS: a word under the health bar of the player who earned it, for a moment. */
+  function popupWords(game) {
+    for (let i = popups.length - 1; i >= 0; i--) {
+      const age = game.frame - popups[i].frame;
+      if (age < 0 || age > POPUP_LIFE) popups.splice(i, 1);
+    }
+    const row = [0, 0];
+    for (const w of popups) {
+      const age = game.frame - w.frame;
+      const left = w.p === 0;
+      const s = Math.min(1, age / 5);
+      ctx.save();
+      ctx.globalAlpha = age > POPUP_LIFE - 12 ? Math.max(0, (POPUP_LIFE - age) / 12) : 1;
+      ctx.translate(left ? W / 2 - 220 : W / 2 + 220, 96 + row[w.p]++ * 26);
+      ctx.scale(0.8 + 0.2 * s, 0.8 + 0.2 * s);
+      ctx.textAlign = 'center';
+      ctx.font = `900 22px ${FONT}`;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#0b0910';
+      ctx.strokeText(w.text, 0, 0);
+      ctx.fillStyle = w.color;
+      ctx.fillText(w.text, 0, 0);
+      ctx.restore();
+    }
+  }
+
   return {
+    /** Called once per game frame (cues last one frame): remember the words to show. */
+    notice(game) {
+      for (const c of game.cues) {
+        const w = POPUP[c.type];
+        if (w) popups.push({ p: c.p, text: w[0], color: w[1], frame: game.frame });
+      }
+    },
     draw(game, world, H) {
       for (const p of game.players) {
         const def = world.chars[p.id];
@@ -235,8 +325,9 @@ export function createHud(ctx, W, image = () => null) {
         resources(p, def, world, H, game);
       }
       timer(game);
+      popupWords(game);
       banners(game, world);
     },
-    reset() { trail[0] = trail[1] = null; },
+    reset() { trail[0] = trail[1] = null; popups.length = 0; },
   };
 }

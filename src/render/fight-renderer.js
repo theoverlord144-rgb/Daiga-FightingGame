@@ -424,6 +424,7 @@ export function createFightRenderer(ctx, W, H) {
   function collect(game, world) {
     if (game.frame === collected) return;
     collected = game.frame;
+    hud.notice(game);
     for (const c of game.cues) {
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
