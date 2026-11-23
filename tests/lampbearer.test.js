@@ -6,7 +6,8 @@ import fs from 'node:fs';
 import { createGame, step } from '../src/core/game.js';
 import { px } from '../src/core/fixed.js';
 import { runSyncTest } from '../src/net/sync-test.js';
-import { loadWorld, loadChar, loadJSON, script, lcg } from './helpers.js';
+import { compileCharacter } from '../src/core/character.js';
+import { loadWorld, loadChar, loadJSON, script, lcg, SYSTEM } from './helpers.js';
 
 const FILE = 'data/characters/avner/avner.toska.json';
 const RAW = loadJSON(FILE);
@@ -192,15 +193,22 @@ test('Tide: a wave runs along the ground, farther by button; a touch drags the o
   // Out of reach: nothing happens. L does not reach where H does.
   const far = setup(420);
   assert.ok(!hitOf(run(far, '2 1 4+L 5*60'), 'tideL'));
-  // A jumping opponent is not caught, except by EX.
-  const up = setup(300);
-  assert.ok(!hitOf(run(up, '5*4 2 1 4+M 5*50', '8 5*60'), 'tideM'), 'the wave passes under a jump');
-  assert.equal(A.projectiles.tideM.move.hitsAirborne, false);
-  assert.equal(A.projectiles.tideEx.move.hitsAirborne, true);
-  const ex = setup(300);
-  ex.players[0].meter = 20000;
-  const cues = run(ex, '5*4 2 1 4+MS 5*50', '8 5*60');
-  assert.ok(hitOf(cues, 'tideEx'), 'EX catches a fighter in the air');
+  // Whether a wave catches a jumping opponent is one switch in its data (`hitsAirborne`; the owner's to set per wave).
+  for (const on of [false, true]) {
+    const raw = loadJSON(FILE);
+    raw.projectiles.tideM.hitsAirborne = on;
+    raw.projectiles.tideM.hitbox = [-40, 0, 80, 220];
+    const def = compileCharacter(raw, SYSTEM);
+    const w = loadWorld(def, def);
+    const g = createGame(w);
+    g.players[0].x = -px(150);
+    g.players[1].x = px(150);
+    const p1 = script('5*4 2 1 4+M 5*18'), p2 = script('8 5*60');
+    let caught = false;
+    for (let i = 0; i < p1.length; i++) { step(g, [p1[i], p2[i] ?? 0], w); if (g.cues.some((c) => c.type === 'hit' && c.move === 'tideM')) caught = g.players[1].y > 0; }
+    assert.equal(caught, on, on ? 'switch on: caught in the air' : 'switch off: the wave passes under a jump');
+  }
+  assert.equal(A.projectiles.tideEx.move.hitsAirborne, true, 'EX always catches airborne opponents');
 });
 
 test('Moonlit: R places the crescent in front, 6R far, 2R over himself, j.R from the air; one at a time', () => {
