@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'pillarH', 'pillarL', 'pillarM', 'spiritOrb', 'spiritOrbH', 'spiritOrbM']);
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', '5S', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'pillarH', 'pillarL', 'pillarM', 'spiritOrb', 'spiritOrbH', 'spiritOrbM']);
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -452,4 +452,21 @@ test('Malik: Spirit Orb M and H start slower and throw a slower orb; H slides ba
     const hits = c.states[id].frames.filter((fr) => fr.hit.length);
     assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4], id);
   }
+});
+
+test('Malik: S is a launcher: the hit is on the smear (drawing 3), it sends them up, and every ground normal chains into it', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const c = world.chars[0];
+  const st = c.states['5S'];
+  const hits = st.frames.filter((fr) => fr.hit.length);
+  assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [3]);
+  assert.equal(st.frames.at(-1).sprite.index + 1, 7, 'all seven drawings are used');
+  assert.ok(fs.existsSync('data/characters/malik/sheets/5S.png'));
+  const game = createGame(world);
+  game.players[0].x = -px(35); game.players[1].x = px(35);
+  const hp = game.players[1].health; let top = 0; const seen = [];
+  for (const raw of script('5+H 5*22 5+S 5*40')) { step(game, [raw, 0], world); top = Math.max(top, game.players[1].y); if (seen.at(-1) !== game.players[0].state) seen.push(game.players[0].state); }
+  assert.deepEqual(seen.slice(0, 2), ['5H', '5S'], 'Standing Heavy chains into S');
+  assert.ok(top > px(100), 'launched high');
+  assert.ok(hp - game.players[1].health > 700);
 });
