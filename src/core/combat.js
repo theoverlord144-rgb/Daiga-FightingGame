@@ -463,7 +463,9 @@ function applyStrike(game, world, r) {
 /** Every projectile flies one frame forward (before this frame's spawns, so a new one starts where it was put). */
 export function moveProjectiles(game, world) {
   for (const pr of game.projectiles) {
-    pr.x += world.chars[pr.owner].projectiles[pr.kind].speed * pr.facing;
+    const pd = world.chars[pr.owner].projectiles[pr.kind];
+    pr.x += pd.speed * pr.facing;
+    pr.y += pd.speedY;
     pr.age++;
   }
 }

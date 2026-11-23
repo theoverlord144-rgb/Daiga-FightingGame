@@ -32,9 +32,9 @@ function until(g, pred, in1 = '5', in2 = '5', max = 400) {
   for (let n = 1; n <= max; n++) { step(g, [a, b], W); if (pred(g)) return n; }
   throw new Error(`never happened (P1 ${g.players[0].state}, P2 ${g.players[1].state})`);
 }
-/** P1 does 22S and is left on the first frame of the stance loop. p2 = what P2 holds meanwhile. */
+/** P1 presses R (it was 22S until the universal systems spec, section 8, moved Vigil to the Rite button) and is left on the first frame of the stance loop. p2 = what P2 holds meanwhile. */
 function intoStance(g, p2 = '5') {
-  run(g, '2 5 2+S', `${p2}*3`);
+  run(g, '5 5 5+R', `${p2}*3`);
   until(g, (s) => s.players[0].state === 'vigilStance', '5', p2);
 }
 const brand = (g) => g.players[0].vars.brand;
@@ -99,9 +99,9 @@ test('Vigil: drawing 1 of every follow-up is the stance loop\'s first drawing', 
 
 // ---------- The stance ----------
 
-test('Vigil stance: 22S enters it after 20 frames; it lasts 120 frames, then exits by itself in 12', () => {
+test('Vigil stance: R enters it after 20 frames; it lasts 120 frames, then exits by itself in 12', () => {
   const g = placed(600);
-  run(g, '2 5 2+S');
+  run(g, '5 5 5+R');
   assert.equal(g.players[0].state, 'vigil');
   assert.equal(until(g, (s) => s.players[0].state === 'vigilStance'), 20);
   assert.equal(until(g, (s) => s.players[0].state === 'vigilExit'), 120, 'the time limit');
@@ -117,7 +117,7 @@ test('Vigil stance: back leaves it; it cannot block; a hit ends it with a normal
 
   // Entry is punishable: a jab during the 20 frames hits.
   const e = placed(70);
-  run(e, '2 5 2+S 5*10', '5*4 5+L 5*9');
+  run(e, '5 5 5+R 5*10', '5*4 5+L 5*9');
   assert.equal(e.players[0].state, 'hitStand', 'hit out of the entry');
 
   // In the stance: hit, even while the stance holder does nothing (and he has no guard to hold: back would exit).
@@ -131,7 +131,7 @@ test('Vigil stance: back leaves it; it cannot block; a hit ends it with a normal
 test('Vigil stance: follow-ups come out from the first frame of the loop, whatever direction is held', () => {
   for (const [btn, move] of [['L', 'vigilSnap'], ['M', 'vigilM'], ['H', 'vigilAnchor'], ['S', 'vigilFlare']]) {
     const g = placed(600);
-    run(g, '2 5 2+S');
+    run(g, '5 5 5+R');
     until(g, (s) => s.players[0].state === 'vigil' && s.players[0].frame === 19); // the entry's last frame
     run(g, `5+${btn}`);
     assert.equal(g.players[0].state, move, `${btn} on the first loop frame`);
@@ -312,7 +312,7 @@ test('Vigil M: it disappears when it runs out of screen, and at the stage edge',
 
 test('Vigil M: two crescents that meet both vanish, and nobody is hit', () => {
   const g = placed(700);
-  run(g, '2 5 2+S', '2 5 2+S');
+  run(g, '5 5 5+R', '5 5 5+R');
   until(g, (s) => s.players[0].state === 'vigilStance' && s.players[1].state === 'vigilStance');
   const cues = run(g, '5+M 5*80', '5+M 5*80');
   const ends = cues.filter((c) => c.type === 'projectileEnd');
@@ -440,8 +440,8 @@ test('Back Heavy (4H): reach and hitbox length doubled, everything else as it wa
 // ---------- Determinism ----------
 
 test('the Vigil kit is deterministic and rollback-safe: same inputs, same game; a saved state resumes identically', () => {
-  const s1 = script('2 5 2+S 5*22 5+M 5*40 5+L 5*30 5+S 5*40 5+H 5*60 4 5*20');
-  const s2 = script('5*10 2 5 2+S 5*24 5+M 5*50 6*30 3*30 5*80');
+  const s1 = script('5 5 5+R 5*22 5+M 5*40 5+L 5*30 5+S 5*40 5+H 5*60 4 5*20');
+  const s2 = script('5*10 5 5 5+R 5*24 5+M 5*50 6*30 3*30 5*80');
   const play = (from = null, start = 0) => {
     const g = from ? cloneState(from) : placed(520);
     const hashes = [];

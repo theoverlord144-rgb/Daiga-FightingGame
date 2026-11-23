@@ -244,6 +244,12 @@ Heights are pixels above the ground line.
   hit puts the opponent in the crumple). To give a character its own art or boxes for Vow, list a move with the id
   `vow_start`, `vow_strike_quick`, `vow_strike` or `vow_strike_full` (only the fields you write replace the
   universal ones), or a state `vow_hold` / `crumple` under `states`.
+- **Rite** (the R button), top level of the character file:
+  `"rite": { "gauge": { "charges": 3, "rechargeFrames": 240, "unlimitedWhile": "install" } | null, "moves": ["rite_5", ...] }`.
+  `moves` lists ids of moves in the character's own `moves` whose input uses R (`5R`, `2R`, `6R`, `j.R`); they count
+  as specials unless they set `kind`. With a `gauge`, each use spends a charge; charges refill one at a time, each
+  taking `rechargeFrames`; `unlimitedWhile` names a mechanic var, and while it is above 0 nothing is spent.
+  `null` gauge = no limit. Projectiles take `speedY` (pixels per frame, up is positive) beside `speed`.
 - **Absolve, Repel, Draw** (`absolve`, `repel`, `draw` in `data/system/systems.json`; the Absolve move itself is in
   `data/system/burst.json`, whose notes explain it). Move field `onBlockState`: when the move is blocked the attacker
   switches to that state. State field `blocking: true`: the state counts as a block state. Like Vow, a character can

@@ -33,16 +33,27 @@
     "walkF": { "duration": 48 }, "walkB": { "duration": 48 },
     "jump": { "loopFrom": 59 }, "superJump": { "loopFrom": 59 }, "airJump": { "loopFrom": 59 }
   },
+  "rite": { "gauge": { "charges": 3, "rechargeFrames": 240, "unlimitedWhile": "install" }, "moves": ["rite_5", "rite_2", "rite_6", "rite_j"] },
   "projectiles": {
-    "spiritOrb": { "speed": 9, "spawn": [85, 125], "hitbox": [-25, -25, 50, 50], "lifetime": 110,
+    "palm5": { "speed": 16, "spawn": [70, 100], "hitbox": [-30, -45, 90, 90], "lifetime": 14,
+      "damage": 700, "hitstun": 20, "untech": 26, "blockstun": 14, "hitstop": 10, "pushbackHit": 30, "pushbackBlock": 30, "guard": "mid" },
+    "palm2": { "speed": 14, "spawn": [60, 22], "hitbox": [-30, -22, 100, 44], "lifetime": 16,
+      "damage": 600, "hitstun": 18, "untech": 24, "blockstun": 14, "hitstop": 10, "pushbackHit": 24, "pushbackBlock": 30, "guard": "low" },
+    "palm6": { "speed": 5, "speedY": 12, "spawn": [60, 110], "hitbox": [-45, -50, 90, 120], "lifetime": 14,
+      "damage": 700, "hitstun": 20, "untech": 32, "blockstun": 14, "hitstop": 10, "pushbackHit": 10, "pushbackBlock": 30, "guard": "mid",
+      "launch": { "x": 3, "y": 13 } },
+    "palmJ": { "speed": 8, "speedY": -12, "spawn": [50, -10], "hitbox": [-45, -70, 90, 110], "lifetime": 16,
+      "damage": 700, "hitstun": 20, "untech": 26, "blockstun": 14, "hitstop": 10, "pushbackHit": 14, "pushbackBlock": 24, "guard": "high",
+      "airHit": { "x": 2, "y": -12 } },
+    "spiritOrb": { "speed": 9, "spawn": [85, 125], "hitbox": [-20, -45, 62, 81], "lifetime": 110,
       "damage": 500, "hitstun": 18, "blockstun": 12, "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 22, "guard": "mid",
       "sprite": { "image": "sheets/orb.png", "columns": 9, "rows": 1, "count": 9, "frameW": 344, "frameH": 344, "originX": 205, "originY": 172, "scale": 0.5, "additive": true },
       "anim": { "release": [3, 3, 3], "loop": [3, 3, 3], "impact": [3, 4, 5] } },
-    "spiritOrbM": { "speed": 6, "spawn": [85, 125], "hitbox": [-25, -25, 50, 50], "lifetime": 160,
+    "spiritOrbM": { "speed": 6, "spawn": [85, 125], "hitbox": [-23, -46, 64, 88], "lifetime": 160,
       "damage": 500, "hitstun": 18, "blockstun": 12, "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 22, "guard": "mid",
       "sprite": { "image": "sheets/orb.png", "columns": 9, "rows": 1, "count": 9, "frameW": 344, "frameH": 344, "originX": 205, "originY": 172, "scale": 0.5, "additive": true },
       "anim": { "release": [3, 3, 3], "loop": [3, 3, 3], "impact": [3, 4, 5] } },
-    "spiritOrbH": { "speed": 4, "spawn": [85, 125], "hitbox": [-25, -25, 50, 50], "lifetime": 240,
+    "spiritOrbH": { "speed": 4, "spawn": [85, 125], "hitbox": [-22, -42, 62, 81], "lifetime": 240,
       "damage": 500, "hitstun": 18, "blockstun": 12, "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 22, "guard": "mid",
       "sprite": { "image": "sheets/orb.png", "columns": 9, "rows": 1, "count": 9, "frameW": 344, "frameH": 344, "originX": 205, "originY": 172, "scale": 0.5, "additive": true },
       "anim": { "release": [3, 3, 3], "loop": [3, 3, 3], "impact": [3, 4, 5] } }
@@ -196,6 +207,14 @@
     { "id": "walkF", "name": "Walk forward (system state art)",
       "sprite": { "image": "sheets/walk.png", "columns": 6, "rows": 1, "count": 6, "frameW": 314, "frameH": 365, "originX": 157, "originY": 363, "scale": 0.5, "holds": [8, 8, 8, 8, 8, 8] } },
     { "id": "walkB", "name": "Walk back (system state art)",
-      "sprite": { "image": "sheets/walk-back.png", "columns": 6, "rows": 1, "count": 6, "frameW": 280, "frameH": 392, "originX": 140, "originY": 390, "scale": 0.5, "holds": [8, 8, 8, 8, 8, 8] } }
+      "sprite": { "image": "sheets/walk-back.png", "columns": 6, "rows": 1, "count": 6, "frameW": 280, "frameH": 392, "originX": 140, "originY": 390, "scale": 0.5, "holds": [8, 8, 8, 8, 8, 8] } },
+    { "id": "rite_5", "name": "Guardian Palm", "input": "5R", "startup": 12, "active": 0, "recovery": 22,
+      "timeline": [{ "at": 12, "spawn": "palm5" }] },
+    { "id": "rite_2", "name": "Guardian Palm (low)", "input": "2R", "startup": 13, "active": 0, "recovery": 24,
+      "timeline": [{ "at": 13, "spawn": "palm2" }] },
+    { "id": "rite_6", "name": "Guardian Palm (rising)", "input": "6R", "startup": 10, "active": 0, "recovery": 28,
+      "timeline": [{ "at": 10, "spawn": "palm6" }] },
+    { "id": "rite_j", "name": "Guardian Palm (air)", "input": "j.R", "startup": 11, "active": 0, "recovery": 18,
+      "timeline": [{ "at": 11, "spawn": "palmJ" }] }
   ]
 }

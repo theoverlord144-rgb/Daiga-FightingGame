@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', '5S', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'pillarH', 'pillarL', 'pillarM', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', '5S', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_5', 'rite_6', 'rite_j', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);

@@ -219,6 +219,7 @@ function compileProjectiles(src, meter) {
     out[name] = {
       name,
       speed: px(p.speed ?? 0),
+      speedY: px(p.speedY ?? 0), // per frame, up is positive (a rising or diving projectile)
       spawn: [px(sp[0]), px(sp[1])],
       hitbox: boxes([p.hitbox ?? [0, 0, 0, 0]]),
       lifetime: p.lifetime ?? 600,
@@ -494,7 +495,22 @@ export function compileCharacter(file, system) {
   // Universal moves (burst, Vow). A character's own move with the same id is laid over the universal one, so it
   // can give just the art, or its own boxes and frame data.
   const universal = Object.entries(content.moves).filter(([id]) => !moveIds.has(id)).map(([id, m]) => ({ ...m, id }));
-  const own = t.moves.map((m) => (content.moves[m.id] ? { ...content.moves[m.id], ...m } : m));
+  // Rite moves (the R button): `rite: { gauge: { charges, rechargeFrames, unlimitedWhile } | null, moves: [ids] }`.
+  // The ids name moves in the list above whose input uses R. They count as specials unless they say otherwise, and
+  // each use spends a charge when there is a gauge.
+  const riteSrc = t.rite ?? file.rite ?? null;
+  const riteIds = new Set(riteSrc?.moves || []);
+  for (const id of riteIds) {
+    const m = t.moves.find((x) => x.id === id);
+    if (!m) throw new Error(`${ch.id}: rite names unknown move ${id}`);
+    if (!String(m.input || '').includes('R')) throw new Error(`${ch.id}: Rite move ${id} must use the R button (its input is "${m.input}")`);
+  }
+  const rg = riteSrc?.gauge ?? null;
+  if (rg && rg.unlimitedWhile && !mechanic.vars[rg.unlimitedWhile]) throw new Error(`${ch.id}: rite gauge names unknown var ${rg.unlimitedWhile}`);
+  const rite = riteSrc ? { moves: [...riteIds],
+    gauge: rg ? { charges: rg.charges ?? 1, rechargeFrames: rg.rechargeFrames ?? 60, unlimitedWhile: rg.unlimitedWhile ?? null } : null } : null;
+  const own = t.moves.map((m) => (content.moves[m.id] ? { ...content.moves[m.id], ...m } : m))
+    .map((m) => (riteIds.has(m.id) && !m.kind ? { ...m, kind: 'special' } : m));
 
   // Moves.
   for (const m of [...own, ...exMoves, ...universal]) {
@@ -519,6 +535,7 @@ export function compileCharacter(file, system) {
         motion: parsed.motion,
         dir: parsed.dir,
         anyDir: !!m.anyDir, // a plain button that works whatever direction is held (stance follow-ups)
+        rite: riteIds.has(m.id) && !!rite.gauge, // spends a charge of the Rite gauge
         oneAtATime: move.oneAtATime,
         buttons: parsed.buttons,
         negativeEdge: !!m.negativeEdge,
@@ -582,7 +599,7 @@ export function compileCharacter(file, system) {
   const meterStart = stats.units.meterStart * (system.meter?.unit ?? 1);
   const devotion = compileArchetype(system.meter, t.meter ?? file.meter, ch.id);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, meterStart, devotion, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
+    sheets, mechanic, meterMax, meterStart, devotion, rite, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
     effects: t.effects ?? file.effects ?? {} }; // drawing only: named sheet effects for `fx` cues
 }
 

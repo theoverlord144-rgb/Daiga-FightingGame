@@ -10,6 +10,17 @@ import { pct } from './fixed.js';
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
 const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3, R: 4 };
 const ATTACK = ['L', 'M', 'H'];
+/** Is the Rite gauge unlimited right now (the character's `unlimitedWhile` var is running)? */
+export const riteUnlimited = (p, def) => !!def.rite?.gauge?.unlimitedWhile && (p.vars[def.rite.gauge.unlimitedWhile] | 0) > 0;
+
+/** The Rite gauge refills one charge at a time, each taking rechargeFrames. */
+export function tickRite(p, def) {
+  const g = def.rite?.gauge;
+  if (!g) return;
+  if (p.rite >= g.charges) { p.riteTimer = 0; return; }
+  if (++p.riteTimer >= g.rechargeFrames) { p.rite++; p.riteTimer = 0; }
+}
+
 /** The button pairs that Repel or Draw during blockstun: any two of the three attack buttons. */
 const GUARD_PAIRS = [['M', 'H'], ['L', 'M'], ['L', 'H']];
 
@@ -88,6 +99,8 @@ export function createFighter(def, side, x) {
     atkFrame: -1000, // the last game frame this fighter was in an attack's active or recovery frames
     repelAt: -1000, // the game frame of this fighter's last Repel (its lockout counts from here)
     drawAt: -1000, // the game frame of this fighter's last Draw that pulled the attacker in (for the punish refund)
+    rite: def.rite?.gauge ? def.rite.gauge.charges : 0, // Rite gauge: charges ready
+    riteTimer: 0, // frames into refilling the next charge
     guardAct: 0, // this frame's request: 1 = Repel, 2 = Draw (resolved after both fighters have acted)
     jumpDir: 8,
     airJumpsUsed: 0,
@@ -333,6 +346,7 @@ function pickCommand(game, p, def, world, allowed, reuse = '') {
       if (pass === 0 && cmd.buttons === 'S' && !cmd.motion) continue; // first, everything but the plain S moves
       if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
       if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
+      if (cmd.rite && p.rite < 1 && !riteUnlimited(p, def)) continue;
       if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
       if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
       if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.oneAtATime)) continue;
@@ -416,6 +430,8 @@ function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link =
     game.cues.push({ p: p.id, type: 'link', timing: timing.timing, frames: timing.frames, rewarded });
   }
   applyResources(p, def, negate(pick.cmd.cost));
+  // A Rite move spends a charge of the Rite gauge (none while the gauge is unlimited).
+  if (pick.cmd.rite && !riteUnlimited(p, def)) p.rite = Math.max(0, p.rite - 1);
   // Vow is free from neutral; cancelling a normal into it costs Devotion.
   if (pick.cmd.move === 'vow_start' && p.viaCancel) p.meter = Math.max(0, p.meter - world.sys.vow.cancelCost);
   // Doing a special move builds a little Devotion (not its EX version, which costs a bar).

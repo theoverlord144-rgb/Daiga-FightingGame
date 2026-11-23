@@ -6,7 +6,7 @@
 
 import { createInputState, pushInput, BTN } from './input.js';
 import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from './match.js';
-import { createFighter, advanceAndDecide, move, land, resolveGuardActions } from './fighter.js';
+import { createFighter, advanceAndDecide, move, land, resolveGuardActions, tickRite } from './fighter.js';
 import { separate, resolveHits, checkThrowBreaks, throwLands, moveProjectiles, resolveProjectiles } from './combat.js';
 import { px } from './fixed.js';
 import { compileSystems } from './systems.js';
@@ -95,6 +95,7 @@ export function step(state, rawInputs, world) {
     }
     const B = world.burst;
     if (B && B.enabled && B.perFrame) p.burst = Math.min(B.gaugeMax, p.burst + B.perFrame);
+    tickRite(p, def);
     // Debt drains away once Vow is over (not while guarding or striking: landing the strike forgives it; and not
     // while held in a throw: the throw makes all of it come due).
     if (p.debt > 0) {
