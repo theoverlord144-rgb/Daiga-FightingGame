@@ -253,9 +253,13 @@ Heights are pixels above the ground line.
   Effect slots are in `data/system/effects.json` under `slots`.
   A state's art-only entry goes with a `states` override when the drawings need a different length
   (Malik: `"vow_hold": { "duration": 36 }` for his loop, `"vow_absorb": { "duration": 14 }` for the absorb pose).
-- **A projectile that stands on the floor**: `"ground": true` inside a projectile's `sprite` (drawing only). The
-  sheet is drawn on the floor, not at the projectile: where its path started, or, for one coming down, where it
-  will land. For a hand that grows out of the ground while its hitbox rises or dives as usual.
+- **A projectile that erupts from the floor**: `"fromGround": true` on the projectile (a rule). Its `spawn` height
+  is then measured from the floor, not from the fighter, so it starts in the same place however high they are
+  (Malik's j.R: `"spawn": [110, -150]`, rising 14 px a frame, so it has no hitbox up in the air).
+- **Where a projectile's sheet is drawn** (drawing only, inside its `sprite`): `"ground": true` stands the sheet on
+  the floor under the projectile; `"rooted": true` keeps it where the projectile's path began (a hand growing
+  out of the fighter's palm while the hitbox travels along it); `"angle": 45` tilts an upright sheet forward by
+  that many degrees.
 - **Rite** (the R button), top level of the character file:
   `"rite": { "gauge": { "charges": 3, "rechargeFrames": 240, "unlimitedWhile": "install" } | null, "moves": ["rite_5", ...] }`.
   `moves` lists ids of moves in the character's own `moves` whose input uses R (`5R`, `2R`, `6R`, `j.R`); they count

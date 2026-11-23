@@ -373,10 +373,10 @@ export function createFightRenderer(ctx, W, H) {
       const rel = d.anim?.release ?? [], loop = d.anim?.loop ?? [1];
       const relLen = rel.reduce((a, b) => a + b, 0);
       const index = pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0];
-      const [x, y] = d.sprite.ground ? toScreen(groundX(pr, d), 0) : toScreen(pr.x, pr.y);
+      const [x, y] = toScreen(...rootOf(pr, d));
       ctx.save();
       if (d.sprite.additive) ctx.globalCompositeOperation = 'lighter';
-      drawSheetFrame(def, d.sprite, index, x, y, pr.facing);
+      drawSheetFrame(def, d.sprite, index, x, y, pr.facing, tiltOf(d, pr.facing));
       ctx.restore();
     }
   }
@@ -470,7 +470,11 @@ export function createFightRenderer(ctx, W, H) {
     if (d.speedY < 0 && pr.y > 0) return pr.x + pr.facing * d.speed * Math.ceil(pr.y / -d.speedY);
     return pr.x - pr.facing * d.speed * pr.age;
   }
-  const groundSeen = {}; // drawing only: where each kind of ground-drawn projectile last stood, for its ending frames
+  /** Where a projectile's sheet is drawn: on the floor ('ground'), where its path began ('rooted': the hand it grows from), or on it. */
+  const rootOf = (pr, d) => d.sprite.ground ? [groundX(pr, d), 0] : d.sprite.rooted ? [pr.x - pr.facing * d.speed * pr.age, pr.y - d.speedY * pr.age] : [pr.x, pr.y];
+  /** A sheet drawn upright can be tilted forward by 'angle' degrees. */
+  const tiltOf = (d, facing) => (facing * (d.sprite.angle ?? 0) * Math.PI) / 180;
+  const groundSeen = {}; // drawing only: where each ground-drawn or rooted projectile last stood, for its ending frames
   const lastVars = [{}, {}]; // drawing only: last seen mechanic vars, to notice a mark running out
   // Movement effects (dash dust, air dash burst and trail, landing dust): data/system/effects.json "motion".
   function motionFx(rule, p, dx) {
@@ -500,8 +504,8 @@ export function createFightRenderer(ctx, W, H) {
         const d = world.chars[c.p]?.projectiles[c.name];
         if (d?.sprite && d.anim?.impact) {
           const first = (d.anim.release?.length ?? 0) + (d.anim.loop?.length ?? 0);
-          const onGround = d.sprite.ground ? groundSeen[`${c.p}:${c.name}`] : undefined;
-          effects.push({ proj: d, def: world.chars[c.p], first, x: onGround ?? c.x, y: onGround === undefined ? c.y : 0, facing: c.facing, age: 0, life: d.anim.impact.reduce((a, b) => a + b, 0) - 1 });
+          const [ex, ey] = groundSeen[`${c.p}:${c.name}`] ?? [c.x, c.y];
+          effects.push({ proj: d, def: world.chars[c.p], first, x: ex, y: ey, facing: c.facing, age: 0, life: d.anim.impact.reduce((a, b) => a + b, 0) - 1 });
         }
       }
       if (!SPARK[c.type]) continue;
@@ -560,7 +564,7 @@ export function createFightRenderer(ctx, W, H) {
     }
     for (const pr of game.projectiles) {
       const d = world.chars[pr.owner].projectiles[pr.kind];
-      if (d?.sprite?.ground) groundSeen[`${pr.owner}:${pr.kind}`] = groundX(pr, d);
+      if (d?.sprite?.ground || d?.sprite?.rooted) groundSeen[`${pr.owner}:${pr.kind}`] = rootOf(pr, d);
     }
     // A trail rides its fighter and lasts as long as the state that started it.
     for (const e of effects) {
@@ -729,7 +733,7 @@ export function createFightRenderer(ctx, W, H) {
         if (e.proj) {
           ctx.save();
           if (e.proj.sprite.additive) ctx.globalCompositeOperation = 'lighter';
-          drawSheetFrame(e.def, e.proj.sprite, e.first + heldFrame(e.proj.anim.impact, e.age - 1, false)[0], sx, sy, e.facing);
+          drawSheetFrame(e.def, e.proj.sprite, e.first + heldFrame(e.proj.anim.impact, e.age - 1, false)[0], sx, sy, e.facing, tiltOf(e.proj, e.facing));
           ctx.restore();
           continue;
         }

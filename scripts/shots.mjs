@@ -137,19 +137,17 @@ try {
       s.go('', '', 16); s.shot('later');
     });
   }
-  // ----- Rite: the four Guardian Palms -----
-  for (const [label, input, gap] of [['5R', 'R', 260], ['2R', 'DR', 260], ['6R', 'FR', 160]]) {
-    scene(`rite-${label}`, 'malik', 'avner', gap, (s) => {
-      s.go(input, '', 1); s.go('', '', 8); s.shot('windup');
-      s.until('', '', (g) => g.projectiles.length > 0, 30); s.go('', '', 2); s.shot('hand-1');
-      s.go('', '', 4); s.shot('hand-2'); s.go('', '', 4); s.shot('hand-3'); s.go('', '', 5); s.shot('hand-4');
-    });
+  // ----- Rite: the four Guardian Palms (6R and j.R also from far away, to see the whole hand) -----
+  const hands = (s) => {
+    s.until('', '', s.cue('spawn'), 30); s.shot('hand-1');
+    for (const n of [2, 3, 4, 5, 6]) { s.go('', '', 3); s.shot('hand-' + n); }
+  };
+  for (const [label, input, gap] of [['5R', 'R', 260], ['2R', 'DR', 260], ['6R', 'FR', 160], ['6R-far', 'FR', 520]]) {
+    scene(`rite-${label}`, 'malik', 'avner', gap, (s) => { s.go(input, '', 1); s.go('', '', 8); s.shot('windup'); hands(s); });
   }
-  scene('rite-jR', 'malik', 'avner', 170, (s) => {
-    s.go('U', '', 1); s.go('', '', 16); s.go('R', '', 1); s.go('', '', 6); s.shot('windup');
-    s.until('', '', (g) => g.projectiles.length > 0, 30); s.go('', '', 2); s.shot('hand-1');
-    s.go('', '', 4); s.shot('hand-2'); s.go('', '', 4); s.shot('hand-3'); s.go('', '', 5); s.shot('hand-4');
-  });
+  for (const [label, gap] of [['jR', 170], ['jR-far', 520]]) {
+    scene(`rite-${label}`, 'malik', 'avner', gap, (s) => { s.go('U', '', 1); s.go('', '', 16); s.go('R', '', 1); s.go('', '', 6); s.shot('windup'); hands(s); });
+  }
   // ----- Absolve: the burst, and the baited recovery -----
   const inState = (i, name) => (g) => g.players[i].state === name;
   scene('absolve', 'avner', 'malik', 90, (s) => {

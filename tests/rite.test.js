@@ -138,7 +138,9 @@ test('Malik 6R: rising anti-air; it catches a jumping opponent and misses nobody
   assert.equal(r.state, 'rite_6');
   assert.equal(r.kind, 'palm6');
   assert.ok(r.path.at(-1).y > r.path[0].y + px(100), 'it rises');
-  assert.ok(r.path.at(-1).x > r.path[0].x, 'and moves forward a little');
+  assert.ok(r.path.at(-1).x > r.path[0].x + px(100), 'and forward: it goes up and forward at a tilt, from his hand');
+  assert.ok(r.path[0].y > px(60), 'it starts at his hand, not on the floor');
+  assert.equal(MALIK.projectiles.palm6.fromGround, false);
   // Against a jump-in.
   const g = setup(WM, 260);
   const d = g.players[1];
@@ -152,14 +154,41 @@ test('Malik 6R: rising anti-air; it catches a jumping opponent and misses nobody
   assert.ok(d.vy > 0 || d.state === 'hitAir', 'and they are sent up');
 });
 
-test('Malik j.R: from the air the hand goes downward, and it is an overhead', () => {
-  const r = palm('5+R', { before: '8 5*12', gap: 240 });
-  assert.equal(r.state, 'rite_j');
-  assert.equal(r.kind, 'palmJ');
-  assert.ok(r.path.at(-1).y < r.path[0].y, 'downward');
-  assert.ok(r.path.at(-1).x > r.path[0].x, 'and forward');
-  assert.equal(MALIK.projectiles.palmJ.move.guard, 'high');
+test('Malik j.R: the hand always erupts from the ground, with no hitbox in the air; a hit soft launches up and forward', () => {
+  // (The owner's change, Nov 22 2026: it used to dive from his palm.)
+  const P = MALIK.projectiles.palmJ;
+  assert.equal(P.fromGround, true);
+  assert.equal(P.speed, 0, 'it does not travel');
+  assert.ok(P.speedY > 0, 'it rises out of the floor');
+  // From any height it starts at the same place on the ground, a fixed step in front of him.
+  const starts = ['8 5*8', '8 5*14', '8 5*20'].map((before) => {
+    const r = palm('5+R', { before, gap: 900 });
+    assert.equal(r.state, 'rite_j');
+    assert.equal(r.kind, 'palmJ');
+    const a = r.g.players[0];
+    const top = (q) => q.y + P.hitbox[0][1] + P.hitbox[0][3];
+    assert.ok(r.path.every((q) => top(q) <= px(200)), 'its hitbox never reaches up to where he jumps');
+    assert.ok(r.path.every((q) => q.x === r.path[0].x), 'and stays where it erupted');
+    return { y: r.path[0].y, height: a.y };
+  });
+  assert.ok(starts.every((s) => s.y === starts[0].y), 'the same ground start whatever his height');
+  assert.ok(starts[0].y < 0, 'it starts under the floor');
+  assert.notEqual(starts[0].height, starts[2].height, '(the three tries really were at different heights)');
+  // High above an opponent standing next to him: nothing in the air hits them; the eruption in front of him does.
+  assert.equal(MALIK.states.rite_j.frames.every((f) => f.hit.length === 0), true, 'Malik himself has no hitbox in it');
+  const r = palm('5+R', { before: '8 5*12', gap: 150 });
   assert.equal(r.end, 'hit');
+  const d = r.g.players[1];
+  const x0 = d.x;
+  assert.equal(P.move.launchType, 'soft');
+  let peak = 0;
+  for (let k = 0; k < 22; k++) { step(r.g, [0, 0], WM); peak = Math.max(peak, d.y); }
+  assert.ok(peak > px(30), `popped up (${peak})`);
+  assert.ok(peak < px(260), `a soft launch, not a high one (${peak})`);
+  assert.ok(d.x > x0 + px(20), 'and forward, away from Malik');
+  assert.equal(P.move.guard, 'high');
+  // Out of its reach it hits nobody.
+  assert.equal(palm('5+R', { before: '8 5*12', gap: 400 }).end, 'gone');
 });
 
 test('the gauge: each Rite move spends a charge; with none left R does nothing', () => {

@@ -155,13 +155,14 @@ and saves pictures of the frames drawn by the real drawing code. I looked at eve
 does not draw the HUD, text or the stage, so those are still unseen.
 
 **Calls I made from the drawings. Change any of them.**
-- **6R and j.R: the hand comes out of the floor.** Your effect sheets for those two show a hand rising from the
-  ground, so that is how they are drawn. The rule underneath is unchanged: 6R's hitbox still rises, j.R's still comes
-  down from his palm (your spec says "j.R = downward"). For j.R the ground hand appears where his shot will land and
-  reaches back up toward him. If he is very high, the hitbox runs out before reaching the floor while the hand is
-  still drawn down there. Tell me if j.R should simply be "a hand erupts on the ground below him"; that is a rule
-  change I did not make on my own.
-- **6R barely drifts forward now** (2 px a frame, was 5), so the hitbox stays on the drawn hand.
+- **6R comes from his hand, tilted up and forward** (your correction). The hand grows out of his palm at 45
+  degrees and its hitbox travels along it, 11 px a frame up and forward. Hit point-blank, the burst at the hand's
+  tip still shows up and away from the opponent; say if that bothers you.
+- **j.R always erupts from the ground** (your correction; it replaces the spec's "j.R = downward"). Whatever his
+  height, the hand comes out of the floor 110 px in front of him, with no hitbox in the air. A hit soft launches the
+  opponent up and forward. My numbers, change any: 110 px in front, about 110 px wide, reaches 190 px high, launch
+  5 forward / 12 up. I left it an overhead, as it was; say if a hand from the floor should be blockable low or
+  crouching instead.
 - **The Absolve recovery smoke is drawn as painted, dark, behind him.** In front it hid him completely. All the
   other effects are drawn as light.
 - **The super's black slash and speed lines go behind the fighters**, so the two fighters stay readable.

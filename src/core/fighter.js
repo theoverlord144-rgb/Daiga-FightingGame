@@ -264,7 +264,7 @@ export function fireOnEnter(game, p, def) {
       case 'spawn': {
         // A projectile: its own object in the game state from here on (see combat.js).
         const d = def.projectiles[v];
-        game.projectiles.push({ owner: p.id, kind: v, x: p.x + p.facing * d.spawn[0], y: p.y + d.spawn[1], facing: p.facing, age: 0 });
+        game.projectiles.push({ owner: p.id, kind: v, x: p.x + p.facing * d.spawn[0], y: (d.fromGround ? 0 : p.y) + d.spawn[1], facing: p.facing, age: 0 });
         game.cues.push({ p: p.id, type: 'spawn', name: v, x: p.x, y: p.y, facing: p.facing });
         break;
       }

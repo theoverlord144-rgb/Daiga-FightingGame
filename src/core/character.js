@@ -221,6 +221,7 @@ function compileProjectiles(src, meter) {
       speed: px(p.speed ?? 0),
       speedY: px(p.speedY ?? 0), // per frame, up is positive (a rising or diving projectile)
       spawn: [px(sp[0]), px(sp[1])],
+      fromGround: !!p.fromGround, // spawn[1] is a height above the floor, not above the fighter (it erupts from the ground)
       hitbox: boxes([p.hitbox ?? [0, 0, 0, 0]]),
       lifetime: p.lifetime ?? 600,
       move: compileMoveData(p, { kind: 'special', meter }),
