@@ -262,3 +262,25 @@ test('hit settings: a move that only releases a projectile shows the settings of
   assert.equal(hitOwner(def, 'proj:palmJ'), 'proj:palmJ');
   assert.equal(hitOwner(def, 'idle'), 'idle');
 });
+
+test('"Hits airborne" is yes unless the file says no, and the switch writes only what differs from that', () => {
+  const raw = loadJSON('data/characters/avner/avner.toska.json');
+  const field = FIELDS.find((f) => f.key === 'hitsAirborne');
+  const wave = settingsTarget(raw, SYSTEM, 'proj:tideL');
+  assert.ok(applies(field, wave));
+  raw.projectiles.tideL.hitsAirborne = false;
+  assert.equal(readSetting(raw, wave, 'hitsAirborne', RULES).value, false);
+  writeSetting(raw, wave, 'hitsAirborne', true, RULES);
+  assert.ok(!('hitsAirborne' in raw.projectiles.tideL), 'yes is the usual value: nothing is written');
+  assert.equal(compileCharacter(raw, SYSTEM).projectiles.tideL.move.hitsAirborne, true);
+  writeSetting(raw, wave, 'hitsAirborne', false, RULES);
+  assert.equal(raw.projectiles.tideL.hitsAirborne, false);
+  assert.equal(compileCharacter(raw, SYSTEM).projectiles.tideL.move.hitsAirborne, false);
+  // A plain move reads yes, and the older yes/no setting still defaults to no.
+  const jab = settingsTarget(raw, SYSTEM, '5L');
+  assert.equal(readSetting(raw, jab, 'hitsAirborne', RULES).value, true);
+  assert.equal(readSetting(raw, jab, 'knockdown', RULES).value, false);
+  writeSetting(raw, jab, 'knockdown', true, RULES);
+  writeSetting(raw, jab, 'knockdown', false, RULES);
+  assert.ok(!('knockdown' in raw.moves.find((m) => m.id === '5L')));
+});

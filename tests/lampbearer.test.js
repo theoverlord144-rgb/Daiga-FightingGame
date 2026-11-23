@@ -58,9 +58,7 @@ test('normals: startup, active and recovery are the spec\'s, and the drawings fi
   for (const [id, guard] of [['2L', 'low'], ['2M', 'low'], ['2H', 'low'], ['j.L', 'high'], ['5H', 'mid']]) assert.equal(A.states[id].move.guard, guard, id);
   assert.equal(A.states['5S'].move.launchType, 'hard');
   assert.ok(A.states['2H'].move.knockdown);
-  // The Crescent Kick reaches about 380 whatever the drawing shows, and he steps back in its startup.
-  const bh = A.states.backHeavy.frames.find((f) => f.hit.length).hit[0];
-  assert.equal((bh[0] + bh[2]) / 100, 380);
+  // The Crescent Kick: he steps back in its startup. (Its reach is the owner's to tune in the box editor: not checked.)
   const g = setup(900);
   const x0 = g.players[0].x;
   run(g, '4+H 5*12');
@@ -348,4 +346,34 @@ test('two Avners fighting at random stay in sync too (moons, light, marks and be
   const next = (i) => { if (!q[i].length) q[i].push(...moves[rnd() % moves.length], 0, 0); return q[i].shift(); };
   const r = runSyncTest(W, () => [next(0), next(1)], { frames: 3000, distance: 8 });
   assert.ok(r.ok, `desync at ${r.failFrame}: ${r.diff}`);
+});
+
+test('Tide and Rising Moon cancel into Moonlit once the wave or moon is out, not before', () => {
+  for (const [motion, id, kind] of [['2 3 6+L', 'risingMoonL', 'risingMoon'], ['2 1 4+L', 'tideL', 'tideL']]) {
+    const spawnAt = RAW.moves.find((m) => m.id === id).timeline.find((e) => e.spawn).at;
+    // Too early: R is ignored and the wave / moon still comes out.
+    let g = setup(900);
+    run(g, `${motion} 5*${spawnAt - 3} 5+R 5`);
+    assert.equal(g.players[0].state, id, `${id}: R before the release does nothing`);
+    // After the release: R is Moonlit, and the wave / moon stays.
+    g = setup(900);
+    const cues = run(g, `${motion} 5*${spawnAt + 1} 5+R 5*10`);
+    assert.ok(cues.some((c) => c.type === 'spawn' && c.name === kind), `${id}: released first`);
+    assert.ok(cues.some((c) => c.type === 'spawn' && c.name === 'crescent'), `${id}: cancelled into Moonlit`);
+    assert.ok(cues.findIndex((c) => c.name === 'crescent') > cues.findIndex((c) => c.name === kind));
+    // 6R and 2R too.
+    for (const [dir, dist] of [['6', 420], ['2', 0]]) {
+      const h = setup(900);
+      run(h, `${motion} 5*${spawnAt + 1} ${dir}+R 5*10`);
+      const c = h.projectiles.find((p) => p.kind === 'crescent');
+      assert.ok(c, `${id}: ${dir}R`);
+      assert.equal(c.x - h.players[0].x, px(dist));
+    }
+  }
+  // With a crescent out and a mark, the cancel is the Snap.
+  const g = setup(150);
+  run(g, '5+R 5*40 5+L 5*20');
+  assert.equal(g.players[0].vars.moonmark, 1);
+  run(g, '2 3 6+L 5*10 5+R 5*2');
+  assert.equal(g.players[0].state, 'moonSnap');
 });
