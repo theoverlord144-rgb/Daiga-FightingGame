@@ -10,6 +10,8 @@ import { pct } from './fixed.js';
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
 const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3, R: 4 };
 const ATTACK = ['L', 'M', 'H'];
+/** Hitstun states a fighter can tech out of once the combo has run past combo.json techOutAt. */
+const TECH_OUT_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir']);
 
 /** Fighter fields, merged into a player object. */
 export function createFighter(def, side, x) {
@@ -502,12 +504,19 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
       return;
     }
   }
-  // Air tech: once the untechable time is over, any button recovers.
+  // Air tech: once the untechable time is over, any button recovers. And once a combo has run past techOutAt,
+  // any button techs out of hitstun itself, in the air or on the ground.
   const st1 = def.states[p.state];
-  if (st1.techable) {
+  const late = !!p.combo && p.combo.time >= (world.combo.techOutAt ?? Infinity) && TECH_OUT_STATES.has(p.state);
+  if (st1.techable || late) {
     const buffer = world.input.pressBuffer + p.freezeAge;
     if ([BTN.L, BTN.M, BTN.H, BTN.S, BTN.R].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {
-      enterState(p, def, 'airTech');
+      const air = st1.stance === 'air';
+      p.stun = 0;
+      p.wbX = p.wbY = p.gbY = 0;
+      if (!air) { p.slide = 0; p.slideLeft = 0; }
+      enterState(p, def, air ? 'airTech' : 'groundTech');
+      if (late) game.cues.push({ p: p.id, type: 'techout', x: p.x, y: p.y });
     }
   }
   if (p.state === 'jumpSquat' || p.state === 'superJumpSquat') {

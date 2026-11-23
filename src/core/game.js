@@ -13,14 +13,18 @@ import { px } from './fixed.js';
 export const FPS = 60;
 
 /** States a fighter can be in while still being comboed. */
-const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown']);
+export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown']);
 
 /** Bundle the system data and two compiled characters into the read-only world. */
 export function createWorld({ input, battle, combo, meter = null, burst = null, match = null, chars }) {
   return {
     input,
     match: compileMatch(match),
-    combo,
+    combo: {
+      ...combo,
+      hardLaunchUnits: { x: px(combo.hardLaunch?.x ?? 0), y: px(combo.hardLaunch?.y ?? 24) },
+      softLaunchUnits: { x: px(combo.softLaunch?.x ?? 0), y: px(combo.softLaunch?.y ?? 13) },
+    },
     meter,
     burst: burst && {
       ...burst,

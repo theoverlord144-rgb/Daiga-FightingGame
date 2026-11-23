@@ -170,7 +170,7 @@ test('take is capped at 150 Devotion per combo received, and a new combo starts 
   assert.ok(Math.abs(f.d.meter - lost() * 4) <= 4 * 4, 'every hit so far paid in full');
   f.run('5+S 5*10');
   assert.equal(f.d.combo.hits, 5);
-  assert.ok(lost() * 4 > 150 * D + 30 * D, 'uncapped, this combo would have given well over 150');
+  assert.ok(lost() * 4 > 150 * D + 10 * D, 'uncapped, this combo would have given well over 150');
   assert.equal(f.d.meter, 150 * D, 'capped at 150');
   f.run('5+H 5*10');
   assert.equal(f.d.combo.hits, 6);

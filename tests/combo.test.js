@@ -59,14 +59,16 @@ test('proration: the first hit is full, the starter and combo prorations scale w
   assert.equal(d.combo.damage, 1720);
 });
 
+// The penalty was 80% of damage, stacking with every further use. The owner's universal systems spec (section 4)
+// replaced it: a move used again does 50% damage and 50% hitstun (tests/combo-rules.test.js has the full test).
 test('same-move penalty: using a move again in one combo costs extra', () => {
   const g = setup();
   hit(g, '5L');
   hit(g, '5L');
-  assert.equal(g.players[1].health, 10000 - 1000 - pct(720, C.repeatPenalty));
+  assert.equal(g.players[1].health, 10000 - 1000 - pct(720, C.repeatDamage));
   hit(g, '5L');
   const scale3 = pct(7200, 9000);
-  assert.equal(g.players[1].combo.damage, 1000 + pct(720, C.repeatPenalty) + pct(pct(pct(1000, scale3), C.repeatPenalty), C.repeatPenalty));
+  assert.equal(g.players[1].combo.damage, 1000 + pct(720, C.repeatDamage) + pct(pct(1000, scale3), C.repeatDamage));
 });
 
 test('scaling never drops below the minimum', () => {

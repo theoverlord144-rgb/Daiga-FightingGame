@@ -52,7 +52,8 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `blockHitstop` | Hitstop on block (default: `hitstop`). |
 | `airBlockable` | `false` = can't be blocked in the air (default `true`). |
 | `knockdown` | `true` = knocks a standing opponent down. |
-| `launch` | `{ x, y }` px/frame: sends the defender into the air (x = away from the attacker). |
+| `launch` | Sends the defender into the air. `"hard"` (the S launchers: high, super-jump cancel on hit, one per combo: another acts as a soft launch) or `"soft"` (a short pop, jump cancel on hit unless `jumpCancel` says otherwise; costs juggle), at the speeds in `data/system/combo.json`; or `{ type, x, y }` with its own speeds in px/frame (x = away from the attacker; no `type` = soft). |
+| `juggleCost` | What this move adds to the combo's juggle total when it hits an airborne fighter, or soft-launches a grounded one. Default in `data/system/combo.json` (`juggleCost` 1, `softLaunchCost` 3). Past `juggleLimit` the fighter falls out: damage, but no untechable time, launch or bounce. |
 | `airHit` | `{ x, y }`: how an airborne defender is knocked away (default in `battle.json`). |
 | `throwboxes` | `[[x, y, w, h]]` during active frames: makes the move a throw (checked against the defender's throw-hurtbox). A throw only comes out when its box would reach an opponent who can be thrown right now; otherwise the input falls through to the next move it matches. So a strike can share a throw's input (Avner's `4H`: back throw up close, Back Heavy from farther; list the throw first), and `6H` out of range gives `5H`. |
 | `throwDistance` | px between the fighters while the throw holds (default 70). |
@@ -82,7 +83,7 @@ Version 2 adds per move:
 | `starterProration` | Percent (out of 10000) applied once if this move starts the combo. Default in `data/system/combo.json`. |
 | `comboProration` | Percent applied every time this move hits in a combo. |
 | `untech` | Frames an airborne opponent can't air-tech after this hit (default: `hitstun`). |
-| `launcher` | `true`: on hit, pressing up goes straight into a super jump to follow. |
+| `launcher` | `true`: the older way to say `launch` type `hard` (on hit, pressing up goes straight into a super jump to follow). |
 | `wallBounce` | `{ x, y }`: the opponent rebounds off the wall at this speed. Once per combo unless `bounceLimit` says more. |
 | `groundBounce` | `{ y }`: the opponent bounces off the floor instead of being knocked down. |
 | `bounceLimit` | How many bounces of each kind this move allows per combo. |

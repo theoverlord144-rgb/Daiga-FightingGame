@@ -137,6 +137,11 @@ function compileMoveData(m, ctx = {}) {
   if (m.meterCost !== undefined) cost.meter = Math.round(m.meterCost * U);
   else if (!m.cost?.meter && M) cost.meter = kind === 'super' ? M.superCost[level] : ex ? M.exCost : 0;
   const own = (v) => (v === undefined ? null : Math.round(v * U));
+  // Launch: "hard" | "soft" (the system's speeds) or { type, x, y } (its own). No type = soft; `launcher: true` = hard.
+  const lsrc = m.launch;
+  const launchType = typeof lsrc === 'string' ? lsrc : lsrc ? lsrc.type ?? (m.launcher ? 'hard' : 'soft') : null;
+  if (launchType && launchType !== 'hard' && launchType !== 'soft') throw new Error(`launch must be "hard", "soft" or { type, x, y } (got ${JSON.stringify(lsrc)})`);
+  const launchVel = lsrc && typeof lsrc === 'object' && (lsrc.x !== undefined || lsrc.y !== undefined) ? { x: px(lsrc.x ?? 0), y: px(lsrc.y ?? 0) } : null;
   return {
     kind,
     ex: !!ex,
@@ -157,7 +162,9 @@ function compileMoveData(m, ctx = {}) {
     blockHitstop: m.blockHitstop ?? m.hitstop ?? 0,
     airBlockable: m.airBlockable ?? true,
     knockdown: !!m.knockdown,
-    launch: m.launch ? { x: px(m.launch.x ?? 0), y: px(m.launch.y ?? 0) } : null,
+    launchType, // 'hard' | 'soft' | null (no launch)
+    launch: launchVel, // its own launch speeds; null with a launchType = the system's (combo.json)
+    juggleCost: m.juggleCost ?? null, // null = the default in combo.json
     airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
     throwSwap: !!m.throwSwap,
     throwDistance: px(m.throwDistance ?? 70),
@@ -165,7 +172,7 @@ function compileMoveData(m, ctx = {}) {
     starterProration: m.starterProration ?? null,
     comboProration: m.comboProration ?? null,
     untech: m.untech ?? null,
-    launcher: !!m.launcher,
+    launcher: launchType === 'hard',
     wallBounce: m.wallBounce ? { x: px(m.wallBounce.x ?? 0), y: px(m.wallBounce.y ?? 0) } : null,
     groundBounce: m.groundBounce ? { y: px(m.groundBounce.y ?? 0) } : null,
     bounceLimit: m.bounceLimit ?? null,
@@ -428,7 +435,11 @@ function normalizeEvent(e, stats, sheetName) {
       if (v.y !== undefined) out[k].y = ref(v.y, stats, 'px');
     } else if (k === 'sprite') out[k] = typeof v === 'number' ? { sheet: sheetName, index: v } : v;
     // A hit's own frame data: converted like the move's (distances to units), keeping only the fields it names.
-    else if (k === 'hitProps') { const full = compileMoveData(v); out[k] = Object.fromEntries(Object.keys(v).filter((f) => f in full).map((f) => [f, full[f]])); }
+    else if (k === 'hitProps') {
+      const full = compileMoveData(v);
+      out[k] = Object.fromEntries(Object.keys(v).filter((f) => f in full).map((f) => [f, full[f]]));
+      if ('launch' in v) { out[k].launchType = full.launchType; out[k].launcher = full.launcher; }
+    }
     else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
     else out[k] = v;
   }
@@ -598,7 +609,8 @@ function compilePalettes(id, src) {
  *   specialCancel: normals default to true (on hit or block); "hit" = on hit only; false = never
  *   superCancel: defaults to specialCancel
  *   jumpCancel: "hit" | "block" | true (both) | false (default)
- *   launcher: true adds a super-jump cancel on hit
+ *   a hard launch (launch: "hard", or launcher: true) adds a super-jump cancel on hit
+ *   a soft launch adds a jump cancel on hit, unless the move sets jumpCancel itself
  */
 function gatlingCancels(m, gatling, kind, move) {
   const from = m.cancelFrom ?? move.startup - 1;
@@ -614,9 +626,9 @@ function gatlingCancels(m, gatling, kind, move) {
   if (sp.length) out.push({ from, to, into: ['#special'], on: sp });
   const su = on(m.superCancel, kind === 'super' ? [] : sp.length ? sp : ['hit', 'block']);
   if (su.length && kind !== 'super') out.push({ from, to, into: ['#super'], on: su });
-  const jc = on(m.jumpCancel, []);
+  const jc = on(m.jumpCancel, move.launchType === 'soft' ? ['hit'] : []);
   if (jc.length) out.push({ from, to, into: ['#jump'], on: jc });
-  if (m.launcher) out.push({ from, to, into: ['#superjump'], on: ['hit'] });
+  if (move.launchType === 'hard') out.push({ from, to, into: ['#superjump'], on: ['hit'] });
   return out;
 }
 

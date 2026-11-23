@@ -282,10 +282,11 @@ function applyStrike(game, world, r) {
 
   // The combo this hit belongs to (a new one if the defender wasn't already being comboed).
   const starter = !d.combo;
+  // hard: hard launches so far; juggle: the juggle total (see combo.json).
   // took / gave: Devotion this combo has given its victim (capped) and its attacker (Absolve wipes it); by: the
   // same per source, for the training readouts.
   // cls / side: the last hit's guard class and the attacker's side, for the trickster's variety.
-  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0, took: 0, gave: 0, by: {}, cls: '', side: 0 };
+  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0, took: 0, gave: 0, by: {}, cls: '', side: 0, hard: 0, juggle: 0 };
   const combo = d.combo;
   const moveId = r.moveId;
   // Earlier uses of this move in the combo (a multi-hit move's own later hits don't count as a new use).
@@ -296,7 +297,7 @@ function applyStrike(game, world, r) {
   let base = counter ? pct(move.damage, ch.damagePct) : move.damage;
   base = pct(base, damageMod(world, a));
   base = pct(base, combo.scale);
-  for (let i = 0; i < uses; i++) base = pct(base, C.repeatPenalty);
+  if (uses > 0) base = pct(base, C.repeatDamage); // a move used again in the same combo
   const dmg = gutsDamage(base, d.health, maxHp, battle);
   applyDamage(d, ddef, dmg);
 
@@ -317,19 +318,30 @@ function applyStrike(game, world, r) {
 
   d.hitstop = move.hitstop + (counter ? ch.hitstopAdd : 0);
   if (body) a.hitstop = d.hitstop;
-  // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
   const airborne = isAirborne(ddef, d);
-  const inAir = !!(move.launch || airborne);
-  const rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (counter ? ch.hitstunAdd : 0) + (r.stagger | 0);
-  const stun = Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, combo.time)));
+  // Launches. One hard launch per combo: another one acts as a soft launch.
+  const hard = move.launchType === 'hard' && combo.hard < C.hardLaunchLimit;
+  const soft = !!move.launchType && !hard;
+  if (hard) combo.hard++;
+  // Juggle: every hit on an airborne fighter, and every soft launch, adds to the combo's total. Past the limit
+  // the fighter falls out: the hit does its damage but gives no untechable time, no launch and no bounce.
+  if (airborne || soft) combo.juggle += move.juggleCost ?? (soft && !airborne ? C.softLaunchCost : C.juggleCost);
+  const out = (airborne || soft) && combo.juggle > C.juggleLimit;
+  const launches = !!move.launchType && !out;
+  const inAir = launches || airborne;
+  // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
+  let rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (counter ? ch.hitstunAdd : 0) + (r.stagger | 0);
+  if (uses > 0) rawStun = pct(rawStun, C.repeatHitstun);
+  const stun = out && airborne ? 0 : Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, combo.time)));
 
   // Bounces: armed by the move, each kind limited per combo.
   const limit = move.bounceLimit ?? C.bounceLimit;
-  if (move.wallBounce && combo.wb < limit) { d.wbX = move.wallBounce.x; d.wbY = move.wallBounce.y; }
-  if (move.groundBounce && combo.gb < limit) d.gbY = move.groundBounce.y;
+  if (!out && move.wallBounce && combo.wb < limit) { d.wbX = move.wallBounce.x; d.wbY = move.wallBounce.y; }
+  if (!out && move.groundBounce && combo.gb < limit) d.gbY = move.groundBounce.y;
 
   if (inAir) {
-    const v = move.launch || move.airHit || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
+    const v = (launches ? (hard || move.launchType === 'soft' ? move.launch : null) ?? (hard ? C.hardLaunchUnits : C.softLaunchUnits) : null)
+      || (out ? null : move.airHit) || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
     enterState(d, ddef, 'hitAir');
     d.vx = v.x * away; // x is authored as "away from the attacker"
     d.vy = v.y;
@@ -345,7 +357,7 @@ function applyStrike(game, world, r) {
     if (inAir) d.vx = 0;
     const gap = Math.abs(d.x - a.x) - move.pull.to;
     startSlide(d, gap > 0 ? -away * gap : 0, move.pull.frames);
-  } else if (!airborne && !move.launch) {
+  } else if (!airborne && !launches) {
     if (body) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
     else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackHit, battle.pushbackFrames);
   }
@@ -354,7 +366,7 @@ function applyStrike(game, world, r) {
     enterState(a, world.chars[a.id], move.onHitState);
     a.contact = CONTACT.HIT;
   }
-  cue(game, counter ? 'counter' : 'hit', a, rect, { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale, stagger: r.stagger | 0 });
+  cue(game, counter ? 'counter' : 'hit', a, rect, { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale, stagger: r.stagger | 0, fellOut: out });
 }
 
 // ---------- Projectiles ----------
