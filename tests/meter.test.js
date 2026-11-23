@@ -62,33 +62,40 @@ test('a move can set its own meter gain, and meter never passes the maximum', ()
 
 // ---------- Specials, EX, chords ----------
 
-test('specials come out from motions; the EX version needs meter and costs it', () => {
+// The EX input was motion + two attack buttons for half a bar (236LM). The owner's universal systems spec
+// (docs/specs/universal-systems.md, sections 1 and 3) replaced it: motion + attack button + S, one full bar.
+test('specials come out from motions; the EX version (attack + S) needs a full bar and costs it', () => {
+  assert.equal(M.exCost, M.barSize, 'an EX costs one bar');
   let g = setup(300);
   assert.ok(states(g, '2 3 6+L 5').includes('236L'));
   g = setup(300);
-  assert.ok(states(g, '2 3 6+LM 5').includes('236L'), 'no meter: the EX input gives the plain version');
+  assert.ok(states(g, '2 3 6+LS 5').includes('236L'), 'no meter: the EX input gives the plain version');
+  g = setup(300);
+  g.players[0].meter = M.exCost - 1;
+  assert.ok(states(g, '2 3 6+LS 5').includes('236L'), 'just short of a bar: still the plain version');
+  assert.equal(g.players[0].meter, M.exCost - 1, 'and nothing is spent');
   g = setup(300);
   g.players[0].meter = 12000;
-  assert.ok(states(g, '2 3 6+LM 5').includes('236LM'));
+  assert.ok(states(g, '2 3 6+LS 5').includes('236L_ex'));
   assert.equal(g.players[0].meter, 12000 - M.exCost);
 });
 
 test('a chord works with the buttons up to chordWindow frames apart, in either order; not further apart', () => {
   const W8 = W.input.chordWindow;
   for (const gap of [0, 1, 2, W8]) {
-    for (const [first, second] of [['L', 'M'], ['M', 'L']]) {
+    for (const [first, second] of [['L', 'S'], ['S', 'L']]) {
       const g = setup(300);
       g.players[0].meter = 10000;
       const seq = gap === 0 ? `2 3 6+${first}${second} 5*40` : `2 3 6+${first} ${gap > 1 ? `6*${gap - 1} ` : ''}6+${second} 5*40`;
       const seen = states(g, seq);
-      assert.ok(seen.includes('236LM'), `${first} then ${second}, ${gap} apart: ${[...new Set(seen)].join(' ')}`);
+      assert.ok(seen.includes('236L_ex'), `${first} then ${second}, ${gap} apart: ${[...new Set(seen)].join(' ')}`);
       assert.equal(g.players[0].meter, 10000 - M.exCost + M.gain.special.whiff, 'paid once (then whiff meter when it ended)');
     }
   }
   const g = setup(300);
   g.players[0].meter = 10000;
-  const seen = states(g, `2 3 6+L 6*${W8 + 1} 6+M 5*20`);
-  assert.ok(!seen.includes('236LM'), 'too far apart');
+  const seen = states(g, `2 3 6+L 6*${W8 + 1} 6+S 5*20`);
+  assert.ok(!seen.includes('236L_ex'), 'too far apart');
 });
 
 test('supers: a super flash freezes the whole game, and presses made during it come out right after', () => {
@@ -257,7 +264,7 @@ test('the burst rules are data: a version with burst disabled never bursts', () 
 
 test('sync test with specials, EX, supers, chains, the mechanic and burst: identical after every 8-frame rewind', () => {
   const rnd = lcg(808);
-  const plans = ['2 3 6+L', '2 3 6+LM', '2 3 6 2 3 6+H', '2 1 4+L 5*6 5+L 5*6 5+L', '2 5 2+S', '2 3 6+S', '6 2 3+H', '5+M', '2+L', '5+S', '5+HS', '6*10', '4*6', '9', '5*4'];
+  const plans = ['2 3 6+L', '2 3 6+LS', '2 3 6+MS', '5+LS', '5+S 5+M', '5+R', '2 3 6 2 3 6+H', '2 1 4+L 5*6 5+L 5*6 5+L', '2 5 2+S', '2 3 6+S', '6 2 3+H', '5+M', '2+L', '5+S', '5+HS', '6*10', '4*6', '9', '5*4'];
   const queues = [[], []];
   let flashes = 0;
   let bursts = 0;

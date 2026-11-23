@@ -18,7 +18,7 @@ export function createMenuInput(devices) {
   };
   addEventListener('keydown', onKey);
 
-  /** One entry per player: { up, down, left, right, confirm, back, start, buttons: {L, M, H, S} } (true = pressed now). */
+  /** One entry per player: { up, down, left, right, confirm, back, start, buttons: {L, M, H, S, R} } (true = pressed now). */
   function read() {
     const out = [0, 1].map((i) => {
       const raw = devices.read(i);
@@ -34,7 +34,7 @@ export function createMenuInput(devices) {
       prevStart[i] = start;
       return {
         up: dir(RAW.UP), down: dir(RAW.DOWN), left: dir(RAW.LEFT), right: dir(RAW.RIGHT),
-        buttons: { L: !!(edge & RAW.L), M: !!(edge & RAW.M), H: !!(edge & RAW.H), S: !!(edge & RAW.S) },
+        buttons: { L: !!(edge & RAW.L), M: !!(edge & RAW.M), H: !!(edge & RAW.H), S: !!(edge & RAW.S), R: !!(edge & RAW.R) },
         confirm: !!(edge & RAW.L), back: !!(edge & RAW.M), start: startEdge,
       };
     });

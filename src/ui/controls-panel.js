@@ -2,7 +2,7 @@
 
 import { ACTIONS } from './devices.js';
 
-const LABEL = { up: 'Up', down: 'Down', left: 'Left', right: 'Right', L: 'Light (L)', M: 'Medium (M)', H: 'Heavy (H)', S: 'Special (S)' };
+const LABEL = { up: 'Up', down: 'Down', left: 'Left', right: 'Right', L: 'Light (L)', M: 'Medium (M)', H: 'Heavy (H)', S: 'Special (S)', R: 'Rite (R)' };
 
 const CSS = `
 .tk-panel { position: absolute; inset: 40px; margin: auto; max-width: 760px; max-height: calc(100% - 80px); overflow: auto;
@@ -65,7 +65,7 @@ export function openControlsPanel(root, devices, onClose) {
             <tr><td></td><td>Key</td><td>Pad</td></tr>
             ${ACTIONS.map((a) => `<tr><td>${LABEL[a]}</td>
               <td><button data-key="${i}:${a}">${keyName(b.players[i].keys[a])}</button></td>
-              <td><button data-padbtn="${i}:${a}">Button ${b.players[i].pad.buttons[a]}</button></td></tr>`).join('')}
+              <td><button data-padbtn="${i}:${a}">${b.players[i].pad.buttons[a] >= 0 ? `Button ${b.players[i].pad.buttons[a]}` : '—'}</button></td></tr>`).join('')}
           </table>
         </div>`).join('')}
       </div>

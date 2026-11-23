@@ -38,7 +38,7 @@ function upgrade1to2(f) {
 
 // ---------- Commands (numpad notation) ----------
 
-const BUTTON_LETTERS = 'LMHS';
+const BUTTON_LETTERS = 'LMHSR';
 
 /** "j.236L" -> { air, motion, dir, buttons }. motion = "236" etc., dir = single digit for normals. */
 export function parseInput(input) {
@@ -122,7 +122,9 @@ function resources(r) {
 function compileMoveData(m, ctx = {}) {
   const kind = ctx.kind ?? 'normal';
   const M = ctx.meter;
-  const ex = m.ex ?? (kind === 'special' && ctx.chord === true);
+  // An EX move: flagged (`ex: true`), or a special done with two buttons (attack + S). An `ex` OBJECT is the EX
+  // version's overrides on a normal special (see exVersions), not a flag on the move that carries it.
+  const ex = typeof m.ex === 'boolean' ? m.ex : kind === 'special' && ctx.chord === true;
   const gain = M ? { ...(M.gain[kind] ?? M.gain.normal), ...(m.meter || {}) } : { hit: 0, block: 0, whiff: 0 };
   const cost = resources(m.cost) ?? { meter: 0, gauge: 0, vars: {} };
   if (m.meterCost !== undefined) cost.meter = m.meterCost;
@@ -229,6 +231,27 @@ function compileMechanic(src) {
   }
   const modifiers = (src.modifiers || []).map((x) => ({ when: x.when || {}, damagePct: x.damagePct ?? 10000 }));
   return { name: src.name ?? null, gauge, vars, modifiers };
+}
+
+/**
+ * EX versions. A special with `ex: { ...overrides }` gets a second move, `<id>_ex`, made of the normal move with
+ * the overrides laid over it (a field the overrides name replaces the normal one whole). Its input is the same
+ * motion and attack button plus S, so the attack button still picks the strength.
+ */
+function exVersions(charId, moves) {
+  const out = [];
+  for (const m of moves) {
+    if (!m.ex || typeof m.ex !== 'object') continue;
+    const p = parseInput(m.input);
+    if (!p || !p.motion || p.buttons.length !== 1 || !'LMH'.includes(p.buttons)) {
+      throw new Error(`${charId}: move ${m.id} has an EX version, so its input must be a motion and one of L, M, H (got ${m.input})`);
+    }
+    const { ex, ...base } = m;
+    const input = `${m.input}S`;
+    if (moves.some((o) => o.input === input)) throw new Error(`${charId}: move ${m.id} has an EX version, but another move already uses ${input}`);
+    out.push({ ...base, ...ex, id: `${m.id}_ex`, name: ex.name ?? `${m.name ?? m.id} (EX)`, input, exOf: m.id });
+  }
+  return out;
 }
 
 /** Sprite timeline from a sheet: [{ at, index }]. holds[i] frames per sprite; missing = spread evenly. */
@@ -415,8 +438,9 @@ export function compileCharacter(file, system) {
   const sheets = {};
   const commands = [];
   const mechanic = compileMechanic(t.mechanic ?? file.mechanic);
-  const moveIds = new Set(t.moves.map((m) => m.id));
-  if (moveIds.size !== t.moves.length) throw new Error(`${ch.id}: duplicate move ids`);
+  const exMoves = exVersions(ch.id, t.moves);
+  const moveIds = new Set([...t.moves, ...exMoves].map((m) => m.id));
+  if (moveIds.size !== t.moves.length + exMoves.length) throw new Error(`${ch.id}: duplicate move ids`);
 
   // System states, with character overrides (v2 "states") and v1-style sprite moves sharing a system name.
   const common = system.common.states;
@@ -441,7 +465,7 @@ export function compileCharacter(file, system) {
     .map(([id, m]) => ({ ...m, id, kind: 'burst', input: undefined }));
 
   // Moves.
-  for (const m of [...t.moves, ...universal]) {
+  for (const m of [...t.moves, ...exMoves, ...universal]) {
     if (common[m.id]) continue; // a sprite for a system state, handled above
     const parsed = parseInput(m.input);
     const kind = inferKind(m, parsed);
@@ -450,13 +474,14 @@ export function compileCharacter(file, system) {
     checkVars(ch.id, m.id, mechanic, [move.cost, move.requires, move.onHit, move.onBlock, move.onWhiff, move.hitRequires, move.stagger?.when]);
     if (move.oneAtATime && !projectiles[move.oneAtATime]) throw new Error(`${ch.id}: move ${m.id} names unknown projectile ${move.oneAtATime}`);
     if (m.sprite) sheets[m.id] = m.sprite;
-    const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id], kind, move)];
+    const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id] ?? t.gatlings?.[m.exOf], kind, move)];
     states[m.id] = compileState(m.id, { ...m, stance, next: m.next ?? (stance === 'air' ? 'fall' : stance === 'crouch' ? 'crouch' : 'idle') }, stats, {
       move, kind, sheet: m.sprite, sheetName: m.id, hitboxes: m.hitboxes, throwboxes: m.throwboxes, hurtboxes: m.hurtboxes, counterHit: m.counterHit, cancels,
     });
     if (parsed) {
       commands.push({
         move: m.id,
+        base: m.exOf ?? null, // an EX version: the normal move it is laid over (it goes wherever that move can)
         kind,
         air: parsed.air,
         motion: parsed.motion,
@@ -502,7 +527,7 @@ export function compileCharacter(file, system) {
     b.buttons.length - a.buttons.length ||
     dirRank(a.dir) - dirRank(b.dir));
 
-  // EX upgrades: a chord command (236LM) can take over its one-button version (236L or 236M) during the chord
+  // EX upgrades: a chord command (236LS) can take over its one-button version (236L) during the chord
   // window, because a player's two buttons rarely land on the very same frame.
   const upgrades = {};
   for (const c of commands) {
@@ -513,9 +538,14 @@ export function compileCharacter(file, system) {
     }
   }
 
+  // S next to an attack button. `sOnly`: moves started by S alone with no motion (the launchers); `attackOnly`:
+  // moves started by one attack button. fighter.js uses them so "attack + S" never reads as the S move.
+  const sOnly = new Set(commands.filter((c) => c.buttons === 'S' && !c.motion && c.neutral).map((c) => c.move));
+  const attackOnly = new Set(commands.filter((c) => c.buttons.length === 1 && 'LMH'.includes(c.buttons)).map((c) => c.move));
+
   const meterMax = stats.units.meterBars * (system.meter?.barSize ?? 10000);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, upgrades, projectiles, palettes: compilePalettes(ch.id, t.palettes),
+    sheets, mechanic, meterMax, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
     effects: t.effects ?? file.effects ?? {} }; // drawing only: named sheet effects for `fx` cues
 }
 

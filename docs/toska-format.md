@@ -31,8 +31,9 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | --- | --- |
 | `id` | Unique name, also the state name (`"5L"`, `"236H"`). Defaults to `input`. |
 | `name` | Display name. |
-| `input` | Command in numpad notation: `5L`, `2M`, `6H`, `j.H`, `236L`, `j.214S`, `[4]6H`, `236LM` (two buttons = a chord: pressed together, up to `chordWindow` frames apart in either order). `5` = any non-down direction, `2` = any down direction, other single digits are exact. `j.` = in the air. |
-| `kind` | `normal`, `special` or `super`. Inferred from `input` if missing (a motion = special, a double motion like `236236` = super). A special with a two-button input is an **EX** move. |
+| `input` | Command in numpad notation: `5L`, `2M`, `6H`, `j.H`, `236L`, `j.214S`, `[4]6H`, `5R`, `22HS` (two buttons = a chord: pressed together, up to `chordWindow` frames apart in either order). Buttons: `L`, `M`, `H` (the attack buttons), `S`, `R` (Rite). `5` = any non-down direction, `2` = any down direction, other single digits are exact. `j.` = in the air. |
+| `kind` | `normal`, `special` or `super`. Inferred from `input` if missing (a motion = special, a double motion like `236236` = super). A special with a two-button input is an **EX** move (written by hand; the usual way is the `ex` field below). |
+| `ex` | `{ ...overrides }` on a special whose input is a motion + `L`, `M` or `H`: its **EX version**. The engine builds a second move, `<id>_ex`, from this move with the overrides laid over it (a field named in `ex` replaces the move's own whole, so an `ex.timeline` replaces the timeline; `"hitboxes": null` drops them). Input: the same motion and attack button plus `S`. It costs `exCost` (one bar), takes the move's gatling row, and goes wherever the move can (cancels that name the move take its EX too). With no `sprite` of its own it is drawn with the move's. |
 | `startup` | Frames until the first active frame, counting it (a 4-frame move hits on its 4th frame). |
 | `active` | Frames the hitbox is out. |
 | `recovery` | Frames after the last active frame. Total length = startup − 1 + active + recovery. |
@@ -94,13 +95,19 @@ Version 2 adds per move:
 | Field | Meaning |
 | --- | --- |
 | `meter` | `{ hit, block, whiff }`: super meter this move builds. Default by `kind` in `data/system/meter.json`. Whiff meter is paid when the move ends without touching anything. |
-| `cost` | `{ meter, gauge, vars: { name: n } }`: paid when the move starts; the move can't be done without it. Default: `superCost` (one bar) for supers, `exCost` (half a bar) for EX moves, nothing otherwise. If an EX can't be afforded, the one-button version comes out instead. |
+| `cost` | `{ meter, gauge, vars: { name: n } }`: paid when the move starts; the move can't be done without it. Default: `superCost` (one bar) for supers, `exCost` (one bar) for EX moves, nothing otherwise. If an EX can't be afforded, the one-button version comes out instead. |
 | `requires` | `{ gauge: n, vars: { name: n or [min, max] } }`: must be true to start the move; nothing is spent. |
 | `onHit`, `onBlock`, `onWhiff` | `{ meter, gauge, vars: { name: +n } }`: changes to the attacker's resources when the move hits, is blocked or whiffs. |
 | `neutral` | `false`: the move only comes out from a cancel window that names it. For chain follow-ups ("214L, then L, then L"): the follow-up's input can be a plain button without taking that button over in neutral. |
 
 **EX upgrade:** if the one-button version starts and the second button arrives within `chordWindow` frames, the move
 becomes the EX version (the one-button cost is refunded).
+
+**S next to an attack button** (`pickCommand` and `decide` in fighter.js): S pressed within `chordWindow` frames
+of L, M or H, in either order, is never the S move. With a motion and a full bar it is the EX version; otherwise the
+attack button's own move comes out and that S press is used up. If the S move (a launcher) had already started when
+the attack button arrived, it is swapped for what the attack button asks for, at no cost and with no whiff meter
+(after a cancel only a special or super may take over, never a normal the chain didn't allow).
 
 ### `mechanic` (top level, version 2): the character-specific slot
 

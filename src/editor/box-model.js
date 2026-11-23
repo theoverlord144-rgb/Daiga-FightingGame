@@ -14,6 +14,9 @@ export function stateInfo(raw, system, name) {
   if (system.common.states[name]) return { type: 'system', moveIndex };
   if (moveIndex >= 0) return { type: 'move', moveIndex };
   if (raw.states?.[name]) return { type: 'own', moveIndex: -1 };
+  // An EX version (<move>_ex): the move's `ex` overrides laid over the move itself.
+  const exIndex = name.endsWith('_ex') ? raw.moves.findIndex((m) => moveId(m) === name.slice(0, -3) && m.ex && typeof m.ex === 'object') : -1;
+  if (exIndex >= 0) return { type: 'ex', moveIndex: exIndex };
   return { type: 'universal', moveIndex: -1 }; // e.g. the burst: lives in data/system, the same for everyone
 }
 
@@ -52,10 +55,15 @@ export function sourcesAt(raw, system, name, stance, frame) {
   };
 
   add(0, 'hurt', { kind: 'stat', stat: STANCE_HURT[stance] ?? STANCE_HURT.stand });
-  if (info.type === 'move' || info.type === 'universal') {
-    const m = info.type === 'move' ? raw.moves[info.moveIndex] : system.burst.moves[name];
-    const base = info.type === 'move' ? ['moves', info.moveIndex] : null;
-    const here = (key) => (base ? { kind: 'path', path: [...base, key], where: 'field', at: 0 } : { kind: 'system', value: clone(m[key]) });
+  if (info.type === 'move' || info.type === 'universal' || info.type === 'ex') {
+    const own = info.type === 'universal' ? null : raw.moves[info.moveIndex];
+    const ex = info.type === 'ex' ? own.ex : null;
+    const m = ex ? { ...own, ...ex } : own ?? system.burst.moves[name];
+    const root = own ? ['moves', info.moveIndex] : null;
+    // A field the EX version overrides lives under the move's `ex`; the rest it shares with the normal version.
+    const place = (key) => (ex && key in ex ? [...root, 'ex', key] : [...root, key]);
+    const base = root ? { timeline: place('timeline') } : null;
+    const here = (key) => (root ? { kind: 'path', path: place(key), where: 'field', at: 0 } : { kind: 'system', value: clone(m[key]) });
     const first = (m.startup ?? 1) - 1;
     const active = m.active ?? 0;
     if (m.hurtboxes) add(0, 'hurt', here('hurtboxes'));
@@ -63,7 +71,7 @@ export function sourcesAt(raw, system, name, stance, frame) {
       add(first, 'hit', m.hitboxes ? { ...here('hitboxes'), at: first } : { kind: 'none', value: [[0, 0, 0, 0]], why: 'remote' });
       add(first + active, 'hit', { kind: 'none', value: [] });
     }
-    timeline(m.timeline, base ? [...base, 'timeline'] : null);
+    timeline(m.timeline, base ? base.timeline : null);
   } else if (info.type === 'system') {
     timeline(system.common.states[name].timeline, null);
     timeline(raw.states?.[name]?.timeline, ['states', name, 'timeline']);
@@ -144,6 +152,7 @@ export function addHitboxField(raw, system, name, list) {
 export function overrideFromFrame(raw, system, name, frame, list) {
   const info = stateInfo(raw, system, name);
   if (info.type === 'universal') throw new Error('This state is shared by every character');
+  if (info.type === 'ex') throw new Error('An EX version takes new boxes in the file, under the move\'s "ex"');
   let owner;
   if (info.type === 'move') owner = raw.moves[info.moveIndex];
   else {

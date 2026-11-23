@@ -84,3 +84,30 @@ test('side select: the keyboard can be Player 2 and a stick Player 1', () => {
   key('KeyJ', false); d.endStep();
   assert.deepEqual(d.sources().map((s) => s.id), ['kb0', 'pad:1']);
 });
+
+test('the Rite button: bound by default, and bindings saved before it existed get it without losing anything', () => {
+  const d = fresh();
+  for (const p of d.bindings.players) { assert.ok(p.keys.R); assert.equal(p.pad.buttons.R, 5); }
+  key('KeyO');
+  assert.equal(d.read(0), RAW.R);
+  key('KeyO', false);
+  d.endStep();
+  padList = [pad(0, { held: [5] })];
+  assert.equal(d.read(0), RAW.R, 'right shoulder on a pad');
+  // An older save: no R anywhere, and Player 1 had already put Light on button 5.
+  padList = [];
+  stored = JSON.stringify({ version: 2, players: [
+    { keys: { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', L: 'KeyO', M: 'KeyK', H: 'KeyL', S: 'KeyI' }, pad: { index: 'auto', buttons: { up: 12, down: 13, left: 14, right: 15, L: 5, M: 3, H: 1, S: 0 } } },
+    { keys: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', L: 'Numpad1', M: 'Numpad2', H: 'Numpad3', S: 'Numpad5' }, pad: { index: 'auto', buttons: { up: 12, down: 13, left: 14, right: 15, L: 2, M: 3, H: 1, S: 0 } } },
+  ] });
+  const e = createDevices();
+  const [a, b] = e.bindings.players;
+  assert.equal(a.keys.L, 'KeyO', 'their own key is kept');
+  assert.equal(a.keys.R, '', 'the default key was taken: R waits to be bound');
+  assert.equal(a.pad.buttons.L, 5);
+  assert.equal(a.pad.buttons.R, -1, 'the default button was taken too');
+  assert.equal(b.keys.R, 'Numpad6');
+  assert.equal(b.pad.buttons.R, 5);
+  padList = [pad(0, { held: [5] })];
+  assert.equal(e.read(0), RAW.L, 'one button, one action');
+});

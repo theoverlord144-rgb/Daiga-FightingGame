@@ -52,11 +52,11 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0 
     raw = clone(saved);
     def = compileCharacter(raw, SYSTEM);
     // Moves first (in the file's order), then the character's own states, then the system's.
-    const rank = { move: 0, own: 1, system: 2, universal: 3 };
+    const rank = { move: 0, ex: 0, own: 1, system: 2, universal: 3 };
     names = Object.keys(def.states).map((n, i) => ({ n, i, r: rank[stateInfo(raw, SYSTEM, n).type] }))
       .sort((a, b) => a.r - b.r || a.i - b.i).map((x) => x.n);
     // Projectiles go right after the moves.
-    const firstOther = names.findIndex((n) => stateInfo(raw, SYSTEM, n).type !== 'move');
+    const firstOther = names.findIndex((n) => rank[stateInfo(raw, SYSTEM, n).type] !== 0);
     names.splice(firstOther < 0 ? names.length : firstOther, 0, ...projectileNames(raw).map((id) => PROJ + id));
     sel = Math.max(0, names.indexOf(wantState ?? '5L'));
     frame = 0;

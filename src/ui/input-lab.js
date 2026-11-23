@@ -50,7 +50,7 @@ export function createInputLab(ctx, W, H, rules) {
         ctx.font = '600 20px system-ui';
         BUTTONS.forEach((b, k) => {
           const on = (f >> 4) & (1 << k);
-          const bx = cx - 66 + k * 44;
+          const bx = cx - 88 + k * 44;
           ctx.fillStyle = on ? '#ffd36b' : '#2a2535';
           ctx.beginPath();
           ctx.arc(bx, 220, 17, 0, Math.PI * 2);

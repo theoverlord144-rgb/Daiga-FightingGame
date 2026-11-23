@@ -1,17 +1,20 @@
 // Input: raw device bits in, one resolved input frame per player per step out, kept in a ring buffer.
 //
 // Raw input (what the UI hands the core each step) is a bitmask of held controls:
-//   LEFT RIGHT UP DOWN, then the buttons L M H S.
-// A resolved input frame is an integer: numpad direction (1-9) in the low 4 bits, buttons in bits 4-7.
+//   LEFT RIGHT UP DOWN, then the buttons L M H S R (R = Rite).
+// A resolved input frame is an integer: numpad direction (1-9) in the low 4 bits, buttons in bits 4-8.
 // Directions in the buffer are ABSOLUTE (screen) directions; motion reading mirrors them by facing.
 
-export const RAW = { LEFT: 1, RIGHT: 2, UP: 4, DOWN: 8, L: 16, M: 32, H: 64, S: 128 };
-export const BTN = { L: 1, M: 2, H: 4, S: 8 };
-export const BUTTONS = ['L', 'M', 'H', 'S'];
+export const RAW = { LEFT: 1, RIGHT: 2, UP: 4, DOWN: 8, L: 16, M: 32, H: 64, S: 128, R: 256 };
+export const BTN = { L: 1, M: 2, H: 4, S: 8, R: 16 };
+export const BUTTONS = ['L', 'M', 'H', 'S', 'R'];
+/** The attack buttons: the ones that pick a strength (S and R never do). */
+export const ATTACK_BUTTONS = ['L', 'M', 'H'];
+const BUTTON_MASK = 31;
 
 export const dirOf = (frame) => frame & 15;
-export const buttonsOf = (frame) => (frame >> 4) & 15;
-export const makeFrame = (dir, buttons) => (dir & 15) | ((buttons & 15) << 4);
+export const buttonsOf = (frame) => (frame >> 4) & BUTTON_MASK;
+export const makeFrame = (dir, buttons) => (dir & 15) | ((buttons & BUTTON_MASK) << 4);
 
 /** Mirror a numpad direction left-right (used when the fighter faces left). */
 const MIRROR = [0, 3, 2, 1, 6, 5, 4, 9, 8, 7];
@@ -59,7 +62,7 @@ export function resolveDirection(raw, inp, socd) {
 /** Push this step's raw input into the player's buffer. */
 export function pushInput(inp, raw, rules) {
   const dir = resolveDirection(raw, inp, rules.socd);
-  const buttons = (raw >> 4) & 15;
+  const buttons = (raw >> 4) & BUTTON_MASK;
   inp.head = (inp.head + 1) % inp.buf.length;
   inp.buf[inp.head] = makeFrame(dir, buttons);
   if (inp.count < inp.buf.length) inp.count++;

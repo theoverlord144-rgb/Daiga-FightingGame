@@ -8,7 +8,8 @@ import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow, chordWithin, mo
 import { pct } from './fixed.js';
 
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
-const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3 };
+const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3, R: 4 };
+const ATTACK = ['L', 'M', 'H'];
 
 /** Fighter fields, merged into a player object. */
 export function createFighter(def, side, x) {
@@ -29,7 +30,8 @@ export function createFighter(def, side, x) {
     contact: CONTACT.NONE,
     hitsDone: 0, // bitmask of this move's hit ids that already connected (multi-hit moves)
     armorUsed: 0,
-    consumed: [-1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
+    consumed: [-1, -1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
+    viaCancel: 0, // 1 = the current move was cancelled into (not started from a free state)
     jumpDir: 8,
     airJumpsUsed: 0,
     airDashesUsed: 0,
@@ -197,10 +199,11 @@ function stanceOk(cmd, def, p, dir) {
 /**
  * Is this command's input there? Returns the press frame per button used ({ L: frame, ... }) or null.
  * One button: the usual press (or release, for negative edge) within the buffer, after the motion if any.
- * Several buttons (a chord, e.g. EX 236LM): all pressed within chordWindow frames of each other.
+ * Several buttons (a chord, e.g. EX 236LS): all pressed within chordWindow frames of each other.
  */
-// reuse = true (EX upgrade only): a press already used by the move being upgraded may be used again.
-function commandInput(game, p, cmd, world, buffer, reuse = false) {
+// reuse = button letters whose press may be used again although the move being replaced already used it (EX
+// upgrades, and an S launcher swapped for what the attack button pressed with it asks for).
+function commandInput(game, p, cmd, world, buffer, reuse = '') {
   const inp = p.input;
   const rules = world.input;
   if (cmd.buttons.length === 1) {
@@ -210,7 +213,7 @@ function commandInput(game, p, cmd, world, buffer, reuse = false) {
       : pressedWithin(inp, BTN[b], buffer, cmd.negativeEdge);
     if (age < 0) return null;
     const f = game.frame - age;
-    return f < p.consumed[BTN_INDEX[b]] || (f === p.consumed[BTN_INDEX[b]] && !reuse) ? null : { [b]: f };
+    return f < p.consumed[BTN_INDEX[b]] || (f === p.consumed[BTN_INDEX[b]] && !reuse.includes(b)) ? null : { [b]: f };
   }
   const bs = [...cmd.buttons];
   const ch = chordWithin(inp, bs.map((b) => BTN[b]), buffer, rules.chordWindow ?? 3);
@@ -220,24 +223,46 @@ function commandInput(game, p, cmd, world, buffer, reuse = false) {
   for (let i = 0; i < bs.length; i++) {
     const f = game.frame - ch.ages[i];
     const used = p.consumed[BTN_INDEX[bs[i]]];
-    if (f < used || (f === used && !reuse)) return null;
+    if (f < used || (f === used && !reuse.includes(bs[i]))) return null;
     out[bs[i]] = f;
   }
   return out;
 }
 
-/** Find the command to start this frame, if any. `allowed(cmd)` filters by cancel rules. */
-function pickCommand(game, p, def, world, allowed) {
+/**
+ * Find the command to start this frame, if any. `allowed(cmd)` filters by cancel rules.
+ *
+ * S next to an attack button: S pressed within chordWindow frames of L, M or H is never the S move. With a motion
+ * the pair is the EX version (a two-button command, found first); otherwise the attack button's own move comes out
+ * and the S press is used up with it. The S move only comes out if nothing the attack button asks for can.
+ */
+function pickCommand(game, p, def, world, allowed, reuse = '') {
+  const inp = p.input;
+  const cw = world.input.chordWindow ?? 3;
   const buffer = world.input.pressBuffer + p.freezeAge;
-  const dir = relDirAt(p.input, 0, p.facing);
-  for (const cmd of def.commands) {
-    if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
-    if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
-    if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
-    if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
-    if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.oneAtATime)) continue;
-    const presses = commandInput(game, p, cmd, world, buffer);
-    if (presses) return { cmd, presses };
+  const dir = relDirAt(inp, 0, p.facing);
+  const sAge = pressedWithin(inp, BTN.S, buffer + cw);
+  const sFrame = game.frame - sAge;
+  const sFree = sAge >= 0 && sFrame > p.consumed[BTN_INDEX.S];
+  const near = (f) => (f > sFrame ? f - sFrame : sFrame - f) <= cw;
+  const withAttack = sAge >= 0 && ATTACK.some((b) => {
+    const a = pressedWithin(inp, BTN[b], buffer + cw);
+    return a >= 0 && game.frame - a > p.consumed[BTN_INDEX[b]] && near(game.frame - a);
+  });
+  for (const pass of withAttack ? [0, 1] : [1]) {
+    for (const cmd of def.commands) {
+      if (pass === 0 && cmd.buttons === 'S' && !cmd.motion) continue; // first, everything but the plain S moves
+      if (!allowed(cmd) || !stanceOk(cmd, def, p, dir)) continue;
+      if (!affords(p, cmd.cost) || !meets(p, cmd.requires)) continue;
+      if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
+      if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
+      if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.oneAtATime)) continue;
+      const presses = commandInput(game, p, cmd, world, buffer, reuse);
+      if (!presses) continue;
+      // An attack button's move takes the S pressed with it along, so that S can't start anything later.
+      if (sFree && presses.S === undefined && ATTACK.some((b) => presses[b] !== undefined && near(presses[b]))) presses.S = sFrame;
+      return { cmd, presses };
+    }
   }
   return null;
 }
@@ -273,7 +298,8 @@ function throwInRange(game, p, def, world, cmd) {
 }
 
 /** Start a command's move: mark its presses used and pay its cost. */
-function startCommand(p, def, pick) {
+function startCommand(p, def, pick, viaCancel = p.viaCancel) {
+  p.viaCancel = viaCancel ? 1 : 0;
   for (const [b, f] of Object.entries(pick.presses)) p.consumed[BTN_INDEX[b]] = f;
   enterState(p, def, pick.cmd.move);
   applyResources(p, def, negate(pick.cmd.cost));
@@ -304,7 +330,7 @@ function decide(game, p, opp, def, world) {
       const paid = def.states[p.state].move.cost;
       const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter, gauge: p.gauge + paid.gauge };
       if (!affords(refunded, cmd.cost)) continue;
-      const presses = commandInput(game, p, cmd, world, buffer, true);
+      const presses = commandInput(game, p, cmd, world, buffer, cmd.buttons);
       if (presses) {
         // Refund the one-button version's cost, then start the chord version (no whiff meter for the swap).
         applyResources(p, def, paid);
@@ -313,6 +339,26 @@ function decide(game, p, opp, def, world) {
         return;
       }
     }
+  }
+
+  const cw = world.input.chordWindow ?? 3;
+  if (def.sOnly.has(p.state) && p.frame <= cw && p.hitsDone === 0) {
+    // The S move started, and an attack button arrived a frame or two later: the two were pressed together, so
+    // S doesn't count. The S move is swapped for what the attack button asks for (the EX version with a motion and
+    // the meter, else its special, else its normal). After a cancel only specials and supers may take over.
+    const pick = pickCommand(game, p, def, world,
+      (cmd) => cmd.neutral && cmd.buttons !== 'S' && ATTACK.some((b) => cmd.buttons.includes(b)) && (!p.viaCancel || cmd.kind !== 'normal'), 'S');
+    if (pick) {
+      applyResources(p, def, def.states[p.state].move.cost);
+      p.contact = CONTACT.HIT; // no whiff meter for the swap
+      startCommand(p, def, pick);
+      return;
+    }
+  }
+  if (def.attackOnly.has(p.state) && p.frame <= cw) {
+    // An attack button's move started and S arrived a frame or two later (and it wasn't an EX): S is ignored.
+    const a = pressedWithin(p.input, BTN.S, cw + 1 + p.freezeAge);
+    if (a >= 0 && game.frame - a > p.consumed[BTN_INDEX.S]) p.consumed[BTN_INDEX.S] = game.frame - a;
   }
 
   // A held stance: holding back steps out of it (a pressed follow-up wins, below).
@@ -333,10 +379,10 @@ function decide(game, p, opp, def, world) {
   // A move with neutral: false only comes out of a cancel window that names it (chains, follow-ups).
   const allowed = st.free
     ? (cmd) => cmd.neutral
-    : (cmd) => windows.some((w) => w.into.has(cmd.move) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
+    : (cmd) => windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`)));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
-    startCommand(p, def, pick);
+    startCommand(p, def, pick, !st.free);
     return;
   }
   if (backOut()) return;
@@ -425,7 +471,7 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
   const st1 = def.states[p.state];
   if (st1.techable) {
     const buffer = world.input.pressBuffer + p.freezeAge;
-    if ([BTN.L, BTN.M, BTN.H, BTN.S].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {
+    if ([BTN.L, BTN.M, BTN.H, BTN.S, BTN.R].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {
       enterState(p, def, 'airTech');
     }
   }

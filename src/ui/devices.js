@@ -8,21 +8,21 @@
 
 import { RAW } from '../core/input.js';
 
-export const ACTIONS = ['up', 'down', 'left', 'right', 'L', 'M', 'H', 'S'];
-const ACTION_BIT = { up: RAW.UP, down: RAW.DOWN, left: RAW.LEFT, right: RAW.RIGHT, L: RAW.L, M: RAW.M, H: RAW.H, S: RAW.S };
+export const ACTIONS = ['up', 'down', 'left', 'right', 'L', 'M', 'H', 'S', 'R'];
+const ACTION_BIT = { up: RAW.UP, down: RAW.DOWN, left: RAW.LEFT, right: RAW.RIGHT, L: RAW.L, M: RAW.M, H: RAW.H, S: RAW.S, R: RAW.R };
 
-// Standard gamepad layout: 0 bottom, 1 right, 2 left, 3 top face button; 12-15 d-pad up/down/left/right.
+// Standard gamepad layout: 0 bottom, 1 right, 2 left, 3 top face button; 5 right shoulder; 12-15 d-pad up/down/left/right.
 // pad.index 'auto': the player takes whichever controller is used first (Player 1), then the next one (Player 2).
 export const DEFAULT_BINDINGS = {
   version: 2,
   players: [
     {
-      keys: { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', L: 'KeyJ', M: 'KeyK', H: 'KeyL', S: 'KeyI' },
-      pad: { index: 'auto', buttons: { up: 12, down: 13, left: 14, right: 15, L: 2, M: 3, H: 1, S: 0 } },
+      keys: { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', L: 'KeyJ', M: 'KeyK', H: 'KeyL', S: 'KeyI', R: 'KeyO' },
+      pad: { index: 'auto', buttons: { up: 12, down: 13, left: 14, right: 15, L: 2, M: 3, H: 1, S: 0, R: 5 } },
     },
     {
-      keys: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', L: 'Numpad1', M: 'Numpad2', H: 'Numpad3', S: 'Numpad5' },
-      pad: { index: 'auto', buttons: { up: 12, down: 13, left: 14, right: 15, L: 2, M: 3, H: 1, S: 0 } },
+      keys: { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', L: 'Numpad1', M: 'Numpad2', H: 'Numpad3', S: 'Numpad5', R: 'Numpad6' },
+      pad: { index: 'auto', buttons: { up: 12, down: 13, left: 14, right: 15, L: 2, M: 3, H: 1, S: 0, R: 5 } },
     },
   ],
 };
@@ -41,10 +41,24 @@ export function hatDirections(v) {
   return Math.abs(k - n) < 0.15 ? HAT_DIRS[n] : 0;
 }
 
+/** Bindings saved before a control existed (the Rite button) get that control's default. */
+export function fillBindings(saved) {
+  saved.players.forEach((p, i) => {
+    const d = DEFAULT_BINDINGS.players[i];
+    for (const a of ACTIONS) {
+      if (p.keys[a] === undefined) p.keys[a] = Object.values(p.keys).includes(d.keys[a]) ? '' : d.keys[a];
+      // A default that an older save already gave to something else stays unbound (-1) until the player picks one.
+      if (p.pad.buttons[a] === undefined) p.pad.buttons[a] = Object.values(p.pad.buttons).includes(d.pad.buttons[a]) ? -1 : d.pad.buttons[a];
+    }
+  });
+  return saved;
+}
+
 export function loadBindings() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && Array.isArray(saved.players) && saved.players.length === 2) {
+      fillBindings(saved);
       if (saved.version === 2) return saved;
       if (saved.version === 1) {
         // Older saves pinned Player 1 to "Pad 1" and Player 2 to "Pad 2": keep the keys and buttons, pick pads by use.
