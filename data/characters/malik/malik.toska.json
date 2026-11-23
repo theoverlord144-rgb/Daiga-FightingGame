@@ -5,7 +5,7 @@
   "character": {
     "id": "malik",
     "name": "Malik",
-    "stats": { "airHurt": [[-28, 10, 60, 160]] }
+    "stats": { "airHurt": [[-28, 5, 67, 165]], "standHurt": [[-39, -1, 80, 175]] }
   },
   "mechanic": {
     "name": "Spirit Install",
@@ -66,14 +66,14 @@
       "starterProration": 9000,
       "hitboxes": [[12, 112, 52, 28]],
       "timeline": [
-        { "at": 7, "hit": [[18, 118, 56, 26]],
+        { "at": 7, "hit": [[18, 99, 56, 45]],
           "hitProps": { "damage": 400, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18 } }
       ],
       "sprite": { "image": "sheets/5M.png", "columns": 7, "rows": 1, "count": 7, "frameW": 334, "frameH": 380,
         "originX": 189, "originY": 378, "scale": 0.5, "holds": [2, 1, 2, 2, 3, 6, 6] } },
     { "id": "5H", "name": "Standing Heavy", "input": "5H", "startup": 9, "active": 3, "recovery": 18,
       "damage": 800, "hitstun": 20, "blockstun": 15, "hitstop": 12, "pushbackHit": 28, "pushbackBlock": 34, "selfPushback": 22, "guard": "mid", "reach": 135,
-      "hitboxes": [[42, 103, 95, 30]],
+      "hitboxes": [[42, 82, 95, 51]],
       "timeline": [{ "at": 8, "hurt": [[-5, 0, 95, 150]] }, { "at": 11, "hurt": [[-30, 0, 60, 160]] }],
       "sprite": { "image": "sheets/5H.png", "columns": 6, "rows": 1, "count": 6, "frameW": 427, "frameH": 383,
         "originX": 155, "originY": 381, "scale": 0.5, "holds": [3, 2, 3, 3, 9, 9] } },
@@ -119,12 +119,12 @@
     { "id": "j.S", "name": "Air Axe Kick", "input": "j.S", "startup": 9, "active": 4, "recovery": 18,
       "damage": 900, "hitstun": 22, "untech": 30, "blockstun": 14, "hitstop": 14, "pushbackHit": 0, "pushbackBlock": 18, "selfPushback": 0, "guard": "high", "reach": 90,
       "airHit": { "x": 1, "y": -14 }, "groundBounce": { "y": 13 },
-      "hitboxes": [[15, -30, 75, 250]],
+      "hitboxes": [[15, -30, 78, 250]],
       "sprite": { "image": "sheets/jS.png", "columns": 7, "rows": 1, "count": 7, "frameW": 376, "frameH": 603, "originX": 188, "originY": 514, "scale": 0.5, "holds": [3, 3, 2, 4, 6, 6, 6] } },
     { "id": "5S", "name": "Launcher", "input": "5S", "startup": 9, "active": 3, "recovery": 24,
       "damage": 700, "hitstun": 30, "untech": 50, "blockstun": 14, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 30, "selfPushback": 22, "guard": "mid", "reach": 64,
       "launcher": true, "launch": { "x": 0, "y": 24 },
-      "hitboxes": [[-22, 0, 62, 210]],
+      "hitboxes": [[-24, 3, 62, 210]],
       "timeline": [{ "at": 4, "vel": { "x": 6 } }, { "at": 8, "vel": { "x": 0 } }],
       "sprite": { "image": "sheets/5S.png", "columns": 7, "rows": 1, "count": 7, "frameW": 420, "frameH": 509, "originX": 258, "originY": 507, "scale": 0.5, "holds": [4, 4, 3, 6, 6, 6, 6] } },
     { "id": "spiritOrb", "name": "Spirit Orb (L)", "input": "236L", "kind": "special", "startup": 12, "active": 3, "recovery": 22,
@@ -152,7 +152,7 @@
       "damage": 1000, "hitstun": 30, "untech": 40, "blockstun": 16, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 24, "selfPushback": 0, "guard": "mid", "reach": 135,
       "launch": { "x": 2, "y": 14 }, "specialCancel": false,
       "hitboxes": [[55, 0, 80, 290]],
-      "timeline": [{ "at": 8, "fx": "pillar" }, { "at": 0, "hurt": [[-30, 0, 60, 75]] }, { "at": 25, "hurt": [[-30, 0, 60, 160]] }],
+      "timeline": [{ "at": 8, "fx": "pillar" }, { "at": 0, "hurt": [[-30, 0, 60, 75]] }, { "at": 25, "hurt": [[-39, -1, 80, 175]] }],
       "sprite": { "image": "sheets/pillar.png", "columns": 7, "rows": 1, "count": 7, "frameW": 300, "frameH": 490, "originX": 127, "originY": 488, "scale": 0.5, "holds": [3, 3, 2, 10, 10, 10, 9] } },
     { "id": "pillarH", "name": "Resilience Pillar (H)", "input": "623H", "startup": 22, "active": 8, "recovery": 26,
       "damage": 1300, "hitstun": 30, "untech": 40, "blockstun": 16, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 24, "selfPushback": 0, "guard": "mid", "reach": 135,

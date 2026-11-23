@@ -1,10 +1,12 @@
 // The fight HUD: health bars (with a red trail showing the damage just taken), names, the timer, round markers,
 // burst gauge, super meter, the character mechanic, and the round banners (ROUND 1, FIGHT, K.O., TIME, WINS).
 // It only reads the game; the only thing it remembers is presentation (how far the red trail has drained).
+import FX from '../../data/system/effects.json';
 
 const FONT = 'system-ui, sans-serif';
 
-export function createHud(ctx, W) {
+/** image(name): a loaded picture from data/effects/, or null while it loads. */
+export function createHud(ctx, W, image = () => null) {
   const trail = [null, null]; // the red damage trail, per player (visual only)
   const BAR_W = 360;
   const BAR_Y = 22;
@@ -69,8 +71,77 @@ export function createHud(ctx, W) {
     ctx.fillText(t === null ? '∞' : String(t).padStart(2, '0'), W / 2, 48);
   }
 
+  /** The super meter, drawn as the Devotion meter (layout in data/system/effects.json "devotion"). Returns its top y. */
+  function devotion(p, def, world, H, frame) {
+    const D = FX.devotion;
+    const left = p.id === 0;
+    const s = D.scale;
+    const bar = world.meter?.barSize ?? 10000;
+    const x0 = left ? D.margin : W - D.margin;
+    const y0 = H - D.bottom - D.frame.h * s;
+    const slots = D.windows.slice(0, Math.max(1, Math.min(D.windows.length, Math.round(def.meterMax / bar))));
+    const share = slots.map((_, i) => Math.max(0, Math.min(1, (p.meter - i * bar) / bar)));
+    ctx.save();
+    ctx.translate(x0, y0);
+    ctx.scale(left ? s : -s, s); // from here on: the frame image's own pixels, mirrored for Player 2
+    const frameImg = image(D.frame.image);
+    if (frameImg) ctx.drawImage(frameImg, 0, 0, D.frame.w, D.frame.h);
+    else { ctx.fillStyle = '#0b0910cc'; ctx.fillRect(0, D.windows[0][1] - 8, D.frame.w, D.windows[0][3] + 16); }
+    slots.forEach(([x, y, w, h], i) => {
+      const f = share[i];
+      if (f <= 0) return;
+      const img = image(f >= 1 ? D.fillFull : D.fill);
+      ctx.save();
+      ctx.beginPath();
+      if (i === D.windows.length - 1 && D.tip) { // the pointed end
+        ctx.moveTo(x, y); ctx.lineTo(D.tip[0], y); ctx.lineTo(D.tip[1], y + h / 2); ctx.lineTo(D.tip[0], y + h); ctx.lineTo(x, y + h);
+        ctx.closePath();
+        ctx.clip();
+        ctx.beginPath();
+      }
+      ctx.rect(x, y, w * f, h);
+      ctx.clip();
+      if (img) ctx.drawImage(img, x, y, w, h);
+      else { ctx.fillStyle = f >= 1 ? '#b8ffd0' : '#19d05a'; ctx.fillRect(x, y, w, h); }
+      ctx.restore();
+    });
+    // The glow, as light over the bars, breathing slowly.
+    const pulse = D.pulse.min + (1 - D.pulse.min) * (0.5 + 0.5 * Math.sin((frame / D.pulse.period) * Math.PI * 2));
+    const [gx, gy, gw, gh] = D.glowBox;
+    slots.forEach(([x, y, w, h], i) => {
+      const f = share[i];
+      const img = f > 0 ? image(f >= 1 ? D.glowFull : D.glow) : null;
+      if (!img) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x + gx * w, y + gy * h, (f >= 1 ? gw : f - gx) * w, gh * h);
+      ctx.clip();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = pulse;
+      ctx.drawImage(img, x + gx * w, y + gy * h, gw * w, gh * h);
+      ctx.restore();
+    });
+    ctx.restore();
+    // Not mirrored: the bar count in the ring, and the name plate under the frame.
+    const bars = Math.min(4, Math.floor(p.meter / bar));
+    const cx = left ? x0 + D.ring[0] * s : x0 - D.ring[0] * s;
+    const cy = y0 + D.ring[1] * s;
+    const digits = image(D.digits.image);
+    const dh = D.digits.height * s;
+    const dw = (dh * D.digits.cellW) / D.digits.cellH;
+    if (digits) ctx.drawImage(digits, bars * D.digits.cellW, 0, D.digits.cellW, D.digits.cellH, cx - dw / 2, cy - dh / 2, dw, dh);
+    else { ctx.font = `800 24px ${FONT}`; ctx.textAlign = 'center'; ctx.fillStyle = '#19d05a'; ctx.fillText(String(bars), cx, cy + 8); }
+    const plate = image(D.plate.image);
+    if (plate) {
+      const pw = D.plate.w * D.plate.scale, ph = D.plate.h * D.plate.scale;
+      const mid = left ? x0 + (D.frame.w * s) / 2 : x0 - (D.frame.w * s) / 2;
+      ctx.drawImage(plate, mid - pw / 2, y0 + D.frame.h * s + D.plate.gap, pw, ph);
+    }
+    return y0;
+  }
+
   /** Burst gauge (thin bar under the health bar), super meter (bottom corners), the mechanic. */
-  function resources(p, def, world, H) {
+  function resources(p, def, world, H, game) {
     const left = p.id === 0;
     const B = world.burst;
     if (B && B.enabled) {
@@ -89,24 +160,7 @@ export function createHud(ctx, W) {
         ctx.fillText('BURST', left ? bx - 5 : bx + bwMax + 5, by + 6);
       }
     }
-    const bar = world.meter?.barSize ?? 10000;
-    const bars = Math.floor(p.meter / bar);
-    const full = p.meter >= def.meterMax;
-    const part = full ? bar : p.meter - bars * bar;
-    const mw = 200;
-    const mx = left ? 64 : W - 64 - mw;
-    const my = H - 40;
-    ctx.fillStyle = '#0b0910cc';
-    ctx.fillRect(mx - 52, my - 14, mw + 60, 30);
-    ctx.fillStyle = '#1c1826';
-    ctx.fillRect(mx, my, mw, 10);
-    ctx.fillStyle = full ? '#ffe9a8' : '#b38cff';
-    const fw = Math.round((mw * part) / bar);
-    ctx.fillRect(left ? mx : mx + mw - fw, my, fw, 10);
-    ctx.font = `800 24px ${FONT}`;
-    ctx.textAlign = 'center';
-    ctx.fillStyle = bars > 0 ? '#ffe9a8' : '#5d556b';
-    ctx.fillText(String(bars), left ? mx - 24 : mx + mw + 24, my + 13);
+    const top = devotion(p, def, world, H, game.frame);
     // The mechanic: its gauge as a percentage, its counters as pips.
     const mech = def.mechanic;
     let line = '';
@@ -121,7 +175,7 @@ export function createHud(ctx, W) {
       ctx.font = `600 12px ${FONT}`;
       ctx.fillStyle = '#c9a2ff';
       ctx.textAlign = left ? 'left' : 'right';
-      ctx.fillText(line.trim(), left ? mx : mx + mw, my - 20);
+      ctx.fillText(line.trim(), left ? FX.devotion.margin + 4 : W - FX.devotion.margin - 4, top - 6);
     }
   }
 
@@ -178,7 +232,7 @@ export function createHud(ctx, W) {
         const def = world.chars[p.id];
         const x = healthBar(p, def, game);
         roundPips(game, world, p, x);
-        resources(p, def, world, H);
+        resources(p, def, world, H, game);
       }
       timer(game);
       banners(game, world);

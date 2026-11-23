@@ -93,11 +93,11 @@ test('a chord works with the buttons up to chordWindow frames apart, in either o
 
 test('supers: a super flash freezes the whole game, and presses made during it come out right after', () => {
   const g = setup(120);
-  g.players[0].meter = 10000;
+  g.players[0].meter = 20000;
   run(g, '2 3 6 2 3 6+H');
   const [a, d] = g.players;
   assert.equal(a.state, 'super');
-  assert.equal(a.meter, 0, 'a full bar spent');
+  assert.equal(a.meter, 0, 'two full bars spent');
   const flash = g.flash;
   assert.ok(flash > 0);
   const before = hashState({ ...g, frame: 0, flash: 0, cues: [], players: g.players.map((p) => ({ ...p, input: null, freezeAge: 0 })) });
@@ -114,7 +114,7 @@ test('supers: a super flash freezes the whole game, and presses made during it c
 
 test('specials super-cancel on hit; normals special-cancel', () => {
   const g = setup(80);
-  g.players[0].meter = 10000;
+  g.players[0].meter = 20000;
   // The super's input is finished before 236L connects; it stays buffered through the hitstop and comes out after.
   const seen = states(g, '5+M 5*7 2 3 6+L 5*8 2 3 6 2 3 6+H 5*20');
   const order = [...new Set(seen)];
@@ -266,7 +266,9 @@ test('sync test with specials, EX, supers, chains, the mechanic and burst: ident
     for (const c of g.cues) { if (c.type === 'superflash') flashes++; if (c.type === 'burst') bursts++; }
     for (const i of [0, 1]) {
       const p = g.players[i];
-      if (p.meter < 10000 && rnd() % 50 === 0) p.meter += 0; // (no cheating: meter comes from play)
+      // A super costs two bars, which random play rarely saves up: both start the run with two (set before the
+      // first step, so every rewind sees it). After that, meter only comes from play.
+      if (g.frame === 0) p.meter = 20000;
       if (!queues[i].length) {
         let raws = script(plans[rnd() % plans.length]);
         if (p.facing < 0) raws = raws.map((x) => (x & ~3) | ((x & 1) << 1) | ((x & 2) >> 1));

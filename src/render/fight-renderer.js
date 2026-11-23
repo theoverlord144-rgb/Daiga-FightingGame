@@ -58,7 +58,7 @@ export function createFightRenderer(ctx, W, H) {
   let lastFrame = -1;
   let front = 1; // which fighter is drawn in front (presentation only; P2 until someone attacks)
   const comboShow = [null, null]; // per victim: { combo, hold } - keeps the finished combo on screen a moment
-  const hud = createHud(ctx, W);
+  const hud = createHud(ctx, W, (name) => spriteImage(null, name));
   let stageR = null; // { id, r }: the stage renderer, made when a stage is first drawn
 
   const toScreen = (x, y) => [W / 2 + (x / UNIT - cam.x), GROUND - y / UNIT + cam.y];

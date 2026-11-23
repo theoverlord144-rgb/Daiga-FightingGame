@@ -362,7 +362,7 @@ test('Avner: Air Spike (j.S) has its art, and the hit lands on drawing 4', () =>
   assert.ok(fs.existsSync('data/characters/avner/sheets/jS.png'));
 });
 
-test('Malik: Spirit Install (down, down, S+H) costs a bar, runs 10 seconds, and carries its aura and art', () => {
+test('Malik: Spirit Install (down, down, S+H) costs two bars, runs 10 seconds, and carries its aura and art', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const run = (meter, text) => {
     const game = createGame(world);
@@ -372,21 +372,23 @@ test('Malik: Spirit Install (down, down, S+H) costs a bar, runs 10 seconds, and 
     return { game, seen, flashed, top };
   };
   // With a bar: the super comes out, the screen flashes, the bar is spent, the timer starts at 10 seconds and runs down.
-  const a = run(10000, '2 5 2+HS 5*100');
+  const a = run(20000, '2 5 2+HS 5*100');
   assert.ok(a.seen.has('install'));
   assert.ok(a.flashed, 'super flash');
   assert.equal(a.top, 600);
-  assert.ok(a.game.players[0].meter < 1000, 'the bar is spent');
+  assert.ok(a.game.players[0].meter < 1000, 'both bars are spent');
   assert.ok(a.game.players[0].vars.install > 0 && a.game.players[0].vars.install < 600, 'counting down');
   // It runs out by itself.
-  const b = run(10000, '2 5 2+HS 5*720');
+  const b = run(20000, '2 5 2+HS 5*720');
   assert.equal(b.game.players[0].vars.install, 0);
-  // Without a bar: no install.
+  // Without two bars: no install.
   const c = run(0, '2 5 2+HS 5*60');
   assert.ok(!c.seen.has('install'));
+  const c1 = run(19999, '2 5 2+HS 5*60');
+  assert.ok(!c1.seen.has('install'), 'one bar is not enough');
   // Already installed: it can't be done again (no bar wasted).
-  const d = run(20000, '2 5 2+HS 5*60 2 5 2+HS 5*30');
-  assert.ok(d.game.players[0].meter >= 10000, 'the second bar is kept');
+  const d = run(40000, '2 5 2+HS 5*60 2 5 2+HS 5*30');
+  assert.ok(d.game.players[0].meter >= 20000, 'the other two bars are kept');
   // Drawing data: the guardian and half of the lights behind him, flames and the other lights in front; idle art swapped.
   const v = world.chars[0].mechanic.vars.install;
   assert.deepEqual(v.aura.map((l) => [l.effect, !!l.behind]), [['guardian', true], ['installMotesBack', true], ['installFlames', false], ['installMotesFront', false]]);
@@ -413,7 +415,7 @@ test('Malik: Resilience Pillar (623 + L / M / H): heavier is slower and hits har
   const top = (id, f) => Math.max(...c.states[id].frames[f].hurt.map((b) => b[1] + b[3]));
   assert.ok(top('pillarM', 0) < top('pillarL', 0) / 2 + 100);
   assert.equal(top('pillarM', first('pillarM')), top('pillarM', 0));
-  assert.equal(top('pillarM', c.states.pillarM.frames.length - 1), top('pillarL', 0), 'full body again in recovery');
+  assert.equal(top('pillarM', c.states.pillarM.frames.length - 1), top('pillarL', 0), 'full body again in recovery (his standing hurtbox)');
   assert.equal(top('pillarH', 0), top('pillarL', 0));
   // In a match: the shoryuken motion + M launches an opponent standing in front.
   const game = createGame(world);
@@ -485,4 +487,19 @@ test('Malik: Air S hits on drawing 4 (the big smear), Standing S on drawing 3, a
   const game = createGame(world); const seen = [];
   for (const raw of script('8*3 5*14 5+S 5*40')) { step(game, [raw, 0], world); if (seen.at(-1) !== game.players[0].state) seen.push(game.players[0].state); }
   assert.ok(seen.includes('j.S'), seen.join('>'));
+});
+
+test('Devotion meter: four bars, a super costs two, and every piece of the meter art is there with a slot per bar', () => {
+  const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
+  const meter = JSON.parse(fs.readFileSync('data/system/meter.json', 'utf8'));
+  assert.equal(meter.superCost, 2 * meter.barSize);
+  for (const c of world.chars) assert.equal(c.meterMax, 4 * meter.barSize, c.id);
+  const D = JSON.parse(fs.readFileSync('data/system/effects.json', 'utf8')).devotion;
+  assert.equal(D.windows.length, 4, 'a slot per bar');
+  for (const name of [D.frame.image, D.fill, D.fillFull, D.glow, D.glowFull, D.digits.image, D.plate.image]) assert.ok(fs.existsSync('data/effects/' + name), name);
+  // The slots sit inside the frame, left to right, without overlapping.
+  D.windows.forEach(([x, y, w, h], i) => {
+    assert.ok(x >= 0 && y >= 0 && x + w <= D.frame.w && y + h <= D.frame.h);
+    if (i) assert.ok(x >= D.windows[i - 1][0] + D.windows[i - 1][2]);
+  });
 });
