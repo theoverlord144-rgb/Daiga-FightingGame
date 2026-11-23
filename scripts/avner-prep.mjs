@@ -67,7 +67,13 @@ const SHEETS = [
   ] },
   { ref: [1, 186], name: '5L', file: 'Avner_LightPunch.png', n: 5, anchor: 'rear', holds: [2, 2, 2, 4, 5] },
   { ref: [1, 186], name: '5M', file: 'Avner_MediumPunch.png', n: 6, anchor: 'rear', holds: [3, 4, 1, 3, 7, 7] },
-  { ref: [1, 186], name: '5H', file: 'Avner_HeavyPunch.png', n: 7, anchor: 'rear', holds: [3, 5, 5, 1, 4, 8, 8] },
+  // 5H: row 1, plus row 2's fourth drawing (11) after drawing 4: it sits on the frame the hit lands, so it is the
+  // drawing held through hitstop (owner, Nov 23). The rest of row 2 is not used. Its arc is drawn apart from the body
+  // (shape 12), so it is joined on.
+  { ref: [1, 186], file: 'Avner_HeavyPunch_SecondRowFourthFrameOnlyAfterFourthFrameOfFirstRow.png', n: 14, rows: 2, join: [[11, 12]], parts: [
+    { name: '5H', frames: [1, 2, 3, 4, 11, 5, 6, 7], anchor: 'rear', holds: [3, 5, 4, 1, 1, 3, 8, 14] },
+  ] },
+  { ref: [1, 150], name: '2H', file: 'Avner_Crouching_HeavyPunch_Slide.png', n: 5, holds: [5, 6, 4, 10, 14] },
   { ref: [1, 186], name: '4H', file: 'Avner_Back_HeavyPunch.png', n: 7, holds: [2, 5, 5, 1, 5, 10, 12] },
   { ref: [1, 186], name: '5S', file: 'Avner_SLauncher.png', n: 7, anchor: 'rear', holds: [3, 6, 2, 5, 8, 8, 6] },
   { ref: [1, 150], name: '2M', file: 'Avner_Crouching_MediumPunch.png', n: 6, holds: [3, 4, 1, 3, 7, 8] },
@@ -540,6 +546,12 @@ function processBody(spec, manifest) {
   const mask = new Uint8Array(K.W * K.H);
   for (let i = 0; i < mask.length; i++) mask[i] = K.a[i] > 0.5 ? 1 : 0;
   const D = spec.grid ? gridDrawings(K, spec.n, spec.rows ?? 1) : drawings(K.W, K.H, mask, spec.n, spec.rows ?? 1); // grid: drawings packed so tight they touch
+  // join: [[keep, loose]]: a shape drawn apart from its body (a slash arc) that was counted as a drawing of its own.
+  for (const [keep, loose] of spec.join ?? []) {
+    for (let i = 0; i < D.owner.length; i++) if (D.owner[i] === loose - 1) D.owner[i] = keep - 1;
+    const b = D.boxes[keep - 1], c = D.boxes[loose - 1];
+    D.boxes[keep - 1] = { x0: Math.min(b.x0, c.x0), y0: Math.min(b.y0, c.y0), x1: Math.max(b.x1, c.x1), y1: Math.max(b.y1, c.y1) };
+  }
   const ms = D.boxes.map((_, i) => measureBody(K, D, i));
   if (spec.scaleRef) {
     IDLE_LANTERN = median(ms.map((m) => m.lantern));

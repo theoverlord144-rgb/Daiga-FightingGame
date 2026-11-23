@@ -337,8 +337,8 @@ test('every sheet the file names is there; placeholders say so in their name', (
   assert.ok(names.size > 50);
   for (const n of names) assert.ok(fs.existsSync(`data/characters/avner/${n}`), n);
   const waiting = [...names].filter((n) => n.includes('placeholder'));
-  for (const slot of ['2L', '2H', 'throw-forward', 'throw-back', 'drawn', 'full-moon', 'lantern-phase']) assert.ok(waiting.some((n) => n.includes(`/${slot}-placeholder`)), `${slot} is marked as a placeholder`);
-  for (const real of ['hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
+  for (const slot of ['2L', 'throw-forward', 'throw-back', 'drawn', 'full-moon', 'lantern-phase']) assert.ok(waiting.some((n) => n.includes(`/${slot}-placeholder`)), `${slot} is marked as a placeholder`);
+  for (const real of ['2H', 'hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
 });
 
 test('sync test: the whole kit, rewinding 8 frames every frame, never differs', () => {
@@ -387,4 +387,23 @@ test('Tide and Rising Moon cancel into Moonlit once the wave or moon is out, not
   assert.equal(g.players[0].vars.moonmark, 1);
   run(g, '2 3 6+L 5*10 5+R 5*2');
   assert.equal(g.players[0].state, 'moonSnap');
+});
+
+test('5H: the extra slash drawing sits on the frame the hit lands, so it is the one held through hitstop', () => {
+  const st = A.states['5H'];
+  const first = st.frames.findIndex((f) => f.hit.length);
+  assert.equal(st.frames[first].sprite.index, 4, 'the new drawing (fifth on the sheet) on the first hitting frame');
+  assert.equal(st.frames[first - 1].sprite.index, 3, 'the first row\'s fourth drawing just before it');
+  assert.equal(st.frames.filter((f) => f.sprite.index === 4).length, 1, 'one frame only when the swing misses');
+  assert.equal(st.frames[first + 1].sprite.index, 5);
+  const g = setup(120);
+  const p = g.players[0];
+  let held = 0, hit = false;
+  for (const raw of script('5+H 5*50')) {
+    step(g, [raw, 0], W);
+    if (g.cues.some((c) => c.type === 'hit')) hit = true;
+    if (hit && p.state === '5H' && st.frames[p.frame].sprite.index === 4) held++;
+  }
+  assert.ok(hit);
+  assert.ok(held >= st.move.hitstop, `held through the freeze (${held} frames, hitstop ${st.move.hitstop})`);
 });

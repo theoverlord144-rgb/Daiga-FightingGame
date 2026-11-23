@@ -122,7 +122,6 @@ Every one has `placeholder` in its file name (`data/characters/avner/sheets/`).
 | Slot | What stands in |
 | --- | --- |
 | 2L (low lantern jab) | A copy of the 2M drawings |
-| 2H (low lantern sweep) | A copy of the 2M drawings |
 | Forward throw, back throw | Copies of 5M and of the 2R cast |
 | Recall (the crescent returning) | A copy of the 2R cast |
 | Full Moon: his animation, the giant moon, the column | Copies of the Rising Moon body, the eclipse moon and the Snap beam (double size) |
@@ -188,6 +187,14 @@ j.H and j.S; the lantern flash on 2L; ground bounce and tech roll drawings of hi
   editor: it is 70 px tall, so it only reaches someone very low.
 - Your editor tuning since the first commit is committed with this (hitboxes, hitstop, 5M jump cancel, 5H air hit,
   the Crescent Kick's box brought back to the drawing). The test no longer pins the Crescent Kick's reach.
+
+- **5H has an extra slash drawing for the hit** (your sheet `Avner_HeavyPunch_SecondRowFourthFrameOnlyAfterFourthFrameOfFirstRow.png`).
+  Only the second row's fourth drawing is used. It comes after the first row's fourth drawing and sits on the frame the
+  hit lands (frame 14), so it is the drawing held through hitstop. On a miss it shows for that one frame. The first
+  row's fourth drawing moved one frame earlier; startup, active and recovery are unchanged. Its arc is drawn apart
+  from the body on the sheet, so the sheet tool joins the two (`join` in `scripts/avner-prep.mjs`).
+- **2H has its art** (`Avner_Crouching_HeavyPunch_Slide.png`, five drawings, held 5 / 6 / 4 / 10 / 14; the slide is on
+  the active frames). Its boxes were tuned on the placeholder and may want another look.
 
 ## Tests
 

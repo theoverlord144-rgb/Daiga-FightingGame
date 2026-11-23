@@ -140,6 +140,10 @@ try {
     }
     s.go('', '', 60); s.go('U', '', 1); s.go('', '', 14); s.go('H', '', 1); s.go('', '', 13); s.shot('jH');
   });
+  scene('lamp-heavy', 'avner', 'malik', 150, (s) => {
+    s.go('', '', 20); s.go('H', '', 1); s.go('', '', 12); s.shot('5H-last-startup'); s.go('', '', 4); s.shot('5H-hitstop'); s.go('', '', 22); s.shot('5H-after');
+    s.go('', '', 70); s.game.players[1].x = s.game.players[0].x + 15000; s.go('DH', '', 1); s.go('D', '', 6); s.shot('2H-reach'); s.go('D', '', 7); s.shot('2H-slide'); s.go('D', '', 18); s.shot('2H-recover');
+  });
   for (const [b, gap] of [['L', 140], ['M', 320], ['H', 520]]) scene('lamp-moon-' + b, 'avner', 'malik', gap, (s) => {
     qcf(s, b); s.until('', '', s.cue('spawn'), 30); s.go('', '', 2); s.shot('warning'); s.go('', '', 5); s.shot('rising'); s.go('', '', 7); s.shot('surge'); s.go('', '', 10); s.shot('fading');
   });
