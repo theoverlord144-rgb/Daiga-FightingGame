@@ -200,7 +200,8 @@ speed (px a frame, up positive; the first row whose `above` the speed is over). 
 frames, holds }]`: leaving `from` for one of `into` (after at least `after` frames there), those drawings play first.
 `guard: { range, stand, crouch, air }` (each `{ sprite, index }`): shown while holding back with the opponent
 attacking within `range` px. `lantern: { sprite, at }`: one drawing per full bar of Devotion, drawn at `at[sheet
-image][drawing]` = [px forward, px up] from the fighter. An effect (`effects`, `hitFx`) may give `holds` (frames per
+image][drawing]` = [px forward, px up] from the fighter. `throws: { moveId: { throwHold: { sprite, holds }, throwFinish: { sprite, holds } } }`: that throw's own drawings for the
+shared throw states. An effect (`effects`, `hitFx`) may give `holds` (frames per
 drawing) instead of one `hold`.
 
 ## `states` (top level): a character's own states

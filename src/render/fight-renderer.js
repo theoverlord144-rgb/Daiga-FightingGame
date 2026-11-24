@@ -313,6 +313,13 @@ export function createFightRenderer(ctx, W, H) {
     if (!art) return fr;
     const ex = exitArt[p.id];
     if (ex) return { ...fr, sprite: { block: ex.rule.sprite, index: ex.rule.frames[heldFrame(ex.rule.holds, ex.t, false)[0]] } };
+    // art.throws: { <throw move>: { throwHold: { sprite, holds }, throwFinish: { sprite, holds } } }: the shared throw
+    // states drawn with that throw's own drawings (which throw it was is kept on the fighter being thrown).
+    const own = art.throws && game && (p.state === 'throwHold' || p.state === 'throwFinish') ? art.throws[game.players[1 - p.id].throwMove]?.[p.state] : null;
+    if (own) {
+      const t = lastMove[p.id]?.state === p.state ? lastMove[p.id].since : 0;
+      return { ...fr, sprite: { block: own.sprite, index: heldFrame(own.holds, t, false)[0] } };
+    }
     const st = def.states[p.state];
     if (art.guard && st.free && game && world) {
       const o = game.players[1 - p.id];

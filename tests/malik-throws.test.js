@@ -59,15 +59,20 @@ test('Malik: the throw can be broken with H, and an opponent in the air is not t
   assert.notEqual(air.players[0].state, 'throwHold');
 });
 
-test('Malik: the forward throw has its drawn art (grab, hold, push); the back throw is still a placeholder, named so', () => {
+test('Malik: both throws have their drawn art (grab, hold, finish)', () => {
   const raw = loadJSON(FILE);
   const image = (id) => raw.moves.find((m) => m.id === id).sprite.image;
   for (const id of ['6H', 'throwHold', 'throwFinish']) {
     assert.ok(!image(id).includes('placeholder'), `${id}: ${image(id)}`);
     assert.ok(existsSync(`data/characters/malik/${image(id)}`));
   }
-  assert.ok(image('4H').includes('placeholder'));
+  assert.ok(!image('4H').includes('placeholder'));
   assert.ok(existsSync(`data/characters/malik/${image('4H')}`));
+  // The back throw's own hold and slam drawings (drawing only): they fill the same two states.
+  const own = raw.art.throws['4H'];
+  for (const st of ['throwHold', 'throwFinish']) assert.ok(existsSync(`data/characters/malik/${own[st].sprite.image}`), st);
+  assert.equal(own.throwHold.holds.reduce((a, b) => a + b, 0), M.stats.throwBreak);
+  assert.equal(own.throwFinish.holds.reduce((a, b) => a + b, 0), M.states.throwFinish.duration);
   // The hold drawings fill the time the opponent has to break the throw; the push fills the finish.
   assert.equal(M.states.throwFinish.frames.at(-1).sprite.index, 3);
   assert.equal(M.states.throwFinish.duration, 18);

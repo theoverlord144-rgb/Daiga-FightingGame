@@ -67,6 +67,9 @@
       "sprite": { "image": "sheets/orb.png", "columns": 9, "rows": 1, "count": 9, "frameW": 344, "frameH": 344, "originX": 205, "originY": 172, "scale": 0.5, "additive": true },
       "anim": { "release": [3, 3, 3], "loop": [3, 3, 3], "impact": [3, 4, 5] } }
   },
+  "art": { "throws": { "4H": {
+    "throwHold": {"holds": [2,2,3], "sprite": {"image": "sheets/throw-back-hold.png", "columns": 3, "rows": 1, "count": 3, "frameW": 225, "frameH": 374, "originX": 94, "originY": 372, "scale": 0.5}},
+    "throwFinish": {"holds": [5,5,4,4], "sprite": {"image": "sheets/throw-back-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 254, "frameH": 391, "originX": 127, "originY": 389, "scale": 0.5}} } } },
   "effects": {
     "pillar": { "hold": 3, "at": [95, 151], "sprite": { "image": "sheets/pillar-fx.png", "columns": 8, "rows": 1, "count": 8, "frameW": 400, "frameH": 688, "originX": 200, "originY": 344, "scale": 0.5, "additive": true } },
     "guardian": { "hold": 8, "at": [-48, 62], "alpha": 0.9, "bob": { "px": 5, "period": 96 }, "sprite": { "image": "sheets/guardian-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 312, "frameH": 495, "originX": 156, "originY": 493, "scale": 0.5 } },
@@ -115,8 +118,8 @@
       "sprite": { "image": "sheets/2H.png", "columns": 7, "rows": 1, "count": 7, "frameW": 355, "frameH": 267, "originX": 147, "originY": 265, "scale": 0.5, "holds": [2, 3, 3, 3, 8, 7, 7] } },
     { "id": "6H", "name": "Forward Throw (the grab; the hold and the push are the art of throwHold and throwFinish)", "input": "6H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70,
       "sprite": {"image": "sheets/throw-forward.png", "columns": 3, "rows": 1, "count": 3, "frameW": 233, "frameH": 382, "originX": 99, "originY": 380, "scale": 0.5, "holds": [4,10,11]} },
-    { "id": "4H", "name": "Back Throw (art to come; placeholder: the Back Heavy drawings)", "input": "4H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70, "throwSwap": true,
-      "sprite": {"image": "sheets/throw-back-placeholder.png", "columns": 8, "rows": 1, "count": 8, "frameW": 401, "frameH": 381, "originX": 126, "originY": 379, "scale": 0.5} },
+    { "id": "4H", "name": "Back Throw (the grab; its hold and slam are in art.throws)", "input": "4H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70, "throwSwap": true,
+      "sprite": {"image": "sheets/throw-back.png", "columns": 3, "rows": 1, "count": 3, "frameW": 256, "frameH": 376, "originX": 111, "originY": 374, "scale": 0.5, "holds": [4,10,11]} },
     { "id": "backHeavy", "name": "Back Heavy", "input": "4H", "startup": 11, "active": 3, "recovery": 22,
       "damage": 800, "hitstun": 21, "blockstun": 16, "hitstop": 12, "pushbackHit": 30, "pushbackBlock": 36, "selfPushback": 22, "guard": "mid", "reach": 138,
       "hitboxes": [[56, 96, 88, 60]],
