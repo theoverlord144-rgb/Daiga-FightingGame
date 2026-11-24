@@ -29,7 +29,7 @@ Tide, the Moonlit Rite, two supers, and the lantern that shows his Devotion as a
 | Lantern Sweep | 2H | 12 / 4 / 24. Low, knockdown. |
 | Air Jab / Side Kick / Lantern Arc | j.L / j.M / j.H | 5 / 3 / 10 (overhead), 8 / 5 / 14, 12 / 5 / 18 |
 | Lantern Crash | j.S | 14 / 5 / until landing. Ground bounce (once per combo, the engine's rule). |
-| Throws | 6H / 4H up close | As before (the old numbers). |
+| Throws | 6H / 4H up close | 1000 damage; held 14 frames before it lands, H breaks it in the first 7; real art for both. |
 | Rising Moon | 236 + L / M / H | The moon rises 140 / 320 / 520 px in front of him. Its first active frame is frame 16 / 20 / 24 of the move. The glow on the ground shows 6 frames before that. Soft launch. Hits standing, crouching and airborne fighters; it can be blocked. One moon at a time. He recovers on frame 35; the far moon is out until frame 50. |
 | Rising Moon EX | 236 + attack + S | One bar. The moon rises under the opponent wherever they are, and its warning is 4 frames longer (10). |
 | Lunar Halo | 623 + L / M / H | Startup 6 / 8 / 11. A circle of light around him, sized 0.7 / 1.0 / 1.3, live for 10 frames. Hits behind him too. Launches. H: only his legs can be hit during the startup. About -25 on block. |
@@ -121,7 +121,6 @@ Every one has `placeholder` in its file name (`data/characters/avner/sheets/`).
 
 | Slot | What stands in |
 | --- | --- |
-| Forward throw, back throw | Copies of 5M and of the 2R cast |
 | Recall (the crescent returning) | A copy of the 2R cast |
 | Full Moon: his animation, the giant moon, the column | Copies of the Rising Moon body, the eclipse moon and the Snap beam (double size) |
 | The lantern's moon phases | Five discs drawn by code (`scripts/make-lantern-phases.mjs`) |

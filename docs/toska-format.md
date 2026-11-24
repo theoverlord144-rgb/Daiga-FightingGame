@@ -201,7 +201,8 @@ frames, holds }]`: leaving `from` for one of `into` (after at least `after` fram
 `guard: { range, stand, crouch, air }` (each `{ sprite, index }`): shown while holding back with the opponent
 attacking within `range` px. `lantern: { sprite, at }`: one drawing per full bar of Devotion, drawn at `at[sheet
 image][drawing]` = [px forward, px up] from the fighter. `throws: { moveId: { throwHold: { sprite, holds }, throwFinish: { sprite, holds } } }`: that throw's own drawings for the
-shared throw states. An effect (`effects`, `hitFx`) may give `holds` (frames per
+shared throw states. `stats.throwHold`: how long a throw is held before it lands (frames; it can be longer than
+`stats.throwBreak`, the break window, which is the first frames of the hold). An effect (`effects`, `hitFx`) may give `holds` (frames per
 drawing) instead of one `hold`.
 
 ## `states` (top level): a character's own states

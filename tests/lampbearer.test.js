@@ -337,8 +337,8 @@ test('every sheet the file names is there; placeholders say so in their name', (
   assert.ok(names.size > 50);
   for (const n of names) assert.ok(fs.existsSync(`data/characters/avner/${n}`), n);
   const waiting = [...names].filter((n) => n.includes('placeholder'));
-  for (const slot of ['throw-forward', 'throw-back', 'drawn', 'full-moon', 'lantern-phase']) assert.ok(waiting.some((n) => n.includes(`/${slot}-placeholder`)), `${slot} is marked as a placeholder`);
-  for (const real of ['2L', '2H', 'air-crescent-swing', 'air-crescent', 'air-crescent-burst', 'hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
+  for (const slot of ['drawn', 'full-moon', 'lantern-phase']) assert.ok(waiting.some((n) => n.includes(`/${slot}-placeholder`)), `${slot} is marked as a placeholder`);
+  for (const real of ['throw-forward', 'throw-back', 'throw-tech', '2L', '2H', 'air-crescent-swing', 'air-crescent', 'air-crescent-burst', 'hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
 });
 
 test('sync test: the whole kit, rewinding 8 frames every frame, never differs', () => {

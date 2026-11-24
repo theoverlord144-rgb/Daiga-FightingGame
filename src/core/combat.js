@@ -604,10 +604,13 @@ function startThrow(game, world, a, d) {
   a.hitsDone = -1;
   d.throwBy = a.id;
   d.throwMove = a.state;
+  // The hold lasts `throwHold` frames (the thrower's stat; without it, as long as the break window).
+  const hold = Math.max(adef.stats.throwHold ?? 0, adef.stats.throwBreak);
   enterState(a, adef, 'throwHold');
-  a.stun = adef.stats.throwBreak;
+  a.stun = hold;
   enterState(d, ddef, 'thrown');
-  d.stun = adef.stats.throwBreak;
+  d.stun = hold;
+  d.throwHeld = hold;
   d.facing = -a.facing;
   d.x = a.x + a.facing * move.throwDistance;
   d.slide = 0;
@@ -652,11 +655,12 @@ export function throwLands(game, world, d) {
   d.throwBy = -1;
 }
 
-/** A thrown fighter who presses H in the break window breaks the throw. */
+/** A thrown fighter who presses H in the break window (the first `throwBreak` frames of the hold) breaks the throw. */
 export function checkThrowBreaks(game, world, frozen) {
   for (const d of game.players) {
     if (frozen[d.id] || d.state !== 'thrown' || d.throwBy < 0) continue;
-    if (pressedAt(d.input, BTN.H, 0)) throwTech(game, world, game.players[d.throwBy], d);
+    const window = world.chars[d.throwBy].stats.throwBreak;
+    if (d.throwHeld - d.stun < window && pressedAt(d.input, BTN.H, 0)) throwTech(game, world, game.players[d.throwBy], d);
   }
 }
 

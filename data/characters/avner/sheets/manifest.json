@@ -4671,5 +4671,459 @@
   "drawings": null,
   "lantern": null,
   "reach": null
+ },
+ "throw-forward": {
+  "sprite": {
+   "image": "sheets/throw-forward.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 270,
+   "frameH": 384,
+   "originX": 111,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    4,
+    10,
+    11
+   ]
+  },
+  "from": "Avner_Forward_Throw.png",
+  "drawings": [
+   1,
+   2,
+   7
+  ],
+  "lantern": [
+   [
+    -4,
+    58
+   ],
+   [
+    -4,
+    58
+   ],
+   [
+    5,
+    56
+   ]
+  ],
+  "reach": [
+   [
+    -46,
+    0,
+    78,
+    190
+   ],
+   [
+    -54,
+    0,
+    51,
+    185
+   ],
+   [
+    -51,
+    0,
+    62,
+    186
+   ]
+  ]
+ },
+ "throw-forward-hold": {
+  "sprite": {
+   "image": "sheets/throw-forward-hold.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 270,
+   "frameH": 384,
+   "originX": 111,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    6
+   ]
+  },
+  "from": "Avner_Forward_Throw.png",
+  "drawings": [
+   1,
+   2,
+   3
+  ],
+  "lantern": [
+   [
+    -4,
+    58
+   ],
+   [
+    -4,
+    58
+   ],
+   [
+    53,
+    141
+   ]
+  ],
+  "reach": [
+   [
+    -46,
+    0,
+    78,
+    190
+   ],
+   [
+    -54,
+    0,
+    51,
+    185
+   ],
+   [
+    -47,
+    0,
+    65,
+    189
+   ]
+  ]
+ },
+ "throw-forward-finish": {
+  "sprite": {
+   "image": "sheets/throw-forward-finish.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 311,
+   "frameH": 384,
+   "originX": 130,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    6,
+    6,
+    10,
+    8
+   ]
+  },
+  "from": "Avner_Forward_Throw.png",
+  "drawings": [
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    51,
+    141
+   ],
+   [
+    -18,
+    61
+   ],
+   [
+    -48,
+    59
+   ],
+   [
+    5,
+    56
+   ]
+  ],
+  "reach": [
+   [
+    -44,
+    0,
+    65,
+    188
+   ],
+   [
+    -35,
+    0,
+    44,
+    190
+   ],
+   [
+    -64,
+    0,
+    89,
+    185
+   ],
+   [
+    -51,
+    0,
+    62,
+    186
+   ]
+  ]
+ },
+ "throw-back": {
+  "sprite": {
+   "image": "sheets/throw-back.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 288,
+   "frameH": 395,
+   "originX": 120,
+   "originY": 393,
+   "scale": 0.5,
+   "holds": [
+    4,
+    10,
+    11
+   ]
+  },
+  "from": "Avner_Back_Throw.png",
+  "drawings": [
+   1,
+   2,
+   7
+  ],
+  "lantern": [
+   [
+    -40,
+    68
+   ],
+   [
+    -40,
+    68
+   ],
+   [
+    -40,
+    68
+   ]
+  ],
+  "reach": [
+   [
+    -55,
+    0,
+    82,
+    195
+   ],
+   [
+    -58,
+    0,
+    68,
+    178
+   ],
+   [
+    -59,
+    0,
+    69,
+    186
+   ]
+  ]
+ },
+ "throw-back-hold": {
+  "sprite": {
+   "image": "sheets/throw-back-hold.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 287,
+   "frameH": 398,
+   "originX": 119,
+   "originY": 396,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    6
+   ]
+  },
+  "from": "Avner_Back_Throw.png",
+  "drawings": [
+   1,
+   2,
+   3
+  ],
+  "lantern": [
+   [
+    -40,
+    68
+   ],
+   [
+    -40,
+    68
+   ],
+   [
+    -36,
+    77
+   ]
+  ],
+  "reach": [
+   [
+    -55,
+    0,
+    82,
+    195
+   ],
+   [
+    -58,
+    0,
+    68,
+    178
+   ],
+   [
+    -55,
+    0,
+    59,
+    197
+   ]
+  ]
+ },
+ "throw-back-finish": {
+  "sprite": {
+   "image": "sheets/throw-back-finish.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 362,
+   "frameH": 400,
+   "originX": 181,
+   "originY": 398,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    7,
+    7
+   ]
+  },
+  "from": "Avner_Back_Throw.png",
+  "drawings": [
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    -32,
+    76
+   ],
+   [
+    -19,
+    68
+   ],
+   [
+    20,
+    78
+   ],
+   [
+    20,
+    78
+   ]
+  ],
+  "reach": [
+   [
+    -68,
+    0,
+    63,
+    186
+   ],
+   [
+    -89,
+    0,
+    89,
+    190
+   ],
+   [
+    -72,
+    0,
+    36,
+    198
+   ],
+   [
+    -59,
+    0,
+    69,
+    186
+   ]
+  ]
+ },
+ "throw-tech": {
+  "sprite": {
+   "image": "sheets/throw-tech.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 274,
+   "frameH": 385,
+   "originX": 118,
+   "originY": 383,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    5,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_Throw_Tech.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    26,
+    66
+   ],
+   [
+    31,
+    69
+   ],
+   [
+    38,
+    68
+   ],
+   [
+    32,
+    74
+   ],
+   [
+    15,
+    49
+   ]
+  ],
+  "reach": [
+   [
+    -37,
+    0,
+    42,
+    190
+   ],
+   [
+    -45,
+    0,
+    44,
+    190
+   ],
+   [
+    -58,
+    0,
+    77,
+    187
+   ],
+   [
+    -39,
+    0,
+    67,
+    186
+   ],
+   [
+    -50,
+    0,
+    60,
+    186
+   ]
+  ]
  }
 }

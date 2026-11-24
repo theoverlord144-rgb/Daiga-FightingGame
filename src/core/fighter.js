@@ -117,6 +117,7 @@ export function createFighter(def, side, x) {
     gbY: 0, // pending ground bounce (upward speed, units; 0 = none)
     throwBy: -1, // while being thrown: the attacker's id
     throwMove: '',
+    throwHeld: 0, // how long the hold of the throw this fighter is in lasts (the break window is its first frames)
     meter: def.meterStart ?? 0, // Devotion, game units (one point is 100 units; a bar is 10000)
     spGain: 0, // Devotion the current move gave for being a special (taken back if it turns into its EX version)
     burst: 0, // burst gauge (set from burst.json when the game is created)

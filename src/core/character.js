@@ -76,7 +76,7 @@ function inferStance(m, parsed) {
 // ---------- Compile ----------
 
 // Stats counted in frames, counts or percentages (everything else is a distance or speed, converted to units).
-const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'airTech', 'airTechInvuln', 'dashFrames', 'dashCancel', 'dashRecovery',
+const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'throwHold', 'airTech', 'airTechInvuln', 'dashFrames', 'dashCancel', 'dashRecovery',
   'backdashFrames', 'backdashInvuln', 'backdashRecovery', 'airdashFrames', 'airdashCancel', 'airdashBackFrames',
   'airdashKeep', 'airJumps', 'airDashes', 'meterBars', 'meterStart']);
 const BOX_STATS = new Set(['standHurt', 'crouchHurt', 'airHurt', 'standPush', 'crouchPush', 'airPush']);

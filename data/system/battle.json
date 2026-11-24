@@ -9,5 +9,5 @@
   "airHit": { "x": 3, "y": 8 },
   "airBlock": true,
   "armorDamagePct": 10000,
-  "throwTech": { "stun": 12, "push": 60 }
+  "throwTech": { "stun": 20, "push": 60 }
 }

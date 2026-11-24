@@ -181,6 +181,12 @@ try {
   scene('mbthrow', 'malik', 'avner', 60, (s) => {
     s.go('', '', 10); s.go('KH', '', 1); s.go('', '', 3); s.shot('grab'); s.go('', '', 4); s.shot('hold'); s.go('', '', 3); s.shot('heave'); s.go('', '', 5); s.shot('slam'); s.go('', '', 6); s.shot('turned'); s.go('', '', 12); s.shot('after');
   });
+  for (const [name, dir] of [['athrow-f', 'F'], ['athrow-b', 'K']]) scene(name, 'avner', 'malik', 60, (s) => {
+    s.go('', '', 10); s.go(dir + 'H', '', 1); s.go('', '', 4); s.shot('grab'); s.go('', '', 9); s.shot('hold'); s.go('', '', 6); s.shot('finish-1'); s.go('', '', 8); s.shot('finish-2'); s.go('', '', 8); s.shot('finish-3'); s.go('', '', 12); s.shot('after');
+  });
+  scene('tech', 'avner', 'malik', 60, (s) => {
+    s.go('', '', 10); s.go('FH', '', 1); s.go('', '', 3); s.go('', 'H', 1); s.go('', '', 4); s.shot('guard'); s.go('', '', 5); s.shot('push'); s.go('', '', 6); s.shot('recoil');
+  });
   // Malik's Running Lariat (node scripts/shots.mjs <folder> lariat)
   scene('lariat', 'malik', 'avner', 330, (s) => {
     s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 2); s.shot('power-up'); s.go('', '', 10); s.shot('running'); s.go('', '', 9); s.shot('swing'); s.go('', '', 30); s.shot('recovery');

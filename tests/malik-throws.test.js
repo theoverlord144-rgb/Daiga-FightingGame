@@ -71,9 +71,64 @@ test('Malik: both throws have their drawn art (grab, hold, finish)', () => {
   // The back throw's own hold and slam drawings (drawing only): they fill the same two states.
   const own = raw.art.throws['4H'];
   for (const st of ['throwHold', 'throwFinish']) assert.ok(existsSync(`data/characters/malik/${own[st].sprite.image}`), st);
-  assert.equal(own.throwHold.holds.reduce((a, b) => a + b, 0), M.stats.throwBreak);
+  assert.equal(own.throwHold.holds.reduce((a, b) => a + b, 0), M.stats.throwHold);
   assert.equal(own.throwFinish.holds.reduce((a, b) => a + b, 0), M.states.throwFinish.duration);
   // The hold drawings fill the time the opponent has to break the throw; the push fills the finish.
   assert.equal(M.states.throwFinish.frames.at(-1).sprite.index, 3);
-  assert.equal(M.states.throwFinish.duration, 18);
+  assert.equal(M.states.throwFinish.frames.length, M.states.throwFinish.duration, 'the push drawings fill the finish');
+});
+
+test('throws are slow enough to read: the hold outlasts the break window, which stays as short as it was', () => {
+  const { throwHold, throwBreak } = M.stats;
+  assert.ok(throwHold > throwBreak, `hold ${throwHold}, break window ${throwBreak}`);
+  assert.equal(throwBreak, loadJSON('data/system/fighter-defaults.json').stats.throwBreak, 'the window is the system one');
+  // The throw lands when the hold ends.
+  const g = setup(60);
+  run(g, '6+H 5*2');
+  assert.equal(g.players[1].state, 'thrown');
+  let landed = 0;
+  for (let i = 1; i <= 40 && !landed; i++) { step(g, [0, 0], W); if (g.players[1].state !== 'thrown') landed = i; }
+  assert.ok(landed >= throwHold - 2 && landed <= throwHold + 1, `landed after ${landed} frames`);
+  // H inside the window breaks it; H after the window (still in the hold) does not.
+  const early = setup(60);
+  const cuesE = run(early, '6+H 5*30', `5*${throwBreak - 2} 5+H 5*30`);
+  assert.ok(cuesE.some((c) => c.type === 'tech'), 'broken inside the window');
+  const late = setup(60);
+  const cuesL = run(late, '6+H 5*30', `5*${throwBreak + 4} 5+H 5*30`);
+  assert.ok(!cuesL.some((c) => c.type === 'tech'), 'too late: the throw lands');
+  assert.ok(late.players[1].health < M.stats.health);
+});
+
+test('a broken throw: both fighters play the throw-tech drawings for the whole tech, and recover together', () => {
+  const g = setup(60);
+  run(g, '6+H 5*5', '5*3 5+H 5*2');
+  assert.equal(g.players[0].state, 'throwTech');
+  assert.equal(g.players[1].state, 'throwTech');
+  const tech = loadJSON('data/system/battle.json').throwTech.stun;
+  for (const id of ['malik', 'avner']) {
+    const raw = loadJSON(`data/characters/${id}/${id}.toska.json`);
+    const art = raw.moves.find((m) => m.id === 'throwTech');
+    assert.ok(art && existsSync(`data/characters/${id}/${art.sprite.image}`), `${id} has throw-tech art`);
+    assert.equal(art.sprite.holds.reduce((a, b) => a + b, 0), tech, `${id}: the drawings fill the tech`);
+  }
+  let a = 0, d = 0;
+  for (let i = 1; i <= 60 && !(a && d); i++) { step(g, [0, 0], W); if (!a && g.players[0].state === 'idle') a = i; if (!d && g.players[1].state === 'idle') d = i; }
+  assert.ok(a && a === d, `both free on the same frame (${a}, ${d})`);
+});
+
+test('Avner: both throws have their drawn art, each with its own hold and finish drawings', () => {
+  const raw = loadJSON('data/characters/avner/avner.toska.json');
+  const A = loadChar('data/characters/avner/avner.toska.json');
+  for (const id of ['6H', '4H']) {
+    const grab = raw.moves.find((m) => m.id === id).sprite.image;
+    assert.ok(!grab.includes('placeholder') && existsSync(`data/characters/avner/${grab}`), `${id}: ${grab}`);
+    const own = raw.art.throws[id];
+    for (const st of ['throwHold', 'throwFinish']) {
+      assert.ok(existsSync(`data/characters/avner/${own[st].sprite.image}`), `${id} ${st}`);
+      assert.ok(raw.art.lantern.at[own[st].sprite.image], 'the lantern is measured on it (the moon phase shows)');
+    }
+    assert.equal(own.throwHold.holds.reduce((a, b) => a + b, 0), A.stats.throwHold);
+    assert.equal(own.throwFinish.holds.reduce((a, b) => a + b, 0), A.states.throwFinish.duration);
+  }
+  assert.equal(A.stats.throwHold, M.stats.throwHold, 'both characters throw at the same speed');
 });

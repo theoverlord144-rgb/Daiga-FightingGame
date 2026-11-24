@@ -125,6 +125,20 @@ const SHEETS = [
     { name: 'knockdown', frames: [6, 7], holds: [6, 34] },
     { name: 'wakeup', frames: [8, 9, 10], holds: [4, 4, 4] },
   ] },
+  // Throws: the grab is the move's own sheet (drawings 1, 2 and the idle for a miss); the hold (the drawings shown
+  // while the throw can still be broken) and the finish are the shared throw states, per throw (art.throws). The back
+  // throw turns him round, so its first two finish drawings are stored mirrored.
+  { ref: [7, 186], file: 'Avner_Forward_Throw.png', n: 7, parts: [
+    { name: 'throw-forward', frames: [1, 2, 7], holds: [4, 10, 11] },
+    { name: 'throw-forward-hold', frames: [1, 2, 3], holds: [4, 4, 6] },
+    { name: 'throw-forward-finish', frames: [4, 5, 6, 7], holds: [6, 6, 10, 8] },
+  ] },
+  { ref: [7, 186], file: 'Avner_Back_Throw.png', n: 7, parts: [
+    { name: 'throw-back', frames: [1, 2, 7], holds: [4, 10, 11] },
+    { name: 'throw-back-hold', frames: [1, 2, 3], holds: [4, 4, 6] },
+    { name: 'throw-back-finish', frames: [4, 5, 6, 7], holds: [8, 8, 7, 7], mirror: [1, 2] },
+  ] },
+  { ref: [5, 186], name: 'throw-tech', file: 'Avner_Throw_Tech.png', n: 5, holds: [3, 4, 5, 4, 4] },
   // Universal systems.
   { ref: [2, 186], file: 'Avner_Vow_And_Absorb.png', n: 9, rows: 2, parts: [
     { name: 'vow-start', frames: [1, 2], holds: [2, 2] },
@@ -591,15 +605,26 @@ function processBody(spec, manifest) {
       left = Math.max(left, (p.ax - b.x0) * k); right = Math.max(right, (b.x1 + 1 - p.ax) * k);
       up = Math.max(up, (p.ay - b.y0) * k); down = Math.max(down, (b.y1 + 1 - p.ay) * k);
     });
+    if (part.mirror) left = right = Math.max(left, right); // mirrored drawings turn about the anchor: keep it in the middle
     const originX = Math.ceil(left) + 2, originY = Math.ceil(up) + 2;
     const cell = { w: originX + Math.ceil(right) + 2, h: originY + Math.ceil(down) + 2 };
     const OW = cell.w * idx.length, OH = cell.h;
     const out = new Uint8Array(OW * OH * 4);
     idx.forEach((i, n) => blit(K, D, i, out, OW, OH, { x: n * cell.w, y: 0, w: cell.w, h: cell.h }, pts[n].ax, pts[n].ay, originX, originY, k));
+    // mirror: [drawings of this part, counted from 1] stored flipped left to right (a throw that turns him round: the
+    // engine flips his facing when it lands, so the drawings made before the turn are stored already flipped).
+    for (const m of part.mirror ?? []) {
+      const x0 = (m - 1) * cell.w;
+      for (let y = 0; y < OH; y++) for (let x = 0; x < cell.w >> 1; x++) {
+        const p = (y * OW + x0 + x) * 4, q = (y * OW + x0 + cell.w - 1 - x) * 4;
+        for (let c = 0; c < 4; c++) { const t = out[p + c]; out[p + c] = out[q + c]; out[q + c] = t; }
+      }
+    }
     // In the game the origin is the fighter's position: the ground under him, or (air) AIR_CENTRE below his centre.
     const oy = mode === 'air' ? originY + AIR_CENTRE * RES : originY;
     const lantern = idx.map((i, n) => (ms[i].lanternAt ? [Math.round(((ms[i].lanternAt[0] - pts[n].ax) * k) / RES), Math.round(((pts[n].ay - ms[i].lanternAt[1]) * k) / RES) + (mode === 'air' ? AIR_CENTRE : 0)] : null));
     for (let n = 0; n < lantern.length; n++) if (!lantern[n]) lantern[n] = lantern[n - 1] ?? lantern.find((p) => p) ?? [0, 60];
+    for (const m of part.mirror ?? []) lantern[m - 1] = [-lantern[m - 1][0], lantern[m - 1][1]];
     // Where each drawing reaches, in game px from the fighter's position (x forward, y up): [x0, y0, x1, y1].
     const up0 = mode === 'air' ? AIR_CENTRE : 0;
     const reach = idx.map((i, n) => { const b = ms[i].box, p = pts[n]; return [Math.round(((b.x0 - p.ax) * k) / RES), Math.round(((p.ay - b.y1) * k) / RES) + up0, Math.round(((b.x1 - p.ax) * k) / RES), Math.round(((p.ay - b.y0) * k) / RES) + up0]; });
