@@ -121,7 +121,6 @@ Every one has `placeholder` in its file name (`data/characters/avner/sheets/`).
 
 | Slot | What stands in |
 | --- | --- |
-| 2L (low lantern jab) | A copy of the 2M drawings |
 | Forward throw, back throw | Copies of 5M and of the 2R cast |
 | Recall (the crescent returning) | A copy of the 2R cast |
 | Full Moon: his animation, the giant moon, the column | Copies of the Rising Moon body, the eclipse moon and the Snap beam (double size) |
@@ -195,6 +194,16 @@ j.H and j.S; the lantern flash on 2L; ground bounce and tech roll drawings of hi
   from the body on the sheet, so the sheet tool joins the two (`join` in `scripts/avner-prep.mjs`).
 - **2H has its art** (`Avner_Crouching_HeavyPunch_Slide.png`, five drawings, held 5 / 6 / 4 / 10 / 14; the slide is on
   the active frames). Its boxes were tuned on the placeholder and may want another look.
+
+- **Air Crescent** (236 + L / M / H in the air; your sheets `Avner_SpecialMove_AirCrescent.png` and `..._Effect.png`).
+  The crescent leaves the lantern on drawing 3 (frame 13) and dives: L steep (7 px forward, 12 down a frame), M 45
+  degrees (10, 10), H shallow (13, 6). 600 damage, blocked either way. It bursts where it reaches the floor (effect
+  drawings 7 to 9; a look only). He keeps falling through the swing, cannot act again until he lands, and has 6 frames
+  of landing. One per jump, one out at a time. EX (+S, one bar): 14 and 14, 900 damage, knocks down. The flying
+  drawing is tilted to match each path. New engine pieces, general: a projectile that ends at the floor, an effect
+  for the way a projectile ended, and "one per jump" for a group of moves.
+- **2L has its art** (`Avner_Crouching_LightPunch.png`, five drawings held 2 / 2 / 2 / 4 / 5; the punch on the active frames).
+- **2H is a slide**: he travels about 110 px forward (10 px a frame from frame 5 until the sweep's active frames end).
 
 ## Tests
 

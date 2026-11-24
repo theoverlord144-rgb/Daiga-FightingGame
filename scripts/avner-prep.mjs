@@ -73,6 +73,7 @@ const SHEETS = [
   { ref: [1, 186], file: 'Avner_HeavyPunch_SecondRowFourthFrameOnlyAfterFourthFrameOfFirstRow.png', n: 14, rows: 2, join: [[11, 12]], parts: [
     { name: '5H', frames: [1, 2, 3, 4, 11, 5, 6, 7], anchor: 'rear', holds: [3, 5, 4, 1, 1, 3, 8, 14] },
   ] },
+  { ref: [1, 150], name: '2L', file: 'Avner_Crouching_LightPunch.png', n: 5, holds: [2, 2, 2, 4, 5] },
   { ref: [1, 150], name: '2H', file: 'Avner_Crouching_HeavyPunch_Slide.png', n: 5, holds: [5, 6, 4, 10, 14] },
   { ref: [1, 186], name: '4H', file: 'Avner_Back_HeavyPunch.png', n: 7, holds: [2, 5, 5, 1, 5, 10, 12] },
   { ref: [1, 186], name: '5S', file: 'Avner_SLauncher.png', n: 7, anchor: 'rear', holds: [3, 6, 2, 5, 8, 8, 6] },
@@ -96,6 +97,12 @@ const SHEETS = [
     { name: 'moonlit-j', frames: [13, 14, 15, 16], mode: 'air', holds: [4, 4, 10, 8] },
   ] },
   { ref: [1, 186], name: 'moon-snap', file: 'Avner_SpecialMove_Moonlit_Snap.png', n: 6, holds: [3, 4, 2, 5, 8, 6] },
+  // Air Crescent (j.236): the swing, and its crescent (drawings 1-6 fly, 7-9 burst on the ground).
+  { name: 'air-crescent-swing', file: 'Avner_SpecialMove_AirCrescent.png', n: 6, mode: 'air', holds: [5, 7, 4, 8, 9, 76] },
+  { file: 'Avner_SpecialMove_AirCrescent_Effect.png', n: 9, rows: 3, mode: 'fx', parts: [
+    { name: 'air-crescent', use: [1, 6], anchor: 'bright', size: 150, holds: [2, 2, 3, 3, 3, 3] },
+    { name: 'air-crescent-burst', use: [7, 9], anchor: 'ground', size: 200, holds: [3, 4, 5] },
+  ] },
   { name: 'crescent', file: 'Avner_SpecialMove_Moonlit_Effect.png', n: 10, rows: 2, mode: 'fx', anchor: 'ground', size: 330, holds: [3, 3, 4, 4, 8, 8, 8, 4, 4, 4] },
   { name: 'moonbeam', file: 'Avner_SpecialMove_Moonlit_Snap_Effect.png', n: 8, rows: 2, mode: 'fx', anchor: 'ground', size: 360, holds: [2, 2, 3, 4, 3, 3, 3, 4] },
   // Supers. New Moon's sheet has two rows of the same 15 drawings with timing numbers written under them: the top row is read.

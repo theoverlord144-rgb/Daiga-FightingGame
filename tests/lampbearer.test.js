@@ -337,8 +337,8 @@ test('every sheet the file names is there; placeholders say so in their name', (
   assert.ok(names.size > 50);
   for (const n of names) assert.ok(fs.existsSync(`data/characters/avner/${n}`), n);
   const waiting = [...names].filter((n) => n.includes('placeholder'));
-  for (const slot of ['2L', 'throw-forward', 'throw-back', 'drawn', 'full-moon', 'lantern-phase']) assert.ok(waiting.some((n) => n.includes(`/${slot}-placeholder`)), `${slot} is marked as a placeholder`);
-  for (const real of ['2H', 'hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
+  for (const slot of ['throw-forward', 'throw-back', 'drawn', 'full-moon', 'lantern-phase']) assert.ok(waiting.some((n) => n.includes(`/${slot}-placeholder`)), `${slot} is marked as a placeholder`);
+  for (const real of ['2L', '2H', 'air-crescent-swing', 'air-crescent', 'air-crescent-burst', 'hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
 });
 
 test('sync test: the whole kit, rewinding 8 frames every frame, never differs', () => {
@@ -406,4 +406,69 @@ test('5H: the extra slash drawing sits on the frame the hit lands, so it is the 
   }
   assert.ok(hit);
   assert.ok(held >= st.move.hitstop, `held through the freeze (${held} frames, hitstop ${st.move.hitstop})`);
+});
+
+test('Air Crescent (j.236): a crescent dives from the lantern, steeper by button; it bursts on the floor; once per jump', () => {
+  const landing = {};
+  for (const b of ['L', 'M', 'H']) {
+    const g = setup(700);
+    const cues = run(g, `8 5*12 2 3 6+${b} 5*70`);
+    const born = cues.find((c) => c.type === 'spawn' && c.name === 'airCrescent' + b);
+    assert.ok(born, `${b}: the crescent comes out`);
+    const end = cues.find((c) => c.type === 'projectileEnd' && c.name === 'airCrescent' + b);
+    assert.equal(end.why, 'ground', `${b}: it ends on the floor`);
+    assert.equal(end.y, 0);
+    landing[b] = end.x - born.x;
+    assert.equal(g.players[0].state, 'idle', 'he has landed and recovered');
+  }
+  assert.ok(landing.L < landing.M && landing.M < landing.H, `L lands nearest, H farthest (${landing.L / 100}, ${landing.M / 100}, ${landing.H / 100})`);
+  for (const b of ['L', 'M', 'H']) assert.ok(A.effects[A.projectiles['airCrescent' + b].endFx.ground], 'the burst it plays on the floor exists');
+  // It only works in the air, and once per jump: a second motion in the same jump does nothing; after landing it works again.
+  let g = setup(700);
+  assert.ok(!run(g, '2 3 6+L 5*30').some((c) => c.type === 'spawn' && c.name.startsWith('airCrescent')), 'on the ground 236L is Rising Moon');
+  g = setup(700);
+  const sj = run(g, '2 8 5*8 2 3 6+L 5*30 2 3 6+M 5*8'); // a super jump: he comes out of the swing still in the air
+  assert.equal(sj.filter((c) => c.type === 'spawn' && c.name.startsWith('airCrescent')).length, 1, 'one per jump');
+  run(g, '5*120');
+  assert.equal(g.players[0].state, 'idle');
+  assert.ok(run(g, '8 5*12 2 3 6+M 5*20').some((c) => c.type === 'spawn' && c.name === 'airCrescentM'), 'after landing it is back');
+  // He keeps falling during the swing, and lands into his own short landing.
+  g = setup(700);
+  const p = g.players[0];
+  let sawLand = false, top = 0;
+  for (const raw of script('8 5*12 2 3 6+L 5*60')) { step(g, [raw, 0], W); top = Math.max(top, p.y); if (p.state === 'airCrescentLand') sawLand = true; }
+  assert.ok(sawLand, 'landing recovery');
+  assert.equal(A.states.airCrescentLand.duration, 6);
+});
+
+test('Air Crescent hits (mid, 600), costs a bar as EX (900, knockdown), and is a special', () => {
+  const g = setup(200);
+  const d = g.players[1];
+  const cues = run(g, '8 5*12 2 3 6+M 5*40');
+  const hit = cues.find((c) => c.type === 'hit');
+  assert.ok(hit, 'it hits a standing opponent');
+  assert.equal(hit.move, 'airCrescentM');
+  assert.equal(A.projectiles.airCrescentM.move.guard, 'mid');
+  assert.equal(A.projectiles.airCrescentM.move.damage, 600);
+  assert.equal(A.projectiles.airCrescentEx.move.damage, 900);
+  assert.ok(A.projectiles.airCrescentEx.move.knockdown);
+  assert.ok(d.health < A.stats.health);
+  assert.equal(A.commands.find((c) => c.move === 'airCrescentM').kind, 'special');
+  const h = setup(700);
+  h.players[0].meter = 10000;
+  const ex = run(h, '8 5*12 2 3 6+LS 5*20');
+  assert.ok(ex.some((c) => c.type === 'spawn' && c.name === 'airCrescentEx'), 'EX version');
+  assert.equal(h.players[0].meter, 0, 'one bar');
+});
+
+test('2H is a slide: he travels forward through the sweep and stops when it ends', () => {
+  const g = setup(900);
+  const p = g.players[0];
+  const x0 = p.x;
+  run(g, '2+H 2*20');
+  const moved = (p.x - x0) / 100;
+  assert.ok(moved >= 90 && moved <= 140, `slid ${moved} px`);
+  const x1 = p.x;
+  run(g, '2*30');
+  assert.equal(p.x, x1, 'no drift after the sweep');
 });

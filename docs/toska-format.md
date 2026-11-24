@@ -188,7 +188,7 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 of the projectile's own spawn offset), or directly under the opponent. `endProjectile` (one-shot): a projectile name;
 the fighter's own projectiles of that kind end this frame.
 
-More move fields: `oneAtATime` (a projectile name or a list: the move can't start while one is out), `needsOut` (a
+More move fields: `perJump` (a group name: one move of that group per jump, until the fighter lands), `oneAtATime` (a projectile name or a list: the move can't start while one is out), `needsOut` (a
 projectile name: the move only starts while one is out), `hitsAirborne: false` (the hit passes through a fighter in
 the air), `noZoneMark: true` (this hit never adds a zone's mark), `pinFx: { effect, fromSprite }` (drawing only: a
 named effect pinned to the lantern point of each drawing, from that drawing on).
@@ -226,7 +226,8 @@ frame data (the move fields: `damage`, `hitstun`, `blockstun`, `hitstop`, `guard
 Drawing only: `sprite` (with `additive: true` for light on black) and `anim: { release, loop, impact }`, hold lists
 over the sheet's frames in that order; the impact frames play where it ended (cue `projectileEnd`).
 
-More projectile fields: `phases: [[fromAge, toAge, box or null]]` (the hitbox is out only at those ages; null = its
+More projectile fields: `endsOnGround: true` (it ends when it reaches the floor), `endFx: { why: effect }` (drawing only: a
+named effect played where it ended; why = `hit`, `block`, `ground`, `edge`, `clash`, `recall`), `phases: [[fromAge, toAge, box or null]]` (the hitbox is out only at those ages; null = its
 `hitbox`), `persist: true` (it stays after its hit, hits once, never clashes), `noHit: true` (it never hits: a light,
 a beam that is only seen), `zone: { box, gravityPct, markVar }` (an opponent inside falls at that share of their
 gravity; a hit the owner lands on them there adds 1 to the owner's var), `onEnd: { setVar: { name: n } }` (set on the

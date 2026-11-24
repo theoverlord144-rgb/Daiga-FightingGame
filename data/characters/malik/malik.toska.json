@@ -53,7 +53,7 @@
       "anim": { "release": [2, 3, 4], "loop": [4], "impact": [3, 3, 4] },
       "fromGround": true, "speed": 0, "speedY": 14, "spawn": [110, -150], "hitbox": [-50, 0, 110, 190], "lifetime": 12,
       "damage": 700, "hitstun": 20, "untech": 30, "blockstun": 14, "hitstop": 10, "pushbackHit": 14, "pushbackBlock": 24, "guard": "high",
-      "launch": { "x": 5, "y": 12 }, "airHit": { "x": 4, "y": 12 } },
+      "launch": { "x": -4, "y": 10, "type": "soft" }, "airHit": { "x": 4, "y": 12 } },
     "spiritOrb": { "speed": 9, "spawn": [85, 125], "hitbox": [-20, -45, 62, 81], "lifetime": 110,
       "damage": 500, "hitstun": 18, "blockstun": 12, "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 22, "guard": "mid",
       "sprite": { "image": "sheets/orb.png", "columns": 9, "rows": 1, "count": 9, "frameW": 344, "frameH": 344, "originX": 205, "originY": 172, "scale": 0.5, "additive": true },

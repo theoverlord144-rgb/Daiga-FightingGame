@@ -192,6 +192,7 @@ function compileMoveData(m, ctx = {}) {
     vowStrike: !!m.vowStrike, // Vow's release strike: landing it forgives the Debt
     oneAtATime: m.oneAtATime ? [m.oneAtATime].flat() : null, // projectile names: the move can't start while the fighter has one of them out
     needsOut: m.needsOut ?? null, // a projectile name: the move only starts while the fighter has one out
+    perJump: m.perJump ?? null, // a group name: one move of that group per jump (counted until the fighter lands)
     noZoneMark: !!m.noZoneMark, // true: this hit never adds a zone's mark (the hit that spends the mark)
     hitsAirborne: m.hitsAirborne !== false, // false: the hit passes through a fighter who is in the air
     // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
@@ -238,6 +239,8 @@ function compileProjectiles(src, meter) {
       zone: p.zone ? { box: boxes([p.zone.box])[0], gravityPct: p.zone.gravityPct ?? 10000, markVar: p.zone.markVar ?? null } : null,
       onEnd: p.onEnd?.setVar ?? null, // { var: n }: set on its owner when it ends, however it ends
       ownerOnHit: p.ownerOnHit ?? null, // on hit, an owner still in the move that made it switches to this state
+      endsOnGround: !!p.endsOnGround, // it ends when it reaches the floor (a diving projectile)
+      endFx: p.endFx ?? null, // drawing only: { why: effect name } played where it ended (why = hit, block, ground, edge...)
       lifetime: p.lifetime ?? 600,
       move: compileMoveData(p, { kind: 'special', meter }),
       sprite: p.sprite ?? null, // drawing only
@@ -556,6 +559,7 @@ export function compileCharacter(file, system) {
         rite: riteIds.has(m.id) && !!rite.gauge, // spends a charge of the Rite gauge
         oneAtATime: move.oneAtATime,
         needsOut: move.needsOut,
+        perJump: move.perJump,
         buttons: parsed.buttons,
         negativeEdge: !!m.negativeEdge,
         neutral: m.neutral !== false, // false: only reachable from a cancel window that names it (chains, follow-ups)

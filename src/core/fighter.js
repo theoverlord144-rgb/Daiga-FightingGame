@@ -106,6 +106,7 @@ export function createFighter(def, side, x) {
     jumpDir: 8,
     airJumpsUsed: 0,
     airDashesUsed: 0,
+    airUsed: [], // `perJump` groups already used this jump
     slide: 0, // pushback still to travel (signed, units), spread over slideLeft frames
     slideLeft: 0,
     slid: 0, // how far the slide moved the fighter this frame (for corner transfer)
@@ -364,6 +365,7 @@ function pickCommand(game, p, def, world, allowed, reuse = '') {
       if (cmd.perCombo && overCombo(game.players[1 - p.id], cmd)) continue;
       if (cmd.throw && !throwInRange(game, p, def, world, cmd)) continue;
       if (cmd.oneAtATime && game.projectiles.some((q) => q.owner === p.id && cmd.oneAtATime.includes(q.kind))) continue;
+      if (cmd.perJump && p.airUsed.includes(cmd.perJump)) continue;
       if (cmd.needsOut && !game.projectiles.some((q) => q.owner === p.id && q.kind === cmd.needsOut && !q.end)) continue;
       const presses = commandInput(game, p, cmd, world, buffer, reuse);
       if (!presses) continue;
@@ -437,6 +439,7 @@ function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link =
   const timing = link ? linkTiming(game, p, world, pick) : null;
   const keepLink = link ? 0 : p.link;
   for (const [b, f] of Object.entries(pick.presses)) p.consumed[BTN_INDEX[b]] = f;
+  if (pick.cmd.perJump && !p.airUsed.includes(pick.cmd.perJump)) p.airUsed.push(pick.cmd.perJump);
   enterState(p, def, pick.cmd.move);
   p.link = keepLink;
   if (timing) {
@@ -767,6 +770,7 @@ export function land(game, p, def, world) {
     p.stun = 0;
     p.airJumpsUsed = 0;
     p.airDashesUsed = 0;
+    p.airUsed = [];
     enterState(p, def, st.landTo);
     fireOnEnter(game, p, def);
   } else if (st.stance !== 'air' && p.y !== 0) {

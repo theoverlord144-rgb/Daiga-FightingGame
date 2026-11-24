@@ -4446,5 +4446,230 @@
     196
    ]
   ]
+ },
+ "2L": {
+  "sprite": {
+   "image": "sheets/2L.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 265,
+   "frameH": 305,
+   "originX": 110,
+   "originY": 303,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    4,
+    5
+   ]
+  },
+  "from": "Avner_Crouching_LightPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    10,
+    37
+   ],
+   [
+    10,
+    37
+   ],
+   [
+    5,
+    37
+   ],
+   [
+    10,
+    37
+   ],
+   [
+    11,
+    37
+   ]
+  ],
+  "reach": [
+   [
+    -46,
+    0,
+    52,
+    150
+   ],
+   [
+    -46,
+    0,
+    65,
+    150
+   ],
+   [
+    -54,
+    0,
+    76,
+    137
+   ],
+   [
+    -50,
+    0,
+    48,
+    150
+   ],
+   [
+    -45,
+    0,
+    53,
+    150
+   ]
+  ]
+ },
+ "air-crescent-swing": {
+  "sprite": {
+   "image": "sheets/air-crescent-swing.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 283,
+   "frameH": 356,
+   "originX": 117,
+   "originY": 335,
+   "scale": 0.5,
+   "holds": [
+    5,
+    7,
+    4,
+    8,
+    9,
+    76
+   ]
+  },
+  "from": "Avner_SpecialMove_AirCrescent.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    1,
+    53
+   ],
+   [
+    -43,
+    119
+   ],
+   [
+    40,
+    21
+   ],
+   [
+    65,
+    22
+   ],
+   [
+    64,
+    22
+   ],
+   [
+    0,
+    53
+   ]
+  ],
+  "reach": [
+   [
+    -42,
+    -9,
+    38,
+    166
+   ],
+   [
+    -57,
+    -1,
+    46,
+    157
+   ],
+   [
+    -49,
+    1,
+    74,
+    166
+   ],
+   [
+    -50,
+    2,
+    82,
+    149
+   ],
+   [
+    -51,
+    2,
+    81,
+    148
+   ],
+   [
+    -37,
+    -9,
+    37,
+    166
+   ]
+  ]
+ },
+ "air-crescent": {
+  "sprite": {
+   "image": "sheets/air-crescent.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 352,
+   "frameH": 309,
+   "originX": 241,
+   "originY": 208,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    3,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_AirCrescent_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "air-crescent-burst": {
+  "sprite": {
+   "image": "sheets/air-crescent-burst.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 410,
+   "frameH": 331,
+   "originX": 211,
+   "originY": 322,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    5
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_AirCrescent_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
  }
 }

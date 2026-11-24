@@ -559,6 +559,8 @@ export function createFightRenderer(ctx, W, H) {
       if (c.type === 'projectileEnd') {
         // The projectile's impact frames play where it hit or vanished.
         const d = world.chars[c.p]?.projectiles[c.name];
+        const endFx = world.chars[c.p]?.effects?.[d?.endFx?.[c.why]]; // a named effect for this way of ending (a burst on the ground)
+        if (endFx) effects.push({ sheet: endFx, def: world.chars[c.p], x: c.x, y: c.y, facing: c.facing, age: 0, life: lifeOf(endFx) });
         if (d?.sprite && d.anim?.impact) {
           const first = (d.anim.release?.length ?? 0) + (d.anim.loop?.length ?? 0);
           const [ex, ey] = groundSeen[`${c.p}:${c.name}`] ?? [c.x, c.y];

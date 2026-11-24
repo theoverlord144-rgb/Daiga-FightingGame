@@ -521,7 +521,8 @@ export function resolveProjectiles(game, world) {
         a.contact = CONTACT.HIT;
       }
       if (def.persist && pr.age >= def.lifetime) gone[i] = 'edge';
-    } else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
+    } else if (def.endsOnGround && pr.y <= 0) { pr.y = 0; gone[i] = 'ground'; }
+    else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
   });
   list.forEach((pr, i) => {
     const end = gone[i] ? pdef(pr).onEnd : null;
