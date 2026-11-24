@@ -116,7 +116,7 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
   return {
     /** cam.x, cam.y in px (the fight renderer's camera). t: the frame count, for things that flicker or drift. */
     draw(ctx, cam, t = 0) {
-      for (const { L, par, travel, canvas, dots, glow: glowImg, pool: poolImg, shade, sheen } of layers) {
+      for (const { L, par, travel, canvas, dots, glow: glowImg, shade, sheen } of layers) {
         const dx = -cam.x * par;
         const dy = cam.y * par;
         if (L.type === 'sky') {
@@ -177,6 +177,27 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
             ctx.drawImage(sheen, 0, r, r * 2, r, Math.round(sx - r), gy, r * 2, r * 0.35); // its lower half, flattened onto the floor
             ctx.restore();
           }
+          // The floor is drawn last, over everything behind it, so it carries the braziers' pools of light (the
+          // lower half of a glow, flattened) and the vignette's shade itself.
+          for (const o of layers) {
+            if (o.L.type === 'torches') {
+              const T = o.L, width = W + o.travel * 2, pr = T.radius * 1.2;
+              ctx.save();
+              ctx.globalCompositeOperation = 'lighter';
+              let n = 0;
+              for (let x = T.offset ?? 0; x < width; x += T.spacing, n++) {
+                const px = Math.round(x - cam.x * o.par - o.travel);
+                if (px < -pr || px > W + pr) continue;
+                ctx.globalAlpha = 0.82 + 0.1 * Math.sin(t * 0.21 + n * 1.7) + 0.08 * Math.sin(t * 0.47 + n * 2.9);
+                ctx.drawImage(o.pool, 0, T.radius, T.radius * 2, T.radius, px - pr, gy, pr * 2, pr * 0.3);
+              }
+              ctx.restore();
+            } else if (o.L.type === 'vignette' && gy < H) {
+              ctx.globalAlpha = o.L.alpha;
+              ctx.drawImage(o.shade, 0, gy, W, H - gy, 0, gy, W, H - gy);
+              ctx.globalAlpha = 1;
+            }
+          }
         } else if (L.type === 'stars') {
           // Faint stars in the top of the sky, each twinkling at its own pace.
           const span = (GROUND + cam.y) * L.band;
@@ -203,10 +224,6 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
             ctx.globalCompositeOperation = 'lighter';
             const gr = L.radius * flick;
             ctx.drawImage(glowImg, px - gr, top - 12 - gr, gr * 2, gr * 2);
-            // The pool of light on the floor below it (the lower half of a glow, flattened).
-            const pr = L.radius * 1.2;
-            ctx.globalAlpha = flick;
-            ctx.drawImage(poolImg, 0, L.radius, L.radius * 2, L.radius, px - pr, gy, pr * 2, pr * 0.3);
             ctx.restore();
             // The flame: two tongues that lean and stretch.
             const lean = 2.5 * Math.sin(t * 0.17 + n * 2.3);
@@ -237,8 +254,9 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
           ctx.restore();
         } else if (L.type === 'vignette') {
           // The edges of the screen fall into shadow, so the eye stays on the middle.
+          const gy = Math.min(H, GROUND + cam.y);
           ctx.globalAlpha = L.alpha;
-          ctx.drawImage(shade, 0, 0);
+          ctx.drawImage(shade, 0, 0, W, gy, 0, 0, W, gy);
           ctx.globalAlpha = 1;
         } else if (canvas) {
           ctx.drawImage(canvas, Math.round(dx - travel), Math.round(dy));

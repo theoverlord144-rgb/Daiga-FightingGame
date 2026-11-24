@@ -11,9 +11,9 @@
     {"type": "haze", "height": 40, "thickness": 90, "color": "#e0784a", "alpha": 0.22},
     {"type": "arches", "parallax": 0.45, "spacing": 230, "width": 120, "height": 190, "thickness": 18, "seed": 3, "color": "#1e1124", "broken": 0.35},
     {"type": "railing", "parallax": 0.8, "height": 46, "postSpacing": 70, "color": "#160c1b"},
-    {"type": "floor", "parallax": 1, "top": "#3b2a35", "bottom": "#120b12", "line": "#5a3f48", "tile": 120, "sheen": {"x": 170, "parallax": 0.04, "radius": 420, "color": "#ff9a4a"}},
     {"type": "torches", "parallax": 0.8, "spacing": 350, "offset": 105, "height": 96, "radius": 150, "color": "#160c1b", "glow": "#ff8a3c", "flame": "#ff9d42", "core": "#ffe6a6"},
     {"type": "motes", "parallax": 0.9, "count": 46, "seed": 5, "band": 0.8, "drift": 0.22, "rise": 0.12, "color": "#ffc27a", "alpha": 0.6},
-    {"type": "vignette", "color": "#07030c", "alpha": 0.6, "inner": 0.45, "outer": 0.62}
+    {"type": "vignette", "color": "#07030c", "alpha": 0.6, "inner": 0.45, "outer": 0.62},
+    {"type": "floor", "parallax": 1, "top": "#3b2a35", "bottom": "#120b12", "line": "#5a3f48", "tile": 120, "sheen": {"x": 170, "parallax": 0.04, "radius": 420, "color": "#ff9a4a"}}
   ]
 }
