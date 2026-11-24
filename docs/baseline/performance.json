@@ -1,0 +1,23 @@
+{
+ "frames": 3000,
+ "finalHash": 1230341905,
+ "ms": {
+  "total": {
+   "average": 6.987,
+   "worst5pct": 11.545,
+   "max": 19.5
+  },
+  "step": {
+   "average": 0.01,
+   "worst5pct": 0.101,
+   "max": 0.2
+  },
+  "draw": {
+   "average": 6.977,
+   "worst5pct": 11.527,
+   "max": 19.5
+  }
+ },
+ "budgetMs": 16.667,
+ "note": "headless Chrome on this machine, 960x540 canvas, real renderer + stage + HUD + training overlay; step = game rules, draw = everything drawn. Fastest of three passes per frame."
+}

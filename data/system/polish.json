@@ -1,0 +1,19 @@
+{
+  "notes": "Look-only polish (never part of the game: the rules never read this file). Every item has its own on / off switch (\"on\" here is the default; training mode's polish panel, key P, flips them live and remembers your choice in this browser). With every switch off the game is drawn exactly as before. Sizes are in game px, times in game frames.",
+  "cleanSprites": { "on": false, "label": "Cleaned sprites (parked: off = original sheets)", "part": 1 },
+  "impactFrame": { "on": false, "label": "Impact frame on big hits", "part": 3, "frames": 2, "style": "blackOnWhite", "heavies": true, "launchers": true, "supers": true, "vowFull": true, "counterHits": true },
+  "hitFlash": { "on": true, "label": "Hit flash toward white", "part": 3, "frames": 2, "alpha": 0.5, "heavyAlpha": 0.85 },
+  "squash": { "on": true, "label": "Squash and stretch", "part": 3,
+    "land": { "tall": 0.92, "wide": 1.08, "frames": 2, "ease": 3 },
+    "takeoff": { "tall": 1.06, "wide": 0.97, "frames": 2, "ease": 3 },
+    "heavyHit": { "px": 6, "wide": 0.95, "frames": 3, "ease": 3 } },
+  "shadow": { "on": true, "label": "Soft shadow that shrinks in the air", "part": 3, "width": 44, "height": 8, "alpha": 0.5, "fadeHeight": 320 },
+  "rimLight": { "on": true, "label": "Rim light in the stage's light colour", "part": 3, "px": 1.5, "alpha": 0.55 },
+  "hitstopShake": { "on": true, "label": "Victim shakes during hitstop", "part": 3, "px": 1, "heavyPx": 2 },
+  "ribbons": { "on": false, "label": "Cloth ribbons (needs anchor points; off by default)", "part": 3, "segments": 6, "length": 9, "stiffness": 0.35, "drag": 0.82, "gravity": 0.6, "width": 5 },
+  "snap": { "on": true, "label": "Snap timing (off = original holds)", "part": 4 },
+  "overshoot": { "on": true, "label": "Overshoot after the impact drawing", "part": 4, "hold": 2, "ease": 3,
+    "light": { "px": 2, "stretch": 1.02 }, "medium": { "px": 4, "stretch": 1.03 }, "heavy": { "px": 6, "stretch": 1.04 } },
+  "hitFreeze": { "on": true, "label": "Attacker holds dead still in hitstop", "part": 4 },
+  "anticipationLean": { "on": true, "label": "Lean back before the smear", "part": 4, "px": 3 }
+}

@@ -1,0 +1,136 @@
+{
+ "notes": "Colours for scripts/sprite-clean.mjs. Rename and edit freely; --palette makes the colours again (head, scale, skip and options are kept).",
+ "source": "Avner_BaseSprite.png",
+ "outline": "outline",
+ "colors": [
+  {
+   "name": "outline",
+   "hex": "#090c06"
+  },
+  {
+   "name": "dark-grey",
+   "hex": "#1c2d2a"
+  },
+  {
+   "name": "mid-purple",
+   "hex": "#45313f"
+  },
+  {
+   "name": "mid-indigo",
+   "hex": "#353261"
+  },
+  {
+   "name": "mid-brown",
+   "hex": "#523b33"
+  },
+  {
+   "name": "mid-teal",
+   "hex": "#325355"
+  },
+  {
+   "name": "mid-grey",
+   "hex": "#5e4e49"
+  },
+  {
+   "name": "mid-brown-2",
+   "hex": "#8f553a"
+  },
+  {
+   "name": "light-brown",
+   "hex": "#997563"
+  },
+  {
+   "name": "light-brown-2",
+   "hex": "#b87047"
+  },
+  {
+   "name": "light-grey",
+   "hex": "#afa7a6"
+  },
+  {
+   "name": "light-orange",
+   "hex": "#f5a43b"
+  },
+  {
+   "name": "pale-grey",
+   "hex": "#ddd4d5"
+  },
+  {
+   "name": "pale-cream",
+   "hex": "#f9e0c4"
+  }
+ ],
+ "extra": [
+  {
+   "name": "extra-1-light-tan",
+   "hex": "#c8855f"
+  },
+  {
+   "name": "extra-2-black",
+   "hex": "#1a1a17"
+  },
+  {
+   "name": "extra-3-white",
+   "hex": "#f8f4ee"
+  },
+  {
+   "name": "extra-4-mid-brown",
+   "hex": "#756156"
+  },
+  {
+   "name": "extra-5-mid-teal",
+   "hex": "#486366"
+  },
+  {
+   "name": "extra-6-mid-indigo",
+   "hex": "#48447b"
+  },
+  {
+   "name": "extra-7-mid-rose",
+   "hex": "#5e3651"
+  },
+  {
+   "name": "extra-8-mid-red",
+   "hex": "#774138"
+  },
+  {
+   "name": "extra-9-mid-grey",
+   "hex": "#313e3e"
+  },
+  {
+   "name": "extra-10-light-cream",
+   "hex": "#cfb8a0"
+  },
+  {
+   "name": "extra-11-pale-orange",
+   "hex": "#fac14c"
+  },
+  {
+   "name": "shadow-brown",
+   "hex": "#372422"
+  },
+  {
+   "name": "scarf-shadow",
+   "hex": "#ae9477"
+  },
+  {
+   "name": "scarf-mid",
+   "hex": "#e4cea8"
+  },
+  {
+   "name": "smear-purple",
+   "hex": "#7a416a"
+  },
+  {
+   "name": "skin-shadow",
+   "hex": "#8b6651"
+  }
+ ],
+ "head": [
+  "mid-brown"
+ ],
+ "scale": "off",
+ "deadband": 0.03,
+ "thicken": 0,
+ "skip": {}
+}

@@ -1,0 +1,170 @@
+{
+ "notes": "Colours for scripts/sprite-clean.mjs. Rename and edit freely; --palette makes the colours again (head, scale, skip and options are kept).",
+ "source": "Malik_Turnaround.jpg",
+ "outline": "outline",
+ "colors": [
+  {
+   "name": "outline",
+   "hex": "#150e0e"
+  },
+  {
+   "name": "dark-red",
+   "hex": "#45211a"
+  },
+  {
+   "name": "mid-rose",
+   "hex": "#51283b"
+  },
+  {
+   "name": "mid-red",
+   "hex": "#55312d"
+  },
+  {
+   "name": "mid-red-2",
+   "hex": "#6f171d"
+  },
+  {
+   "name": "mid-red-3",
+   "hex": "#881e25"
+  },
+  {
+   "name": "mid-red-4",
+   "hex": "#71554d"
+  },
+  {
+   "name": "mid-brown",
+   "hex": "#806054"
+  },
+  {
+   "name": "mid-red-5",
+   "hex": "#c3272e"
+  },
+  {
+   "name": "light-brown",
+   "hex": "#b35f32"
+  },
+  {
+   "name": "light-tan",
+   "hex": "#b68a6f"
+  },
+  {
+   "name": "pale-orange",
+   "hex": "#f6bd31"
+  },
+  {
+   "name": "pale-gold",
+   "hex": "#f9d45e"
+  },
+  {
+   "name": "pale-tan",
+   "hex": "#f8d8b8"
+  },
+  {
+   "name": "pale-gold-2",
+   "hex": "#fbea9e"
+  }
+ ],
+ "extra": [
+  {
+   "name": "extra-1-white",
+   "hex": "#fafbfb"
+  },
+  {
+   "name": "extra-2-light-orange",
+   "hex": "#c6723d"
+  },
+  {
+   "name": "extra-3-light-orange",
+   "hex": "#d4783e"
+  },
+  {
+   "name": "extra-4-mid-rose",
+   "hex": "#6f2e46"
+  },
+  {
+   "name": "extra-5-mid-red",
+   "hex": "#733b3b"
+  },
+  {
+   "name": "extra-6-light-red",
+   "hex": "#db3b3d"
+  },
+  {
+   "name": "extra-7-mid-blue",
+   "hex": "#1641ba"
+  },
+  {
+   "name": "extra-8-mid-blue",
+   "hex": "#154ada"
+  },
+  {
+   "name": "extra-9-light-indigo",
+   "hex": "#7f92c5"
+  },
+  {
+   "name": "trousers-bright-purple",
+   "hex": "#892f44"
+  },
+  {
+   "name": "shadow-brown",
+   "hex": "#2d1b17"
+  },
+  {
+   "name": "hair-brown",
+   "hex": "#7b4428"
+  },
+  {
+   "name": "cloth-shadow",
+   "hex": "#c3a17e"
+  },
+  {
+   "name": "cloth-mid",
+   "hex": "#dabf9f"
+  },
+  {
+   "name": "aura-blue",
+   "hex": "#a5d0f2"
+  },
+  {
+   "name": "aura-white",
+   "hex": "#ece9e3"
+  },
+  {
+   "name": "install-ice",
+   "hex": "#a1c4e4"
+  },
+  {
+   "name": "install-steel",
+   "hex": "#6a7ab0"
+  },
+  {
+   "name": "install-blue",
+   "hex": "#2d408b"
+  },
+  {
+   "name": "install-ice-pale",
+   "hex": "#d3e4ee"
+  },
+  {
+   "name": "install-navy",
+   "hex": "#172454"
+  },
+  {
+   "name": "install-violet",
+   "hex": "#37214c"
+  }
+ ],
+ "head": [
+  "mid-red",
+  "dark-red"
+ ],
+ "scale": "off",
+ "deadband": 0.03,
+ "thicken": 0,
+ "skip": {
+  "install-dash": true,
+  "install-dash-stop": true,
+  "install-walk": true,
+  "install-idle": true
+ }
+}

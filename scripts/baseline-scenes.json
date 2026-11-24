@@ -1,0 +1,12 @@
+{
+  "notes": "Recorded input sequences for scripts/baseline-screen.mjs. steps: [P1 input, P2 input, frames] (1 left, 2 right, 4 up, 8 down, 16 L, 32 M, 64 H, 128 S, 256 R). gap: px between the fighters at the start (training default 300 when left out). shots: frame number -> picture name.",
+  "scenes": [
+    { "name": "idle", "p1": "avner", "p2": "malik", "steps": [[0, 0, 40]], "shots": { "40": "both" } },
+    { "name": "heavy-avner", "p1": "avner", "p2": "malik", "gap": 150, "steps": [[0, 0, 20], [64, 0, 1], [0, 0, 60]], "shots": { "33": "last-startup", "34": "impact", "35": "impact-2", "37": "hit", "62": "after" } },
+    { "name": "heavy-malik", "p1": "malik", "p2": "avner", "gap": 110, "steps": [[0, 0, 20], [64, 0, 1], [0, 0, 50]], "shots": { "31": "hit", "50": "after" } },
+    { "name": "launcher", "p1": "avner", "p2": "malik", "gap": 90, "steps": [[0, 0, 20], [128, 0, 1], [0, 0, 70]], "shots": { "34": "hit", "64": "launched" } },
+    { "name": "super", "p1": "avner", "p2": "malik", "gap": 240, "steps": [[0, 0, 20], [8, 0, 1], [10, 0, 1], [2, 0, 1], [8, 0, 1], [10, 0, 1], [130, 0, 1], [0, 0, 90]], "shots": { "40": "flash", "68": "strike", "74": "hit" } },
+    { "name": "jump", "p1": "avner", "p2": "malik", "steps": [[4, 4, 1], [0, 0, 60]], "shots": { "6": "takeoff", "24": "top", "44": "land" } },
+    { "name": "install", "p1": "malik", "p2": "avner", "gap": 130, "steps": [[0, 0, 20], [8, 0, 2], [0, 0, 2], [8, 0, 2], [0, 0, 1], [192, 0, 1], [0, 0, 80], [64, 0, 1], [0, 0, 30]], "shots": { "100": "guardian", "120": "guardian-heavy" } }
+  ]
+}

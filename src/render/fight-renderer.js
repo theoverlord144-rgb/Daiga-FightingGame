@@ -8,10 +8,20 @@ import { createHud } from './hud.js';
 import { createStageRenderer } from './stage-renderer.js';
 import { paletteSheet, placeholderColors } from './palette.js';
 import FX from '../../data/system/effects.json';
+import { POLISH } from './polish.js';
 
 // Game-ready sheets only (data/characters/<id>/sheets/): raw art dropped elsewhere in a character's folder is not
 // shipped with the game.
-const SPRITE_URLS = import.meta.glob('../../data/characters/*/sheets/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
+// Beside them, the cleaned copies (sheets-clean/, written by scripts/sprite-clean.mjs): drawn instead of the original
+// when the "clean sprites" polish switch is on. Each folder's manifest.json holds the cleaned sheets' sprite blocks.
+const SPRITE_URLS = {
+  ...import.meta.glob('../../data/characters/*/sheets/*.{png,webp}', { eager: true, query: '?url', import: 'default' }),
+  ...import.meta.glob('../../data/characters/*/sheets-clean/*.png', { eager: true, query: '?url', import: 'default' }),
+};
+const byChar = (files, re) => Object.fromEntries(Object.entries(files).map(([k, v]) => [re.exec(k)[1], v]));
+const CLEAN = byChar(import.meta.glob('../../data/characters/*/sheets-clean/manifest.json', { eager: true, import: 'default' }), /characters\/([^/]+)\/sheets-clean/);
+// Roles and snap timing per move (data/snap/<id>.json, written by scripts/snap-timing.mjs). Drawing only.
+const SNAP = byChar(import.meta.glob('../../data/snap/*.json', { eager: true, import: 'default' }), /snap\/([^/]+)\.json$/);
 // Universal effects (hit sparks, block flash): data/effects/, described by data/system/effects.json.
 const FX_URLS = import.meta.glob('../../data/effects/*.{png,webp}', { eager: true, query: '?url', import: 'default' });
 const images = new Map();
@@ -276,13 +286,188 @@ export function createFightRenderer(ctx, W, H) {
     }
   }
 
-  function drawSprite(p, def, fr, pal) {
+  // ---------- Look-only polish (data/system/polish.json, switches in polish.js). None of it is ever read by the
+  // game: it is worked out from the state the renderer is shown, once per game frame, and only changes the picture.
+  const mkFx = () => ({ land: 99, takeoff: 99, push: 99, pushDir: 0, over: 99, overPx: 0, overStretch: 1, overDir: [1, 0], flash: 0, flashHeavy: false, lean: 0, wasAir: false, state: null, idx: -1, role: null, sn: null, ribbon: null, still: 0 });
+  const pfx = [mkFx(), mkFx()]; // per fighter: ages (game frames) of the squash, push and overshoot; the role being shown
+  let impactLeft = 0; // game frames of impact frame left
+  let stretch = [1, 1]; // the squash / stretch of the fighter being drawn (from the feet)
+  /** 1 for `hold` frames, then easing to 0 over `ease` frames. */
+  const env = (t, hold, ease) => (t < hold ? 1 : t < hold + ease ? 1 - (t - hold + 1) / (ease + 1) : 0);
+  const scratch = typeof document !== 'undefined' ? document.createElement('canvas') : null;
+  const sctx = scratch?.getContext?.('2d');
+  const canTint = !!(sctx && sctx.clearRect); // flat-colour copies of a drawing need a real canvas
+  let shadowImg = null;
+  if (canTint) {
+    shadowImg = document.createElement('canvas');
+    shadowImg.width = shadowImg.height = 64;
+    const g = shadowImg.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, '#000000ff'); gr.addColorStop(0.55, '#000000b0'); gr.addColorStop(1, '#00000000');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 64, 64);
+  }
+  /** A move's snap entry, only while the character file still has the holds it was made from. */
+  function snapOf(def, state, fr) {
+    const sn = SNAP[def.id]?.moves?.[state];
+    const sp = fr.sprite;
+    if (!sn || !sp || sp.block) return null;
+    const holds = def.sheets[sp.sheet]?.holds;
+    return holds && holds.length === sn.snap.length && sn.roles.length === holds.length && holds.every((h, i) => h === sn.holds[i]) && sn.snap.reduce((a, b) => a + b, 0) === holds.reduce((a, b) => a + b, 0) ? sn : null;
+  }
+  /** The drawing under the timing in use (snap or original holds) and its role: { fr, sn, idx, role, next, last }. */
+  function timed(p, def, fr) {
+    const sn = snapOf(def, p.state, fr);
+    if (!sn) return { fr, sn: null, idx: fr.sprite?.index ?? -1, role: null };
+    const holds = POLISH.snap.on ? sn.snap : sn.holds;
+    let i = 0, t = Math.min(p.frame, holds.reduce((a, b) => a + b, 0) - 1);
+    while (t >= holds[i]) t -= holds[i++];
+    return { fr: i !== fr.sprite.index ? { ...fr, sprite: { ...fr.sprite, index: i } } : fr, sn, idx: i, role: sn.roles[i], next: sn.roles[i + 1], last: t === holds[i] - 1 };
+  }
+  /** A hit cue: the victim's flash and push, and the impact frame on big hits. */
+  function polishHit(c, game, world) {
+    if (c.throw) return;
+    const src = world.chars[c.p];
+    const mv = src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move;
+    const heavy = (mv?.damage ?? 0) >= (FX.hit.find((h) => h.name === 'medium')?.below ?? 800);
+    const v = pfx[1 - c.p], a = game.players[c.p], d = game.players[1 - c.p];
+    v.flash = POLISH.hitFlash.frames; v.flashHeavy = heavy;
+    if (heavy) { v.push = 0; v.pushDir = Math.sign(d.x - a.x) || a.facing; }
+    const I = POLISH.impactFrame;
+    const big = SNAP[src?.id]?.moves?.[c.move]?.impact ?? ((I.heavies && heavy) || (I.launchers && mv?.launchType === 'hard') || (I.supers && mv?.kind === 'super') || (I.vowFull && c.move === 'vow_strike_full'));
+    if (big || (I.counterHits && c.type !== 'hit')) impactLeft = I.frames;
+  }
+  /** Once per game frame per fighter: landings and takeoffs, the end of an impact drawing (overshoot), the lean. */
+  function polishTrack(p, def) {
+    const T = pfx[p.id];
+    T.land++; T.takeoff++; T.push++; T.over++;
+    const air = p.y > 0;
+    if (T.wasAir && !air && !p.stun && p.state !== 'knockdown') T.land = 0;
+    if (!T.wasAir && air && p.vy > 0 && !p.stun) T.takeoff = 0;
+    T.wasAir = air;
+    const base = frameOf(def, p.state, p.frame);
+    const now = timed(p, def, base);
+    if (T.role === 'impact' && T.sn && (T.state !== p.state ? !def.states[p.state]?.move : now.idx !== T.idx)) {
+      const O = POLISH.overshoot, size = O[T.sn.strength] ?? O.medium;
+      T.over = 0; T.overPx = T.sn.overshoot?.px ?? size.px; T.overStretch = size.stretch; T.overDir = T.sn.overshoot?.dir ?? [1, 0];
+    }
+    T.lean = now.role === 'anticipation' && now.next === 'smear' && now.last ? 1 : 0;
+    T.state = p.state; T.idx = now.idx; T.role = now.role; T.sn = now.sn;
+    // Ribbons (off by default): chains of points hanging from the anchors marked on the drawing being shown, each
+    // point sprung toward one segment's length from the one before it, with drag and gravity.
+    const R = POLISH.ribbons, sp = now.fr.sprite, image = sp && (sp.block ?? def.sheets[sp.sheet])?.image;
+    const A = R.on && image ? SNAP[def.id]?.ribbons?.anchors?.[image]?.[sp.index] : null;
+    if (!A) { T.ribbon = null; return; }
+    if (POLISH.hitFreeze.on && p.hitstop > 0 && !p.stun && T.ribbon) return; // the attacker's cloth holds still too
+    if (!T.ribbon || T.ribbon.length !== A.length) T.ribbon = A.map(() => null);
+    A.forEach(([fx, fy], n) => {
+      const ax = p.x / UNIT + p.facing * fx, ay = p.y / UNIT + fy;
+      const pts = T.ribbon[n] ?? (T.ribbon[n] = Array.from({ length: R.segments }, (_, i) => ({ x: ax - p.facing * (i + 1) * R.length * 0.3, y: ay - (i + 1) * R.length, vx: 0, vy: 0 })));
+      pts.ax = ax; pts.ay = ay;
+      let px = ax, py = ay;
+      for (const q of pts) {
+        const dx = q.x - px, dy = q.y - py, d = Math.hypot(dx, dy) || 1;
+        q.vx = (q.vx + (px + (dx / d) * R.length - q.x) * R.stiffness) * R.drag;
+        q.vy = (q.vy + (py + (dy / d) * R.length - q.y) * R.stiffness - R.gravity) * R.drag;
+        q.x += q.vx; q.y = Math.max(2, q.y + q.vy);
+        px = q.x; py = q.y;
+      }
+    });
+  }
+  function drawRibbons(def, T) {
+    if (!POLISH.ribbons.on || !T.ribbon) return;
+    const R = POLISH.ribbons;
+    ctx.save();
+    ctx.strokeStyle = SNAP[def.id]?.ribbons?.color ?? '#e8dcc6';
+    ctx.lineCap = 'round';
+    for (const pts of T.ribbon) {
+      if (!pts) continue;
+      let [x0, y0] = toScreen(pts.ax * UNIT, pts.ay * UNIT);
+      pts.forEach((q, i) => {
+        const [x1, y1] = toScreen(q.x * UNIT, q.y * UNIT);
+        ctx.lineWidth = Math.max(1, R.width * (1 - (0.7 * i) / pts.length));
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        x0 = x1; y0 = y1;
+      });
+    }
+    ctx.restore();
+  }
+  /** Where the fighter's drawing is nudged this frame, in screen px; also sets `stretch`. The core's position never moves. */
+  function polishOffset(p, T) {
+    let dx = 0, dy = 0, sx = 1, sy = 1;
+    const S = POLISH.squash;
+    if (S.on) {
+      let a = env(T.land, S.land.frames, S.land.ease);
+      sy *= 1 + (S.land.tall - 1) * a; sx *= 1 + (S.land.wide - 1) * a;
+      a = env(T.takeoff, S.takeoff.frames, S.takeoff.ease);
+      sy *= 1 + (S.takeoff.tall - 1) * a; sx *= 1 + (S.takeoff.wide - 1) * a;
+      a = env(T.push, S.heavyHit.frames, S.heavyHit.ease);
+      dx += T.pushDir * S.heavyHit.px * a; sx *= 1 + (S.heavyHit.wide - 1) * a;
+    }
+    const O = POLISH.overshoot, a = O.on ? env(T.over, O.hold, O.ease) : 0;
+    if (a > 0) {
+      dx += p.facing * T.overDir[0] * T.overPx * a; dy -= T.overDir[1] * T.overPx * a;
+      if (Math.abs(T.overDir[0]) >= Math.abs(T.overDir[1])) sx *= 1 + (T.overStretch - 1) * a; else sy *= 1 + (T.overStretch - 1) * a;
+    }
+    if (POLISH.anticipationLean.on && T.lean) dx -= p.facing * POLISH.anticipationLean.px;
+    const K = POLISH.hitstopShake;
+    if (K.on && p.hitstop > 0 && p.stun > 0 && !p.state.startsWith('block')) dx += (collected % 2 ? 1 : -1) * (T.flashHeavy ? K.heavyPx : K.px);
+    stretch = [sx, sy];
+    return [dx, dy];
+  }
+  /** The sheet a frame is drawn from: the cleaned copy when the switch is on and it is there, else the original. */
+  function sheetOf(def, fr) {
     const s = fr.sprite;
-    if (!s) return false;
-    const sheet = s.block ?? def.sheets[s.sheet]; // block: a sheet given outright (the art rules below)
-    if (!sheet) return false;
-    const raw = spriteImage(def.id, sheet.image);
-    if (!raw) return false;
+    if (!s) return null;
+    let sheet = s.block ?? def.sheets[s.sheet]; // block: a sheet given outright (the art rules below)
+    if (!sheet) return null;
+    let raw = null;
+    const c = POLISH.cleanSprites.on && CLEAN[def.id]?.[sheet.image];
+    if (c && !c.skipFrames?.includes(s.index)) { raw = spriteImage(def.id, c.image); if (raw) sheet = c; }
+    raw = raw ?? spriteImage(def.id, sheet.image);
+    return raw ? { sheet, raw, index: s.index } : null;
+  }
+  /** The thin rim of light on the side facing the stage's light: the drawing minus itself moved away from the light. */
+  const rims = new Map();
+  function drawRim(p, def, fr, light) {
+    const r = canTint && sheetOf(def, fr);
+    if (!r) return;
+    const { sheet, raw } = r;
+    const fw = sheet.frameW ?? raw.naturalWidth / sheet.columns, fh = sheet.frameH ?? raw.naturalHeight / sheet.rows;
+    const k = sheet.scale ?? 1;
+    const side = (light.side === 'left' ? -1 : 1) * p.facing; // in the drawing's own space
+    const key = `${def.id}|${sheet.image}|${r.index}|${side}`;
+    let c = rims.get(key);
+    if (!c) {
+      const sx = (r.index % sheet.columns) * fw, sy = Math.floor(r.index / sheet.columns) * fh, w = POLISH.rimLight.px / k;
+      c = document.createElement('canvas');
+      c.width = fw; c.height = fh;
+      const x = c.getContext('2d');
+      x.drawImage(raw, sx, sy, fw, fh, 0, 0, fw, fh);
+      x.globalCompositeOperation = 'destination-out';
+      x.drawImage(raw, sx, sy, fw, fh, -side * w, w * 0.6, fw, fh);
+      x.globalCompositeOperation = 'source-in';
+      x.fillStyle = light.color;
+      x.fillRect(0, 0, fw, fh);
+      if (rims.size >= 96) rims.delete(rims.keys().next().value);
+      rims.set(key, c);
+    }
+    const [px, py] = toScreen(p.x, p.y);
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.scale(p.facing * k * stretch[0], k * stretch[1]);
+    ctx.globalAlpha *= POLISH.rimLight.alpha;
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(c, 0, 0, fw, fh, -(sheet.originX ?? fw / 2), -(sheet.originY ?? fh), fw, fh);
+    ctx.restore();
+  }
+
+  /** tint: a colour = the drawing as one flat shape of that colour (impact frame, hit flash). */
+  function drawSprite(p, def, fr, pal, tint = null) {
+    const s = fr.sprite;
+    const found = sheetOf(def, fr);
+    if (!found) return false;
+    const { sheet, raw } = found;
     const img = paletteSheet(raw, def.palettes, pal);
     const fw = sheet.frameW ?? img.naturalWidth / sheet.columns;
     const fh = sheet.frameH ?? img.naturalHeight / sheet.rows;
@@ -294,8 +479,16 @@ export function createFightRenderer(ctx, W, H) {
     const [sx, sy] = toScreen(p.x, p.y);
     ctx.save();
     ctx.translate(sx, sy);
-    ctx.scale(p.facing * k, k);
-    ctx.drawImage(img, col * fw, row * fh, fw, fh, -ox, -oy, fw, fh); // img: the sheet in this palette
+    ctx.scale(p.facing * k * stretch[0], k * stretch[1]);
+    if (tint && canTint) {
+      scratch.width = fw; scratch.height = fh;
+      sctx.drawImage(img, col * fw, row * fh, fw, fh, 0, 0, fw, fh);
+      sctx.globalCompositeOperation = 'source-in';
+      sctx.fillStyle = tint;
+      sctx.fillRect(0, 0, fw, fh);
+      sctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(scratch, 0, 0, fw, fh, -ox, -oy, fw, fh);
+    } else ctx.drawImage(img, col * fw, row * fh, fw, fh, -ox, -oy, fw, fh); // img: the sheet in this palette
     ctx.restore();
     return true;
   }
@@ -570,6 +763,8 @@ export function createFightRenderer(ctx, W, H) {
     hud.notice(game);
     if (shake.left > 0) shake.left--;
     for (const i of [0, 1]) if (hitFlash[i] > 0) hitFlash[i]--;
+    if (impactLeft > 0) impactLeft--;
+    for (const T of pfx) if (T.flash > 0) T.flash--;
     for (const c of game.cues) {
       if (FX.impact) {
         if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') {
@@ -580,6 +775,7 @@ export function createFightRenderer(ctx, W, H) {
           hitFlash[1 - c.p] = FX.impact.flash.frames;
         } else jolt(FX.impact.shake[c.type] ?? 0);
       }
+      if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') polishHit(c, game, world);
       slotCue(c, game, world);
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
@@ -655,6 +851,7 @@ export function createFightRenderer(ctx, W, H) {
         if (FX.motion.enter[p.state]) motionFx(FX.motion.enter[p.state], p, dx);
       }
       lastMove[p.id] = { state: p.state, x: p.x, since: was && was.state === p.state ? was.since + 1 : 0 }; // since: frames in this state
+      polishTrack(p, world.chars[p.id]);
       // art.motion: { <state>: { play, at, from, every, until } }: dust under a move that runs or slides, every
       // `every` frames from frame `from` to frame `until` of the state.
       const dust = world.chars[p.id].art?.motion?.[p.state];
@@ -740,6 +937,16 @@ export function createFightRenderer(ctx, W, H) {
       cam.x += joltX;
       cam.y += joltY;
       drawStage(world, opts);
+      const impact = impactLeft > 0 && POLISH.impactFrame.on && canTint;
+      if (impact) {
+        // The impact frame: the stage inverted and drained of colour (or blacked out); the fighters are flat shapes.
+        ctx.save();
+        if (POLISH.impactFrame.style === 'whiteOnBlack') { ctx.fillStyle = '#000000d8'; ctx.fillRect(0, 0, W, H); } else {
+          ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+          ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, W, H);
+        }
+        ctx.restore();
+      }
       // Super flash: the stage goes dark while the game is frozen; the super's user stays lit.
       const flashing = game.flash > 0;
       if (flashing) {
@@ -789,18 +996,32 @@ export function createFightRenderer(ctx, W, H) {
         const fr = frameOf(def, p.state, p.frame);
         // Shadow.
         const [shx] = toScreen(p.x, 0);
-        ctx.fillStyle = '#00000066';
-        ctx.beginPath();
-        ctx.ellipse(shx, GROUND + cam.y + 3, 34, 6, 0, 0, Math.PI * 2);
-        ctx.fill();
+        if (POLISH.shadow.on && shadowImg) {
+          // A soft oval that shrinks and fades as the fighter leaves the ground.
+          const S = POLISH.shadow, near = 0.5 + 0.5 * Math.max(0, 1 - p.y / UNIT / S.fadeHeight);
+          ctx.globalAlpha = S.alpha * (2 * near - 1) ** 0.7 * 0.75 + S.alpha * 0.25;
+          ctx.drawImage(shadowImg, shx - S.width * near, GROUND + cam.y + 3 - S.height * near, S.width * 2 * near, S.height * 2 * near);
+          ctx.globalAlpha = 1;
+        } else {
+          ctx.fillStyle = '#00000066';
+          ctx.beginPath();
+          ctx.ellipse(shx, GROUND + cam.y + 3, 34, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
         if (flashing && p.id !== game.flashBy) ctx.globalAlpha = 0.45;
         const pal = opts.palettes ? opts.palettes[p.id] : p.id; // palette index (presentation only)
-        drawAuras(p, def, game.frame, true);
+        const T = pfx[p.id];
+        // Hit-freeze: while the attacker is frozen on a hit, nothing of his moves (the guardian's bob, an aura's loop).
+        if (!(POLISH.hitFreeze.on && p.hitstop > 0 && !p.stun)) T.still = game.frame;
+        drawAuras(p, def, T.still, true);
         drawWhile(p, true);
         drawLayers(p, def, fr, true);
-        const shown = ruleFrame(p, def, artFrame(p, def, fr), game, world);
-        if (!drawSprite(p, def, shown, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
-        else if (p.state.endsWith('_ex') && def.sheets[p.state]?.image === def.sheets[p.state.slice(0, -3)]?.image) {
+        const shown = ruleFrame(p, def, artFrame(p, def, timed(p, def, fr).fr), game, world);
+        const [nx, ny] = polishOffset(p, T);
+        ctx.save();
+        ctx.translate(nx, ny);
+        if (!drawSprite(p, def, shown, pal, impact ? (POLISH.impactFrame.style === 'whiteOnBlack' ? '#ffffff' : '#000000') : null)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
+        else if (!impact && p.state.endsWith('_ex') && def.sheets[p.state]?.image === def.sheets[p.state.slice(0, -3)]?.image) {
           // An EX move with no art of its own: the normal animation, brightened.
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
@@ -808,7 +1029,16 @@ export function createFightRenderer(ctx, W, H) {
           drawSprite(p, def, shown, pal);
           ctx.restore();
         }
-        if (hitFlash[p.id] > 0 && FX.impact.flash.alpha > 0) {
+        if (!impact && POLISH.rimLight.on && opts.stage?.light) drawRim(p, def, shown, opts.stage.light);
+        if (impact) { /* flat shapes only */ } else if (POLISH.hitFlash.on && canTint) {
+          if (T.flash > 0) {
+            // Just hit: the fighter pushed toward white, harder on heavy hits.
+            ctx.save();
+            ctx.globalAlpha *= T.flashHeavy ? POLISH.hitFlash.heavyAlpha : POLISH.hitFlash.alpha;
+            drawSprite(p, def, shown, pal, '#ffffff');
+            ctx.restore();
+          }
+        } else if (hitFlash[p.id] > 0 && FX.impact.flash.alpha > 0) {
           // Just hit: the fighter drawn again as light for a moment.
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
@@ -816,9 +1046,12 @@ export function createFightRenderer(ctx, W, H) {
           drawSprite(p, def, shown, pal);
           ctx.restore();
         }
+        drawRibbons(def, T);
         drawLantern(p, def, shown);
         drawLayers(p, def, fr, false);
-        drawAuras(p, def, game.frame, false);
+        stretch = [1, 1];
+        ctx.restore();
+        drawAuras(p, def, T.still, false);
         drawWhile(p, false);
         drawChain(p, def, game.players[1 - p.id]);
         ctx.globalAlpha = 1;

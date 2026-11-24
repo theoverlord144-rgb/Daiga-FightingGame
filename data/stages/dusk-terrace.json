@@ -1,4 +1,5 @@
 {
+  "light": { "color": "#ffb878", "side": "right", "notes": "The stage's main light, for the fighters' rim light (drawing only): its colour and which side of the screen it comes from." },
   "notes": "A stage is drawing only: its size and walls come from data/system/battle.json, so every stage plays the same. Layers are drawn back to front. parallax: 0 = fixed to the screen (sky), 1 = moves with the floor. Heights are in pixels above the ground line. stars: faint twinkling points in the top \"band\" (0 to 1) of the sky. torches: braziers every \"spacing\" px on posts \"height\" px tall; \"radius\" is how far their light reaches. motes: drifting specks (\"drift\" px a frame sideways, \"rise\" upward) in the bottom \"band\" of the screen. vignette: darkens the edges of the screen behind the fighters (\"alpha\" 0 = off). floor \"sheen\": the sun's light lying on the stone. To remove any of these, delete its layer.",
   "id": "dusk-terrace",
   "name": "Dusk Terrace",

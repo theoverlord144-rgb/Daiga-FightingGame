@@ -1,0 +1,6741 @@
+{
+ "avner": {
+  "idle": {
+   "duration": 48,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "90414afd",
+   "drawings": [
+    [
+     "sheets/idle.png",
+     0,
+     8
+    ],
+    [
+     "sheets/idle.png",
+     1,
+     8
+    ],
+    [
+     "sheets/idle.png",
+     2,
+     8
+    ],
+    [
+     "sheets/idle.png",
+     3,
+     8
+    ],
+    [
+     "sheets/idle.png",
+     4,
+     8
+    ],
+    [
+     "sheets/idle.png",
+     5,
+     8
+    ]
+   ]
+  },
+  "crouch": {
+   "duration": 121,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "16485c57",
+   "drawings": [
+    [
+     "sheets/crouch.png",
+     0,
+     2
+    ],
+    [
+     "sheets/crouch.png",
+     1,
+     58
+    ],
+    [
+     "sheets/crouch.png",
+     2,
+     5
+    ],
+    [
+     "sheets/crouch.png",
+     3,
+     6
+    ],
+    [
+     "sheets/crouch.png",
+     4,
+     14
+    ],
+    [
+     "sheets/crouch.png",
+     5,
+     10
+    ],
+    [
+     "sheets/crouch.png",
+     6,
+     16
+    ],
+    [
+     "sheets/crouch.png",
+     5,
+     10
+    ]
+   ]
+  },
+  "walkF": {
+   "duration": 30,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6bba8055",
+   "drawings": [
+    [
+     "sheets/walk.png",
+     0,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     1,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     2,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     3,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     4,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     5,
+     5
+    ]
+   ]
+  },
+  "walkB": {
+   "duration": 36,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e4815dad",
+   "drawings": [
+    [
+     "sheets/walk-back.png",
+     0,
+     6
+    ],
+    [
+     "sheets/walk-back.png",
+     1,
+     6
+    ],
+    [
+     "sheets/walk-back.png",
+     2,
+     6
+    ],
+    [
+     "sheets/walk-back.png",
+     3,
+     6
+    ],
+    [
+     "sheets/walk-back.png",
+     4,
+     6
+    ],
+    [
+     "sheets/walk-back.png",
+     5,
+     6
+    ]
+   ]
+  },
+  "jumpSquat": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "55ef1696",
+   "drawings": [
+    [
+     "sheets/jumpsquat.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "jump": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     12
+    ]
+   ]
+  },
+  "fall": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     12
+    ]
+   ]
+  },
+  "land": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "55ef1696",
+   "drawings": [
+    [
+     "sheets/land.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "dashF": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "4471f2cd",
+   "drawings": [
+    [
+     "sheets/dash.png",
+     0,
+     3
+    ],
+    [
+     "sheets/dash.png",
+     1,
+     3
+    ],
+    [
+     "sheets/dash.png",
+     2,
+     3
+    ],
+    [
+     "sheets/dash.png",
+     3,
+     3
+    ]
+   ]
+  },
+  "dashStop": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "55ef1696",
+   "drawings": [
+    [
+     "sheets/dash-stop.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "backdash": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "13253515",
+   "drawings": [
+    [
+     "sheets/backdash.png",
+     0,
+     3
+    ],
+    [
+     "sheets/backdash.png",
+     1,
+     5
+    ],
+    [
+     "sheets/backdash.png",
+     2,
+     6
+    ]
+   ]
+  },
+  "backdashStop": {
+   "duration": 6,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b317ddf5",
+   "drawings": [
+    [
+     "sheets/backdash-stop.png",
+     0,
+     4
+    ],
+    [
+     "sheets/backdash-stop.png",
+     1,
+     2
+    ]
+   ]
+  },
+  "airdashF": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "aeda7c37",
+   "drawings": [
+    [
+     "sheets/airdash.png",
+     0,
+     3
+    ],
+    [
+     "sheets/airdash.png",
+     1,
+     6
+    ],
+    [
+     "sheets/airdash.png",
+     2,
+     5
+    ]
+   ]
+  },
+  "airdashB": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "72489a51",
+   "drawings": [
+    [
+     "sheets/airdash-back.png",
+     0,
+     3
+    ],
+    [
+     "sheets/airdash-back.png",
+     1,
+     6
+    ],
+    [
+     "sheets/airdash-back.png",
+     2,
+     3
+    ]
+   ]
+  },
+  "airdashEnd": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     12
+    ]
+   ]
+  },
+  "superJumpSquat": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "55ef1696",
+   "drawings": [
+    [
+     "sheets/jumpsquat.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "superJump": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     12
+    ]
+   ]
+  },
+  "airJump": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     12
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     12
+    ]
+   ]
+  },
+  "hitStand": {
+   "duration": 7,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6796f346",
+   "drawings": [
+    [
+     "sheets/hit-stand.png",
+     0,
+     6
+    ],
+    [
+     "sheets/hit-stand.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "hitCrouch": {
+   "duration": 7,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "faee9abb",
+   "drawings": [
+    [
+     "sheets/hit-crouch.png",
+     0,
+     6
+    ],
+    [
+     "sheets/hit-crouch.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "hitAir": {
+   "duration": 6,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "21d3937f",
+   "drawings": [
+    [
+     "sheets/hit-air.png",
+     0,
+     5
+    ],
+    [
+     "sheets/hit-air.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "tumble": {
+   "duration": 24,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "8a429b85",
+   "drawings": [
+    [
+     "sheets/tumble.png",
+     0,
+     8
+    ],
+    [
+     "sheets/tumble.png",
+     1,
+     8
+    ],
+    [
+     "sheets/tumble.png",
+     2,
+     8
+    ]
+   ]
+  },
+  "airTech": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "72489a51",
+   "drawings": [
+    [
+     null,
+     null,
+     12
+    ]
+   ]
+  },
+  "groundTech": {
+   "duration": 16,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "ab16eb7d",
+   "drawings": [
+    [
+     null,
+     null,
+     16
+    ]
+   ]
+  },
+  "blockStand": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "f540c8d",
+   "drawings": [
+    [
+     "sheets/block-stand.png",
+     1,
+     60
+    ]
+   ]
+  },
+  "blockCrouch": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "80dd7145",
+   "drawings": [
+    [
+     "sheets/block-crouch.png",
+     1,
+     60
+    ]
+   ]
+  },
+  "blockAir": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/block-air.png",
+     1,
+     60
+    ]
+   ]
+  },
+  "knockdown": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "18a5b465",
+   "drawings": [
+    [
+     "sheets/knockdown.png",
+     0,
+     6
+    ],
+    [
+     "sheets/knockdown.png",
+     1,
+     34
+    ]
+   ]
+  },
+  "wakeup": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "4471f2cd",
+   "drawings": [
+    [
+     "sheets/wakeup.png",
+     0,
+     4
+    ],
+    [
+     "sheets/wakeup.png",
+     1,
+     4
+    ],
+    [
+     "sheets/wakeup.png",
+     2,
+     4
+    ]
+   ]
+  },
+  "thrown": {
+   "duration": 1,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1f9d39e8",
+   "drawings": [
+    [
+     "sheets/hit-stand.png",
+     0,
+     1
+    ]
+   ]
+  },
+  "throwHold": {
+   "duration": 1,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "360bf17e",
+   "drawings": [
+    [
+     null,
+     null,
+     1
+    ]
+   ]
+  },
+  "throwFinish": {
+   "duration": 30,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6bba8055",
+   "drawings": [
+    [
+     null,
+     null,
+     30
+    ]
+   ]
+  },
+  "koDown": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "509ae7e9",
+   "drawings": [
+    [
+     "sheets/knockdown.png",
+     1,
+     60
+    ]
+   ]
+  },
+  "throwTech": {
+   "duration": 20,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "8a016d6d",
+   "drawings": [
+    [
+     "sheets/throw-tech.png",
+     0,
+     3
+    ],
+    [
+     "sheets/throw-tech.png",
+     1,
+     4
+    ],
+    [
+     "sheets/throw-tech.png",
+     2,
+     5
+    ],
+    [
+     "sheets/throw-tech.png",
+     3,
+     4
+    ],
+    [
+     "sheets/throw-tech.png",
+     4,
+     4
+    ]
+   ]
+  },
+  "absolve_recovery": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "d056295d",
+   "drawings": [
+    [
+     "sheets/absolve-recovery.png",
+     0,
+     13
+    ],
+    [
+     "sheets/absolve-recovery.png",
+     1,
+     13
+    ],
+    [
+     "sheets/absolve-recovery.png",
+     2,
+     14
+    ]
+   ]
+  },
+  "absolve_recovery_air": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "164373f5",
+   "drawings": [
+    [
+     "sheets/absolve-recovery-air-placeholder.png",
+     0,
+     13
+    ],
+    [
+     "sheets/absolve-recovery-air-placeholder.png",
+     1,
+     13
+    ],
+    [
+     "sheets/absolve-recovery-air-placeholder.png",
+     2,
+     14
+    ]
+   ]
+  },
+  "repel": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "f540c8d",
+   "drawings": [
+    [
+     "sheets/repel-placeholder.png",
+     1,
+     60
+    ]
+   ]
+  },
+  "draw": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "f540c8d",
+   "drawings": [
+    [
+     "sheets/draw-placeholder.png",
+     0,
+     60
+    ]
+   ]
+  },
+  "drawn": {
+   "duration": 7,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6796f346",
+   "drawings": [
+    [
+     "sheets/drawn-placeholder.png",
+     0,
+     6
+    ],
+    [
+     "sheets/drawn-placeholder.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "vow_hold": {
+   "duration": 36,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e4815dad",
+   "drawings": [
+    [
+     "sheets/vow-hold.png",
+     0,
+     9
+    ],
+    [
+     "sheets/vow-hold.png",
+     1,
+     9
+    ],
+    [
+     "sheets/vow-hold.png",
+     2,
+     9
+    ],
+    [
+     "sheets/vow-hold.png",
+     3,
+     9
+    ]
+   ]
+  },
+  "crumple": {
+   "duration": 45,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "267094ce",
+   "drawings": [
+    [
+     "sheets/crumple.png",
+     0,
+     5
+    ],
+    [
+     "sheets/crumple.png",
+     1,
+     6
+    ],
+    [
+     "sheets/crumple.png",
+     2,
+     7
+    ],
+    [
+     "sheets/crumple.png",
+     3,
+     8
+    ],
+    [
+     "sheets/crumple.png",
+     4,
+     9
+    ],
+    [
+     "sheets/crumple.png",
+     5,
+     10
+    ]
+   ]
+  },
+  "vow_absorb": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "13253515",
+   "drawings": [
+    [
+     "sheets/vow-absorb.png",
+     0,
+     2
+    ],
+    [
+     "sheets/vow-absorb.png",
+     1,
+     5
+    ],
+    [
+     "sheets/vow-absorb.png",
+     2,
+     4
+    ],
+    [
+     "sheets/vow-absorb.png",
+     3,
+     3
+    ]
+   ]
+  },
+  "tidePull": {
+   "duration": 23,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "24e42386",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     4,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     5,
+     10
+    ],
+    [
+     "sheets/tide.png",
+     6,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "airCrescentLand": {
+   "duration": 6,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b317ddf5",
+   "drawings": [
+    [
+     "sheets/land.png",
+     0,
+     3
+    ],
+    [
+     "sheets/land.png",
+     1,
+     3
+    ]
+   ]
+  },
+  "5L": {
+   "duration": 15,
+   "data": {
+    "startup": 5,
+    "active": 2,
+    "recovery": 9
+   },
+   "measured": {
+    "startup": 5,
+    "active": 2,
+    "recovery": 9
+   },
+   "hitFrames": [
+    4,
+    5
+   ],
+   "boxes": "5eb0f36d",
+   "drawings": [
+    [
+     "sheets/5L.png",
+     0,
+     2
+    ],
+    [
+     "sheets/5L.png",
+     1,
+     2
+    ],
+    [
+     "sheets/5L.png",
+     2,
+     2
+    ],
+    [
+     "sheets/5L.png",
+     3,
+     4
+    ],
+    [
+     "sheets/5L.png",
+     4,
+     5
+    ]
+   ]
+  },
+  "5M": {
+   "duration": 24,
+   "data": {
+    "startup": 8,
+    "active": 3,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 3,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9
+   ],
+   "boxes": "8825a94c",
+   "drawings": [
+    [
+     "sheets/5M.png",
+     0,
+     3
+    ],
+    [
+     "sheets/5M.png",
+     1,
+     4
+    ],
+    [
+     "sheets/5M.png",
+     2,
+     1
+    ],
+    [
+     "sheets/5M.png",
+     3,
+     3
+    ],
+    [
+     "sheets/5M.png",
+     4,
+     7
+    ],
+    [
+     "sheets/5M.png",
+     5,
+     6
+    ]
+   ]
+  },
+  "5H": {
+   "duration": 39,
+   "data": {
+    "startup": 14,
+    "active": 4,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 14,
+    "active": 4,
+    "recovery": 22
+   },
+   "hitFrames": [
+    13,
+    14,
+    15,
+    16
+   ],
+   "boxes": "30cf7a96",
+   "drawings": [
+    [
+     "sheets/5H.png",
+     0,
+     3
+    ],
+    [
+     "sheets/5H.png",
+     1,
+     5
+    ],
+    [
+     "sheets/5H.png",
+     2,
+     4
+    ],
+    [
+     "sheets/5H.png",
+     3,
+     1
+    ],
+    [
+     "sheets/5H.png",
+     4,
+     1
+    ],
+    [
+     "sheets/5H.png",
+     5,
+     3
+    ],
+    [
+     "sheets/5H.png",
+     6,
+     8
+    ],
+    [
+     "sheets/5H.png",
+     7,
+     14
+    ]
+   ]
+  },
+  "2L": {
+   "duration": 15,
+   "data": {
+    "startup": 5,
+    "active": 2,
+    "recovery": 9
+   },
+   "measured": {
+    "startup": 5,
+    "active": 2,
+    "recovery": 9
+   },
+   "hitFrames": [
+    4,
+    5
+   ],
+   "boxes": "ad44ff0f",
+   "drawings": [
+    [
+     "sheets/2L.png",
+     0,
+     2
+    ],
+    [
+     "sheets/2L.png",
+     1,
+     2
+    ],
+    [
+     "sheets/2L.png",
+     2,
+     2
+    ],
+    [
+     "sheets/2L.png",
+     3,
+     4
+    ],
+    [
+     "sheets/2L.png",
+     4,
+     5
+    ]
+   ]
+  },
+  "2M": {
+   "duration": 26,
+   "data": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 15
+   },
+   "measured": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 15
+   },
+   "hitFrames": [
+    8,
+    9,
+    10
+   ],
+   "boxes": "7dafbafa",
+   "drawings": [
+    [
+     "sheets/2M.png",
+     0,
+     3
+    ],
+    [
+     "sheets/2M.png",
+     1,
+     4
+    ],
+    [
+     "sheets/2M.png",
+     2,
+     1
+    ],
+    [
+     "sheets/2M.png",
+     3,
+     3
+    ],
+    [
+     "sheets/2M.png",
+     4,
+     7
+    ],
+    [
+     "sheets/2M.png",
+     5,
+     8
+    ]
+   ]
+  },
+  "2H": {
+   "duration": 39,
+   "data": {
+    "startup": 12,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 12,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "2dfe5353",
+   "drawings": [
+    [
+     "sheets/2H.png",
+     0,
+     5
+    ],
+    [
+     "sheets/2H.png",
+     1,
+     6
+    ],
+    [
+     "sheets/2H.png",
+     2,
+     4
+    ],
+    [
+     "sheets/2H.png",
+     3,
+     10
+    ],
+    [
+     "sheets/2H.png",
+     4,
+     14
+    ]
+   ]
+  },
+  "5S": {
+   "duration": 37,
+   "data": {
+    "startup": 11,
+    "active": 5,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 11,
+    "active": 5,
+    "recovery": 22
+   },
+   "hitFrames": [
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "d8306763",
+   "drawings": [
+    [
+     "sheets/5S.png",
+     0,
+     3
+    ],
+    [
+     "sheets/5S.png",
+     1,
+     6
+    ],
+    [
+     "sheets/5S.png",
+     2,
+     2
+    ],
+    [
+     "sheets/5S.png",
+     3,
+     5
+    ],
+    [
+     "sheets/5S.png",
+     4,
+     8
+    ],
+    [
+     "sheets/5S.png",
+     5,
+     8
+    ],
+    [
+     "sheets/5S.png",
+     6,
+     5
+    ]
+   ]
+  },
+  "6H": {
+   "duration": 25,
+   "data": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "hitFrames": [],
+   "boxes": "20d77122",
+   "drawings": [
+    [
+     "sheets/throw-forward.png",
+     0,
+     4
+    ],
+    [
+     "sheets/throw-forward.png",
+     1,
+     10
+    ],
+    [
+     "sheets/throw-forward.png",
+     2,
+     11
+    ]
+   ]
+  },
+  "4H": {
+   "duration": 25,
+   "data": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "hitFrames": [],
+   "boxes": "20d77122",
+   "drawings": [
+    [
+     "sheets/throw-back.png",
+     0,
+     4
+    ],
+    [
+     "sheets/throw-back.png",
+     1,
+     10
+    ],
+    [
+     "sheets/throw-back.png",
+     2,
+     11
+    ]
+   ]
+  },
+  "backHeavy": {
+   "duration": 40,
+   "data": {
+    "startup": 14,
+    "active": 5,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 14,
+    "active": 5,
+    "recovery": 22
+   },
+   "hitFrames": [
+    13,
+    14,
+    15,
+    16,
+    17
+   ],
+   "boxes": "f382dc10",
+   "drawings": [
+    [
+     "sheets/4H.png",
+     0,
+     2
+    ],
+    [
+     "sheets/4H.png",
+     1,
+     5
+    ],
+    [
+     "sheets/4H.png",
+     2,
+     5
+    ],
+    [
+     "sheets/4H.png",
+     3,
+     1
+    ],
+    [
+     "sheets/4H.png",
+     4,
+     5
+    ],
+    [
+     "sheets/4H.png",
+     5,
+     10
+    ],
+    [
+     "sheets/4H.png",
+     6,
+     12
+    ]
+   ]
+  },
+  "j.L": {
+   "duration": 17,
+   "data": {
+    "startup": 5,
+    "active": 3,
+    "recovery": 10
+   },
+   "measured": {
+    "startup": 5,
+    "active": 3,
+    "recovery": 10
+   },
+   "hitFrames": [
+    4,
+    5,
+    6
+   ],
+   "boxes": "f32918a2",
+   "drawings": [
+    [
+     "sheets/jL.png",
+     0,
+     3
+    ],
+    [
+     "sheets/jL.png",
+     1,
+     1
+    ],
+    [
+     "sheets/jL.png",
+     2,
+     3
+    ],
+    [
+     "sheets/jL.png",
+     3,
+     4
+    ],
+    [
+     "sheets/jL.png",
+     4,
+     6
+    ]
+   ]
+  },
+  "j.M": {
+   "duration": 26,
+   "data": {
+    "startup": 8,
+    "active": 5,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 5,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "boxes": "e08dd5e0",
+   "drawings": [
+    [
+     "sheets/jM.png",
+     0,
+     3
+    ],
+    [
+     "sheets/jM.png",
+     1,
+     4
+    ],
+    [
+     "sheets/jM.png",
+     2,
+     1
+    ],
+    [
+     "sheets/jM.png",
+     3,
+     3
+    ],
+    [
+     "sheets/jM.png",
+     4,
+     2
+    ],
+    [
+     "sheets/jM.png",
+     5,
+     13
+    ]
+   ]
+  },
+  "j.H": {
+   "duration": 34,
+   "data": {
+    "startup": 12,
+    "active": 5,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 12,
+    "active": 5,
+    "recovery": 18
+   },
+   "hitFrames": [
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "boxes": "da3f97c6",
+   "drawings": [
+    [
+     "sheets/jH.png",
+     0,
+     3
+    ],
+    [
+     "sheets/jH.png",
+     1,
+     7
+    ],
+    [
+     "sheets/jH.png",
+     2,
+     1
+    ],
+    [
+     "sheets/jH.png",
+     3,
+     5
+    ],
+    [
+     "sheets/jH.png",
+     4,
+     6
+    ],
+    [
+     "sheets/jH.png",
+     5,
+     6
+    ],
+    [
+     "sheets/jH.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "j.S": {
+   "duration": 48,
+   "data": {
+    "startup": 14,
+    "active": 5,
+    "recovery": 30
+   },
+   "measured": {
+    "startup": 14,
+    "active": 5,
+    "recovery": 30
+   },
+   "hitFrames": [
+    13,
+    14,
+    15,
+    16,
+    17
+   ],
+   "boxes": "7201548c",
+   "drawings": [
+    [
+     "sheets/jS.png",
+     0,
+     3
+    ],
+    [
+     "sheets/jS.png",
+     1,
+     4
+    ],
+    [
+     "sheets/jS.png",
+     2,
+     5
+    ],
+    [
+     "sheets/jS.png",
+     3,
+     1
+    ],
+    [
+     "sheets/jS.png",
+     4,
+     5
+    ],
+    [
+     "sheets/jS.png",
+     5,
+     8
+    ],
+    [
+     "sheets/jS.png",
+     6,
+     22
+    ]
+   ]
+  },
+  "risingMoonL": {
+   "duration": 35,
+   "data": {
+    "startup": 10,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "5a9a616",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     2
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     1
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     10
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "risingMoonM": {
+   "duration": 35,
+   "data": {
+    "startup": 10,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "5a9a616",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     2
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     1
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     10
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "risingMoonH": {
+   "duration": 35,
+   "data": {
+    "startup": 10,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "5a9a616",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     2
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     1
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     10
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "haloL": {
+   "duration": 45,
+   "data": {
+    "startup": 6,
+    "active": 10,
+    "recovery": 30
+   },
+   "measured": {
+    "startup": 6,
+    "active": 10,
+    "recovery": 30
+   },
+   "hitFrames": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "b82425ce",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     4
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     12
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     14
+    ],
+    [
+     "sheets/lunar-halo.png",
+     6,
+     11
+    ]
+   ]
+  },
+  "haloM": {
+   "duration": 47,
+   "data": {
+    "startup": 8,
+    "active": 10,
+    "recovery": 30
+   },
+   "measured": {
+    "startup": 8,
+    "active": 10,
+    "recovery": 30
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+   ],
+   "boxes": "2639aff4",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     4
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     12
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     14
+    ],
+    [
+     "sheets/lunar-halo.png",
+     6,
+     11
+    ]
+   ]
+  },
+  "haloH": {
+   "duration": 50,
+   "data": {
+    "startup": 11,
+    "active": 10,
+    "recovery": 30
+   },
+   "measured": {
+    "startup": 11,
+    "active": 10,
+    "recovery": 30
+   },
+   "hitFrames": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ],
+   "boxes": "14835c7b",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     6
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     4
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     12
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     14
+    ],
+    [
+     "sheets/lunar-halo.png",
+     6,
+     11
+    ]
+   ]
+  },
+  "tideL": {
+   "duration": 32,
+   "data": {
+    "startup": 7,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6b55febd",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     0,
+     2
+    ],
+    [
+     "sheets/tide.png",
+     1,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     2,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     3,
+     6
+    ],
+    [
+     "sheets/tide.png",
+     4,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     5,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     6,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "tideM": {
+   "duration": 32,
+   "data": {
+    "startup": 7,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6b55febd",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     0,
+     2
+    ],
+    [
+     "sheets/tide.png",
+     1,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     2,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     3,
+     6
+    ],
+    [
+     "sheets/tide.png",
+     4,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     5,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     6,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "tideH": {
+   "duration": 32,
+   "data": {
+    "startup": 7,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6b55febd",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     0,
+     2
+    ],
+    [
+     "sheets/tide.png",
+     1,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     2,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     3,
+     6
+    ],
+    [
+     "sheets/tide.png",
+     4,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     5,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     6,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "moonlit5": {
+   "duration": 26,
+   "data": {
+    "startup": 9,
+    "active": 0,
+    "recovery": 18
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "601197a5",
+   "drawings": [
+    [
+     "sheets/moonlit-5.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moonlit-5.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moonlit-5.png",
+     2,
+     10
+    ],
+    [
+     "sheets/moonlit-5.png",
+     3,
+     8
+    ]
+   ]
+  },
+  "moonlit6": {
+   "duration": 28,
+   "data": {
+    "startup": 9,
+    "active": 0,
+    "recovery": 20
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "ccd0ed0d",
+   "drawings": [
+    [
+     "sheets/moonlit-6.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moonlit-6.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moonlit-6.png",
+     2,
+     12
+    ],
+    [
+     "sheets/moonlit-6.png",
+     3,
+     8
+    ]
+   ]
+  },
+  "moonlit2": {
+   "duration": 26,
+   "data": {
+    "startup": 9,
+    "active": 0,
+    "recovery": 18
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52d824f1",
+   "drawings": [
+    [
+     "sheets/moonlit-2.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moonlit-2.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moonlit-2.png",
+     2,
+     10
+    ],
+    [
+     "sheets/moonlit-2.png",
+     3,
+     8
+    ]
+   ]
+  },
+  "moonlitJ": {
+   "duration": 26,
+   "data": {
+    "startup": 9,
+    "active": 0,
+    "recovery": 18
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b7bb822b",
+   "drawings": [
+    [
+     "sheets/moonlit-j.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moonlit-j.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moonlit-j.png",
+     2,
+     10
+    ],
+    [
+     "sheets/moonlit-j.png",
+     3,
+     8
+    ]
+   ]
+  },
+  "airCrescentL": {
+   "duration": 102,
+   "data": {
+    "startup": 13,
+    "active": 0,
+    "recovery": 90
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "27b59ddf",
+   "drawings": [
+    [
+     "sheets/air-crescent-swing.png",
+     0,
+     5
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     1,
+     7
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     2,
+     4
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     3,
+     8
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     4,
+     9
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     5,
+     69
+    ]
+   ]
+  },
+  "airCrescentM": {
+   "duration": 102,
+   "data": {
+    "startup": 13,
+    "active": 0,
+    "recovery": 90
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "27b59ddf",
+   "drawings": [
+    [
+     "sheets/air-crescent-swing.png",
+     0,
+     5
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     1,
+     7
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     2,
+     4
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     3,
+     8
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     4,
+     9
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     5,
+     69
+    ]
+   ]
+  },
+  "airCrescentH": {
+   "duration": 102,
+   "data": {
+    "startup": 13,
+    "active": 0,
+    "recovery": 90
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "27b59ddf",
+   "drawings": [
+    [
+     "sheets/air-crescent-swing.png",
+     0,
+     5
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     1,
+     7
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     2,
+     4
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     3,
+     8
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     4,
+     9
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     5,
+     69
+    ]
+   ]
+  },
+  "moonSnap": {
+   "duration": 28,
+   "data": {
+    "startup": 10,
+    "active": 1,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 10,
+    "active": 1,
+    "recovery": 18
+   },
+   "hitFrames": [
+    9
+   ],
+   "boxes": "bf94365",
+   "drawings": [
+    [
+     "sheets/moon-snap.png",
+     0,
+     3
+    ],
+    [
+     "sheets/moon-snap.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moon-snap.png",
+     2,
+     2
+    ],
+    [
+     "sheets/moon-snap.png",
+     3,
+     5
+    ],
+    [
+     "sheets/moon-snap.png",
+     4,
+     8
+    ],
+    [
+     "sheets/moon-snap.png",
+     5,
+     6
+    ]
+   ]
+  },
+  "moonRecall": {
+   "duration": 15,
+   "data": {
+    "startup": 6,
+    "active": 0,
+    "recovery": 10
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "695457e6",
+   "drawings": [
+    [
+     "sheets/moon-recall-placeholder.png",
+     0,
+     3
+    ],
+    [
+     "sheets/moon-recall-placeholder.png",
+     1,
+     3
+    ],
+    [
+     "sheets/moon-recall-placeholder.png",
+     2,
+     4
+    ],
+    [
+     "sheets/moon-recall-placeholder.png",
+     3,
+     5
+    ]
+   ]
+  },
+  "newMoon": {
+   "duration": 48,
+   "data": {
+    "startup": 11,
+    "active": 4,
+    "recovery": 34
+   },
+   "measured": {
+    "startup": 11,
+    "active": 4,
+    "recovery": 34
+   },
+   "hitFrames": [
+    10,
+    11,
+    12,
+    13
+   ],
+   "boxes": "b1954a45",
+   "drawings": [
+    [
+     "sheets/new-moon.png",
+     0,
+     1
+    ],
+    [
+     "sheets/new-moon.png",
+     1,
+     1
+    ],
+    [
+     "sheets/new-moon.png",
+     2,
+     1
+    ],
+    [
+     "sheets/new-moon.png",
+     3,
+     1
+    ],
+    [
+     "sheets/new-moon.png",
+     4,
+     2
+    ],
+    [
+     "sheets/new-moon.png",
+     5,
+     2
+    ],
+    [
+     "sheets/new-moon.png",
+     6,
+     2
+    ],
+    [
+     "sheets/new-moon.png",
+     7,
+     3
+    ],
+    [
+     "sheets/new-moon.png",
+     8,
+     3
+    ],
+    [
+     "sheets/new-moon.png",
+     9,
+     4
+    ],
+    [
+     "sheets/new-moon.png",
+     10,
+     5
+    ],
+    [
+     "sheets/new-moon.png",
+     11,
+     5
+    ],
+    [
+     "sheets/new-moon.png",
+     12,
+     5
+    ],
+    [
+     "sheets/new-moon.png",
+     13,
+     5
+    ],
+    [
+     "sheets/new-moon.png",
+     14,
+     8
+    ]
+   ]
+  },
+  "fullMoon": {
+   "duration": 60,
+   "data": {
+    "startup": 30,
+    "active": 0,
+    "recovery": 31
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "f540c8d",
+   "drawings": [
+    [
+     "sheets/full-moon-placeholder.png",
+     0,
+     3
+    ],
+    [
+     "sheets/full-moon-placeholder.png",
+     1,
+     9
+    ],
+    [
+     "sheets/full-moon-placeholder.png",
+     2,
+     3
+    ],
+    [
+     "sheets/full-moon-placeholder.png",
+     3,
+     12
+    ],
+    [
+     "sheets/full-moon-placeholder.png",
+     4,
+     15
+    ],
+    [
+     "sheets/full-moon-placeholder.png",
+     5,
+     9
+    ],
+    [
+     "sheets/full-moon-placeholder.png",
+     6,
+     9
+    ]
+   ]
+  },
+  "vow_start": {
+   "duration": 4,
+   "data": {
+    "startup": 5,
+    "active": 0,
+    "recovery": 0
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "edcfbe2d",
+   "drawings": [
+    [
+     "sheets/vow-start.png",
+     0,
+     2
+    ],
+    [
+     "sheets/vow-start.png",
+     1,
+     2
+    ]
+   ]
+  },
+  "vow_strike_quick": {
+   "duration": 32,
+   "data": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 20
+   },
+   "measured": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 20
+   },
+   "hitFrames": [
+    9,
+    10,
+    11
+   ],
+   "boxes": "54da27bb",
+   "drawings": [
+    [
+     "sheets/vow-quick.png",
+     0,
+     6
+    ],
+    [
+     "sheets/vow-quick.png",
+     1,
+     6
+    ],
+    [
+     "sheets/vow-quick.png",
+     2,
+     7
+    ],
+    [
+     "sheets/vow-quick.png",
+     3,
+     6
+    ],
+    [
+     "sheets/vow-quick.png",
+     4,
+     7
+    ]
+   ]
+  },
+  "vow_strike": {
+   "duration": 38,
+   "data": {
+    "startup": 14,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 14,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    13,
+    14,
+    15
+   ],
+   "boxes": "3c3de4f4",
+   "drawings": [
+    [
+     "sheets/vow-strike.png",
+     0,
+     7
+    ],
+    [
+     "sheets/vow-strike.png",
+     1,
+     8
+    ],
+    [
+     "sheets/vow-strike.png",
+     2,
+     7
+    ],
+    [
+     "sheets/vow-strike.png",
+     3,
+     8
+    ],
+    [
+     "sheets/vow-strike.png",
+     4,
+     8
+    ]
+   ]
+  },
+  "vow_strike_full": {
+   "duration": 43,
+   "data": {
+    "startup": 16,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 16,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    15,
+    16,
+    17,
+    18
+   ],
+   "boxes": "13aa3c26",
+   "drawings": [
+    [
+     "sheets/vow-full.png",
+     0,
+     8
+    ],
+    [
+     "sheets/vow-full.png",
+     1,
+     9
+    ],
+    [
+     "sheets/vow-full.png",
+     2,
+     8
+    ],
+    [
+     "sheets/vow-full.png",
+     3,
+     9
+    ],
+    [
+     "sheets/vow-full.png",
+     4,
+     9
+    ]
+   ]
+  },
+  "absolve": {
+   "duration": 23,
+   "data": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "measured": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10
+   ],
+   "boxes": "d258d5fe",
+   "drawings": [
+    [
+     "sheets/absolve.png",
+     0,
+     4
+    ],
+    [
+     "sheets/absolve.png",
+     1,
+     5
+    ],
+    [
+     "sheets/absolve.png",
+     2,
+     4
+    ],
+    [
+     "sheets/absolve.png",
+     3,
+     5
+    ],
+    [
+     "sheets/absolve.png",
+     4,
+     5
+    ]
+   ]
+  },
+  "absolve_air": {
+   "duration": 23,
+   "data": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "measured": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10
+   ],
+   "boxes": "ec55601e",
+   "drawings": [
+    [
+     "sheets/absolve-air-placeholder.png",
+     0,
+     4
+    ],
+    [
+     "sheets/absolve-air-placeholder.png",
+     1,
+     5
+    ],
+    [
+     "sheets/absolve-air-placeholder.png",
+     2,
+     4
+    ],
+    [
+     "sheets/absolve-air-placeholder.png",
+     3,
+     5
+    ],
+    [
+     "sheets/absolve-air-placeholder.png",
+     4,
+     5
+    ]
+   ]
+  },
+  "risingMoonL_ex": {
+   "duration": 35,
+   "data": {
+    "startup": 10,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "5a9a616",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     2
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     1
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     10
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "risingMoonM_ex": {
+   "duration": 35,
+   "data": {
+    "startup": 10,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "5a9a616",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     2
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     1
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     10
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "risingMoonH_ex": {
+   "duration": 35,
+   "data": {
+    "startup": 10,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "5a9a616",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     2
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     1
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     10
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     6
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "haloL_ex": {
+   "duration": 44,
+   "data": {
+    "startup": 5,
+    "active": 10,
+    "recovery": 30
+   },
+   "measured": {
+    "startup": 5,
+    "active": 10,
+    "recovery": 30
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "boxes": "10a3eedd",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     4
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     12
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     14
+    ],
+    [
+     "sheets/lunar-halo.png",
+     6,
+     11
+    ]
+   ]
+  },
+  "haloM_ex": {
+   "duration": 44,
+   "data": {
+    "startup": 5,
+    "active": 10,
+    "recovery": 30
+   },
+   "measured": {
+    "startup": 5,
+    "active": 10,
+    "recovery": 30
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "boxes": "10a3eedd",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     4
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     12
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     14
+    ],
+    [
+     "sheets/lunar-halo.png",
+     6,
+     11
+    ]
+   ]
+  },
+  "haloH_ex": {
+   "duration": 44,
+   "data": {
+    "startup": 5,
+    "active": 10,
+    "recovery": 30
+   },
+   "measured": {
+    "startup": 5,
+    "active": 10,
+    "recovery": 30
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "boxes": "10a3eedd",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     1
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     4
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     12
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     14
+    ],
+    [
+     "sheets/lunar-halo.png",
+     6,
+     11
+    ]
+   ]
+  },
+  "tideL_ex": {
+   "duration": 32,
+   "data": {
+    "startup": 7,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6b55febd",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     0,
+     2
+    ],
+    [
+     "sheets/tide.png",
+     1,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     2,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     3,
+     6
+    ],
+    [
+     "sheets/tide.png",
+     4,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     5,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     6,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "tideM_ex": {
+   "duration": 32,
+   "data": {
+    "startup": 7,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6b55febd",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     0,
+     2
+    ],
+    [
+     "sheets/tide.png",
+     1,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     2,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     3,
+     6
+    ],
+    [
+     "sheets/tide.png",
+     4,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     5,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     6,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "tideH_ex": {
+   "duration": 32,
+   "data": {
+    "startup": 7,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6b55febd",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     0,
+     2
+    ],
+    [
+     "sheets/tide.png",
+     1,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     2,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     3,
+     6
+    ],
+    [
+     "sheets/tide.png",
+     4,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     5,
+     3
+    ],
+    [
+     "sheets/tide.png",
+     6,
+     4
+    ],
+    [
+     "sheets/tide.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "airCrescentL_ex": {
+   "duration": 102,
+   "data": {
+    "startup": 13,
+    "active": 0,
+    "recovery": 90
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "27b59ddf",
+   "drawings": [
+    [
+     "sheets/air-crescent-swing.png",
+     0,
+     5
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     1,
+     7
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     2,
+     4
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     3,
+     8
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     4,
+     9
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     5,
+     69
+    ]
+   ]
+  },
+  "airCrescentM_ex": {
+   "duration": 102,
+   "data": {
+    "startup": 13,
+    "active": 0,
+    "recovery": 90
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "27b59ddf",
+   "drawings": [
+    [
+     "sheets/air-crescent-swing.png",
+     0,
+     5
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     1,
+     7
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     2,
+     4
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     3,
+     8
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     4,
+     9
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     5,
+     69
+    ]
+   ]
+  },
+  "airCrescentH_ex": {
+   "duration": 102,
+   "data": {
+    "startup": 13,
+    "active": 0,
+    "recovery": 90
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "27b59ddf",
+   "drawings": [
+    [
+     "sheets/air-crescent-swing.png",
+     0,
+     5
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     1,
+     7
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     2,
+     4
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     3,
+     8
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     4,
+     9
+    ],
+    [
+     "sheets/air-crescent-swing.png",
+     5,
+     69
+    ]
+   ]
+  }
+ },
+ "malik": {
+  "idle": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b048b5c9",
+   "drawings": [
+    [
+     "sheets/idle.png",
+     0,
+     10
+    ],
+    [
+     "sheets/idle.png",
+     1,
+     10
+    ],
+    [
+     "sheets/idle.png",
+     2,
+     10
+    ],
+    [
+     "sheets/idle.png",
+     3,
+     10
+    ],
+    [
+     "sheets/idle.png",
+     4,
+     10
+    ],
+    [
+     "sheets/idle.png",
+     5,
+     10
+    ]
+   ]
+  },
+  "crouch": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "80dd7145",
+   "drawings": [
+    [
+     "sheets/crouch.png",
+     0,
+     3
+    ],
+    [
+     "sheets/crouch.png",
+     1,
+     12
+    ],
+    [
+     "sheets/crouch.png",
+     2,
+     12
+    ],
+    [
+     "sheets/crouch.png",
+     3,
+     12
+    ],
+    [
+     "sheets/crouch.png",
+     4,
+     12
+    ],
+    [
+     "sheets/crouch.png",
+     5,
+     9
+    ]
+   ]
+  },
+  "walkF": {
+   "duration": 48,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b9f167ad",
+   "drawings": [
+    [
+     "sheets/walk.png",
+     0,
+     8
+    ],
+    [
+     "sheets/walk.png",
+     1,
+     8
+    ],
+    [
+     "sheets/walk.png",
+     2,
+     8
+    ],
+    [
+     "sheets/walk.png",
+     3,
+     8
+    ],
+    [
+     "sheets/walk.png",
+     4,
+     8
+    ],
+    [
+     "sheets/walk.png",
+     5,
+     8
+    ]
+   ]
+  },
+  "walkB": {
+   "duration": 48,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b9f167ad",
+   "drawings": [
+    [
+     "sheets/walk-back.png",
+     0,
+     8
+    ],
+    [
+     "sheets/walk-back.png",
+     1,
+     8
+    ],
+    [
+     "sheets/walk-back.png",
+     2,
+     8
+    ],
+    [
+     "sheets/walk-back.png",
+     3,
+     8
+    ],
+    [
+     "sheets/walk-back.png",
+     4,
+     8
+    ],
+    [
+     "sheets/walk-back.png",
+     5,
+     8
+    ]
+   ]
+  },
+  "jumpSquat": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52fa8b66",
+   "drawings": [
+    [
+     "sheets/jumpsquat.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "jump": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e6d3384d",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     5
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     28
+    ]
+   ]
+  },
+  "fall": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e6d3384d",
+   "drawings": [
+    [
+     "sheets/fall.png",
+     0,
+     8
+    ],
+    [
+     "sheets/fall.png",
+     1,
+     52
+    ]
+   ]
+  },
+  "land": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52fa8b66",
+   "drawings": [
+    [
+     "sheets/land.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "dashF": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a1f98e59",
+   "drawings": [
+    [
+     "sheets/dash.png",
+     0,
+     3
+    ],
+    [
+     "sheets/dash.png",
+     1,
+     3
+    ],
+    [
+     "sheets/dash.png",
+     2,
+     3
+    ],
+    [
+     "sheets/dash.png",
+     3,
+     3
+    ]
+   ]
+  },
+  "dashStop": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52fa8b66",
+   "drawings": [
+    [
+     "sheets/dash-stop.png",
+     0,
+     2
+    ],
+    [
+     "sheets/dash-stop.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "backdash": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "503ec6af",
+   "drawings": [
+    [
+     "sheets/backdash.png",
+     0,
+     3
+    ],
+    [
+     "sheets/backdash.png",
+     1,
+     6
+    ],
+    [
+     "sheets/backdash.png",
+     2,
+     5
+    ]
+   ]
+  },
+  "backdashStop": {
+   "duration": 6,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "472f7917",
+   "drawings": [
+    [
+     "sheets/backdash-stop.png",
+     0,
+     3
+    ],
+    [
+     "sheets/backdash-stop.png",
+     1,
+     3
+    ]
+   ]
+  },
+  "airdashF": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "7c4ab375",
+   "drawings": [
+    [
+     "sheets/airdash.png",
+     0,
+     2
+    ],
+    [
+     "sheets/airdash.png",
+     1,
+     5
+    ],
+    [
+     "sheets/airdash.png",
+     2,
+     5
+    ],
+    [
+     "sheets/airdash.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "airdashB": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "47e25a0d",
+   "drawings": [
+    [
+     "sheets/airdash-back.png",
+     0,
+     2
+    ],
+    [
+     "sheets/airdash-back.png",
+     1,
+     4
+    ],
+    [
+     "sheets/airdash-back.png",
+     2,
+     4
+    ],
+    [
+     "sheets/airdash-back.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "airdashEnd": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e6d3384d",
+   "drawings": [
+    [
+     "sheets/fall.png",
+     0,
+     8
+    ],
+    [
+     "sheets/fall.png",
+     1,
+     52
+    ]
+   ]
+  },
+  "superJumpSquat": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52fa8b66",
+   "drawings": [
+    [
+     "sheets/jumpsquat.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "superJump": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e6d3384d",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     5
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     28
+    ]
+   ]
+  },
+  "airJump": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e6d3384d",
+   "drawings": [
+    [
+     "sheets/jump.png",
+     0,
+     5
+    ],
+    [
+     "sheets/jump.png",
+     1,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     2,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     3,
+     9
+    ],
+    [
+     "sheets/jump.png",
+     4,
+     28
+    ]
+   ]
+  },
+  "hitStand": {
+   "duration": 1,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "aefff2b8",
+   "drawings": [
+    [
+     "sheets/hit-stand.png",
+     0,
+     1
+    ]
+   ]
+  },
+  "hitCrouch": {
+   "duration": 1,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "fc4a57e7",
+   "drawings": [
+    [
+     "sheets/hit-crouch.png",
+     0,
+     1
+    ]
+   ]
+  },
+  "hitAir": {
+   "duration": 6,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "cd973d5",
+   "drawings": [
+    [
+     "sheets/hit-air.png",
+     0,
+     5
+    ],
+    [
+     "sheets/hit-air.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "tumble": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "47e25a0d",
+   "drawings": [
+    [
+     "sheets/tumble.png",
+     0,
+     6
+    ],
+    [
+     "sheets/tumble.png",
+     1,
+     6
+    ]
+   ]
+  },
+  "airTech": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "47e25a0d",
+   "drawings": [
+    [
+     null,
+     null,
+     12
+    ]
+   ]
+  },
+  "groundTech": {
+   "duration": 16,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "633cafcd",
+   "drawings": [
+    [
+     null,
+     null,
+     16
+    ]
+   ]
+  },
+  "blockStand": {
+   "duration": 9,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "f9a09db0",
+   "drawings": [
+    [
+     "sheets/block-stand.png",
+     0,
+     8
+    ],
+    [
+     "sheets/block-stand.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "blockCrouch": {
+   "duration": 9,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "458ccf7",
+   "drawings": [
+    [
+     "sheets/block-crouch.png",
+     0,
+     8
+    ],
+    [
+     "sheets/block-crouch.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "blockAir": {
+   "duration": 9,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "be662459",
+   "drawings": [
+    [
+     "sheets/block-air.png",
+     0,
+     8
+    ],
+    [
+     "sheets/block-air.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "knockdown": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "18a5b465",
+   "drawings": [
+    [
+     "sheets/knockdown.png",
+     0,
+     6
+    ],
+    [
+     "sheets/knockdown.png",
+     1,
+     34
+    ]
+   ]
+  },
+  "wakeup": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a1f98e59",
+   "drawings": [
+    [
+     "sheets/wakeup.png",
+     0,
+     4
+    ],
+    [
+     "sheets/wakeup.png",
+     1,
+     4
+    ],
+    [
+     "sheets/wakeup.png",
+     2,
+     4
+    ]
+   ]
+  },
+  "thrown": {
+   "duration": 1,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1f9d39e8",
+   "drawings": [
+    [
+     "sheets/hit-stand.png",
+     0,
+     1
+    ]
+   ]
+  },
+  "throwHold": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "503ec6af",
+   "drawings": [
+    [
+     "sheets/throw-hold.png",
+     0,
+     4
+    ],
+    [
+     "sheets/throw-hold.png",
+     1,
+     4
+    ],
+    [
+     "sheets/throw-hold.png",
+     2,
+     6
+    ]
+   ]
+  },
+  "throwFinish": {
+   "duration": 30,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "589273bf",
+   "drawings": [
+    [
+     "sheets/throw-finish.png",
+     0,
+     6
+    ],
+    [
+     "sheets/throw-finish.png",
+     1,
+     8
+    ],
+    [
+     "sheets/throw-finish.png",
+     2,
+     8
+    ],
+    [
+     "sheets/throw-finish.png",
+     3,
+     8
+    ]
+   ]
+  },
+  "koDown": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "509ae7e9",
+   "drawings": [
+    [
+     "sheets/knockdown.png",
+     1,
+     60
+    ]
+   ]
+  },
+  "throwTech": {
+   "duration": 20,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "cfc94ad1",
+   "drawings": [
+    [
+     "sheets/throw-tech.png",
+     0,
+     3
+    ],
+    [
+     "sheets/throw-tech.png",
+     1,
+     4
+    ],
+    [
+     "sheets/throw-tech.png",
+     2,
+     5
+    ],
+    [
+     "sheets/throw-tech.png",
+     3,
+     4
+    ],
+    [
+     "sheets/throw-tech.png",
+     4,
+     4
+    ]
+   ]
+  },
+  "absolve_recovery": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "85b59c75",
+   "drawings": [
+    [
+     "sheets/absolve-recovery.png",
+     0,
+     14
+    ],
+    [
+     "sheets/absolve-recovery.png",
+     1,
+     14
+    ],
+    [
+     "sheets/absolve-recovery.png",
+     2,
+     12
+    ]
+   ]
+  },
+  "absolve_recovery_air": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "2e569dd",
+   "drawings": [
+    [
+     "sheets/absolve_recovery_air-placeholder.png",
+     0,
+     8
+    ],
+    [
+     "sheets/absolve_recovery_air-placeholder.png",
+     1,
+     32
+    ]
+   ]
+  },
+  "repel": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a1f98e59",
+   "drawings": [
+    [
+     "sheets/repel.png",
+     0,
+     2
+    ],
+    [
+     "sheets/repel.png",
+     1,
+     3
+    ],
+    [
+     "sheets/repel.png",
+     2,
+     6
+    ],
+    [
+     "sheets/repel.png",
+     3,
+     1
+    ]
+   ]
+  },
+  "draw": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a1f98e59",
+   "drawings": [
+    [
+     "sheets/draw.png",
+     0,
+     2
+    ],
+    [
+     "sheets/draw.png",
+     1,
+     3
+    ],
+    [
+     "sheets/draw.png",
+     2,
+     6
+    ],
+    [
+     "sheets/draw.png",
+     3,
+     1
+    ]
+   ]
+  },
+  "drawn": {
+   "duration": 1,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "aefff2b8",
+   "drawings": [
+    [
+     "sheets/drawn-placeholder.png",
+     0,
+     1
+    ]
+   ]
+  },
+  "vow_hold": {
+   "duration": 36,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "6d09a1e1",
+   "drawings": [
+    [
+     "sheets/vow-hold.png",
+     0,
+     6
+    ],
+    [
+     "sheets/vow-hold.png",
+     1,
+     6
+    ],
+    [
+     "sheets/vow-hold.png",
+     2,
+     6
+    ],
+    [
+     "sheets/vow-hold.png",
+     3,
+     6
+    ],
+    [
+     "sheets/vow-hold.png",
+     4,
+     6
+    ],
+    [
+     "sheets/vow-hold.png",
+     5,
+     6
+    ]
+   ]
+  },
+  "crumple": {
+   "duration": 33,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a6a8ae18",
+   "drawings": [
+    [
+     "sheets/crumple.png",
+     0,
+     5
+    ],
+    [
+     "sheets/crumple.png",
+     1,
+     5
+    ],
+    [
+     "sheets/crumple.png",
+     2,
+     6
+    ],
+    [
+     "sheets/crumple.png",
+     3,
+     8
+    ],
+    [
+     "sheets/crumple.png",
+     4,
+     8
+    ],
+    [
+     "sheets/crumple.png",
+     5,
+     1
+    ]
+   ]
+  },
+  "vow_absorb": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "503ec6af",
+   "drawings": [
+    [
+     "sheets/vow-absorb.png",
+     0,
+     2
+    ],
+    [
+     "sheets/vow-absorb.png",
+     1,
+     8
+    ],
+    [
+     "sheets/vow-absorb.png",
+     2,
+     2
+    ],
+    [
+     "sheets/vow-absorb.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "installIdle": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b048b5c9",
+   "drawings": [
+    [
+     "sheets/install-idle.png",
+     0,
+     10
+    ],
+    [
+     "sheets/install-idle.png",
+     1,
+     10
+    ],
+    [
+     "sheets/install-idle.png",
+     2,
+     10
+    ],
+    [
+     "sheets/install-idle.png",
+     3,
+     10
+    ],
+    [
+     "sheets/install-idle.png",
+     4,
+     10
+    ],
+    [
+     "sheets/install-idle.png",
+     5,
+     10
+    ]
+   ]
+  },
+  "installWalkF": {
+   "duration": 48,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b9f167ad",
+   "drawings": [
+    [
+     "sheets/install-walk.png",
+     0,
+     8
+    ],
+    [
+     "sheets/install-walk.png",
+     1,
+     8
+    ],
+    [
+     "sheets/install-walk.png",
+     2,
+     8
+    ],
+    [
+     "sheets/install-walk.png",
+     3,
+     8
+    ],
+    [
+     "sheets/install-walk.png",
+     4,
+     8
+    ],
+    [
+     "sheets/install-walk.png",
+     5,
+     8
+    ]
+   ]
+  },
+  "installDashF": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a1f98e59",
+   "drawings": [
+    [
+     "sheets/install-dash.png",
+     0,
+     3
+    ],
+    [
+     "sheets/install-dash.png",
+     1,
+     3
+    ],
+    [
+     "sheets/install-dash.png",
+     2,
+     3
+    ],
+    [
+     "sheets/install-dash.png",
+     3,
+     3
+    ]
+   ]
+  },
+  "installDashStop": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52fa8b66",
+   "drawings": [
+    [
+     "sheets/install-dash-stop.png",
+     0,
+     2
+    ],
+    [
+     "sheets/install-dash-stop.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "spirit5L": {
+   "duration": 12,
+   "data": {
+    "startup": 4,
+    "active": 2,
+    "recovery": 7
+   },
+   "measured": {
+    "startup": 4,
+    "active": 2,
+    "recovery": 7
+   },
+   "hitFrames": [
+    3,
+    4
+   ],
+   "boxes": "b1e5351b",
+   "drawings": [
+    [
+     "sheets/install-idle.png",
+     0,
+     2
+    ],
+    [
+     "sheets/install-idle.png",
+     1,
+     2
+    ],
+    [
+     "sheets/install-idle.png",
+     2,
+     2
+    ],
+    [
+     "sheets/install-idle.png",
+     3,
+     2
+    ],
+    [
+     "sheets/install-idle.png",
+     4,
+     2
+    ],
+    [
+     "sheets/install-idle.png",
+     5,
+     2
+    ]
+   ]
+  },
+  "spirit5M": {
+   "duration": 22,
+   "data": {
+    "startup": 6,
+    "active": 5,
+    "recovery": 12
+   },
+   "measured": {
+    "startup": 6,
+    "active": 5,
+    "recovery": 12
+   },
+   "hitFrames": [
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "boxes": "6ac33096",
+   "drawings": [
+    [
+     "sheets/install-idle.png",
+     0,
+     4
+    ],
+    [
+     "sheets/install-idle.png",
+     1,
+     4
+    ],
+    [
+     "sheets/install-idle.png",
+     2,
+     4
+    ],
+    [
+     "sheets/install-idle.png",
+     3,
+     4
+    ],
+    [
+     "sheets/install-idle.png",
+     4,
+     3
+    ],
+    [
+     "sheets/install-idle.png",
+     5,
+     3
+    ]
+   ]
+  },
+  "spirit5H": {
+   "duration": 29,
+   "data": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 18
+   },
+   "hitFrames": [
+    8,
+    9,
+    10
+   ],
+   "boxes": "aab83297",
+   "drawings": [
+    [
+     "sheets/install-idle.png",
+     0,
+     5
+    ],
+    [
+     "sheets/install-idle.png",
+     1,
+     5
+    ],
+    [
+     "sheets/install-idle.png",
+     2,
+     5
+    ],
+    [
+     "sheets/install-idle.png",
+     3,
+     5
+    ],
+    [
+     "sheets/install-idle.png",
+     4,
+     5
+    ],
+    [
+     "sheets/install-idle.png",
+     5,
+     4
+    ]
+   ]
+  },
+  "5L": {
+   "duration": 12,
+   "data": {
+    "startup": 4,
+    "active": 2,
+    "recovery": 7
+   },
+   "measured": {
+    "startup": 4,
+    "active": 2,
+    "recovery": 7
+   },
+   "hitFrames": [
+    3,
+    4
+   ],
+   "boxes": "c4183a2b",
+   "drawings": [
+    [
+     "sheets/5L.png",
+     0,
+     2
+    ],
+    [
+     "sheets/5L.png",
+     1,
+     1
+    ],
+    [
+     "sheets/5L.png",
+     2,
+     2
+    ],
+    [
+     "sheets/5L.png",
+     3,
+     3
+    ],
+    [
+     "sheets/5L.png",
+     4,
+     2
+    ],
+    [
+     "sheets/5L.png",
+     5,
+     2
+    ]
+   ]
+  },
+  "5M": {
+   "duration": 22,
+   "data": {
+    "startup": 6,
+    "active": 5,
+    "recovery": 12
+   },
+   "measured": {
+    "startup": 6,
+    "active": 5,
+    "recovery": 12
+   },
+   "hitFrames": [
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "boxes": "e7f50bb2",
+   "drawings": [
+    [
+     "sheets/5M.png",
+     0,
+     2
+    ],
+    [
+     "sheets/5M.png",
+     1,
+     1
+    ],
+    [
+     "sheets/5M.png",
+     2,
+     2
+    ],
+    [
+     "sheets/5M.png",
+     3,
+     2
+    ],
+    [
+     "sheets/5M.png",
+     4,
+     3
+    ],
+    [
+     "sheets/5M.png",
+     5,
+     6
+    ],
+    [
+     "sheets/5M.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "5H": {
+   "duration": 29,
+   "data": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 18
+   },
+   "hitFrames": [
+    8,
+    9,
+    10
+   ],
+   "boxes": "1147ee",
+   "drawings": [
+    [
+     "sheets/5H.png",
+     0,
+     3
+    ],
+    [
+     "sheets/5H.png",
+     1,
+     2
+    ],
+    [
+     "sheets/5H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/5H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/5H.png",
+     4,
+     9
+    ],
+    [
+     "sheets/5H.png",
+     5,
+     9
+    ]
+   ]
+  },
+  "2L": {
+   "duration": 13,
+   "data": {
+    "startup": 4,
+    "active": 2,
+    "recovery": 8
+   },
+   "measured": {
+    "startup": 4,
+    "active": 2,
+    "recovery": 8
+   },
+   "hitFrames": [
+    3,
+    4
+   ],
+   "boxes": "f4ad1e07",
+   "drawings": [
+    [
+     "sheets/2L.png",
+     0,
+     3
+    ],
+    [
+     "sheets/2L.png",
+     1,
+     2
+    ],
+    [
+     "sheets/2L.png",
+     2,
+     3
+    ],
+    [
+     "sheets/2L.png",
+     3,
+     3
+    ],
+    [
+     "sheets/2L.png",
+     4,
+     2
+    ]
+   ]
+  },
+  "2M": {
+   "duration": 22,
+   "data": {
+    "startup": 7,
+    "active": 3,
+    "recovery": 13
+   },
+   "measured": {
+    "startup": 7,
+    "active": 3,
+    "recovery": 13
+   },
+   "hitFrames": [
+    6,
+    7,
+    8
+   ],
+   "boxes": "86027423",
+   "drawings": [
+    [
+     "sheets/2M.png",
+     0,
+     2
+    ],
+    [
+     "sheets/2M.png",
+     1,
+     2
+    ],
+    [
+     "sheets/2M.png",
+     2,
+     2
+    ],
+    [
+     "sheets/2M.png",
+     3,
+     3
+    ],
+    [
+     "sheets/2M.png",
+     4,
+     6
+    ],
+    [
+     "sheets/2M.png",
+     5,
+     7
+    ]
+   ]
+  },
+  "2H": {
+   "duration": 33,
+   "data": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    8,
+    9,
+    10
+   ],
+   "boxes": "738cee6b",
+   "drawings": [
+    [
+     "sheets/2H.png",
+     0,
+     2
+    ],
+    [
+     "sheets/2H.png",
+     1,
+     3
+    ],
+    [
+     "sheets/2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/2H.png",
+     4,
+     8
+    ],
+    [
+     "sheets/2H.png",
+     5,
+     7
+    ],
+    [
+     "sheets/2H.png",
+     6,
+     7
+    ]
+   ]
+  },
+  "6H": {
+   "duration": 25,
+   "data": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "hitFrames": [],
+   "boxes": "df502c0",
+   "drawings": [
+    [
+     "sheets/throw-forward.png",
+     0,
+     4
+    ],
+    [
+     "sheets/throw-forward.png",
+     1,
+     10
+    ],
+    [
+     "sheets/throw-forward.png",
+     2,
+     11
+    ]
+   ]
+  },
+  "4H": {
+   "duration": 25,
+   "data": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 2,
+    "active": 2,
+    "recovery": 22
+   },
+   "hitFrames": [],
+   "boxes": "df502c0",
+   "drawings": [
+    [
+     "sheets/throw-back.png",
+     0,
+     4
+    ],
+    [
+     "sheets/throw-back.png",
+     1,
+     10
+    ],
+    [
+     "sheets/throw-back.png",
+     2,
+     11
+    ]
+   ]
+  },
+  "backHeavy": {
+   "duration": 35,
+   "data": {
+    "startup": 11,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 11,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    10,
+    11,
+    12
+   ],
+   "boxes": "fb4d4a3e",
+   "drawings": [
+    [
+     "sheets/4H.png",
+     0,
+     3
+    ],
+    [
+     "sheets/4H.png",
+     1,
+     3
+    ],
+    [
+     "sheets/4H.png",
+     2,
+     4
+    ],
+    [
+     "sheets/4H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/4H.png",
+     4,
+     5
+    ],
+    [
+     "sheets/4H.png",
+     5,
+     5
+    ],
+    [
+     "sheets/4H.png",
+     6,
+     6
+    ],
+    [
+     "sheets/4H.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "j.L": {
+   "duration": 15,
+   "data": {
+    "startup": 4,
+    "active": 4,
+    "recovery": 8
+   },
+   "measured": {
+    "startup": 4,
+    "active": 4,
+    "recovery": 8
+   },
+   "hitFrames": [
+    3,
+    4,
+    5,
+    6
+   ],
+   "boxes": "89754069",
+   "drawings": [
+    [
+     "sheets/jL.png",
+     0,
+     2
+    ],
+    [
+     "sheets/jL.png",
+     1,
+     1
+    ],
+    [
+     "sheets/jL.png",
+     2,
+     4
+    ],
+    [
+     "sheets/jL.png",
+     3,
+     4
+    ],
+    [
+     "sheets/jL.png",
+     4,
+     4
+    ]
+   ]
+  },
+  "j.M": {
+   "duration": 21,
+   "data": {
+    "startup": 6,
+    "active": 4,
+    "recovery": 12
+   },
+   "measured": {
+    "startup": 6,
+    "active": 4,
+    "recovery": 12
+   },
+   "hitFrames": [
+    5,
+    6,
+    7,
+    8
+   ],
+   "boxes": "ff410c29",
+   "drawings": [
+    [
+     "sheets/jM.png",
+     0,
+     3
+    ],
+    [
+     "sheets/jM.png",
+     1,
+     2
+    ],
+    [
+     "sheets/jM.png",
+     2,
+     4
+    ],
+    [
+     "sheets/jM.png",
+     3,
+     4
+    ],
+    [
+     "sheets/jM.png",
+     4,
+     4
+    ],
+    [
+     "sheets/jM.png",
+     5,
+     4
+    ]
+   ]
+  },
+  "j.H": {
+   "duration": 21,
+   "data": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 9
+   },
+   "measured": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 9
+   },
+   "hitFrames": [
+    9,
+    10,
+    11
+   ],
+   "boxes": "f3be1b82",
+   "drawings": [
+    [
+     "sheets/jH.png",
+     0,
+     4
+    ],
+    [
+     "sheets/jH.png",
+     1,
+     5
+    ],
+    [
+     "sheets/jH.png",
+     2,
+     3
+    ],
+    [
+     "sheets/jH.png",
+     3,
+     3
+    ],
+    [
+     "sheets/jH.png",
+     4,
+     3
+    ],
+    [
+     "sheets/jH.png",
+     5,
+     3
+    ]
+   ]
+  },
+  "j.S": {
+   "duration": 30,
+   "data": {
+    "startup": 9,
+    "active": 4,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 9,
+    "active": 4,
+    "recovery": 18
+   },
+   "hitFrames": [
+    8,
+    9,
+    10,
+    11
+   ],
+   "boxes": "6222d3a5",
+   "drawings": [
+    [
+     "sheets/jS.png",
+     0,
+     3
+    ],
+    [
+     "sheets/jS.png",
+     1,
+     3
+    ],
+    [
+     "sheets/jS.png",
+     2,
+     2
+    ],
+    [
+     "sheets/jS.png",
+     3,
+     4
+    ],
+    [
+     "sheets/jS.png",
+     4,
+     6
+    ],
+    [
+     "sheets/jS.png",
+     5,
+     6
+    ],
+    [
+     "sheets/jS.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "5S": {
+   "duration": 35,
+   "data": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 9,
+    "active": 3,
+    "recovery": 24
+   },
+   "hitFrames": [
+    8,
+    9,
+    10
+   ],
+   "boxes": "1f92ef84",
+   "drawings": [
+    [
+     "sheets/5S.png",
+     0,
+     4
+    ],
+    [
+     "sheets/5S.png",
+     1,
+     4
+    ],
+    [
+     "sheets/5S.png",
+     2,
+     3
+    ],
+    [
+     "sheets/5S.png",
+     3,
+     6
+    ],
+    [
+     "sheets/5S.png",
+     4,
+     6
+    ],
+    [
+     "sheets/5S.png",
+     5,
+     6
+    ],
+    [
+     "sheets/5S.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "spiritOrb": {
+   "duration": 36,
+   "data": {
+    "startup": 12,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 12,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    11,
+    12,
+    13
+   ],
+   "boxes": "9ab7db0e",
+   "drawings": [
+    [
+     "sheets/fireball.png",
+     0,
+     3
+    ],
+    [
+     "sheets/fireball.png",
+     1,
+     4
+    ],
+    [
+     "sheets/fireball.png",
+     2,
+     4
+    ],
+    [
+     "sheets/fireball.png",
+     3,
+     3
+    ],
+    [
+     "sheets/fireball.png",
+     4,
+     8
+    ],
+    [
+     "sheets/fireball.png",
+     5,
+     8
+    ],
+    [
+     "sheets/fireball.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "spiritOrbM": {
+   "duration": 40,
+   "data": {
+    "startup": 16,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 16,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    15,
+    16,
+    17
+   ],
+   "boxes": "999a5ed2",
+   "drawings": [
+    [
+     "sheets/fireball.png",
+     0,
+     4
+    ],
+    [
+     "sheets/fireball.png",
+     1,
+     5
+    ],
+    [
+     "sheets/fireball.png",
+     2,
+     6
+    ],
+    [
+     "sheets/fireball.png",
+     3,
+     3
+    ],
+    [
+     "sheets/fireball.png",
+     4,
+     8
+    ],
+    [
+     "sheets/fireball.png",
+     5,
+     8
+    ],
+    [
+     "sheets/fireball.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "spiritOrbH": {
+   "duration": 45,
+   "data": {
+    "startup": 21,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 21,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    20,
+    21,
+    22
+   ],
+   "boxes": "5c27176f",
+   "drawings": [
+    [
+     "sheets/fireball.png",
+     0,
+     6
+    ],
+    [
+     "sheets/fireball.png",
+     1,
+     7
+    ],
+    [
+     "sheets/fireball.png",
+     2,
+     7
+    ],
+    [
+     "sheets/fireball.png",
+     3,
+     3
+    ],
+    [
+     "sheets/fireball.png",
+     4,
+     8
+    ],
+    [
+     "sheets/fireball.png",
+     5,
+     8
+    ],
+    [
+     "sheets/fireball.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "pillarL": {
+   "duration": 40,
+   "data": {
+    "startup": 15,
+    "active": 8,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 15,
+    "active": 8,
+    "recovery": 18
+   },
+   "hitFrames": [
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+   ],
+   "boxes": "5069d21d",
+   "drawings": [
+    [
+     "sheets/pillar.png",
+     0,
+     2
+    ],
+    [
+     "sheets/pillar.png",
+     1,
+     2
+    ],
+    [
+     "sheets/pillar.png",
+     2,
+     1
+    ],
+    [
+     "sheets/pillar.png",
+     3,
+     9
+    ],
+    [
+     "sheets/pillar.png",
+     4,
+     9
+    ],
+    [
+     "sheets/pillar.png",
+     5,
+     9
+    ],
+    [
+     "sheets/pillar.png",
+     6,
+     8
+    ]
+   ]
+  },
+  "pillarM": {
+   "duration": 47,
+   "data": {
+    "startup": 18,
+    "active": 8,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 18,
+    "active": 8,
+    "recovery": 22
+   },
+   "hitFrames": [
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+   ],
+   "boxes": "77e655da",
+   "drawings": [
+    [
+     "sheets/pillar.png",
+     0,
+     3
+    ],
+    [
+     "sheets/pillar.png",
+     1,
+     3
+    ],
+    [
+     "sheets/pillar.png",
+     2,
+     2
+    ],
+    [
+     "sheets/pillar.png",
+     3,
+     10
+    ],
+    [
+     "sheets/pillar.png",
+     4,
+     10
+    ],
+    [
+     "sheets/pillar.png",
+     5,
+     10
+    ],
+    [
+     "sheets/pillar.png",
+     6,
+     9
+    ]
+   ]
+  },
+  "pillarH": {
+   "duration": 55,
+   "data": {
+    "startup": 22,
+    "active": 8,
+    "recovery": 26
+   },
+   "measured": {
+    "startup": 22,
+    "active": 8,
+    "recovery": 26
+   },
+   "hitFrames": [
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28
+   ],
+   "boxes": "52b536b2",
+   "drawings": [
+    [
+     "sheets/pillar.png",
+     0,
+     4
+    ],
+    [
+     "sheets/pillar.png",
+     1,
+     4
+    ],
+    [
+     "sheets/pillar.png",
+     2,
+     4
+    ],
+    [
+     "sheets/pillar.png",
+     3,
+     11
+    ],
+    [
+     "sheets/pillar.png",
+     4,
+     11
+    ],
+    [
+     "sheets/pillar.png",
+     5,
+     11
+    ],
+    [
+     "sheets/pillar.png",
+     6,
+     10
+    ]
+   ]
+  },
+  "lariatL": {
+   "duration": 41,
+   "data": {
+    "startup": 14,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 14,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    13,
+    14,
+    15,
+    16
+   ],
+   "boxes": "9fa87b9c",
+   "drawings": [
+    [
+     "sheets/lariat.png",
+     0,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     1,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     2,
+     2
+    ],
+    [
+     "sheets/lariat.png",
+     3,
+     2
+    ],
+    [
+     "sheets/lariat.png",
+     4,
+     2
+    ],
+    [
+     "sheets/lariat.png",
+     5,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     6,
+     12
+    ],
+    [
+     "sheets/lariat.png",
+     7,
+     12
+    ]
+   ]
+  },
+  "lariatM": {
+   "duration": 45,
+   "data": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    17,
+    18,
+    19,
+    20
+   ],
+   "boxes": "a7afb53c",
+   "drawings": [
+    [
+     "sheets/lariat.png",
+     0,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     1,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     4,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     5,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     6,
+     12
+    ],
+    [
+     "sheets/lariat.png",
+     7,
+     12
+    ]
+   ]
+  },
+  "lariatH": {
+   "duration": 51,
+   "data": {
+    "startup": 22,
+    "active": 4,
+    "recovery": 26
+   },
+   "measured": {
+    "startup": 22,
+    "active": 4,
+    "recovery": 26
+   },
+   "hitFrames": [
+    21,
+    22,
+    23,
+    24
+   ],
+   "boxes": "9ccf942e",
+   "drawings": [
+    [
+     "sheets/lariat.png",
+     0,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     1,
+     5
+    ],
+    [
+     "sheets/lariat.png",
+     2,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     3,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     4,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     5,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     6,
+     13
+    ],
+    [
+     "sheets/lariat.png",
+     7,
+     13
+    ]
+   ]
+  },
+  "install": {
+   "duration": 40,
+   "data": {
+    "startup": 31,
+    "active": 0,
+    "recovery": 10
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "85b59c75",
+   "drawings": [
+    [
+     "sheets/install-idle.png",
+     0,
+     7
+    ],
+    [
+     "sheets/install-idle.png",
+     1,
+     7
+    ],
+    [
+     "sheets/install-idle.png",
+     2,
+     7
+    ],
+    [
+     "sheets/install-idle.png",
+     3,
+     7
+    ],
+    [
+     "sheets/install-idle.png",
+     4,
+     6
+    ],
+    [
+     "sheets/install-idle.png",
+     5,
+     6
+    ]
+   ]
+  },
+  "rite_5": {
+   "duration": 33,
+   "data": {
+    "startup": 12,
+    "active": 0,
+    "recovery": 22
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a6a8ae18",
+   "drawings": [
+    [
+     "sheets/rite-5.png",
+     0,
+     11
+    ],
+    [
+     "sheets/rite-5.png",
+     1,
+     5
+    ],
+    [
+     "sheets/rite-5.png",
+     2,
+     9
+    ],
+    [
+     "sheets/rite-5.png",
+     3,
+     8
+    ]
+   ]
+  },
+  "rite_2": {
+   "duration": 36,
+   "data": {
+    "startup": 13,
+    "active": 0,
+    "recovery": 24
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e4569bd5",
+   "drawings": [
+    [
+     "sheets/rite-2.png",
+     0,
+     12
+    ],
+    [
+     "sheets/rite-2.png",
+     1,
+     5
+    ],
+    [
+     "sheets/rite-2.png",
+     2,
+     10
+    ],
+    [
+     "sheets/rite-2.png",
+     3,
+     9
+    ]
+   ]
+  },
+  "rite_6": {
+   "duration": 37,
+   "data": {
+    "startup": 10,
+    "active": 0,
+    "recovery": 28
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "fc68975c",
+   "drawings": [
+    [
+     "sheets/rite-6.png",
+     0,
+     9
+    ],
+    [
+     "sheets/rite-6.png",
+     1,
+     5
+    ],
+    [
+     "sheets/rite-6.png",
+     2,
+     12
+    ],
+    [
+     "sheets/rite-6.png",
+     3,
+     11
+    ]
+   ]
+  },
+  "rite_j": {
+   "duration": 28,
+   "data": {
+    "startup": 11,
+    "active": 0,
+    "recovery": 18
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "2e8ea9cd",
+   "drawings": [
+    [
+     "sheets/rite-j.png",
+     0,
+     10
+    ],
+    [
+     "sheets/rite-j.png",
+     1,
+     4
+    ],
+    [
+     "sheets/rite-j.png",
+     2,
+     8
+    ],
+    [
+     "sheets/rite-j.png",
+     3,
+     6
+    ]
+   ]
+  },
+  "vow_start": {
+   "duration": 4,
+   "data": {
+    "startup": 5,
+    "active": 0,
+    "recovery": 0
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "e0492f01",
+   "drawings": [
+    [
+     "sheets/vow-start.png",
+     0,
+     4
+    ]
+   ]
+  },
+  "vow_strike_quick": {
+   "duration": 32,
+   "data": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 20
+   },
+   "measured": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 20
+   },
+   "hitFrames": [
+    9,
+    10,
+    11
+   ],
+   "boxes": "9a08f1fb",
+   "drawings": [
+    [
+     "sheets/vow-strike-quick.png",
+     0,
+     6
+    ],
+    [
+     "sheets/vow-strike-quick.png",
+     1,
+     3
+    ],
+    [
+     "sheets/vow-strike-quick.png",
+     2,
+     9
+    ],
+    [
+     "sheets/vow-strike-quick.png",
+     3,
+     7
+    ],
+    [
+     "sheets/vow-strike-quick.png",
+     4,
+     7
+    ]
+   ]
+  },
+  "vow_strike": {
+   "duration": 38,
+   "data": {
+    "startup": 14,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 14,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    13,
+    14,
+    15
+   ],
+   "boxes": "20a6c76a",
+   "drawings": [
+    [
+     "sheets/vow-strike.png",
+     0,
+     4
+    ],
+    [
+     "sheets/vow-strike.png",
+     1,
+     6
+    ],
+    [
+     "sheets/vow-strike.png",
+     2,
+     3
+    ],
+    [
+     "sheets/vow-strike.png",
+     3,
+     13
+    ],
+    [
+     "sheets/vow-strike.png",
+     4,
+     12
+    ]
+   ]
+  },
+  "vow_strike_full": {
+   "duration": 43,
+   "data": {
+    "startup": 16,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 16,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    15,
+    16,
+    17,
+    18
+   ],
+   "boxes": "f2bef3a6",
+   "drawings": [
+    [
+     "sheets/vow-strike-full.png",
+     0,
+     4
+    ],
+    [
+     "sheets/vow-strike-full.png",
+     1,
+     8
+    ],
+    [
+     "sheets/vow-strike-full.png",
+     2,
+     3
+    ],
+    [
+     "sheets/vow-strike-full.png",
+     3,
+     8
+    ],
+    [
+     "sheets/vow-strike-full.png",
+     4,
+     20
+    ]
+   ]
+  },
+  "absolve": {
+   "duration": 23,
+   "data": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "measured": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10
+   ],
+   "boxes": "f3f2276",
+   "drawings": [
+    [
+     "sheets/absolve.png",
+     0,
+     5
+    ],
+    [
+     "sheets/absolve.png",
+     1,
+     2
+    ],
+    [
+     "sheets/absolve.png",
+     2,
+     6
+    ],
+    [
+     "sheets/absolve.png",
+     3,
+     5
+    ],
+    [
+     "sheets/absolve.png",
+     4,
+     5
+    ]
+   ]
+  },
+  "absolve_air": {
+   "duration": 23,
+   "data": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "measured": {
+    "startup": 8,
+    "active": 4,
+    "recovery": 12
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10
+   ],
+   "boxes": "b2ed4209",
+   "drawings": [
+    [
+     "sheets/absolve.png",
+     0,
+     5
+    ],
+    [
+     "sheets/absolve.png",
+     1,
+     2
+    ],
+    [
+     "sheets/absolve.png",
+     2,
+     6
+    ],
+    [
+     "sheets/absolve.png",
+     3,
+     5
+    ],
+    [
+     "sheets/absolve.png",
+     4,
+     5
+    ]
+   ]
+  },
+  "lariatL_ex": {
+   "duration": 45,
+   "data": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    17,
+    18,
+    19,
+    20
+   ],
+   "boxes": "4b147530",
+   "drawings": [
+    [
+     "sheets/lariat.png",
+     0,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     1,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     4,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     5,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     6,
+     12
+    ],
+    [
+     "sheets/lariat.png",
+     7,
+     12
+    ]
+   ]
+  },
+  "lariatM_ex": {
+   "duration": 45,
+   "data": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    17,
+    18,
+    19,
+    20
+   ],
+   "boxes": "a7afb53c",
+   "drawings": [
+    [
+     "sheets/lariat.png",
+     0,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     1,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     4,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     5,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     6,
+     12
+    ],
+    [
+     "sheets/lariat.png",
+     7,
+     12
+    ]
+   ]
+  },
+  "lariatH_ex": {
+   "duration": 45,
+   "data": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 18,
+    "active": 4,
+    "recovery": 24
+   },
+   "hitFrames": [
+    17,
+    18,
+    19,
+    20
+   ],
+   "boxes": "88d52efc",
+   "drawings": [
+    [
+     "sheets/lariat.png",
+     0,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     1,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     4,
+     3
+    ],
+    [
+     "sheets/lariat.png",
+     5,
+     4
+    ],
+    [
+     "sheets/lariat.png",
+     6,
+     12
+    ],
+    [
+     "sheets/lariat.png",
+     7,
+     12
+    ]
+   ]
+  }
+ }
+}

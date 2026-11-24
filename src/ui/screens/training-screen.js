@@ -5,6 +5,7 @@ import { createFrameMeter } from '../training/frame-meter.js';
 import { drawTrainingOverlay } from '../training/overlay.js';
 import { createSystemsReadout } from '../training/systems-readout.js';
 import { openTrainingPanel, loadTrainingSettings } from '../training/training-panel.js';
+import { openPolishPanel } from '../training/polish-panel.js';
 import { drawMenu, shade, title, hint } from './common.js';
 
 const PAUSE = ['RESUME', 'CHARACTER SELECT', 'MAIN MENU'];
@@ -19,11 +20,12 @@ export function createTrainingScreen(app, { picks }) {
   let game = training.newGame();
   let paused = false;
   let sel = 0;
+  let polish = null; // the polish panel (P): look-only switches, never blocks the game
 
   return {
     pausable: true,
     get game() { return game; }, // for the debugging hook (window.toska)
-    help: 'F1 controls · F2 training menu · F3 boxes · F4 labels · F5 inputs · F6 record · F7 playback · F8 meter · F9 pause · F10 frame · ` slow · R reset · Enter menu',
+    help: 'F1 controls · F2 training menu · F3 boxes · F4 labels · F5 inputs · F6 record · F7 playback · F8 meter · P polish · F9 pause · F10 frame · ` slow · R reset · Enter menu',
     step(menu) {
       if (paused) {
         for (const m of menu) {
@@ -70,6 +72,7 @@ export function createTrainingScreen(app, { picks }) {
         return;
       }
       if (app.panel || paused) return;
+      if (e.code === 'KeyP' && !e.repeat) { if (polish) polish.close(); else polish = openPolishPanel(app.ui, () => { polish = null; }); }
       if (e.code === 'F4') { e.preventDefault(); app.opts.labels = !app.opts.labels; }
       if (e.code === 'F8') { e.preventDefault(); app.opts.meter = !app.opts.meter; }
       if (e.code === 'F6') {
