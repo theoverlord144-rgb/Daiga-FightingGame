@@ -12,23 +12,29 @@
     "name": "Spirit Install",
     "vars": {
       "install": { "start": 0, "min": 0, "max": 600, "perFrame": -1, "label": "Install", "display": "timer",
-        "aura": [{ "effect": "guardian", "behind": true }, { "effect": "installMotesBack", "behind": true }, { "effect": "installFlames" }, { "effect": "installMotesFront" }],
-        "art": { "idle": "installIdle" } }
+        "aura": [{ "effect": "guardian", "behind": true, "swap": { "spirit5L": "guardianL", "spirit5M": "guardianM", "spirit5H": "guardianH" } }, { "effect": "installMotesBack", "behind": true }, { "effect": "installFlames" }, { "effect": "installMotesFront" }],
+        "art": { "idle": "installIdle", "walkF": "installWalkF", "dashF": "installDashF", "dashStop": "installDashStop" } }
     }
   },
   "gatlings": {
-    "5L": ["5L", "5M", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "2L": ["5L", "5M", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "5M": ["5L", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "2M": ["5L", "5M", "5H", "2L", "2H", "backHeavy", "5S"],
-    "5H": ["5L", "5M", "2L", "2M", "2H", "backHeavy", "5S"],
+    "5L": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
+    "2L": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
+    "5M": ["spirit5L", "5L", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
+    "2M": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2H", "backHeavy", "5S"],
+    "5H": ["spirit5L", "5L", "spirit5M", "5M", "2L", "2M", "2H", "backHeavy", "5S"],
     "backHeavy": ["2H", "5S"],
     "j.L": ["j.L", "j.M", "j.H", "j.S"],
     "j.M": ["j.L", "j.H", "j.S"],
-    "j.H": ["j.L", "j.M", "j.S"]
+    "j.H": ["j.L", "j.M", "j.S"],
+    "spirit5L": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
+    "spirit5M": ["spirit5L", "5L", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
+    "spirit5H": ["spirit5L", "5L", "spirit5M", "5M", "2L", "2M", "2H", "backHeavy", "5S"]
   },
   "states": {
-    "installIdle": { "duration": 60, "loop": true, "sprite": { "image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 174, "frameH": 445, "originX": 87, "originY": 443, "scale": 0.5, "holds": [10, 10, 10, 10, 10, 10] } },
+    "installIdle": {"duration": 60, "loop": true, "sprite": {"image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [10,10,10,10,10,10]}},
+    "installWalkF": {"duration": 48, "loop": true, "sprite": {"image": "sheets/install-walk.png", "columns": 6, "rows": 1, "count": 6, "frameW": 254, "frameH": 433, "originX": 127, "originY": 431, "scale": 0.5, "holds": [8,8,8,8,8,8]}},
+    "installDashF": {"duration": 12, "loop": true, "sprite": {"image": "sheets/install-dash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 350, "frameH": 342, "originX": 175, "originY": 340, "scale": 0.5, "holds": [3,3,3,3]}},
+    "installDashStop": {"duration": 3, "sprite": {"image": "sheets/install-dash-stop.png", "columns": 2, "rows": 1, "count": 2, "frameW": 350, "frameH": 382, "originX": 182, "originY": 380, "scale": 0.5, "holds": [2,1]}},
     "vow_hold": { "duration": 36 }, "vow_absorb": { "duration": 14 },
     "crouch": { "loopFrom": 3 }, "tumble": { "duration": 12 }, "airdashEnd": { "loopFrom": 8 },
     "walkF": { "duration": 48 }, "walkB": { "duration": 48 },
@@ -79,13 +85,19 @@
     "throwFinish": {"holds": [8,8,7,7], "sprite": {"image": "sheets/throw-back-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 254, "frameH": 391, "originX": 127, "originY": 389, "scale": 0.5}} } } },
   "effects": {
     "pillar": { "hold": 3, "at": [95, 151], "sprite": { "image": "sheets/pillar-fx.png", "columns": 8, "rows": 1, "count": 8, "frameW": 400, "frameH": 688, "originX": 200, "originY": 344, "scale": 0.5, "additive": true } },
-    "guardian": { "hold": 8, "at": [-48, 62], "alpha": 0.9, "bob": { "px": 5, "period": 96 }, "sprite": { "image": "sheets/guardian-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 312, "frameH": 495, "originX": 156, "originY": 493, "scale": 0.5 } },
+    "guardian": {"hold": 8, "at": [-48,62], "alpha": 0.9, "bob": {"px": 5, "period": 96}, "sprite": {"image": "sheets/guardian-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 230, "frameH": 467, "originX": 118, "originY": 465, "scale": 0.5}},
+    "guardianL": {"holds": [2,1,3,4,2], "at": [-30,30], "alpha": 0.9, "sprite": {"image": "sheets/guardian-L.png", "columns": 5, "rows": 1, "count": 5, "frameW": 392, "frameH": 480, "originX": 153, "originY": 478, "scale": 0.5}},
+    "guardianM": {"holds": [2,2,1,5,4,4,4], "at": [-30,30], "alpha": 0.9, "sprite": {"image": "sheets/guardian-M.png", "columns": 7, "rows": 1, "count": 7, "frameW": 412, "frameH": 490, "originX": 131, "originY": 488, "scale": 0.5}},
+    "guardianH": {"holds": [3,3,2,5,6,5,5], "at": [-30,30], "alpha": 0.9, "sprite": {"image": "sheets/guardian-H.png", "columns": 7, "rows": 1, "count": 7, "frameW": 444, "frameH": 476, "originX": 146, "originY": 474, "scale": 0.5}},
     "installFlames": { "hold": 5, "at": [0, 112], "sprite": { "image": "sheets/install-flames.png", "columns": 6, "rows": 1, "count": 6, "frameW": 392, "frameH": 684, "originX": 196, "originY": 342, "scale": 0.5, "additive": true } },
     "installMotesFront": { "hold": 4, "at": [0, 88], "sprite": { "image": "sheets/install-motes-front.png", "columns": 8, "rows": 1, "count": 8, "frameW": 364, "frameH": 284, "originX": 182, "originY": 142, "scale": 0.5, "additive": true } },
     "installMotesBack": { "hold": 4, "at": [0, 108], "sprite": { "image": "sheets/install-motes-back.png", "columns": 8, "rows": 1, "count": 8, "frameW": 364, "frameH": 156, "originX": 182, "originY": 78, "scale": 0.5, "additive": true } },
     "spiritHand": { "hold": 3, "at": [83, 70], "sprite": { "image": "sheets/jH-hand.png", "columns": 7, "rows": 1, "count": 7, "frameW": 242, "frameH": 352, "originX": 121, "originY": 176, "scale": 0.5 } }
   },
   "moves": [
+    {"id": "spirit5L", "name": "Guardian Light (Spirit Install: the guardian strikes, Malik holds his idle)", "input": "5L", "requires": {"vars": {"install": [1,600]}}, "startup": 4, "active": 2, "recovery": 7, "damage": 400, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "mid", "reach": 88, "starterProration": 8000, "hitboxes": [[30,95,60,110]], "sprite": {"image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [2,2,2,2,2,2]}},
+    {"id": "spirit5M", "name": "Guardian Medium (Spirit Install: a palm shockwave)", "input": "5M", "requires": {"vars": {"install": [1,600]}}, "startup": 6, "active": 5, "recovery": 12, "damage": 650, "hitstun": 17, "blockstun": 13, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18, "guard": "mid", "reach": 108, "starterProration": 9000, "hitboxes": [[35,90,75,125]], "sprite": {"image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [4,4,4,4,3,3]}},
+    {"id": "spirit5H", "name": "Guardian Heavy (Spirit Install: the orb blast)", "input": "5H", "requires": {"vars": {"install": [1,600]}}, "startup": 9, "active": 3, "recovery": 18, "damage": 800, "hitstun": 20, "blockstun": 15, "hitstop": 12, "pushbackHit": 28, "pushbackBlock": 34, "selfPushback": 22, "guard": "mid", "reach": 118, "hitboxes": [[45,100,75,100]], "sprite": {"image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [5,5,5,5,5,4]}},
     { "id": "5L", "name": "Standing Light", "input": "5L", "startup": 4, "active": 2, "recovery": 7,
       "damage": 400, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "mid", "reach": 62,
       "starterProration": 8000,
@@ -240,7 +252,7 @@
     { "id": "install", "name": "Spirit Install (super)", "input": "22HS", "kind": "super", "startup": 31, "active": 0, "recovery": 10,
       "requires": { "vars": { "install": [0, 0] } },
       "timeline": [{ "at": 2, "superFlash": 30 }, { "at": 3, "setVar": { "install": 600 } }],
-      "sprite": { "image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 174, "frameH": 445, "originX": 87, "originY": 443, "scale": 0.5, "holds": [7, 7, 7, 7, 6, 6] } },
+      "sprite": {"image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [7,7,7,7,6,6]} },
     { "id": "crouch", "name": "Crouch (system state art)", "sprite": { "image": "sheets/crouch.png", "columns": 6, "rows": 1, "count": 6, "frameW": 298, "frameH": 368, "originX": 161, "originY": 366, "scale": 0.5, "holds": [3, 12, 12, 12, 12, 12] } },
     { "id": "jumpSquat", "name": "Jump squat (system state art)", "sprite": { "image": "sheets/jumpsquat.png", "columns": 1, "rows": 1, "count": 1, "frameW": 238, "frameH": 324, "originX": 119, "originY": 322, "scale": 0.5 } },
     { "id": "superJumpSquat", "name": "Super jump squat (system state art)", "sprite": { "image": "sheets/jumpsquat.png", "columns": 1, "rows": 1, "count": 1, "frameW": 238, "frameH": 324, "originX": 119, "originY": 322, "scale": 0.5 } },

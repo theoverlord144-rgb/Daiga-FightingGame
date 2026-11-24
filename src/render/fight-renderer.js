@@ -383,20 +383,28 @@ export function createFightRenderer(ctx, W, H) {
    * 0, each drawing held the effect's `hold` frames, fading out over the last second. An effect may `bob` up and
    * down ({ px, period }) and be see-through (`alpha`).
    */
+  const auraAt = {}; // drawing only: where a swapping aura is drawn now, on its way to its place
   function drawAuras(p, def, frame, behind) {
     for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
       const n = p.vars?.[k];
       if (!v.aura || !(n > 0)) continue;
       for (const l of v.aura) {
         if (!!l.behind !== behind) continue;
-        const e = def.effects[l.effect];
+        // swap: { <state>: effect }: in that state the aura is another effect (the guardian's attack), played in
+        // step with the state by its `holds`. It glides between the two places so nothing jumps.
+        const swap = def.effects[l.swap?.[p.state]];
+        const e = swap ?? def.effects[l.effect];
         if (!e) continue;
         const at = e.at ?? [0, 0];
         const bob = e.bob ? Math.sin((frame * Math.PI * 2) / e.bob.period) * e.bob.px : 0;
-        const [x, y] = toScreen(p.x + p.facing * at[0] * UNIT, p.y + (at[1] + bob) * UNIT);
+        const key = `${p.id}:${l.effect}`;
+        const was = l.swap ? auraAt[key] ?? at : at;
+        const now = l.swap ? [was[0] + (at[0] - was[0]) * 0.4, was[1] + (at[1] - was[1]) * 0.4] : at;
+        if (l.swap) auraAt[key] = now;
+        const [x, y] = toScreen(p.x + p.facing * now[0] * UNIT, p.y + (now[1] + bob) * UNIT);
         ctx.save();
         ctx.globalAlpha *= Math.min(1, n / 60) * (e.alpha ?? 1);
-        drawSheetFrame(def, e.sprite, Math.floor(frame / (e.hold ?? 4)) % e.sprite.count, x, y, p.facing);
+        drawSheetFrame(def, e.sprite, swap ? heldFrame(e.holds, p.frame, false)[0] : Math.floor(frame / (e.hold ?? 4)) % e.sprite.count, x, y, p.facing);
         ctx.restore();
       }
     }

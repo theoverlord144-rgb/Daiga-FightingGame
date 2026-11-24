@@ -194,6 +194,14 @@ try {
   // Dust under moves that run or slide (node scripts/shots.mjs <folder> dust)
   scene('dust-slide', 'avner', 'malik', 300, (s) => { s.go('', '', 10); s.go('DH', '', 1); s.go('', '', 7); s.shot('a'); s.go('', '', 5); s.shot('b'); });
   scene('dust-lariat', 'malik', 'avner', 500, (s) => { s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 6); s.shot('a'); s.go('', '', 6); s.shot('b'); });
+  // Malik's Spirit Install: the look, and the guardian's L / M / H on their striking frame (node scripts/shots.mjs <folder> spirit)
+  scene('spirit-look', 'malik', 'avner', 400, (s) => {
+    s.game.players[0].vars.install = 600; s.go('', '', 20); s.shot('idle'); s.go('F', '', 14); s.shot('walk'); s.go('', '', 4); s.go('F', '', 1); s.go('', '', 1); s.go('F', '', 6); s.shot('dash');
+  });
+  for (const [b, pre, hold] of [['L', 3, 6], ['M', 6, 8], ['H', 9, 10]]) scene('spirit-' + b, 'malik', 'avner', 130, (s) => {
+    s.opts = { boxes: true };
+    s.game.players[0].vars.install = 600; s.go('', '', 20); s.go(b, '', 1); s.go('', '', 1); s.shot('start'); s.go('', '', pre - 1); s.shot('strike'); s.go('', '', hold); s.shot('after');
+  });
   // Malik's Running Lariat (node scripts/shots.mjs <folder> lariat)
   scene('lariat', 'malik', 'avner', 330, (s) => {
     s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 2); s.shot('power-up'); s.go('', '', 10); s.shot('running'); s.go('', '', 9); s.shot('swing'); s.go('', '', 30); s.shot('recovery');
