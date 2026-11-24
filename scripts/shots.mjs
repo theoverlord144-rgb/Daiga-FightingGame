@@ -175,6 +175,9 @@ try {
   scene('pillar', 'malik', 'avner', 200, (s) => {
     s.go('', '', 10); s.go('F', '', 1); s.go('D', '', 1); s.go('DFM', '', 1); s.go('', '', 9); s.shot('rising'); s.go('', '', 5); s.shot('peak'); s.go('', '', 2); s.shot('hit'); s.go('', '', 14); s.shot('fading');
   });
+  scene('mthrow', 'malik', 'avner', 60, (s) => {
+    s.go('', '', 10); s.go('FH', '', 1); s.go('', '', 3); s.shot('grab'); s.go('', '', 4); s.shot('hold'); s.go('', '', 5); s.shot('push'); s.go('', '', 14); s.shot('after');
+  });
   // Malik's Running Lariat (node scripts/shots.mjs <folder> lariat)
   scene('lariat', 'malik', 'avner', 330, (s) => {
     s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 2); s.shot('power-up'); s.go('', '', 10); s.shot('running'); s.go('', '', 9); s.shot('swing'); s.go('', '', 30); s.shot('recovery');
