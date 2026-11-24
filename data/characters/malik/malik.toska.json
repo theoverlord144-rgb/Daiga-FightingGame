@@ -67,7 +67,14 @@
       "sprite": { "image": "sheets/orb.png", "columns": 9, "rows": 1, "count": 9, "frameW": 344, "frameH": 344, "originX": 205, "originY": 172, "scale": 0.5, "additive": true },
       "anim": { "release": [3, 3, 3], "loop": [3, 3, 3], "impact": [3, 4, 5] } }
   },
-  "art": { "throws": { "4H": {
+  "art": {
+    "motion": { "lariatL": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
+      "lariatM": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
+      "lariatH": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
+      "lariatL_ex": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
+      "lariatM_ex": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
+      "lariatH_ex": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13} },
+    "throws": { "4H": {
     "throwHold": {"holds": [4,4,6], "sprite": {"image": "sheets/throw-back-hold.png", "columns": 3, "rows": 1, "count": 3, "frameW": 225, "frameH": 374, "originX": 94, "originY": 372, "scale": 0.5}},
     "throwFinish": {"holds": [8,8,7,7], "sprite": {"image": "sheets/throw-back-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 254, "frameH": 391, "originX": 127, "originY": 389, "scale": 0.5}} } } },
   "effects": {
@@ -82,7 +89,7 @@
     { "id": "5L", "name": "Standing Light", "input": "5L", "startup": 4, "active": 2, "recovery": 7,
       "damage": 400, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "mid", "reach": 62,
       "starterProration": 8000,
-      "hitboxes": [[20, 118, 50, 26]],
+      "hitboxes": [[20, 62, 50, 82]],
       "sprite": { "image": "sheets/5L.png", "columns": 6, "rows": 1, "count": 6, "frameW": 296, "frameH": 376,
         "originX": 159, "originY": 374, "scale": 0.5, "holds": [2, 1, 2, 3, 2, 2] } },
     { "id": "5M", "name": "Standing Medium (two hits)", "input": "5M", "startup": 6, "active": 5, "recovery": 12,
@@ -116,9 +123,9 @@
       "knockdown": true,
       "hitboxes": [[20, 0, 75, 28]],
       "sprite": { "image": "sheets/2H.png", "columns": 7, "rows": 1, "count": 7, "frameW": 355, "frameH": 267, "originX": 147, "originY": 265, "scale": 0.5, "holds": [2, 3, 3, 3, 8, 7, 7] } },
-    { "id": "6H", "name": "Forward Throw (the grab; the hold and the push are the art of throwHold and throwFinish)", "input": "6H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70,
+    { "id": "6H", "name": "Forward Throw (the grab; the hold and the push are the art of throwHold and throwFinish)", "input": "6H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "throwHit": 6, "throwFx": [72, 112], "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70,
       "sprite": {"image": "sheets/throw-forward.png", "columns": 3, "rows": 1, "count": 3, "frameW": 233, "frameH": 382, "originX": 99, "originY": 380, "scale": 0.5, "holds": [4,10,11]} },
-    { "id": "4H", "name": "Back Throw (the grab; its hold and slam are in art.throws)", "input": "4H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70, "throwSwap": true,
+    { "id": "4H", "name": "Back Throw (the grab; its hold and slam are in art.throws)", "input": "4H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "throwHit": 8, "throwFx": [62, 30], "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70, "throwSwap": true,
       "sprite": {"image": "sheets/throw-back.png", "columns": 3, "rows": 1, "count": 3, "frameW": 256, "frameH": 376, "originX": 111, "originY": 374, "scale": 0.5, "holds": [4,10,11]} },
     { "id": "backHeavy", "name": "Back Heavy", "input": "4H", "startup": 11, "active": 3, "recovery": 22,
       "damage": 800, "hitstun": 21, "blockstun": 16, "hitstop": 12, "pushbackHit": 30, "pushbackBlock": 36, "selfPushback": 22, "guard": "mid", "reach": 138,

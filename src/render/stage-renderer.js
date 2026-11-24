@@ -75,10 +75,48 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
     }
   }
 
+  // Soft light is painted once into its own small canvas and stamped each frame (a gradient a frame is slow).
+  const light = (size, stops) => {
+    const c = document.createElement('canvas');
+    c.width = c.height = size * 2;
+    const g = c.getContext('2d');
+    const grad = g.createRadialGradient(size, size, 0, size, size, size);
+    for (const [at, col] of stops) grad.addColorStop(at, col);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, size * 2, size * 2);
+    return c;
+  };
+  for (const layer of layers) {
+    const { L } = layer;
+    if (L.type === 'torches') {
+      layer.glow = light(L.radius, [[0, `${L.glow}88`], [0.35, `${L.glow}2e`], [1, `${L.glow}00`]]);
+      layer.pool = light(L.radius, [[0, `${L.glow}3a`], [1, `${L.glow}00`]]);
+    } else if (L.type === 'vignette') {
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const g = c.getContext('2d');
+      const grad = g.createRadialGradient(W / 2, H * 0.55, H * L.inner, W / 2, H * 0.55, W * L.outer);
+      grad.addColorStop(0, `${L.color}00`);
+      grad.addColorStop(1, L.color);
+      g.fillStyle = grad;
+      g.fillRect(0, 0, W, H);
+      layer.shade = c;
+    } else if (L.type === 'floor' && L.sheen) {
+      layer.sheen = light(L.sheen.radius, [[0, `${L.sheen.color}66`], [1, `${L.sheen.color}00`]]);
+    }
+  }
+  // Scattered things (stars, motes) get their places once, from the layer's seed: the same every time.
+  for (const layer of layers) {
+    const { L } = layer;
+    if (L.type !== 'stars' && L.type !== 'motes') continue;
+    const r = lcg(L.seed ?? 1);
+    layer.dots = Array.from({ length: L.count }, () => ({ x: r(), y: r(), phase: r() * Math.PI * 2, size: r() < 0.25 ? 2 : 1, speed: 0.5 + r() }));
+  }
+
   return {
-    /** cam.x, cam.y in px (the fight renderer's camera). */
-    draw(ctx, cam) {
-      for (const { L, par, travel, canvas } of layers) {
+    /** cam.x, cam.y in px (the fight renderer's camera). t: the frame count, for things that flicker or drift. */
+    draw(ctx, cam, t = 0) {
+      for (const { L, par, travel, canvas, dots, glow: glowImg, pool: poolImg, shade, sheen } of layers) {
         const dx = -cam.x * par;
         const dy = cam.y * par;
         if (L.type === 'sky') {
@@ -130,6 +168,78 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
           ctx.globalAlpha = 1;
           ctx.fillStyle = L.line;
           ctx.fillRect(0, gy - 1, W, 2);
+          if (L.sheen) {
+            // The low sun lying on the stone: a soft band of light on the floor under it.
+            const sx = W / 2 + L.sheen.x - cam.x * (L.sheen.parallax ?? 0);
+            const r = L.sheen.radius;
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.drawImage(sheen, 0, r, r * 2, r, Math.round(sx - r), gy, r * 2, r * 0.35); // its lower half, flattened onto the floor
+            ctx.restore();
+          }
+        } else if (L.type === 'stars') {
+          // Faint stars in the top of the sky, each twinkling at its own pace.
+          const span = (GROUND + cam.y) * L.band;
+          ctx.fillStyle = L.color;
+          for (const d of dots) {
+            ctx.globalAlpha = L.alpha * (1 - d.y) * (0.55 + 0.45 * Math.sin(t * 0.03 * d.speed + d.phase));
+            ctx.fillRect(Math.round(d.x * W), Math.round(d.y * span), d.size, d.size);
+          }
+          ctx.globalAlpha = 1;
+        } else if (L.type === 'torches') {
+          // Braziers on posts along the railing: a flickering flame, its glow, and its light pooled on the floor.
+          const gy = GROUND + cam.y;
+          const width = W + travel * 2;
+          let n = 0;
+          for (let x = L.offset ?? 0; x < width; x += L.spacing, n++) {
+            const px = Math.round(x + dx - travel);
+            if (px < -L.radius || px > W + L.radius) continue;
+            const top = gy - L.height;
+            const flick = 0.82 + 0.1 * Math.sin(t * 0.21 + n * 1.7) + 0.08 * Math.sin(t * 0.47 + n * 2.9);
+            ctx.fillStyle = L.color;
+            ctx.fillRect(px - 3, top, 6, L.height); // post
+            ctx.fillRect(px - 11, top - 5, 22, 7); // bowl
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            const gr = L.radius * flick;
+            ctx.drawImage(glowImg, px - gr, top - 12 - gr, gr * 2, gr * 2);
+            // The pool of light on the floor below it (the lower half of a glow, flattened).
+            const pr = L.radius * 1.2;
+            ctx.globalAlpha = flick;
+            ctx.drawImage(poolImg, 0, L.radius, L.radius * 2, L.radius, px - pr, gy, pr * 2, pr * 0.3);
+            ctx.restore();
+            // The flame: two tongues that lean and stretch.
+            const lean = 2.5 * Math.sin(t * 0.17 + n * 2.3);
+            for (const [col, w, h] of [[L.flame, 7, 17 * flick], [L.core, 3.5, 9 * flick]]) {
+              ctx.fillStyle = col;
+              ctx.beginPath();
+              ctx.moveTo(px - w, top - 5);
+              ctx.quadraticCurveTo(px - w, top - 5 - h * 0.6, px + lean, top - 5 - h);
+              ctx.quadraticCurveTo(px + w, top - 5 - h * 0.6, px + w, top - 5);
+              ctx.closePath();
+              ctx.fill();
+            }
+          }
+        } else if (L.type === 'motes') {
+          // Dust and embers adrift in the evening light: they rise slowly, sway and wrap around.
+          const width = W + travel * 2;
+          const tall = GROUND * L.band;
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = L.color;
+          for (const d of dots) {
+            const x = (((d.x * width + t * L.drift * d.speed + dx) % width) + width) % width - travel;
+            const y = GROUND + cam.y - ((((d.y * tall + t * L.rise * d.speed) % tall) + tall) % tall) + 6 * Math.sin(t * 0.02 * d.speed + d.phase);
+            if (x < -4 || x > W + 4) continue;
+            ctx.globalAlpha = L.alpha * (0.5 + 0.5 * Math.sin(t * 0.05 * d.speed + d.phase));
+            ctx.fillRect(Math.round(x), Math.round(y), d.size, d.size);
+          }
+          ctx.restore();
+        } else if (L.type === 'vignette') {
+          // The edges of the screen fall into shadow, so the eye stays on the middle.
+          ctx.globalAlpha = L.alpha;
+          ctx.drawImage(shade, 0, 0);
+          ctx.globalAlpha = 1;
         } else if (canvas) {
           ctx.drawImage(canvas, Math.round(dx - travel), Math.round(dy));
         }

@@ -187,6 +187,13 @@ try {
   scene('tech', 'avner', 'malik', 60, (s) => {
     s.go('', '', 10); s.go('FH', '', 1); s.go('', '', 3); s.go('', 'H', 1); s.go('', '', 4); s.shot('guard'); s.go('', '', 5); s.shot('push'); s.go('', '', 6); s.shot('recoil');
   });
+  // Each throw just before, on and after its hit drawing (node scripts/shots.mjs <folder> thit)
+  for (const [name, who, other, dir, wait] of [['thit-avner-f', 'avner', 'malik', 'F', 12], ['thit-avner-b', 'avner', 'malik', 'K', 8], ['thit-malik-f', 'malik', 'avner', 'F', 6], ['thit-malik-b', 'malik', 'avner', 'K', 8]]) scene(name, who, other, 60, (s) => {
+    s.go('', '', 10); s.go(dir + 'H', '', 1); s.go('', '', 14 + wait); s.shot('before'); s.go('', '', 3); s.shot('hit'); s.go('', '', 5); s.shot('after');
+  });
+  // Dust under moves that run or slide (node scripts/shots.mjs <folder> dust)
+  scene('dust-slide', 'avner', 'malik', 300, (s) => { s.go('', '', 10); s.go('DH', '', 1); s.go('', '', 7); s.shot('a'); s.go('', '', 5); s.shot('b'); });
+  scene('dust-lariat', 'malik', 'avner', 500, (s) => { s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 6); s.shot('a'); s.go('', '', 6); s.shot('b'); });
   // Malik's Running Lariat (node scripts/shots.mjs <folder> lariat)
   scene('lariat', 'malik', 'avner', 330, (s) => {
     s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 2); s.shot('power-up'); s.go('', '', 10); s.shot('running'); s.go('', '', 9); s.shot('swing'); s.go('', '', 30); s.shot('recovery');

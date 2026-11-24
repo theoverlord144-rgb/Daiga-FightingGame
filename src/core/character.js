@@ -170,6 +170,8 @@ function compileMoveData(m, ctx = {}) {
     airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
     throwSwap: !!m.throwSwap,
     throwDistance: px(m.throwDistance ?? 70),
+    throwHit: m.throwHit ?? 0, // frames after the hold ends before the throw's damage and knockdown (the hit drawing)
+    throwFx: m.throwFx ? [px(m.throwFx[0]), px(m.throwFx[1])] : null, // where its hit spark shows: [forward, up] from the thrower
     // Combo (Phase 5). null = use the default in data/system/combo.json.
     starterProration: m.starterProration ?? null,
     comboProration: m.comboProration ?? null,

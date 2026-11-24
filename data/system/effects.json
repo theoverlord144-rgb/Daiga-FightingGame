@@ -93,5 +93,10 @@
     "ring": [67, 62],
     "digits": { "image": "devotion-digits.png", "cellW": 84, "cellH": 100, "height": 56 },
     "plate": { "image": "devotion-plate.png", "w": 470, "h": 93, "scale": 0.27, "gap": 1 }
+  },
+  "impact": {
+    "notes": "Impact feel (drawing only, never part of the game). shake: how far the screen jolts, in px, by the hit spark size (light / medium / heavy, see \"hit\") and for a knockdown, wall bounce and ground bounce; it fades over \"frames\". 0 = no shake. flash: the fighter who is hit is drawn brighter for \"frames\" frames (alpha 0 to 1 = how bright; 0 = off).",
+    "shake": { "light": 0, "medium": 3, "heavy": 6, "knockdown": 6, "wallbounce": 6, "groundbounce": 6, "frames": 8 },
+    "flash": { "frames": 2, "alpha": 0.7 }
   }
 }

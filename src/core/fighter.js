@@ -117,6 +117,7 @@ export function createFighter(def, side, x) {
     gbY: 0, // pending ground bounce (upward speed, units; 0 = none)
     throwBy: -1, // while being thrown: the attacker's id
     throwMove: '',
+    throwWait: 0, // frames this throw waits after the hold before it hits (the move's throwHit)
     throwHeld: 0, // how long the hold of the throw this fighter is in lasts (the break window is its first frames)
     meter: def.meterStart ?? 0, // Devotion, game units (one point is 100 units; a bar is 10000)
     spGain: 0, // Devotion the current move gave for being a special (taken back if it turns into its EX version)
@@ -639,8 +640,11 @@ function decide(game, p, opp, def, world) {
 export function advanceAndDecide(game, p, opp, def, world, hooks) {
   const st = def.states[p.state];
   if (st.stun) {
-    if (p.stun > 0) { p.stun--; p.frame++; }
-    else {
+    if (p.stun > 0) {
+      p.stun--; p.frame++;
+      // The hold has just ended and the throw's hit is still to come: a back throw turns the fighters round now.
+      if (st.throwVictim && p.throwWait > 0 && p.stun === p.throwWait - 1) hooks.throwTurns(p);
+    } else {
       if (st.throwVictim) hooks.throwLands(p);
       enterState(p, def, st.next);
     }

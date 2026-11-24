@@ -77,7 +77,7 @@ export function createFightRenderer(ctx, W, H) {
       if (!stageR || stageR.id !== opts.stage.id) {
         stageR = { id: opts.stage.id, r: createStageRenderer(opts.stage, W, H, GROUND, world.battle.stage.halfWidth) };
       }
-      stageR.r.draw(ctx, cam);
+      stageR.r.draw(ctx, cam, Math.max(0, collected));
       if (opts.marks) drawMarks(world);
       return;
     }
@@ -474,6 +474,10 @@ export function createFightRenderer(ctx, W, H) {
   // slow display runs several steps between two draws and the cues of the earlier ones would be lost (effects and
   // sparks that never appear); draw() picks up the frame it sees if nobody did.
   let collected = -1;
+  // Impact feel (drawing only): the screen jolt and the brightened fighter. data/system/effects.json "impact".
+  const shake = { amp: 0, left: 0 };
+  const hitFlash = [0, 0];
+  const jolt = (amp) => { if (amp > 0 && amp >= (shake.left > 0 ? shake.amp : 0)) { shake.amp = amp; shake.left = FX.impact.shake.frames; } };
   // The universal systems' effect slots (data/system/effects.json "slots").
   const SLOTS = FX.slots || { sheets: {}, absorbPoseFrames: 8, exTint: 0.45 };
   const lastMove = [null, null]; // drawing only: last seen state and x, to notice a dash starting or a landing
@@ -556,7 +560,18 @@ export function createFightRenderer(ctx, W, H) {
     if (game.frame === collected) return;
     collected = game.frame;
     hud.notice(game);
+    if (shake.left > 0) shake.left--;
+    for (const i of [0, 1]) if (hitFlash[i] > 0) hitFlash[i]--;
     for (const c of game.cues) {
+      if (FX.impact) {
+        if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') {
+          const src = world.chars[c.p];
+          const base = (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.damage ?? 0;
+          const size = FX.hit.find((h) => h.below === undefined || base < h.below) ?? FX.hit[FX.hit.length - 1];
+          jolt(FX.impact.shake[size.name] ?? 0);
+          hitFlash[1 - c.p] = FX.impact.flash.frames;
+        } else jolt(FX.impact.shake[c.type] ?? 0);
+      }
       slotCue(c, game, world);
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
@@ -627,10 +642,18 @@ export function createFightRenderer(ctx, W, H) {
         const rule = world.chars[p.id].art?.exit?.find((r) => r.from === was.state && r.into.includes(p.state) && was.since >= (r.after ?? 0));
         exitArt[p.id] = rule ? { rule, t: 0, total: rule.holds.reduce((a, b) => a + b, 0) } : null;
         const dx = p.x - was.x;
+        if (FX.impact && p.state === 'knockdown') jolt(FX.impact.shake.knockdown);
         if (FX.motion.leave[was.state]) motionFx(FX.motion.leave[was.state], p, dx);
         if (FX.motion.enter[p.state]) motionFx(FX.motion.enter[p.state], p, dx);
       }
       lastMove[p.id] = { state: p.state, x: p.x, since: was && was.state === p.state ? was.since + 1 : 0 }; // since: frames in this state
+      // art.motion: { <state>: { play, at, from, every, until } }: dust under a move that runs or slides, every
+      // `every` frames from frame `from` to frame `until` of the state.
+      const dust = world.chars[p.id].art?.motion?.[p.state];
+      if (dust) {
+        const t = lastMove[p.id].since - (dust.from ?? 0);
+        if (t >= 0 && lastMove[p.id].since <= (dust.until ?? dust.from ?? 0) && t % (dust.every ?? 1000) === 0) motionFx(dust, p, 0);
+      }
     }
     for (const pr of game.projectiles) {
       const d = world.chars[pr.owner].projectiles[pr.kind];
@@ -703,6 +726,11 @@ export function createFightRenderer(ctx, W, H) {
       const top = Math.max(game.players[0].y, game.players[1].y) / UNIT + 200;
       const wantY = Math.max(0, top - (GROUND - 40));
       cam.y += (wantY - cam.y) * 0.25;
+      // The screen jolt: the world shifts for this drawing only (the HUD stays still), mostly up and down.
+      const jk = shake.left > 0 ? (shake.amp * shake.left) / FX.impact.shake.frames * (shake.left % 2 ? 1 : -1) : 0;
+      const joltX = -jk * 0.4, joltY = jk;
+      cam.x += joltX;
+      cam.y += joltY;
       drawStage(world, opts);
       // Super flash: the stage goes dark while the game is frozen; the super's user stays lit.
       const flashing = game.flash > 0;
@@ -769,6 +797,14 @@ export function createFightRenderer(ctx, W, H) {
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
           ctx.globalAlpha = SLOTS.exTint;
+          drawSprite(p, def, shown, pal);
+          ctx.restore();
+        }
+        if (hitFlash[p.id] > 0 && FX.impact.flash.alpha > 0) {
+          // Just hit: the fighter drawn again as light for a moment.
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = FX.impact.flash.alpha;
           drawSprite(p, def, shown, pal);
           ctx.restore();
         }
@@ -852,6 +888,8 @@ export function createFightRenderer(ctx, W, H) {
         }
         ctx.globalAlpha = 1;
       }
+      cam.x -= joltX;
+      cam.y -= joltY;
       // Combo counter, on the attacker's side: hits, damage, current scaling.
       for (const v of [0, 1]) {
         const s = comboShow[v];

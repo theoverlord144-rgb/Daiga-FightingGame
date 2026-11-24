@@ -1,15 +1,19 @@
 {
-  "notes": "A stage is drawing only: its size and walls come from data/system/battle.json, so every stage plays the same. Layers are drawn back to front. parallax: 0 = fixed to the screen (sky), 1 = moves with the floor. Heights are in pixels above the ground line.",
+  "notes": "A stage is drawing only: its size and walls come from data/system/battle.json, so every stage plays the same. Layers are drawn back to front. parallax: 0 = fixed to the screen (sky), 1 = moves with the floor. Heights are in pixels above the ground line. stars: faint twinkling points in the top \"band\" (0 to 1) of the sky. torches: braziers every \"spacing\" px on posts \"height\" px tall; \"radius\" is how far their light reaches. motes: drifting specks (\"drift\" px a frame sideways, \"rise\" upward) in the bottom \"band\" of the screen. vignette: darkens the edges of the screen behind the fighters (\"alpha\" 0 = off). floor \"sheen\": the sun's light lying on the stone. To remove any of these, delete its layer.",
   "id": "dusk-terrace",
   "name": "Dusk Terrace",
   "layers": [
-    { "type": "sky", "stops": [[0, "#1a1033"], [0.45, "#4a2147"], [0.75, "#b5523b"], [1, "#f0a24a"]] },
-    { "type": "sun", "parallax": 0.04, "x": 170, "height": 150, "radius": 46, "color": "#ffd58a", "glow": "#ff9a4a" },
-    { "type": "ridge", "parallax": 0.12, "height": 150, "variation": 70, "roughness": 9, "seed": 7, "color": "#3a1d3d" },
-    { "type": "ridge", "parallax": 0.22, "height": 95, "variation": 45, "roughness": 14, "seed": 21, "color": "#2b1530" },
-    { "type": "haze", "height": 40, "thickness": 90, "color": "#e0784a", "alpha": 0.22 },
-    { "type": "arches", "parallax": 0.45, "spacing": 230, "width": 120, "height": 190, "thickness": 18, "seed": 3, "color": "#1e1124", "broken": 0.35 },
-    { "type": "railing", "parallax": 0.8, "height": 46, "postSpacing": 70, "color": "#160c1b" },
-    { "type": "floor", "parallax": 1, "top": "#3b2a35", "bottom": "#120b12", "line": "#5a3f48", "tile": 120 }
+    {"type": "sky", "stops": [[0, "#1a1033"],[0.45, "#4a2147"],[0.75, "#b5523b"],[1, "#f0a24a"]]},
+    {"type": "stars", "count": 70, "seed": 11, "band": 0.5, "color": "#ffe9d2", "alpha": 0.75},
+    {"type": "sun", "parallax": 0.04, "x": 170, "height": 150, "radius": 46, "color": "#ffd58a", "glow": "#ff9a4a"},
+    {"type": "ridge", "parallax": 0.12, "height": 150, "variation": 70, "roughness": 9, "seed": 7, "color": "#3a1d3d"},
+    {"type": "ridge", "parallax": 0.22, "height": 95, "variation": 45, "roughness": 14, "seed": 21, "color": "#2b1530"},
+    {"type": "haze", "height": 40, "thickness": 90, "color": "#e0784a", "alpha": 0.22},
+    {"type": "arches", "parallax": 0.45, "spacing": 230, "width": 120, "height": 190, "thickness": 18, "seed": 3, "color": "#1e1124", "broken": 0.35},
+    {"type": "railing", "parallax": 0.8, "height": 46, "postSpacing": 70, "color": "#160c1b"},
+    {"type": "floor", "parallax": 1, "top": "#3b2a35", "bottom": "#120b12", "line": "#5a3f48", "tile": 120, "sheen": {"x": 170, "parallax": 0.04, "radius": 420, "color": "#ff9a4a"}},
+    {"type": "torches", "parallax": 0.8, "spacing": 350, "offset": 105, "height": 96, "radius": 150, "color": "#160c1b", "glow": "#ff8a3c", "flame": "#ff9d42", "core": "#ffe6a6"},
+    {"type": "motes", "parallax": 0.9, "count": 46, "seed": 5, "band": 0.8, "drift": 0.22, "rise": 0.12, "color": "#ffc27a", "alpha": 0.6},
+    {"type": "vignette", "color": "#07030c", "alpha": 0.6, "inner": 0.45, "outer": 0.62}
   ]
 }

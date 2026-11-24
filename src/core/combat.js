@@ -608,9 +608,11 @@ function startThrow(game, world, a, d) {
   const hold = Math.max(adef.stats.throwHold ?? 0, adef.stats.throwBreak);
   enterState(a, adef, 'throwHold');
   a.stun = hold;
+  // The thrown fighter stays held `throwHit` frames longer: the throw hits on its hit drawing, not when the hold ends.
   enterState(d, ddef, 'thrown');
-  d.stun = hold;
-  d.throwHeld = hold;
+  d.stun = hold + move.throwHit;
+  d.throwHeld = d.stun;
+  d.throwWait = move.throwHit;
   d.facing = -a.facing;
   d.x = a.x + a.facing * move.throwDistance;
   d.slide = 0;
@@ -631,7 +633,20 @@ function throwTech(game, world, a, b) {
   cue(game, 'tech', a, null);
 }
 
-/** Called when a thrown fighter's break window ends unbroken: the throw lands. */
+/** A back throw puts the thrown fighter on the other side and turns the thrower round. */
+function throwSwaps(a, d, move) {
+  d.x = a.x - a.facing * move.throwDistance;
+  a.facing = -a.facing;
+}
+
+/** Called when the hold ends and the throw's hit is still to come (throwHit > 0). */
+export function throwTurns(game, world, d) {
+  const a = game.players[d.throwBy];
+  const move = a && world.chars[a.id].states[d.throwMove]?.move;
+  if (move?.throwSwap) throwSwaps(a, d, move);
+}
+
+/** Called when a thrown fighter's hold (and the wait for the hit drawing) ends unbroken: the throw lands. */
 export function throwLands(game, world, d) {
   const a = game.players[d.throwBy];
   if (!a) return;
@@ -643,14 +658,12 @@ export function throwLands(game, world, d) {
     applyDamage(d, ddef, dmg);
     cashDebt(game, world, d); // a throw goes through Vow and makes the Debt come due
     gains(game, world, a, d, move, 'hit', dmg, { fresh: true });
-    if (move.throwSwap) {
-      d.x = a.x - a.facing * move.throwDistance;
-      a.facing = -a.facing;
-    }
+    if (move.throwSwap && !d.throwWait) throwSwaps(a, d, move);
     const away = d.x > a.x ? 1 : -1;
     d.facing = -away;
     startSlide(d, away * move.pushbackHit, world.battle.pushbackFrames);
-    cue(game, 'hit', a, null, { move: d.throwMove, damage: dmg, throw: true });
+    const fx = move.throwFx && [a.x + a.facing * move.throwFx[0], a.y + move.throwFx[1]];
+    cue(game, 'hit', a, fx ? [fx[0], fx[1], fx[0], fx[1]] : null, { move: d.throwMove, damage: dmg, throw: true });
   }
   d.throwBy = -1;
 }

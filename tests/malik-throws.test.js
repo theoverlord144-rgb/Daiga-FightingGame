@@ -82,13 +82,14 @@ test('throws are slow enough to read: the hold outlasts the break window, which 
   const { throwHold, throwBreak } = M.stats;
   assert.ok(throwHold > throwBreak, `hold ${throwHold}, break window ${throwBreak}`);
   assert.equal(throwBreak, loadJSON('data/system/fighter-defaults.json').stats.throwBreak, 'the window is the system one');
-  // The throw lands when the hold ends.
+  // The throw lands when the hold ends and its hit drawing comes up (the move's throwHit).
+  const wait = M.states['6H'].move.throwHit;
   const g = setup(60);
   run(g, '6+H 5*2');
   assert.equal(g.players[1].state, 'thrown');
   let landed = 0;
   for (let i = 1; i <= 40 && !landed; i++) { step(g, [0, 0], W); if (g.players[1].state !== 'thrown') landed = i; }
-  assert.ok(landed >= throwHold - 2 && landed <= throwHold + 1, `landed after ${landed} frames`);
+  assert.ok(landed >= throwHold + wait - 2 && landed <= throwHold + wait + 1, `landed after ${landed} frames`);
   // H inside the window breaks it; H after the window (still in the hold) does not.
   const early = setup(60);
   const cuesE = run(early, '6+H 5*30', `5*${throwBreak - 2} 5+H 5*30`);
@@ -131,4 +132,58 @@ test('Avner: both throws have their drawn art, each with its own hold and finish
     assert.equal(own.throwFinish.holds.reduce((a, b) => a + b, 0), A.states.throwFinish.duration);
   }
   assert.equal(A.stats.throwHold, M.stats.throwHold, 'both characters throw at the same speed');
+});
+
+test('a throw connects on its hit drawing: the damage, knockdown and spark come while the finish plays, not when the hold ends', () => {
+  for (const [input, id] of [['6+H', '6H'], ['4+H', '4H']]) {
+    const move = M.states[id].move;
+    assert.ok(move.throwHit > 0 && move.throwHit < M.states.throwFinish.duration, `${id}: hits during the finish`);
+    const g = setup(60);
+    run(g, `${input} 5*2`);
+    assert.equal(g.players[1].state, 'thrown');
+    const full = g.players[1].health;
+    let finishAt = 0, hitAt = 0, spark = null, facingAtFinish = 0;
+    for (let i = 1; i <= 80 && !hitAt; i++) {
+      step(g, [0, 0], W);
+      if (!finishAt && g.players[0].state === 'throwFinish') { finishAt = i; facingAtFinish = g.players[0].facing; assert.equal(g.players[1].health, full, 'no damage yet'); assert.equal(g.players[1].state, 'thrown', 'still held'); }
+      const c = g.cues.find((q) => q.type === 'hit');
+      if (c) { hitAt = i; spark = c; }
+    }
+    assert.ok(finishAt && hitAt, `${id}: finish ${finishAt}, hit ${hitAt}`);
+    assert.equal(hitAt - finishAt, move.throwHit, `${id}: the hit comes throwHit frames into the finish`);
+    assert.equal(g.players[0].state, 'throwFinish');
+    assert.ok(g.players[1].health < full);
+    // The spark is at the throw's own point, in front of the thrower and off the floor.
+    const a = g.players[0];
+    assert.equal(spark.x, a.x + a.facing * move.throwFx[0]);
+    assert.equal(spark.y, move.throwFx[1]);
+    assert.ok(spark.y > 0);
+    // A back throw has already turned him round when the finish starts (its drawings are made for that).
+    assert.equal(facingAtFinish, id === '4H' ? -1 : 1);
+    assert.equal(Math.sign(g.players[1].x - a.x), a.facing, 'the thrown fighter is in front of him');
+  }
+});
+
+test('a throw with no hit frame of its own lands the moment the hold ends, as before', () => {
+  const T = loadChar('tests/fixtures/fighter.toska.json');
+  const throwMove = T.states['6H'];
+  assert.ok(throwMove);
+  assert.equal(throwMove.move.throwHit, 0);
+  assert.equal(throwMove.move.throwFx, null);
+});
+
+test('impact feel is drawing-only data: shake sizes, flash, and dust under the moves that run or slide', () => {
+  const fx = loadJSON('data/system/effects.json');
+  for (const size of fx.hit) assert.ok(size.name in fx.impact.shake, `a shake size for ${size.name} hits`);
+  assert.ok(fx.impact.shake.frames > 0 && fx.impact.flash.frames >= 0);
+  for (const [id, states] of [['avner', ['2H']], ['malik', ['lariatL', 'lariatM', 'lariatH']]]) {
+    const raw = loadJSON(`data/characters/${id}/${id}.toska.json`);
+    const def = loadChar(`data/characters/${id}/${id}.toska.json`);
+    for (const st of states) {
+      const rule = raw.art.motion[st];
+      assert.ok(fx.motion.sheets[rule.play], `${id} ${st}: ${rule.play}`);
+      assert.ok(def.states[st], st);
+    }
+    for (const st of Object.keys(raw.art.motion)) assert.ok(def.states[st], `${id}: ${st} is a real state`);
+  }
 });

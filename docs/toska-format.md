@@ -59,6 +59,8 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `throwboxes` | `[[x, y, w, h]]` during active frames: makes the move a throw (checked against the defender's throw-hurtbox). A throw only comes out when its box would reach an opponent who can be thrown right now; otherwise the input falls through to the next move it matches. So a strike can share a throw's input (Avner's `4H`: back throw up close, Back Heavy from farther; list the throw first), and `6H` out of range gives `5H`. |
 | `throwDistance` | px between the fighters while the throw holds (default 70). |
 | `throwSwap` | `true` = a back throw: the defender lands on the other side. |
+| `throwHit` | Frames after the hold ends before the throw's damage and knockdown: the frame of the hit drawing in the thrower's finish (default 0 = when the hold ends). |
+| `throwFx` | `[px forward, px up]` from the thrower: where the throw's hit spark shows (default: at his feet). |
 | `pull` | `{ to, frames }`: on hit (not block) the defender slides toward the attacker, ending `to` px in front of them, over `frames` frames, from any range and in the air too. Replaces pushback. |
 | `perCombo` | `n`: the move can be used at most `n` times in one combo (it won't come out again until the combo ends). Stops loops. |
 | `hitRequires` | A condition on the attacker (same shape as `requires`), read when the hitbox touches: unmet, it touches nothing at all (Anchor only hits a branded opponent). |
