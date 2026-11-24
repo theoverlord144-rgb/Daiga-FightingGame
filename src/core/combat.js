@@ -111,6 +111,27 @@ export function separate(game, world) {
   if (dr) left.x += dr;
 }
 
+/**
+ * The fighters can't be farther apart than the stage's `maxGap` (so both always fit on the screen). Only movement
+ * away from the opponent is refused: whoever moved away this frame is put back by the part that went too far (both,
+ * in proportion, if both did). Nobody is ever pulled in. `before` = each fighter's x before this frame's movement.
+ */
+export function holdTogether(game, world, before) {
+  const max = world.battle.maxGapUnits;
+  if (!max) return;
+  const [a, b] = game.players;
+  const over = Math.abs(a.x - b.x) - max;
+  if (over <= 0) return;
+  const side = a.x < b.x ? -1 : 1; // a's outward direction (b's is the opposite)
+  const outA = Math.max(0, (a.x - before[0]) * side);
+  const outB = Math.max(0, (b.x - before[1]) * -side);
+  const back = Math.min(over, outA + outB);
+  if (back <= 0) return;
+  const backA = Math.trunc((back * outA) / (outA + outB));
+  a.x -= side * backA;
+  b.x += side * (back - backA);
+}
+
 // ---------- Damage ----------
 
 /** Damage after guts: the lower the defender's health, the less damage taken (table in battle.json). */

@@ -1,6 +1,6 @@
 {
   "notes": "Engine-wide battle rules (counter hits moved to systems.json). Pixels, frames, and percentages out of 10000 (10000 = 100%).",
-  "stage": { "halfWidth": 760, "startX": 150 },
+  "stage": { "halfWidth": 760, "startX": 150, "maxGap": 820 },
   "cornerZone": 4,
   "pushbackFrames": 8,
   "clash": { "hitstop": 10 },

@@ -7,7 +7,7 @@
 import { createInputState, pushInput, BTN } from './input.js';
 import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from './match.js';
 import { createFighter, advanceAndDecide, move, land, resolveGuardActions, tickRite } from './fighter.js';
-import { separate, resolveHits, checkThrowBreaks, throwLands, moveProjectiles, resolveProjectiles } from './combat.js';
+import { separate, holdTogether, resolveHits, checkThrowBreaks, throwLands, moveProjectiles, resolveProjectiles } from './combat.js';
 import { px } from './fixed.js';
 import { compileSystems } from './systems.js';
 
@@ -38,6 +38,7 @@ export function createWorld({ input, battle, combo, meter = null, burst = null, 
       ...battle,
       halfWidthUnits: px(battle.stage.halfWidth),
       startXUnits: px(battle.stage.startX),
+      maxGapUnits: battle.stage.maxGap ? px(battle.stage.maxGap) : 0, // the most the two fighters can be apart (0 = no limit)
       cornerZoneUnits: px(battle.cornerZone),
       airHitUnits: { x: px(battle.airHit.x), y: px(battle.airHit.y) },
       throwTechPushUnits: px(battle.throwTech.push),
@@ -124,8 +125,10 @@ export function step(state, rawInputs, world) {
     if (mv && mv.active > 0 && mv.kind !== 'vow' && p.frame >= mv.startup - 1) p.atkFrame = state.frame;
   }
   moveProjectiles(state, world);
+  const before = [ps[0].x, ps[1].x]; // where each fighter stood before this frame's movement (for the distance limit)
   for (const p of ps) if (!frozen[p.id]) move(state, p, world.chars[p.id], world);
   separate(state, world);
+  holdTogether(state, world, before);
   for (const p of ps) if (!frozen[p.id]) land(state, p, world.chars[p.id], world);
   // A combo ends the moment its victim gets free, before this frame's hits: a hit on a fighter who has just
   // recovered starts a new combo (and they could have blocked it).

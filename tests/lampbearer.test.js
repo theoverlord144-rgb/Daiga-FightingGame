@@ -60,7 +60,7 @@ test('normals: startup, active and recovery are the spec\'s, and the drawings fi
   assert.equal(A.states['5S'].move.launchType, 'hard');
   assert.ok(A.states['2H'].move.knockdown);
   // The Crescent Kick: he steps back in its startup. (Its reach is the owner's to tune in the box editor: not checked.)
-  const g = setup(900);
+  const g = setup(600);
   const x0 = g.players[0].x;
   run(g, '4+H 5*12');
   assert.ok(g.players[0].x < x0, 'stepped back');
