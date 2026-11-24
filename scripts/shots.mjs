@@ -172,6 +172,10 @@ try {
   });
 
   // ----- Vow: guard, an absorbed hit, the three strikes, the crumple -----
+  // Malik's Running Lariat (node scripts/shots.mjs <folder> lariat)
+  scene('lariat', 'malik', 'avner', 330, (s) => {
+    s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 2); s.shot('power-up'); s.go('', '', 10); s.shot('running'); s.go('', '', 9); s.shot('swing'); s.go('', '', 30); s.shot('recovery');
+  });
   scene('vow', 'malik', 'avner', 150, (s) => {
     s.go('MH', '', 3); s.shot('start');
     s.go('MH', '', 12); s.shot('hold');
