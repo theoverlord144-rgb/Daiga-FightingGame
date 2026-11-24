@@ -2,7 +2,7 @@
 // throws and throw techs, hitstop, hitstun/blockstun, pushback (and corner pushback), damage with guts.
 
 import { frameOf } from './character.js';
-import { CONTACT, enterState, isAirborne, startSlide, applyResources, meets, gainDevotion } from './fighter.js';
+import { CONTACT, enterState, isAirborne, inZone, startSlide, applyResources, meets, gainDevotion } from './fighter.js';
 import { perPercent } from './devotion.js';
 import { soften } from './systems.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
@@ -109,6 +109,27 @@ export function separate(game, world) {
   if (dl) right.x += dl;
   const dr = clampToWalls(right, rdef, half);
   if (dr) left.x += dr;
+}
+
+/**
+ * The fighters can't be farther apart than the stage's `maxGap` (so both always fit on the screen). Only movement
+ * away from the opponent is refused: whoever moved away this frame is put back by the part that went too far (both,
+ * in proportion, if both did). Nobody is ever pulled in. `before` = each fighter's x before this frame's movement.
+ */
+export function holdTogether(game, world, before) {
+  const max = world.battle.maxGapUnits;
+  if (!max) return;
+  const [a, b] = game.players;
+  const over = Math.abs(a.x - b.x) - max;
+  if (over <= 0) return;
+  const side = a.x < b.x ? -1 : 1; // a's outward direction (b's is the opposite)
+  const outA = Math.max(0, (a.x - before[0]) * side);
+  const outB = Math.max(0, (b.x - before[1]) * -side);
+  const back = Math.min(over, outA + outB);
+  if (back <= 0) return;
+  const backA = Math.trunc((back * outA) / (outA + outB));
+  a.x -= side * backA;
+  b.x += side * (back - backA);
 }
 
 // ---------- Damage ----------
@@ -341,6 +362,11 @@ function applyStrike(game, world, r) {
   const starts = !d.combo;
   // Absolve's own hit is never one: it only knocks the attacker away.
   const plain = move.kind === 'burst';
+  // Hit while standing in the attacker's light (a projectile with a zone): the attacker's mark var goes up.
+  for (const pr of game.projectiles) {
+    const z = pr.owner === a.id ? world.chars[a.id].projectiles[pr.kind].zone : null;
+    if (z?.markVar && !move.noZoneMark && inZone(pr, z, d)) applyResources(a, world.chars[a.id], { vars: { [z.markVar]: 1 } });
+  }
   const witness = starts && !plain && (r.kind === 'witness' || !!r.witness);
   const counter = starts && !plain && r.kind === 'counter' && !witness;
   const ch = witness ? world.sys.witness : world.sys.counter; // read only when one of the two is true
@@ -481,10 +507,14 @@ export function resolveProjectiles(game, world) {
   if (!list.length) return;
   const gone = new Array(list.length).fill('');
   const pdef = (pr) => world.chars[pr.owner].projectiles[pr.kind];
+  // The box a projectile has out right now: none for a marker, or outside its phases, or once a staying one has hit.
+  const boxOf = (pr, def) => (def.noHit || pr.hit ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
+  list.forEach((pr, i) => { if (pr.end) gone[i] = 'recall'; });
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
       if (gone[i] || gone[j] || list[i].owner === list[j].owner) continue;
-      if (contact(list[i], pdef(list[i]).hitbox, list[j], pdef(list[j]).hitbox)) gone[i] = gone[j] = 'clash';
+      const bi = pdef(list[i]).persist ? null : boxOf(list[i], pdef(list[i])), bj = pdef(list[j]).persist ? null : boxOf(list[j], pdef(list[j]));
+      if (bi && bj && contact(list[i], bi, list[j], bj)) gone[i] = gone[j] = 'clash';
     }
   }
   const half = world.battle.halfWidthUnits;
@@ -495,7 +525,8 @@ export function resolveProjectiles(game, world) {
     const d = game.players[1 - pr.owner];
     const ddef = world.chars[d.id];
     const fd = frameOf(ddef, d.state, d.frame);
-    const rect = fd.invStrike ? null : contact(pr, def.hitbox, d, fd.hurt);
+    const box = boxOf(pr, def);
+    const rect = !box || fd.invStrike || (!def.move.hitsAirborne && isAirborne(ddef, d)) ? null : contact(pr, box, d, fd.hurt);
     if (rect) {
       const move = def.move;
       const away = pr.facing; // it pushes the way it flies, and is blocked by holding away from where it came from
@@ -503,10 +534,23 @@ export function resolveProjectiles(game, world) {
       const kind = absorbs(ddef, d.state, move) ? 'absorb' : !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
       const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
       applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: true, kind, stagger, proj: pr });
-      gone[i] = kind === 'block' || kind === 'absorb' ? 'block' : 'hit';
-    } else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
+      if (def.persist) pr.hit = 1;
+      else gone[i] = kind === 'block' || kind === 'absorb' ? 'block' : 'hit';
+      // A catch: the owner, still in the move that made it, goes to a follow-up state.
+      if (def.ownerOnHit && kind !== 'block' && kind !== 'absorb' && kind !== 'armor' && a.state === pr.from) {
+        enterState(a, world.chars[a.id], def.ownerOnHit);
+        a.contact = CONTACT.HIT;
+      }
+      if (def.persist && pr.age >= def.lifetime) gone[i] = 'edge';
+    } else if (def.endsOnGround && pr.y <= 0) { pr.y = 0; gone[i] = 'ground'; }
+    else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
   });
   list.forEach((pr, i) => {
+    const end = gone[i] ? pdef(pr).onEnd : null;
+    if (end) { // what its owner's vars are set to when it ends
+      const o = game.players[pr.owner], odef = world.chars[pr.owner];
+      for (const [k, n] of Object.entries(end)) { const v = odef.mechanic.vars[k]; if (v) o.vars[k] = Math.max(v.min, Math.min(v.max, n)); }
+    }
     if (gone[i]) game.cues.push({ type: 'projectileEnd', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, facing: pr.facing, why: gone[i] });
   });
   game.projectiles = list.filter((_, i) => !gone[i]);
@@ -560,10 +604,15 @@ function startThrow(game, world, a, d) {
   a.hitsDone = -1;
   d.throwBy = a.id;
   d.throwMove = a.state;
+  // The hold lasts `throwHold` frames (the thrower's stat; without it, as long as the break window).
+  const hold = Math.max(adef.stats.throwHold ?? 0, adef.stats.throwBreak);
   enterState(a, adef, 'throwHold');
-  a.stun = adef.stats.throwBreak;
+  a.stun = hold;
+  // The thrown fighter stays held `throwHit` frames longer: the throw hits on its hit drawing, not when the hold ends.
   enterState(d, ddef, 'thrown');
-  d.stun = adef.stats.throwBreak;
+  d.stun = hold + move.throwHit;
+  d.throwHeld = d.stun;
+  d.throwWait = move.throwHit;
   d.facing = -a.facing;
   d.x = a.x + a.facing * move.throwDistance;
   d.slide = 0;
@@ -584,7 +633,20 @@ function throwTech(game, world, a, b) {
   cue(game, 'tech', a, null);
 }
 
-/** Called when a thrown fighter's break window ends unbroken: the throw lands. */
+/** A back throw puts the thrown fighter on the other side and turns the thrower round. */
+function throwSwaps(a, d, move) {
+  d.x = a.x - a.facing * move.throwDistance;
+  a.facing = -a.facing;
+}
+
+/** Called when the hold ends and the throw's hit is still to come (throwHit > 0). */
+export function throwTurns(game, world, d) {
+  const a = game.players[d.throwBy];
+  const move = a && world.chars[a.id].states[d.throwMove]?.move;
+  if (move?.throwSwap) throwSwaps(a, d, move);
+}
+
+/** Called when a thrown fighter's hold (and the wait for the hit drawing) ends unbroken: the throw lands. */
 export function throwLands(game, world, d) {
   const a = game.players[d.throwBy];
   if (!a) return;
@@ -596,23 +658,22 @@ export function throwLands(game, world, d) {
     applyDamage(d, ddef, dmg);
     cashDebt(game, world, d); // a throw goes through Vow and makes the Debt come due
     gains(game, world, a, d, move, 'hit', dmg, { fresh: true });
-    if (move.throwSwap) {
-      d.x = a.x - a.facing * move.throwDistance;
-      a.facing = -a.facing;
-    }
+    if (move.throwSwap && !d.throwWait) throwSwaps(a, d, move);
     const away = d.x > a.x ? 1 : -1;
     d.facing = -away;
     startSlide(d, away * move.pushbackHit, world.battle.pushbackFrames);
-    cue(game, 'hit', a, null, { move: d.throwMove, damage: dmg, throw: true });
+    const fx = move.throwFx && [a.x + a.facing * move.throwFx[0], a.y + move.throwFx[1]];
+    cue(game, 'hit', a, fx ? [fx[0], fx[1], fx[0], fx[1]] : null, { move: d.throwMove, damage: dmg, throw: true });
   }
   d.throwBy = -1;
 }
 
-/** A thrown fighter who presses H in the break window breaks the throw. */
+/** A thrown fighter who presses H in the break window (the first `throwBreak` frames of the hold) breaks the throw. */
 export function checkThrowBreaks(game, world, frozen) {
   for (const d of game.players) {
     if (frozen[d.id] || d.state !== 'thrown' || d.throwBy < 0) continue;
-    if (pressedAt(d.input, BTN.H, 0)) throwTech(game, world, game.players[d.throwBy], d);
+    const window = world.chars[d.throwBy].stats.throwBreak;
+    if (d.throwHeld - d.stun < window && pressedAt(d.input, BTN.H, 0)) throwTech(game, world, game.players[d.throwBy], d);
   }
 }
 
@@ -632,6 +693,7 @@ export function resolveHits(game, world, frozen) {
     if (fq.invStrike) return null;
     const mv = world.chars[p.id].states[snap[p.id].state].move;
     if (mv?.hitRequires && !meets(p, mv.hitRequires)) return null; // e.g. only a branded opponent can be hit
+    if (mv && mv.hitsAirborne === false && isAirborne(world.chars[q.id], q)) return null; // a ground-only hit
     // A remote hit lands wherever the opponent is: the "contact" is their body (their position if they have no hurtbox).
     if (mv?.remote) return fq.hurt[0] ? worldBox(q, fq.hurt[0]) : [q.x, q.y, q.x, q.y];
     return contact(p, fp.hit, q, fq.hurt);

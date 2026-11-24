@@ -95,7 +95,9 @@ try {
   const raw = (s) => [...(s || '')].reduce((a, c) => a | (B[c] ?? 0), 0);
 
   /** One situation: a = Player 1 (left, facing right), b = Player 2. gap = px between them. */
+  const ONLY = process.argv[3] || ''; // a second argument: only the scenes whose name starts with it
   function scene(name, a, b, gap, play) {
+    if (ONLY && !name.startsWith(ONLY)) return;
     const world = boot.makeWorld(chars[a], chars[b], null);
     const game = createGame(world);
     const c = canvas(W, H);
@@ -121,7 +123,89 @@ try {
     play(api);
   }
 
+  // ----- Avner, the Lampbearer (node scripts/shots.mjs <folder> lamp) -----
+  const qcf = (s, b) => { s.go('D', '', 1); s.go('DF', '', 1); s.go('F' + b, '', 1); };
+  const qcb = (s, b) => { s.go('D', '', 1); s.go('DK', '', 1); s.go('K' + b, '', 1); };
+  const dp = (s, b) => { s.go('F', '', 1); s.go('D', '', 1); s.go('DF' + b, '', 1); };
+  scene('lamp-stand', 'avner', 'malik', 260, (s) => {
+    s.go('', '', 20); s.shot('idle');
+    s.go('D', '', 30); s.shot('crouch'); s.go('D', '', 70); s.shot('crouch-lantern-down'); s.go('', '', 2); s.shot('stand-up');
+    s.go('F', '', 12); s.shot('walk'); s.go('', '', 4);
+    s.go('U', '', 1); s.go('', '', 8); s.shot('jump-rising'); s.go('', '', 12); s.shot('jump-apex'); s.go('', '', 14); s.shot('jump-falling'); s.go('', '', 8); s.shot('landed');
+    s.go('K', 'L', 3); s.shot('guard'); s.go('K', '', 6); s.shot('pushed-back');
+  });
+  scene('lamp-normals', 'avner', 'malik', 170, (s) => {
+    for (const [name, input, frames] of [['5L', 'L', 5], ['5M', 'M', 9], ['5H', 'H', 15], ['4H', 'KH', 15], ['5S', 'S', 13], ['2M', 'DM', 10]]) {
+      s.go('', '', 50); s.game.players[1].x = s.game.players[0].x + 17000; s.go(input, '', 1); s.go(input.includes('D') ? 'D' : '', '', frames); s.shot(name);
+    }
+    s.go('', '', 60); s.go('U', '', 1); s.go('', '', 14); s.go('H', '', 1); s.go('', '', 13); s.shot('jH');
+  });
+  scene('lamp-heavy', 'avner', 'malik', 150, (s) => {
+    s.go('', '', 20); s.go('H', '', 1); s.go('', '', 12); s.shot('5H-last-startup'); s.go('', '', 4); s.shot('5H-hitstop'); s.go('', '', 22); s.shot('5H-after');
+    s.go('', '', 70); s.game.players[1].x = s.game.players[0].x + 15000; s.go('DH', '', 1); s.go('D', '', 6); s.shot('2H-reach'); s.go('D', '', 7); s.shot('2H-slide'); s.go('D', '', 18); s.shot('2H-recover');
+  });
+  for (const b of ['L', 'M', 'H']) scene('lamp-air-' + b, 'avner', 'malik', 600, (s) => {
+    s.go('', '', 10); s.go('U', '', 1); s.go('', '', 12); qcf(s, b); s.go('', '', 13); s.shot('swing'); s.go('', '', 8); s.shot('flying');
+    for (let k = 0; k < 60 && s.game.projectiles.length; k++) s.go('', '', 1);
+    s.go('', '', 4); s.shot('burst');
+  });
+  scene('lamp-low', 'avner', 'malik', 120, (s) => {
+    s.go('', '', 10); s.go('DL', '', 1); s.go('D', '', 4); s.shot('2L'); s.go('D', '', 40); s.go('DH', '', 1); s.go('D', '', 9); s.shot('2H-sliding');
+  });
+  for (const [b, gap] of [['L', 140], ['M', 320], ['H', 520]]) scene('lamp-moon-' + b, 'avner', 'malik', gap, (s) => {
+    qcf(s, b); s.until('', '', s.cue('spawn'), 30); s.go('', '', 2); s.shot('warning'); s.go('', '', 5); s.shot('rising'); s.go('', '', 7); s.shot('surge'); s.go('', '', 10); s.shot('fading');
+  });
+  scene('lamp-halo', 'avner', 'malik', 90, (s) => {
+    for (const b of ['L', 'M', 'H']) { dp(s, b); s.until('', '', s.cue('fx'), 20); s.go('', '', 5); s.shot(b + '-burst'); s.go('', '', 8); s.shot(b + '-ring'); s.go('', '', 90); s.game.players[1].x = s.game.players[0].x + 9000; }
+  });
+  scene('lamp-tide', 'avner', 'malik', 380, (s) => {
+    qcb(s, 'H'); s.until('', '', s.cue('spawn'), 20); s.go('', '', 6); s.shot('wave-1'); s.go('', '', 12); s.shot('wave-2'); s.until('', '', s.cue('hit'), 40); s.go('', '', 4); s.shot('caught'); s.go('', '', 12); s.shot('pulled');
+  });
+  scene('lamp-rite', 'avner', 'malik', 150, (s) => {
+    s.go('R', '', 1); s.go('', '', 9); s.shot('cast'); s.go('', '', 8); s.shot('crescent-rising'); s.go('', '', 30); s.shot('light');
+    s.go('L', '', 1); s.go('', '', 14); s.shot('marked'); s.go('R', '', 1); s.go('', '', 9); s.shot('snap'); s.go('', '', 4); s.shot('beam'); s.go('', '', 40);
+    s.go('R', '', 1); s.go('', '', 6); s.shot('recall');
+  });
+  scene('lamp-supers', 'avner', 'malik', 240, (s) => {
+    qcf(s, ''); qcf(s, 'S'); s.go('', '', 3); s.shot('new-moon-flash'); s.until('', '', s.cue('hit'), 60); s.shot('new-moon-hit'); s.go('', '', 12); s.shot('new-moon-after'); s.go('', '', 90);
+    s.game.players[0].meter = 40000; qcb(s, ''); qcb(s, 'S'); s.go('', '', 6); s.shot('full-moon-flash'); s.until('', '', s.cue('hit'), 90); s.go('', '', 3); s.shot('full-moon-column');
+  });
+
   // ----- Vow: guard, an absorbed hit, the three strikes, the crumple -----
+  scene('pillar', 'malik', 'avner', 200, (s) => {
+    s.go('', '', 10); s.go('F', '', 1); s.go('D', '', 1); s.go('DFM', '', 1); s.go('', '', 9); s.shot('rising'); s.go('', '', 5); s.shot('peak'); s.go('', '', 2); s.shot('hit'); s.go('', '', 14); s.shot('fading');
+  });
+  scene('mthrow', 'malik', 'avner', 60, (s) => {
+    s.go('', '', 10); s.go('FH', '', 1); s.go('', '', 3); s.shot('grab'); s.go('', '', 4); s.shot('hold'); s.go('', '', 5); s.shot('push'); s.go('', '', 14); s.shot('after');
+  });
+  scene('mbthrow', 'malik', 'avner', 60, (s) => {
+    s.go('', '', 10); s.go('KH', '', 1); s.go('', '', 3); s.shot('grab'); s.go('', '', 4); s.shot('hold'); s.go('', '', 3); s.shot('heave'); s.go('', '', 5); s.shot('slam'); s.go('', '', 6); s.shot('turned'); s.go('', '', 12); s.shot('after');
+  });
+  for (const [name, dir] of [['athrow-f', 'F'], ['athrow-b', 'K']]) scene(name, 'avner', 'malik', 60, (s) => {
+    s.go('', '', 10); s.go(dir + 'H', '', 1); s.go('', '', 4); s.shot('grab'); s.go('', '', 9); s.shot('hold'); s.go('', '', 6); s.shot('finish-1'); s.go('', '', 8); s.shot('finish-2'); s.go('', '', 8); s.shot('finish-3'); s.go('', '', 12); s.shot('after');
+  });
+  scene('tech', 'avner', 'malik', 60, (s) => {
+    s.go('', '', 10); s.go('FH', '', 1); s.go('', '', 3); s.go('', 'H', 1); s.go('', '', 4); s.shot('guard'); s.go('', '', 5); s.shot('push'); s.go('', '', 6); s.shot('recoil');
+  });
+  // Each throw just before, on and after its hit drawing (node scripts/shots.mjs <folder> thit)
+  for (const [name, who, other, dir, wait] of [['thit-avner-f', 'avner', 'malik', 'F', 12], ['thit-avner-b', 'avner', 'malik', 'K', 8], ['thit-malik-f', 'malik', 'avner', 'F', 6], ['thit-malik-b', 'malik', 'avner', 'K', 8]]) scene(name, who, other, 60, (s) => {
+    s.go('', '', 10); s.go(dir + 'H', '', 1); s.go('', '', 14 + wait); s.shot('before'); s.go('', '', 3); s.shot('hit'); s.go('', '', 5); s.shot('after');
+  });
+  // Dust under moves that run or slide (node scripts/shots.mjs <folder> dust)
+  scene('dust-slide', 'avner', 'malik', 300, (s) => { s.go('', '', 10); s.go('DH', '', 1); s.go('', '', 7); s.shot('a'); s.go('', '', 5); s.shot('b'); });
+  scene('dust-lariat', 'malik', 'avner', 500, (s) => { s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 6); s.shot('a'); s.go('', '', 6); s.shot('b'); });
+  // Malik's Spirit Install: the look, and the guardian's L / M / H on their striking frame (node scripts/shots.mjs <folder> spirit)
+  scene('spirit-look', 'malik', 'avner', 400, (s) => {
+    s.game.players[0].vars.install = 600; s.go('', '', 20); s.shot('idle'); s.go('F', '', 14); s.shot('walk'); s.go('', '', 4); s.go('F', '', 1); s.go('', '', 1); s.go('F', '', 6); s.shot('dash');
+  });
+  for (const [b, pre, hold] of [['L', 3, 6], ['M', 6, 8], ['H', 9, 10]]) scene('spirit-' + b, 'malik', 'avner', 130, (s) => {
+    s.opts = { boxes: true };
+    s.game.players[0].vars.install = 600; s.go('', '', 20); s.go(b, '', 1); s.go('', '', 1); s.shot('start'); s.go('', '', pre - 1); s.shot('strike'); s.go('', '', hold); s.shot('after');
+  });
+  // Malik's Running Lariat (node scripts/shots.mjs <folder> lariat)
+  scene('lariat', 'malik', 'avner', 330, (s) => {
+    s.go('', '', 10); s.go('D', '', 1); s.go('DK', '', 1); s.go('KH', '', 1); s.go('', '', 2); s.shot('power-up'); s.go('', '', 10); s.shot('running'); s.go('', '', 9); s.shot('swing'); s.go('', '', 30); s.shot('recovery');
+  });
   scene('vow', 'malik', 'avner', 150, (s) => {
     s.go('MH', '', 3); s.shot('start');
     s.go('MH', '', 12); s.shot('hold');

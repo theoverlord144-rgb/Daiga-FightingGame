@@ -3,6 +3,7 @@
 
 import { UNIT } from '../core/fixed.js';
 import { frameOf } from '../core/character.js';
+import { relDirAt } from '../core/input.js';
 import { createHud } from './hud.js';
 import { createStageRenderer } from './stage-renderer.js';
 import { paletteSheet, placeholderColors } from './palette.js';
@@ -76,7 +77,7 @@ export function createFightRenderer(ctx, W, H) {
       if (!stageR || stageR.id !== opts.stage.id) {
         stageR = { id: opts.stage.id, r: createStageRenderer(opts.stage, W, H, GROUND, world.battle.stage.halfWidth) };
       }
-      stageR.r.draw(ctx, cam);
+      stageR.r.draw(ctx, cam, Math.max(0, collected));
       if (opts.marks) drawMarks(world);
       return;
     }
@@ -278,7 +279,7 @@ export function createFightRenderer(ctx, W, H) {
   function drawSprite(p, def, fr, pal) {
     const s = fr.sprite;
     if (!s) return false;
-    const sheet = def.sheets[s.sheet];
+    const sheet = s.block ?? def.sheets[s.sheet]; // block: a sheet given outright (the art rules below)
     if (!sheet) return false;
     const raw = spriteImage(def.id, sheet.image);
     if (!raw) return false;
@@ -297,6 +298,67 @@ export function createFightRenderer(ctx, W, H) {
     ctx.drawImage(img, col * fw, row * fh, fw, fh, -ox, -oy, fw, fh); // img: the sheet in this palette
     ctx.restore();
     return true;
+  }
+
+  /**
+   * A character's own drawing rules (`art` in its file; drawing only):
+   *  - exit: leaving one state for another, a few drawings play first (the end of a landing, a dash stop, standing
+   *    up after setting the lantern down);
+   *  - byVy: air drawings picked by vertical speed;
+   *  - guard: the guard drawing while holding back from an attack that is coming.
+   */
+  const exitArt = [null, null]; // drawing only: { rule, t } the exit drawings a fighter is showing
+  function ruleFrame(p, def, fr, game, world) {
+    const art = def.art;
+    if (!art) return fr;
+    const ex = exitArt[p.id];
+    if (ex) return { ...fr, sprite: { block: ex.rule.sprite, index: ex.rule.frames[heldFrame(ex.rule.holds, ex.t, false)[0]] } };
+    // art.throws: { <throw move>: { throwHold: { sprite, holds }, throwFinish: { sprite, holds } } }: the shared throw
+    // states drawn with that throw's own drawings (which throw it was is kept on the fighter being thrown).
+    const own = art.throws && game && (p.state === 'throwHold' || p.state === 'throwFinish') ? art.throws[game.players[1 - p.id].throwMove]?.[p.state] : null;
+    if (own) {
+      const t = lastMove[p.id]?.state === p.state ? lastMove[p.id].since : 0;
+      return { ...fr, sprite: { block: own.sprite, index: heldFrame(own.holds, t, false)[0] } };
+    }
+    const st = def.states[p.state];
+    if (art.guard && st.free && game && world) {
+      const o = game.players[1 - p.id];
+      const dir = relDirAt(p.input, 0, p.facing);
+      const coming = !!world.chars[o.id].states[o.state].move?.active || game.projectiles.some((pr) => pr.owner === o.id && !world.chars[o.id].projectiles[pr.kind].noHit);
+      const g = art.guard[st.stance];
+      if (g && coming && (dir === 4 || dir === 1 || dir === 7) && Math.abs(o.x - p.x) <= art.guard.range * UNIT) return { ...fr, sprite: { block: g.sprite, index: g.index } };
+    }
+    if (art.byVy && fr.sprite && art.byVy.states.includes(p.state)) {
+      const vy = p.vy / UNIT;
+      const row = art.byVy.pick.find((r) => r.above === undefined || vy > r.above);
+      return { ...fr, sprite: { ...fr.sprite, index: row.index } };
+    }
+    return fr;
+  }
+
+  /** Avner's lantern: its moon shows his Devotion (one drawing per full bar), and an effect can be pinned to it. */
+  function lanternAt(p, def, shown) {
+    const L = def.art?.lantern;
+    const s = shown.sprite;
+    const sheet = s && (s.block ?? def.sheets[s.sheet]);
+    const at = L && sheet && L.at[sheet.image]?.[s.index];
+    return at ? toScreen(p.x + p.facing * at[0] * UNIT, p.y + at[1] * UNIT) : null;
+  }
+  function drawLantern(p, def, shown) {
+    const at = lanternAt(p, def, shown);
+    if (!at) return;
+    const L = def.art.lantern;
+    const bars = Math.min(L.sprite.count - 1, Math.floor((p.meter * (def.stats?.meterBars ?? 4)) / Math.max(1, def.meterMax)));
+    drawSheetFrame(def, L.sprite, bars, at[0], at[1], p.facing);
+    // A move's pinned effect (the lantern flaring as the moon is called): from one drawing of the move on.
+    const st = def.states[p.state];
+    const pin = st.move?.pinFx, e = pin && def.effects[pin.effect];
+    if (!e) return;
+    const from = st.frames.findIndex((f) => f.sprite && f.sprite.index >= pin.fromSprite);
+    const t = p.frame - from;
+    const total = e.holds.reduce((a, b) => a + b, 0);
+    if (from < 0 || t < 0 || t >= total) return;
+    drawSheetFrame(def, e.sprite, heldFrame(e.holds, t, false)[0], at[0], at[1], p.facing);
   }
 
   /** Effects a state carries in step with its own drawings (a stance's aura behind, its light trail in front). */
@@ -321,20 +383,28 @@ export function createFightRenderer(ctx, W, H) {
    * 0, each drawing held the effect's `hold` frames, fading out over the last second. An effect may `bob` up and
    * down ({ px, period }) and be see-through (`alpha`).
    */
+  const auraAt = {}; // drawing only: where a swapping aura is drawn now, on its way to its place
   function drawAuras(p, def, frame, behind) {
     for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
       const n = p.vars?.[k];
       if (!v.aura || !(n > 0)) continue;
       for (const l of v.aura) {
         if (!!l.behind !== behind) continue;
-        const e = def.effects[l.effect];
+        // swap: { <state>: effect }: in that state the aura is another effect (the guardian's attack), played in
+        // step with the state by its `holds`. It glides between the two places so nothing jumps.
+        const swap = def.effects[l.swap?.[p.state]];
+        const e = swap ?? def.effects[l.effect];
         if (!e) continue;
         const at = e.at ?? [0, 0];
         const bob = e.bob ? Math.sin((frame * Math.PI * 2) / e.bob.period) * e.bob.px : 0;
-        const [x, y] = toScreen(p.x + p.facing * at[0] * UNIT, p.y + (at[1] + bob) * UNIT);
+        const key = `${p.id}:${l.effect}`;
+        const was = l.swap ? auraAt[key] ?? at : at;
+        const now = l.swap ? [was[0] + (at[0] - was[0]) * 0.4, was[1] + (at[1] - was[1]) * 0.4] : at;
+        if (l.swap) auraAt[key] = now;
+        const [x, y] = toScreen(p.x + p.facing * now[0] * UNIT, p.y + (now[1] + bob) * UNIT);
         ctx.save();
         ctx.globalAlpha *= Math.min(1, n / 60) * (e.alpha ?? 1);
-        drawSheetFrame(def, e.sprite, Math.floor(frame / (e.hold ?? 4)) % e.sprite.count, x, y, p.facing);
+        drawSheetFrame(def, e.sprite, swap ? heldFrame(e.holds, p.frame, false)[0] : Math.floor(frame / (e.hold ?? 4)) % e.sprite.count, x, y, p.facing);
         ctx.restore();
       }
     }
@@ -372,7 +442,7 @@ export function createFightRenderer(ctx, W, H) {
       if (!d?.sprite) continue;
       const rel = d.anim?.release ?? [], loop = d.anim?.loop ?? [1];
       const relLen = rel.reduce((a, b) => a + b, 0);
-      const index = pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0];
+      const index = Math.min(d.sprite.count - 1, pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0]);
       const [x, y] = toScreen(...rootOf(pr, d));
       ctx.save();
       if (d.sprite.additive) ctx.globalCompositeOperation = 'lighter';
@@ -412,6 +482,10 @@ export function createFightRenderer(ctx, W, H) {
   // slow display runs several steps between two draws and the cues of the earlier ones would be lost (effects and
   // sparks that never appear); draw() picks up the frame it sees if nobody did.
   let collected = -1;
+  // Impact feel (drawing only): the screen jolt and the brightened fighter. data/system/effects.json "impact".
+  const shake = { amp: 0, left: 0 };
+  const hitFlash = [0, 0];
+  const jolt = (amp) => { if (amp > 0 && amp >= (shake.left > 0 ? shake.amp : 0)) { shake.amp = amp; shake.left = FX.impact.shake.frames; } };
   // The universal systems' effect slots (data/system/effects.json "slots").
   const SLOTS = FX.slots || { sheets: {}, absorbPoseFrames: 8, exTint: 0.45 };
   const lastMove = [null, null]; // drawing only: last seen state and x, to notice a dash starting or a landing
@@ -488,20 +562,35 @@ export function createFightRenderer(ctx, W, H) {
     const t = M.sheets[rule.trail];
     if (t) effects.push({ motion: t, follow: p.id, state: p.state, dy: y - p.y, x: p.x, y, facing, age: 0, life: 1 });
   }
+  /** How long a sheet effect lasts: its `holds` (frames per drawing), or one `hold` for every drawing. */
+  const lifeOf = (e) => (e.holds ? e.holds.reduce((a, b) => a + b, 0) : e.sprite.count * (e.hold ?? 3));
   function collect(game, world) {
     if (game.frame === collected) return;
     collected = game.frame;
     hud.notice(game);
+    if (shake.left > 0) shake.left--;
+    for (const i of [0, 1]) if (hitFlash[i] > 0) hitFlash[i]--;
     for (const c of game.cues) {
+      if (FX.impact) {
+        if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') {
+          const src = world.chars[c.p];
+          const base = (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.damage ?? 0;
+          const size = FX.hit.find((h) => h.below === undefined || base < h.below) ?? FX.hit[FX.hit.length - 1];
+          jolt(FX.impact.shake[size.name] ?? 0);
+          hitFlash[1 - c.p] = FX.impact.flash.frames;
+        } else jolt(FX.impact.shake[c.type] ?? 0);
+      }
       slotCue(c, game, world);
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
         const at = named.at ?? [0, 0];
-        effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: named.sprite.count * (named.hold ?? 3) });
+        effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: lifeOf(named) });
       }
       if (c.type === 'projectileEnd') {
         // The projectile's impact frames play where it hit or vanished.
         const d = world.chars[c.p]?.projectiles[c.name];
+        const endFx = world.chars[c.p]?.effects?.[d?.endFx?.[c.why]]; // a named effect for this way of ending (a burst on the ground)
+        if (endFx) effects.push({ sheet: endFx, def: world.chars[c.p], x: c.x, y: c.y, facing: c.facing, age: 0, life: lifeOf(endFx) });
         if (d?.sprite && d.anim?.impact) {
           const first = (d.anim.release?.length ?? 0) + (d.anim.loop?.length ?? 0);
           const [ex, ey] = groundSeen[`${c.p}:${c.name}`] ?? [c.x, c.y];
@@ -512,7 +601,7 @@ export function createFightRenderer(ctx, W, H) {
       // A move (or projectile) with its own hit effect (art) shows that instead of the generic spark.
       const src = world.chars[c.p];
       const fx = (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
-      if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: fx.sprite.count * (fx.hold ?? 3) });
+      if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: lifeOf(fx) });
       // The universal sheet: a hit spark sized by the move's base damage (a counter hit goes one size up), or the
       // block flash, which curves toward the attacker.
       const isHit = c.type === 'hit' || c.type === 'counter' || c.type === 'witness';
@@ -555,12 +644,24 @@ export function createFightRenderer(ctx, W, H) {
     for (const p of game.players) {
       const was = lastMove[p.id];
       if (was && was.state !== p.state && p.state.endsWith('_ex')) slotPlay(SLOTS.cues?.ex, p, game);
+      const ex = exitArt[p.id];
+      if (ex && (!ex.rule.into.includes(p.state) || ++ex.t >= ex.total)) exitArt[p.id] = null;
       if (was && was.state !== p.state) {
+        const rule = world.chars[p.id].art?.exit?.find((r) => r.from === was.state && r.into.includes(p.state) && was.since >= (r.after ?? 0));
+        exitArt[p.id] = rule ? { rule, t: 0, total: rule.holds.reduce((a, b) => a + b, 0) } : null;
         const dx = p.x - was.x;
+        if (FX.impact && p.state === 'knockdown') jolt(FX.impact.shake.knockdown);
         if (FX.motion.leave[was.state]) motionFx(FX.motion.leave[was.state], p, dx);
         if (FX.motion.enter[p.state]) motionFx(FX.motion.enter[p.state], p, dx);
       }
       lastMove[p.id] = { state: p.state, x: p.x, since: was && was.state === p.state ? was.since + 1 : 0 }; // since: frames in this state
+      // art.motion: { <state>: { play, at, from, every, until } }: dust under a move that runs or slides, every
+      // `every` frames from frame `from` to frame `until` of the state.
+      const dust = world.chars[p.id].art?.motion?.[p.state];
+      if (dust) {
+        const t = lastMove[p.id].since - (dust.from ?? 0);
+        if (t >= 0 && lastMove[p.id].since <= (dust.until ?? dust.from ?? 0) && t % (dust.every ?? 1000) === 0) motionFx(dust, p, 0);
+      }
     }
     for (const pr of game.projectiles) {
       const d = world.chars[pr.owner].projectiles[pr.kind];
@@ -633,6 +734,11 @@ export function createFightRenderer(ctx, W, H) {
       const top = Math.max(game.players[0].y, game.players[1].y) / UNIT + 200;
       const wantY = Math.max(0, top - (GROUND - 40));
       cam.y += (wantY - cam.y) * 0.25;
+      // The screen jolt: the world shifts for this drawing only (the HUD stays still), mostly up and down.
+      const jk = shake.left > 0 ? (shake.amp * shake.left) / FX.impact.shake.frames * (shake.left % 2 ? 1 : -1) : 0;
+      const joltX = -jk * 0.4, joltY = jk;
+      cam.x += joltX;
+      cam.y += joltY;
       drawStage(world, opts);
       // Super flash: the stage goes dark while the game is frozen; the super's user stays lit.
       const flashing = game.flash > 0;
@@ -692,7 +798,7 @@ export function createFightRenderer(ctx, W, H) {
         drawAuras(p, def, game.frame, true);
         drawWhile(p, true);
         drawLayers(p, def, fr, true);
-        const shown = artFrame(p, def, fr);
+        const shown = ruleFrame(p, def, artFrame(p, def, fr), game, world);
         if (!drawSprite(p, def, shown, pal)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
         else if (p.state.endsWith('_ex') && def.sheets[p.state]?.image === def.sheets[p.state.slice(0, -3)]?.image) {
           // An EX move with no art of its own: the normal animation, brightened.
@@ -702,6 +808,15 @@ export function createFightRenderer(ctx, W, H) {
           drawSprite(p, def, shown, pal);
           ctx.restore();
         }
+        if (hitFlash[p.id] > 0 && FX.impact.flash.alpha > 0) {
+          // Just hit: the fighter drawn again as light for a moment.
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = FX.impact.flash.alpha;
+          drawSprite(p, def, shown, pal);
+          ctx.restore();
+        }
+        drawLantern(p, def, shown);
         drawLayers(p, def, fr, false);
         drawAuras(p, def, game.frame, false);
         drawWhile(p, false);
@@ -758,7 +873,7 @@ export function createFightRenderer(ctx, W, H) {
           continue;
         }
         if (e.sheet) {
-          drawSheetFrame(e.def, e.sheet.sprite, Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
+          drawSheetFrame(e.def, e.sheet.sprite, e.sheet.holds ? heldFrame(e.sheet.holds, e.age, false)[0] : Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
           continue;
         }
         const t = e.age / e.life;
@@ -781,6 +896,8 @@ export function createFightRenderer(ctx, W, H) {
         }
         ctx.globalAlpha = 1;
       }
+      cam.x -= joltX;
+      cam.y -= joltY;
       // Combo counter, on the attacker's side: hits, damage, current scaling.
       for (const v of [0, 1]) {
         const s = comboShow[v];

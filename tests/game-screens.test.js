@@ -41,7 +41,7 @@ test('a broken palette is an error when the character loads', () => {
 });
 
 test('every stage file is well formed (known layer types, parallax 0 to 1)', () => {
-  const KNOWN = new Set(['sky', 'sun', 'ridge', 'haze', 'arches', 'railing', 'floor']);
+  const KNOWN = new Set(['sky', 'sun', 'ridge', 'haze', 'arches', 'railing', 'floor', 'stars', 'torches', 'motes', 'vignette']);
   const files = readdirSync(new URL('../data/stages/', import.meta.url)).filter((f) => f.endsWith('.json'));
   assert.ok(files.length >= 1);
   for (const f of files) {

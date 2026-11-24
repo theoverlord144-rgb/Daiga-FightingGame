@@ -59,6 +59,8 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `throwboxes` | `[[x, y, w, h]]` during active frames: makes the move a throw (checked against the defender's throw-hurtbox). A throw only comes out when its box would reach an opponent who can be thrown right now; otherwise the input falls through to the next move it matches. So a strike can share a throw's input (Avner's `4H`: back throw up close, Back Heavy from farther; list the throw first), and `6H` out of range gives `5H`. |
 | `throwDistance` | px between the fighters while the throw holds (default 70). |
 | `throwSwap` | `true` = a back throw: the defender lands on the other side. |
+| `throwHit` | Frames after the hold ends before the throw's damage and knockdown: the frame of the hit drawing in the thrower's finish (default 0 = when the hold ends). |
+| `throwFx` | `[px forward, px up]` from the thrower: where the throw's hit spark shows (default: at his feet). |
 | `pull` | `{ to, frames }`: on hit (not block) the defender slides toward the attacker, ending `to` px in front of them, over `frames` frames, from any range and in the air too. Replaces pushback. |
 | `perCombo` | `n`: the move can be used at most `n` times in one combo (it won't come out again until the combo ends). Stops loops. |
 | `hitRequires` | A condition on the attacker (same shape as `requires`), read when the hitbox touches: unmet, it touches nothing at all (Anchor only hits a branded opponent). |
@@ -184,6 +186,27 @@ fields (boxes, sprite, flags) hold until changed. One-shot fields fire once, on 
 | `toOpponent` | one-shot | `{ to, frames }`: slide to the opponent, stopping `to` px in front of them, over `frames` frames (never past them; pushboxes still apply). |
 | `spawn` | one-shot | A projectile name (top-level `projectiles`): one appears at its `spawn` offset, facing the way the fighter faces. |
 
+`spawn` may also be `{ "name": ..., "x": px, "y": px, "under": "opponent" }`: this one appears `x` px in front (instead
+of the projectile's own spawn offset), or directly under the opponent. `endProjectile` (one-shot): a projectile name;
+the fighter's own projectiles of that kind end this frame.
+
+More move fields: `perJump` (a group name: one move of that group per jump, until the fighter lands), `oneAtATime` (a projectile name or a list: the move can't start while one is out), `needsOut` (a
+projectile name: the move only starts while one is out), `hitsAirborne: false` (the hit passes through a fighter in
+the air), `noZoneMark: true` (this hit never adds a zone's mark), `pinFx: { effect, fromSprite }` (drawing only: a
+named effect pinned to the lantern point of each drawing, from that drawing on).
+
+## `art` (top level): a character's own drawing rules
+
+Drawing only; the rules never read it. `byVy: { states, pick: [{ above, index }] }` picks an air drawing by vertical
+speed (px a frame, up positive; the first row whose `above` the speed is over). `exit: [{ from, into, after, sprite,
+frames, holds }]`: leaving `from` for one of `into` (after at least `after` frames there), those drawings play first.
+`guard: { range, stand, crouch, air }` (each `{ sprite, index }`): shown while holding back with the opponent
+attacking within `range` px. `lantern: { sprite, at }`: one drawing per full bar of Devotion, drawn at `at[sheet
+image][drawing]` = [px forward, px up] from the fighter. `throws: { moveId: { throwHold: { sprite, holds }, throwFinish: { sprite, holds } } }`: that throw's own drawings for the
+shared throw states. A mechanic var's `aura` entry may carry `swap: { state: effectName }`: in that state the aura is drawn as that effect instead, by its `holds`, in step with the state (Malik's guardian attacking). `stats.throwHold`: how long a throw is held before it lands (frames; it can be longer than
+`stats.throwBreak`, the break window, which is the first frames of the hold). An effect (`effects`, `hitFx`) may give `holds` (frames per
+drawing) instead of one `hold`.
+
 ## `states` (top level): a character's own states
 
 Overrides for system states (`"walkF": { "duration": 48 }`), and new states of the character's own: stances and
@@ -206,6 +229,14 @@ frame data (the move fields: `damage`, `hitstun`, `blockstun`, `hitstop`, `guard
 `lifetime` frames. Its hit is its owner's hit (damage, meter, combo) but puts no hitstop or pushback on the owner.
 Drawing only: `sprite` (with `additive: true` for light on black) and `anim: { release, loop, impact }`, hold lists
 over the sheet's frames in that order; the impact frames play where it ended (cue `projectileEnd`).
+
+More projectile fields: `endsOnGround: true` (it ends when it reaches the floor), `endFx: { why: effect }` (drawing only: a
+named effect played where it ended; why = `hit`, `block`, `ground`, `edge`, `clash`, `recall`), `phases: [[fromAge, toAge, box or null]]` (the hitbox is out only at those ages; null = its
+`hitbox`), `persist: true` (it stays after its hit, hits once, never clashes), `noHit: true` (it never hits: a light,
+a beam that is only seen), `zone: { box, gravityPct, markVar }` (an opponent inside falls at that share of their
+gravity; a hit the owner lands on them there adds 1 to the owner's var), `onEnd: { setVar: { name: n } }` (set on the
+owner when it ends, however it ends), `ownerOnHit` (a state the owner switches to on hit, if still in the move that
+made it), `hitsAirborne`, `pull`.
 
 ## Making a sprite sheet
 

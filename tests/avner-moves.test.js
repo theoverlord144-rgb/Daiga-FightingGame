@@ -9,7 +9,7 @@ import { compileCharacter } from '../src/core/character.js';
 import { px } from '../src/core/fixed.js';
 import { loadWorld, loadChar, loadJSON, script, SYSTEM } from './helpers.js';
 
-const AVNER = 'data/characters/avner/avner.toska.json';
+const AVNER = 'data/characters/_archive/avner_chain/avner.toska.json';
 
 function placed(w, gap) {
   const g = createGame(w);
@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '5H', '5L', '5M', '5S', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_5', 'rite_6', 'rite_j', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_5', 'rite_6', 'rite_j', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -359,7 +359,7 @@ test('Avner: Air Spike (j.S) has its art, and the hit lands on drawing 4', () =>
   assert.equal(hits.length, st.move.active);
   assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4]);
   assert.ok(st.frames[st.move.startup - 1].hit.length > 0, 'first active frame');
-  assert.ok(fs.existsSync('data/characters/avner/sheets/jS.png'));
+  assert.ok(fs.existsSync('data/characters/_archive/avner_chain/sheets/jS.png'));
 });
 
 // The cost follows the owner's universal systems spec: a level 1 super costs one bar (it was two for a while).
@@ -394,7 +394,8 @@ test('Malik: Spirit Install (down, down, S+H) costs one bar, runs 10 seconds, an
   const v = world.chars[0].mechanic.vars.install;
   assert.deepEqual(v.aura.map((l) => [l.effect, !!l.behind]), [['guardian', true], ['installMotesBack', true], ['installFlames', false], ['installMotesFront', false]]);
   for (const l of v.aura) assert.ok(fs.existsSync('data/characters/malik/' + world.chars[0].effects[l.effect].sprite.image), l.effect);
-  assert.deepEqual(v.art, { idle: 'installIdle' });
+  assert.deepEqual(v.art, { idle: 'installIdle', walkF: 'installWalkF', dashF: 'installDashF', dashStop: 'installDashStop' });
+  for (const [from, to] of Object.entries(v.art)) assert.ok(world.chars[0].states[from] && world.chars[0].states[to].frames.every((f) => f.sprite), `${from} -> ${to}`);
   assert.equal(world.chars[0].states.installIdle.frames.length, world.chars[0].states.idle.frames.length);
 });
 

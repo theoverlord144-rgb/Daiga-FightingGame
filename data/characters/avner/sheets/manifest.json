@@ -1,0 +1,5129 @@
+{
+ "idle": {
+  "sprite": {
+   "image": "sheets/idle.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 218,
+   "frameH": 392,
+   "originX": 110,
+   "originY": 390,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Avner_Idle.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    18,
+    49
+   ],
+   [
+    22,
+    53
+   ],
+   [
+    20,
+    56
+   ],
+   [
+    19,
+    48
+   ],
+   [
+    18,
+    46
+   ],
+   [
+    20,
+    50
+   ]
+  ],
+  "reach": [
+   [
+    -52,
+    0,
+    52,
+    186
+   ],
+   [
+    -50,
+    0,
+    49,
+    190
+   ],
+   [
+    -54,
+    0,
+    47,
+    194
+   ],
+   [
+    -52,
+    0,
+    50,
+    186
+   ],
+   [
+    -51,
+    0,
+    49,
+    182
+   ],
+   [
+    -51,
+    0,
+    52,
+    186
+   ]
+  ]
+ },
+ "walk": {
+  "sprite": {
+   "image": "sheets/walk.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 273,
+   "frameH": 389,
+   "originX": 126,
+   "originY": 387,
+   "scale": 0.5,
+   "holds": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5
+   ]
+  },
+  "from": "Avner_Forward_Walk.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    12,
+    48
+   ],
+   [
+    15,
+    50
+   ],
+   [
+    18,
+    57
+   ],
+   [
+    16,
+    44
+   ],
+   [
+    20,
+    52
+   ],
+   [
+    18,
+    57
+   ]
+  ],
+  "reach": [
+   [
+    -62,
+    0,
+    72,
+    186
+   ],
+   [
+    -51,
+    0,
+    50,
+    187
+   ],
+   [
+    -49,
+    0,
+    53,
+    191
+   ],
+   [
+    -60,
+    0,
+    66,
+    185
+   ],
+   [
+    -47,
+    0,
+    50,
+    187
+   ],
+   [
+    -42,
+    0,
+    47,
+    192
+   ]
+  ]
+ },
+ "walk-back": {
+  "sprite": {
+   "image": "sheets/walk-back.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 259,
+   "frameH": 377,
+   "originX": 133,
+   "originY": 375,
+   "scale": 0.5,
+   "holds": [
+    6,
+    6,
+    6,
+    6,
+    6,
+    6
+   ]
+  },
+  "from": "Avner_Back_Walk.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    16,
+    47
+   ],
+   [
+    21,
+    48
+   ],
+   [
+    15,
+    48
+   ],
+   [
+    17,
+    47
+   ],
+   [
+    23,
+    50
+   ],
+   [
+    17,
+    49
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    0,
+    60,
+    186
+   ],
+   [
+    -47,
+    0,
+    48,
+    186
+   ],
+   [
+    -42,
+    0,
+    45,
+    186
+   ],
+   [
+    -61,
+    0,
+    62,
+    185
+   ],
+   [
+    -49,
+    0,
+    46,
+    186
+   ],
+   [
+    -43,
+    0,
+    44,
+    185
+   ]
+  ]
+ },
+ "crouch": {
+  "sprite": {
+   "image": "sheets/crouch.png",
+   "columns": 10,
+   "rows": 1,
+   "count": 10,
+   "frameW": 227,
+   "frameH": 347,
+   "originX": 122,
+   "originY": 345,
+   "scale": 0.5,
+   "holds": [
+    2,
+    3,
+    5,
+    6,
+    14,
+    10,
+    16,
+    10,
+    2,
+    2
+   ]
+  },
+  "from": "Avner_Crouch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "lantern": [
+   [
+    -7,
+    46
+   ],
+   [
+    -10,
+    27
+   ],
+   [
+    8,
+    42
+   ],
+   [
+    15,
+    15
+   ],
+   [
+    11,
+    15
+   ],
+   [
+    19,
+    16
+   ],
+   [
+    12,
+    16
+   ],
+   [
+    11,
+    16
+   ],
+   [
+    12,
+    42
+   ],
+   [
+    -2,
+    39
+   ]
+  ],
+  "reach": [
+   [
+    -42,
+    0,
+    47,
+    171
+   ],
+   [
+    -60,
+    0,
+    49,
+    150
+   ],
+   [
+    -60,
+    0,
+    45,
+    148
+   ],
+   [
+    -59,
+    0,
+    47,
+    148
+   ],
+   [
+    -57,
+    0,
+    51,
+    148
+   ],
+   [
+    -53,
+    0,
+    50,
+    150
+   ],
+   [
+    -53,
+    0,
+    48,
+    152
+   ],
+   [
+    -55,
+    0,
+    50,
+    151
+   ],
+   [
+    -52,
+    0,
+    48,
+    155
+   ],
+   [
+    -43,
+    0,
+    49,
+    168
+   ]
+  ]
+ },
+ "jumpsquat": {
+  "sprite": {
+   "image": "sheets/jumpsquat.png",
+   "columns": 1,
+   "rows": 1,
+   "count": 1,
+   "frameW": 181,
+   "frameH": 250,
+   "originX": 91,
+   "originY": 248,
+   "scale": 0.5,
+   "holds": [
+    4
+   ]
+  },
+  "from": "Avner_Jump.png",
+  "drawings": [
+   1
+  ],
+  "lantern": [
+   [
+    8,
+    27
+   ]
+  ],
+  "reach": [
+   [
+    -44,
+    0,
+    43,
+    123
+   ]
+  ]
+ },
+ "jump": {
+  "sprite": {
+   "image": "sheets/jump.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 201,
+   "frameH": 534,
+   "originX": 95,
+   "originY": 448,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Avner_Jump.png",
+  "drawings": [
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    27,
+    55
+   ],
+   [
+    17,
+    33
+   ],
+   [
+    -7,
+    50
+   ],
+   [
+    -24,
+    50
+   ],
+   [
+    -25,
+    63
+   ]
+  ],
+  "reach": [
+   [
+    -46,
+    -25,
+    38,
+    223
+   ],
+   [
+    -40,
+    4,
+    35,
+    169
+   ],
+   [
+    -41,
+    28,
+    43,
+    157
+   ],
+   [
+    -40,
+    -26,
+    36,
+    162
+   ],
+   [
+    -46,
+    -42,
+    51,
+    180
+   ]
+  ]
+ },
+ "land": {
+  "sprite": {
+   "image": "sheets/land.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 221,
+   "frameH": 304,
+   "originX": 110,
+   "originY": 302,
+   "scale": 0.5,
+   "holds": [
+    5,
+    6
+   ]
+  },
+  "from": "Avner_Jump.png",
+  "drawings": [
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    23,
+    35
+   ],
+   [
+    16,
+    40
+   ]
+  ],
+  "reach": [
+   [
+    -54,
+    0,
+    54,
+    142
+   ],
+   [
+    -44,
+    0,
+    46,
+    150
+   ]
+  ]
+ },
+ "dash": {
+  "sprite": {
+   "image": "sheets/dash.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 473,
+   "frameH": 354,
+   "originX": 243,
+   "originY": 352,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3
+   ]
+  },
+  "from": "Avner_Forward_Dash.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -14,
+    58
+   ],
+   [
+    -16,
+    65
+   ],
+   [
+    -23,
+    60
+   ],
+   [
+    -11,
+    57
+   ]
+  ],
+  "reach": [
+   [
+    -105,
+    1,
+    75,
+    175
+   ],
+   [
+    -120,
+    1,
+    113,
+    172
+   ],
+   [
+    -98,
+    1,
+    67,
+    161
+   ],
+   [
+    -101,
+    1,
+    71,
+    163
+   ]
+  ]
+ },
+ "backdash": {
+  "sprite": {
+   "image": "sheets/backdash.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 249,
+   "frameH": 433,
+   "originX": 109,
+   "originY": 431,
+   "scale": 0.5,
+   "holds": [
+    3,
+    5,
+    6
+   ]
+  },
+  "from": "Avner_Back_Dash.png",
+  "drawings": [
+   1,
+   2,
+   3
+  ],
+  "lantern": [
+   [
+    23,
+    50
+   ],
+   [
+    24,
+    99
+   ],
+   [
+    20,
+    92
+   ]
+  ],
+  "reach": [
+   [
+    -53,
+    0,
+    59,
+    186
+   ],
+   [
+    -48,
+    45,
+    69,
+    212
+   ],
+   [
+    -44,
+    11,
+    68,
+    214
+   ]
+  ]
+ },
+ "airdash": {
+  "sprite": {
+   "image": "sheets/airdash.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 322,
+   "frameH": 442,
+   "originX": 166,
+   "originY": 381,
+   "scale": 0.5,
+   "holds": [
+    3,
+    6,
+    6,
+    5
+   ]
+  },
+  "from": "Avner_Forward_AirDash.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -23,
+    47
+   ],
+   [
+    -34,
+    61
+   ],
+   [
+    -29,
+    58
+   ],
+   [
+    -28,
+    61
+   ]
+  ],
+  "reach": [
+   [
+    -49,
+    -1,
+    54,
+    171
+   ],
+   [
+    -78,
+    -27,
+    77,
+    174
+   ],
+   [
+    -82,
+    -29,
+    73,
+    173
+   ],
+   [
+    -67,
+    -10,
+    55,
+    189
+   ]
+  ]
+ },
+ "airdash-back": {
+  "sprite": {
+   "image": "sheets/airdash-back.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 290,
+   "frameH": 425,
+   "originX": 123,
+   "originY": 376,
+   "scale": 0.5,
+   "holds": [
+    3,
+    6,
+    6,
+    5
+   ]
+  },
+  "from": "Avner_Back_AirDash.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    36,
+    63
+   ],
+   [
+    47,
+    70
+   ],
+   [
+    43,
+    66
+   ],
+   [
+    32,
+    56
+   ]
+  ],
+  "reach": [
+   [
+    -43,
+    -23,
+    51,
+    176
+   ],
+   [
+    -46,
+    -2,
+    78,
+    174
+   ],
+   [
+    -47,
+    -1,
+    82,
+    179
+   ],
+   [
+    -60,
+    -22,
+    57,
+    187
+   ]
+  ]
+ },
+ "block-stand": {
+  "sprite": {
+   "image": "sheets/block-stand.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 385,
+   "frameH": 396,
+   "originX": 156,
+   "originY": 394,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8
+   ]
+  },
+  "from": "Avner_Blocks_And_Pushback.png",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    -30,
+    92
+   ],
+   [
+    -26,
+    83
+   ]
+  ],
+  "reach": [
+   [
+    -77,
+    0,
+    88,
+    196
+   ],
+   [
+    -63,
+    0,
+    113,
+    194
+   ]
+  ]
+ },
+ "block-crouch": {
+  "sprite": {
+   "image": "sheets/block-crouch.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 364,
+   "frameH": 283,
+   "originX": 138,
+   "originY": 281,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8
+   ]
+  },
+  "from": "Avner_Blocks_And_Pushback.png",
+  "drawings": [
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -22,
+    59
+   ],
+   [
+    -23,
+    54
+   ]
+  ],
+  "reach": [
+   [
+    -68,
+    0,
+    66,
+    139
+   ],
+   [
+    -54,
+    0,
+    112,
+    138
+   ]
+  ]
+ },
+ "block-air": {
+  "sprite": {
+   "image": "sheets/block-air.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 330,
+   "frameH": 295,
+   "originX": 112,
+   "originY": 335,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8
+   ]
+  },
+  "from": "Avner_Blocks_And_Pushback.png",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    5,
+    92
+   ],
+   [
+    -9,
+    94
+   ]
+  ],
+  "reach": [
+   [
+    -49,
+    22,
+    58,
+    166
+   ],
+   [
+    -55,
+    25,
+    108,
+    165
+   ]
+  ]
+ },
+ "5L": {
+  "sprite": {
+   "image": "sheets/5L.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 292,
+   "frameH": 377,
+   "originX": 47,
+   "originY": 375,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    4,
+    5
+   ]
+  },
+  "from": "Avner_LightPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    52,
+    51
+   ],
+   [
+    92,
+    107
+   ],
+   [
+    108,
+    112
+   ],
+   [
+    45,
+    68
+   ],
+   [
+    50,
+    50
+   ]
+  ],
+  "reach": [
+   [
+    -19,
+    0,
+    93,
+    186
+   ],
+   [
+    -22,
+    0,
+    109,
+    186
+   ],
+   [
+    -22,
+    0,
+    121,
+    186
+   ],
+   [
+    -20,
+    0,
+    95,
+    186
+   ],
+   [
+    -20,
+    0,
+    93,
+    186
+   ]
+  ]
+ },
+ "5M": {
+  "sprite": {
+   "image": "sheets/5M.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 323,
+   "frameH": 399,
+   "originX": 84,
+   "originY": 397,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    1,
+    3,
+    7,
+    7
+   ]
+  },
+  "from": "Avner_MediumPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    43,
+    55
+   ],
+   [
+    -11,
+    76
+   ],
+   [
+    -4,
+    71
+   ],
+   [
+    43,
+    74
+   ],
+   [
+    -1,
+    74
+   ],
+   [
+    49,
+    55
+   ]
+  ],
+  "reach": [
+   [
+    -21,
+    0,
+    94,
+    186
+   ],
+   [
+    -41,
+    0,
+    48,
+    197
+   ],
+   [
+    -29,
+    0,
+    96,
+    192
+   ],
+   [
+    -37,
+    0,
+    118,
+    193
+   ],
+   [
+    -30,
+    0,
+    54,
+    195
+   ],
+   [
+    -21,
+    0,
+    100,
+    185
+   ]
+  ]
+ },
+ "5H": {
+  "sprite": {
+   "image": "sheets/5H.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 625,
+   "frameH": 490,
+   "originX": 232,
+   "originY": 488,
+   "scale": 0.5,
+   "holds": [
+    3,
+    5,
+    4,
+    1,
+    1,
+    3,
+    8,
+    14
+   ]
+  },
+  "from": "Avner_HeavyPunch_SecondRowFourthFrameOnlyAfterFourthFrameOfFirstRow.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   11,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    61,
+    146
+   ],
+   [
+    61,
+    146
+   ],
+   [
+    61,
+    146
+   ],
+   [
+    61,
+    146
+   ],
+   [
+    92,
+    132
+   ],
+   [
+    92,
+    132
+   ],
+   [
+    92,
+    132
+   ],
+   [
+    92,
+    132
+   ]
+  ],
+  "reach": [
+   [
+    -60,
+    1,
+    57,
+    186
+   ],
+   [
+    -90,
+    1,
+    54,
+    186
+   ],
+   [
+    -115,
+    1,
+    45,
+    243
+   ],
+   [
+    -57,
+    1,
+    110,
+    224
+   ],
+   [
+    -57,
+    1,
+    145,
+    229
+   ],
+   [
+    -57,
+    1,
+    195,
+    149
+   ],
+   [
+    -67,
+    1,
+    37,
+    189
+   ],
+   [
+    -59,
+    1,
+    61,
+    186
+   ]
+  ]
+ },
+ "4H": {
+  "sprite": {
+   "image": "sheets/4H.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 324,
+   "frameH": 444,
+   "originX": 129,
+   "originY": 442,
+   "scale": 0.5,
+   "holds": [
+    2,
+    5,
+    5,
+    1,
+    5,
+    10,
+    12
+   ]
+  },
+  "from": "Avner_Back_HeavyPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    26,
+    51
+   ],
+   [
+    26,
+    111
+   ],
+   [
+    26,
+    86
+   ],
+   [
+    26,
+    86
+   ],
+   [
+    42,
+    84
+   ],
+   [
+    -3,
+    82
+   ],
+   [
+    25,
+    51
+   ]
+  ],
+  "reach": [
+   [
+    -54,
+    0,
+    65,
+    186
+   ],
+   [
+    -45,
+    26,
+    42,
+    220
+   ],
+   [
+    -58,
+    0,
+    45,
+    200
+   ],
+   [
+    -56,
+    0,
+    87,
+    205
+   ],
+   [
+    -63,
+    0,
+    96,
+    200
+   ],
+   [
+    -50,
+    0,
+    54,
+    203
+   ],
+   [
+    -58,
+    0,
+    62,
+    185
+   ]
+  ]
+ },
+ "5S": {
+  "sprite": {
+   "image": "sheets/5S.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 300,
+   "frameH": 669,
+   "originX": 102,
+   "originY": 667,
+   "scale": 0.5,
+   "holds": [
+    3,
+    6,
+    2,
+    5,
+    8,
+    8,
+    6
+   ]
+  },
+  "from": "Avner_SLauncher.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    57,
+    57
+   ],
+   [
+    -34,
+    27
+   ],
+   [
+    60,
+    216
+   ],
+   [
+    38,
+    316
+   ],
+   [
+    70,
+    289
+   ],
+   [
+    67,
+    90
+   ],
+   [
+    59,
+    56
+   ]
+  ],
+  "reach": [
+   [
+    -26,
+    0,
+    82,
+    186
+   ],
+   [
+    -49,
+    0,
+    83,
+    122
+   ],
+   [
+    -25,
+    0,
+    81,
+    238
+   ],
+   [
+    -50,
+    0,
+    53,
+    332
+   ],
+   [
+    -46,
+    0,
+    86,
+    310
+   ],
+   [
+    -43,
+    0,
+    85,
+    190
+   ],
+   [
+    -24,
+    0,
+    98,
+    186
+   ]
+  ]
+ },
+ "2M": {
+  "sprite": {
+   "image": "sheets/2M.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 391,
+   "frameH": 308,
+   "originX": 128,
+   "originY": 306,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    1,
+    3,
+    7,
+    8
+   ]
+  },
+  "from": "Avner_Crouching_MediumPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    11,
+    24
+   ],
+   [
+    9,
+    22
+   ],
+   [
+    4,
+    24
+   ],
+   [
+    17,
+    22
+   ],
+   [
+    17,
+    22
+   ],
+   [
+    8,
+    24
+   ]
+  ],
+  "reach": [
+   [
+    -48,
+    0,
+    53,
+    150
+   ],
+   [
+    -37,
+    0,
+    55,
+    152
+   ],
+   [
+    -44,
+    0,
+    100,
+    144
+   ],
+   [
+    -63,
+    0,
+    130,
+    139
+   ],
+   [
+    -43,
+    0,
+    49,
+    152
+   ],
+   [
+    -48,
+    0,
+    53,
+    150
+   ]
+  ]
+ },
+ "jL": {
+  "sprite": {
+   "image": "sheets/jL.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 269,
+   "frameH": 422,
+   "originX": 100,
+   "originY": 380,
+   "scale": 0.5,
+   "holds": [
+    3,
+    1,
+    3,
+    4,
+    6
+   ]
+  },
+  "from": "Avner_Air_LightPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    27,
+    50
+   ],
+   [
+    25,
+    51
+   ],
+   [
+    27,
+    49
+   ],
+   [
+    27,
+    50
+   ],
+   [
+    27,
+    50
+   ]
+  ],
+  "reach": [
+   [
+    -47,
+    -19,
+    48,
+    189
+   ],
+   [
+    -47,
+    -18,
+    72,
+    187
+   ],
+   [
+    -49,
+    -19,
+    83,
+    185
+   ],
+   [
+    -44,
+    -19,
+    42,
+    187
+   ],
+   [
+    -48,
+    -19,
+    48,
+    189
+   ]
+  ]
+ },
+ "jM": {
+  "sprite": {
+   "image": "sheets/jM.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 343,
+   "frameH": 442,
+   "originX": 99,
+   "originY": 362,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    1,
+    3,
+    2,
+    14
+   ]
+  },
+  "from": "Avner_Air_MediumPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    1,
+    54
+   ],
+   [
+    1,
+    54
+   ],
+   [
+    8,
+    55
+   ],
+   [
+    7,
+    59
+   ],
+   [
+    7,
+    59
+   ],
+   [
+    6,
+    37
+   ]
+  ],
+  "reach": [
+   [
+    -48,
+    -25,
+    57,
+    180
+   ],
+   [
+    -42,
+    -9,
+    45,
+    180
+   ],
+   [
+    -42,
+    15,
+    117,
+    176
+   ],
+   [
+    -48,
+    1,
+    117,
+    176
+   ],
+   [
+    -48,
+    2,
+    120,
+    177
+   ],
+   [
+    -44,
+    -39,
+    59,
+    173
+   ]
+  ]
+ },
+ "jH": {
+  "sprite": {
+   "image": "sheets/jH.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 237,
+   "frameH": 375,
+   "originX": 130,
+   "originY": 357,
+   "scale": 0.5,
+   "holds": [
+    3,
+    7,
+    1,
+    5,
+    6,
+    6,
+    6
+   ]
+  },
+  "from": "Avner_Air_HeavyPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    18,
+    60
+   ],
+   [
+    -50,
+    123
+   ],
+   [
+    32,
+    44
+   ],
+   [
+    30,
+    12
+   ],
+   [
+    29,
+    14
+   ],
+   [
+    15,
+    64
+   ],
+   [
+    27,
+    57
+   ]
+  ],
+  "reach": [
+   [
+    -40,
+    -6,
+    39,
+    171
+   ],
+   [
+    -64,
+    -7,
+    40,
+    162
+   ],
+   [
+    -42,
+    6,
+    52,
+    177
+   ],
+   [
+    -48,
+    -7,
+    46,
+    153
+   ],
+   [
+    -44,
+    -5,
+    44,
+    161
+   ],
+   [
+    -44,
+    -5,
+    45,
+    168
+   ],
+   [
+    -42,
+    -6,
+    43,
+    172
+   ]
+  ]
+ },
+ "jS": {
+  "sprite": {
+   "image": "sheets/jS.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 271,
+   "frameH": 489,
+   "originX": 157,
+   "originY": 414,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    5,
+    1,
+    5,
+    8,
+    10
+   ]
+  },
+  "from": "Avner_Air_S.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    19,
+    53
+   ],
+   [
+    -64,
+    60
+   ],
+   [
+    -57,
+    160
+   ],
+   [
+    -57,
+    160
+   ],
+   [
+    16,
+    -19
+   ],
+   [
+    12,
+    -19
+   ],
+   [
+    24,
+    55
+   ]
+  ],
+  "reach": [
+   [
+    -42,
+    -24,
+    45,
+    172
+   ],
+   [
+    -77,
+    -19,
+    41,
+    167
+   ],
+   [
+    -74,
+    -19,
+    48,
+    181
+   ],
+   [
+    -45,
+    -34,
+    39,
+    206
+   ],
+   [
+    -49,
+    -36,
+    55,
+    145
+   ],
+   [
+    -49,
+    -36,
+    55,
+    146
+   ],
+   [
+    -52,
+    -19,
+    41,
+    178
+   ]
+  ]
+ },
+ "rising-moon": {
+  "sprite": {
+   "image": "sheets/rising-moon.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 453,
+   "frameH": 476,
+   "originX": 101,
+   "originY": 474,
+   "scale": 0.5,
+   "holds": [
+    2,
+    6,
+    1,
+    4,
+    10,
+    6,
+    6
+   ]
+  },
+  "from": "Avner_SpecialMove_RisingMoon.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    31,
+    49
+   ],
+   [
+    -21,
+    26
+   ],
+   [
+    42,
+    204
+   ],
+   [
+    157,
+    137
+   ],
+   [
+    157,
+    150
+   ],
+   [
+    44,
+    70
+   ],
+   [
+    31,
+    53
+   ]
+  ],
+  "reach": [
+   [
+    -28,
+    0,
+    77,
+    186
+   ],
+   [
+    -39,
+    0,
+    91,
+    140
+   ],
+   [
+    -49,
+    0,
+    61,
+    236
+   ],
+   [
+    -28,
+    0,
+    174,
+    176
+   ],
+   [
+    -28,
+    0,
+    174,
+    188
+   ],
+   [
+    -37,
+    0,
+    77,
+    181
+   ],
+   [
+    -28,
+    0,
+    78,
+    185
+   ]
+  ]
+ },
+ "lunar-halo": {
+  "sprite": {
+   "image": "sheets/lunar-halo.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 365,
+   "frameH": 406,
+   "originX": 188,
+   "originY": 404,
+   "scale": 0.5,
+   "holds": [
+    2,
+    5,
+    1,
+    4,
+    12,
+    8,
+    6
+   ]
+  },
+  "from": "Avner_SpecialMove_LunarHalo.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    21,
+    54
+   ],
+   [
+    22,
+    38
+   ],
+   [
+    32,
+    69
+   ],
+   [
+    50,
+    77
+   ],
+   [
+    51,
+    76
+   ],
+   [
+    24,
+    64
+   ],
+   [
+    20,
+    53
+   ]
+  ],
+  "reach": [
+   [
+    -59,
+    0,
+    52,
+    186
+   ],
+   [
+    -47,
+    0,
+    45,
+    127
+   ],
+   [
+    -77,
+    0,
+    77,
+    196
+   ],
+   [
+    -93,
+    0,
+    86,
+    201
+   ],
+   [
+    -89,
+    0,
+    87,
+    200
+   ],
+   [
+    -56,
+    0,
+    57,
+    193
+   ],
+   [
+    -53,
+    0,
+    53,
+    184
+   ]
+  ]
+ },
+ "tide": {
+  "sprite": {
+   "image": "sheets/tide.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 296,
+   "frameH": 376,
+   "originX": 136,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    2,
+    4,
+    4,
+    6,
+    3,
+    3,
+    4,
+    6
+   ]
+  },
+  "from": "Avner_SpecialMove_Tide.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    27,
+    64
+   ],
+   [
+    27,
+    52
+   ],
+   [
+    26,
+    56
+   ],
+   [
+    17,
+    60
+   ],
+   [
+    13,
+    54
+   ],
+   [
+    32,
+    60
+   ],
+   [
+    42,
+    65
+   ],
+   [
+    35,
+    61
+   ]
+  ],
+  "reach": [
+   [
+    -56,
+    0,
+    67,
+    186
+   ],
+   [
+    -67,
+    0,
+    73,
+    174
+   ],
+   [
+    -54,
+    0,
+    68,
+    176
+   ],
+   [
+    -65,
+    0,
+    79,
+    171
+   ],
+   [
+    -61,
+    0,
+    71,
+    171
+   ],
+   [
+    -53,
+    0,
+    72,
+    176
+   ],
+   [
+    -58,
+    0,
+    76,
+    180
+   ],
+   [
+    -55,
+    0,
+    77,
+    185
+   ]
+  ]
+ },
+ "moon": {
+  "sprite": {
+   "image": "sheets/moon.png",
+   "columns": 10,
+   "rows": 1,
+   "count": 10,
+   "frameW": 405,
+   "frameH": 474,
+   "originX": 209,
+   "originY": 464,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    2,
+    2,
+    3,
+    3,
+    4,
+    4,
+    4,
+    5
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_RisingMoon_Projectile.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "lantern-flare": {
+  "sprite": {
+   "image": "sheets/lantern-flare.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 294,
+   "frameH": 305,
+   "originX": 146,
+   "originY": 158,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_RisingMoon_Projectile_Effect1.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "halo-burst": {
+  "sprite": {
+   "image": "sheets/halo-burst.png",
+   "columns": 10,
+   "rows": 1,
+   "count": 10,
+   "frameW": 515,
+   "frameH": 628,
+   "originX": 257,
+   "originY": 312,
+   "scale": 0.5,
+   "holds": [
+    1,
+    2,
+    2,
+    3,
+    3,
+    4,
+    4,
+    4,
+    5,
+    6
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_LunarHalo_Effect1.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "tide-wave": {
+  "sprite": {
+   "image": "sheets/tide-wave.png",
+   "columns": 10,
+   "rows": 1,
+   "count": 10,
+   "frameW": 492,
+   "frameH": 370,
+   "originX": 250,
+   "originY": 362,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_Tide_Effect1.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "new-moon": {
+  "sprite": {
+   "image": "sheets/new-moon.png",
+   "columns": 15,
+   "rows": 1,
+   "count": 15,
+   "frameW": 266,
+   "frameH": 380,
+   "originX": 176,
+   "originY": 378,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    4,
+    5,
+    5,
+    5,
+    5,
+    8
+   ]
+  },
+  "from": "Avner_SuperMove_NewMoon.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15
+  ],
+  "lantern": [
+   [
+    13,
+    74
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    12,
+    75
+   ],
+   [
+    -19,
+    70
+   ],
+   [
+    -19,
+    69
+   ],
+   [
+    13,
+    69
+   ]
+  ],
+  "reach": [
+   [
+    -34,
+    0,
+    36,
+    186
+   ],
+   [
+    -33,
+    0,
+    37,
+    181
+   ],
+   [
+    -36,
+    0,
+    38,
+    179
+   ],
+   [
+    -36,
+    0,
+    38,
+    161
+   ],
+   [
+    -41,
+    0,
+    43,
+    117
+   ],
+   [
+    -40,
+    0,
+    40,
+    106
+   ],
+   [
+    -39,
+    0,
+    38,
+    96
+   ],
+   [
+    -74,
+    13,
+    37,
+    84
+   ],
+   [
+    -69,
+    0,
+    40,
+    94
+   ],
+   [
+    -87,
+    0,
+    41,
+    112
+   ],
+   [
+    -69,
+    0,
+    36,
+    123
+   ],
+   [
+    -34,
+    0,
+    31,
+    185
+   ],
+   [
+    -41,
+    0,
+    29,
+    184
+   ],
+   [
+    -38,
+    0,
+    32,
+    186
+   ],
+   [
+    -28,
+    0,
+    37,
+    188
+   ]
+  ]
+ },
+ "eclipse": {
+  "sprite": {
+   "image": "sheets/eclipse.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 554,
+   "frameH": 630,
+   "originX": 277,
+   "originY": 315,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    4,
+    8,
+    8
+   ],
+   "additive": true
+  },
+  "from": "Avner_SuperMove_NewMoon_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "moon-slash": {
+  "sprite": {
+   "image": "sheets/moon-slash.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 497,
+   "frameH": 474,
+   "originX": 248,
+   "originY": 237,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    3,
+    3,
+    4
+   ],
+   "additive": true
+  },
+  "from": "Avner_SuperMove_NewMoon_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "vow-start": {
+  "sprite": {
+   "image": "sheets/vow-start.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 209,
+   "frameH": 403,
+   "originX": 116,
+   "originY": 401,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2
+   ]
+  },
+  "from": "Avner_Vow_And_Absorb.png",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    32,
+    92
+   ],
+   [
+    26,
+    108
+   ]
+  ],
+  "reach": [
+   [
+    -50,
+    0,
+    45,
+    199
+   ],
+   [
+    -57,
+    0,
+    44,
+    186
+   ]
+  ]
+ },
+ "vow-hold": {
+  "sprite": {
+   "image": "sheets/vow-hold.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 212,
+   "frameH": 378,
+   "originX": 116,
+   "originY": 376,
+   "scale": 0.5,
+   "holds": [
+    9,
+    9,
+    9,
+    9
+   ]
+  },
+  "from": "Avner_Vow_And_Absorb.png",
+  "drawings": [
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    26,
+    108
+   ],
+   [
+    26,
+    108
+   ],
+   [
+    25,
+    111
+   ],
+   [
+    25,
+    113
+   ]
+  ],
+  "reach": [
+   [
+    -57,
+    0,
+    44,
+    186
+   ],
+   [
+    -57,
+    0,
+    44,
+    185
+   ],
+   [
+    -56,
+    0,
+    45,
+    186
+   ],
+   [
+    -54,
+    0,
+    47,
+    187
+   ]
+  ]
+ },
+ "vow-absorb": {
+  "sprite": {
+   "image": "sheets/vow-absorb.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 238,
+   "frameH": 392,
+   "originX": 116,
+   "originY": 390,
+   "scale": 0.5,
+   "holds": [
+    2,
+    5,
+    4,
+    3
+   ]
+  },
+  "from": "Avner_Vow_And_Absorb.png",
+  "drawings": [
+   6,
+   7,
+   8,
+   9
+  ],
+  "lantern": [
+   [
+    26,
+    111
+   ],
+   [
+    24,
+    113
+   ],
+   [
+    25,
+    111
+   ],
+   [
+    25,
+    111
+   ]
+  ],
+  "reach": [
+   [
+    -54,
+    0,
+    49,
+    188
+   ],
+   [
+    -57,
+    0,
+    60,
+    194
+   ],
+   [
+    -56,
+    0,
+    55,
+    188
+   ],
+   [
+    -54,
+    0,
+    53,
+    188
+   ]
+  ]
+ },
+ "vow-quick": {
+  "sprite": {
+   "image": "sheets/vow-quick.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 320,
+   "frameH": 376,
+   "originX": 134,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_Vow_Quick_Strike_Full.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    20,
+    96
+   ],
+   [
+    57,
+    107
+   ],
+   [
+    78,
+    105
+   ],
+   [
+    27,
+    100
+   ],
+   [
+    21,
+    44
+   ]
+  ],
+  "reach": [
+   [
+    -62,
+    0,
+    61,
+    186
+   ],
+   [
+    -63,
+    0,
+    84,
+    186
+   ],
+   [
+    -66,
+    0,
+    91,
+    185
+   ],
+   [
+    -64,
+    0,
+    66,
+    186
+   ],
+   [
+    -60,
+    0,
+    73,
+    186
+   ]
+  ]
+ },
+ "vow-strike": {
+  "sprite": {
+   "image": "sheets/vow-strike.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 414,
+   "frameH": 380,
+   "originX": 214,
+   "originY": 378,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_Vow_Quick_Strike_Full.png",
+  "drawings": [
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "lantern": [
+   [
+    21,
+    95
+   ],
+   [
+    -52,
+    96
+   ],
+   [
+    41,
+    102
+   ],
+   [
+    85,
+    101
+   ],
+   [
+    15,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -66,
+    0,
+    66,
+    186
+   ],
+   [
+    -69,
+    0,
+    62,
+    188
+   ],
+   [
+    -96,
+    0,
+    91,
+    184
+   ],
+   [
+    -106,
+    0,
+    98,
+    181
+   ],
+   [
+    -66,
+    0,
+    67,
+    186
+   ]
+  ]
+ },
+ "vow-full": {
+  "sprite": {
+   "image": "sheets/vow-full.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 449,
+   "frameH": 367,
+   "originX": 235,
+   "originY": 365,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_Vow_Quick_Strike_Full.png",
+  "drawings": [
+   11,
+   12,
+   13,
+   14,
+   15
+  ],
+  "lantern": [
+   [
+    20,
+    92
+   ],
+   [
+    -5,
+    93
+   ],
+   [
+    64,
+    99
+   ],
+   [
+    85,
+    99
+   ],
+   [
+    86,
+    99
+   ]
+  ],
+  "reach": [
+   [
+    -62,
+    0,
+    61,
+    181
+   ],
+   [
+    -48,
+    0,
+    46,
+    176
+   ],
+   [
+    -102,
+    0,
+    105,
+    176
+   ],
+   [
+    -116,
+    0,
+    98,
+    178
+   ],
+   [
+    -96,
+    0,
+    98,
+    177
+   ]
+  ]
+ },
+ "crumple": {
+  "sprite": {
+   "image": "sheets/crumple.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 252,
+   "frameH": 384,
+   "originX": 127,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  "from": "Avner_Crumple.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    15,
+    85
+   ],
+   [
+    15,
+    66
+   ],
+   [
+    22,
+    41
+   ],
+   [
+    17,
+    23
+   ],
+   [
+    8,
+    19
+   ],
+   [
+    3,
+    18
+   ]
+  ],
+  "reach": [
+   [
+    -44,
+    0,
+    61,
+    190
+   ],
+   [
+    -49,
+    0,
+    47,
+    174
+   ],
+   [
+    -49,
+    0,
+    48,
+    152
+   ],
+   [
+    -54,
+    0,
+    49,
+    132
+   ],
+   [
+    -58,
+    0,
+    50,
+    130
+   ],
+   [
+    -62,
+    0,
+    58,
+    108
+   ]
+  ]
+ },
+ "absolve": {
+  "sprite": {
+   "image": "sheets/absolve.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 340,
+   "frameH": 411,
+   "originX": 180,
+   "originY": 409,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_Absolve_Recovery.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    7,
+    121
+   ],
+   [
+    59,
+    98
+   ],
+   [
+    48,
+    98
+   ],
+   [
+    36,
+    62
+   ],
+   [
+    15,
+    52
+   ]
+  ],
+  "reach": [
+   [
+    -40,
+    33,
+    40,
+    193
+   ],
+   [
+    -70,
+    0,
+    78,
+    197
+   ],
+   [
+    -89,
+    0,
+    70,
+    203
+   ],
+   [
+    -62,
+    0,
+    68,
+    174
+   ],
+   [
+    -58,
+    0,
+    53,
+    180
+   ]
+  ]
+ },
+ "absolve-recovery": {
+  "sprite": {
+   "image": "sheets/absolve-recovery.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 336,
+   "frameH": 409,
+   "originX": 176,
+   "originY": 407,
+   "scale": 0.5,
+   "holds": [
+    14,
+    13,
+    13
+   ]
+  },
+  "from": "Avner_Absolve_Recovery.png",
+  "drawings": [
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    31,
+    66
+   ],
+   [
+    33,
+    68
+   ],
+   [
+    38,
+    67
+   ]
+  ],
+  "reach": [
+   [
+    -87,
+    0,
+    78,
+    186
+   ],
+   [
+    -73,
+    0,
+    69,
+    190
+   ],
+   [
+    -75,
+    0,
+    79,
+    202
+   ]
+  ]
+ },
+ "moonlit-5": {
+  "sprite": {
+   "image": "sheets/moonlit-5.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 374,
+   "frameH": 356,
+   "originX": 162,
+   "originY": 354,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    10,
+    8
+   ]
+  },
+  "from": "Avner_SpecialMove_Moonlit.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -59,
+    45
+   ],
+   [
+    73,
+    130
+   ],
+   [
+    89,
+    141
+   ],
+   [
+    -9,
+    39
+   ]
+  ],
+  "reach": [
+   [
+    -77,
+    0,
+    76,
+    165
+   ],
+   [
+    -80,
+    0,
+    87,
+    164
+   ],
+   [
+    -76,
+    0,
+    105,
+    176
+   ],
+   [
+    -63,
+    0,
+    71,
+    172
+   ]
+  ]
+ },
+ "moonlit-6": {
+  "sprite": {
+   "image": "sheets/moonlit-6.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 461,
+   "frameH": 302,
+   "originX": 205,
+   "originY": 300,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    12,
+    8
+   ]
+  },
+  "from": "Avner_SpecialMove_Moonlit.png",
+  "drawings": [
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    -68,
+    58
+   ],
+   [
+    102,
+    91
+   ],
+   [
+    113,
+    107
+   ],
+   [
+    -15,
+    37
+   ]
+  ],
+  "reach": [
+   [
+    -87,
+    0,
+    81,
+    143
+   ],
+   [
+    -75,
+    0,
+    116,
+    144
+   ],
+   [
+    -101,
+    0,
+    126,
+    143
+   ],
+   [
+    -66,
+    0,
+    83,
+    149
+   ]
+  ]
+ },
+ "moonlit-2": {
+  "sprite": {
+   "image": "sheets/moonlit-2.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 275,
+   "frameH": 399,
+   "originX": 134,
+   "originY": 397,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    10,
+    8
+   ]
+  },
+  "from": "Avner_SpecialMove_Moonlit.png",
+  "drawings": [
+   9,
+   10,
+   11,
+   12
+  ],
+  "lantern": [
+   [
+    6,
+    17
+   ],
+   [
+    42,
+    163
+   ],
+   [
+    50,
+    169
+   ],
+   [
+    49,
+    81
+   ]
+  ],
+  "reach": [
+   [
+    -66,
+    0,
+    69,
+    155
+   ],
+   [
+    -62,
+    0,
+    65,
+    183
+   ],
+   [
+    -51,
+    0,
+    62,
+    197
+   ],
+   [
+    -55,
+    0,
+    61,
+    168
+   ]
+  ]
+ },
+ "moonlit-j": {
+  "sprite": {
+   "image": "sheets/moonlit-j.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 355,
+   "frameH": 393,
+   "originX": 170,
+   "originY": 351,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    10,
+    8
+   ]
+  },
+  "from": "Avner_SpecialMove_Moonlit.png",
+  "drawings": [
+   13,
+   14,
+   15,
+   16
+  ],
+  "lantern": [
+   [
+    -64,
+    49
+   ],
+   [
+    70,
+    147
+   ],
+   [
+    77,
+    145
+   ],
+   [
+    -15,
+    48
+   ]
+  ],
+  "reach": [
+   [
+    -84,
+    -8,
+    63,
+    159
+   ],
+   [
+    -73,
+    -14,
+    85,
+    165
+   ],
+   [
+    -77,
+    -19,
+    91,
+    174
+   ],
+   [
+    -71,
+    -7,
+    64,
+    169
+   ]
+  ]
+ },
+ "moon-snap": {
+  "sprite": {
+   "image": "sheets/moon-snap.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 265,
+   "frameH": 511,
+   "originX": 116,
+   "originY": 509,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    2,
+    5,
+    8,
+    6
+   ]
+  },
+  "from": "Avner_SpecialMove_Moonlit_Snap.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    16,
+    50
+   ],
+   [
+    26,
+    74
+   ],
+   [
+    28,
+    76
+   ],
+   [
+    28,
+    77
+   ],
+   [
+    29,
+    74
+   ],
+   [
+    21,
+    47
+   ]
+  ],
+  "reach": [
+   [
+    -57,
+    0,
+    61,
+    186
+   ],
+   [
+    -43,
+    0,
+    48,
+    207
+   ],
+   [
+    -49,
+    0,
+    48,
+    253
+   ],
+   [
+    -48,
+    0,
+    46,
+    253
+   ],
+   [
+    -47,
+    0,
+    46,
+    253
+   ],
+   [
+    -50,
+    0,
+    73,
+    186
+   ]
+  ]
+ },
+ "crescent": {
+  "sprite": {
+   "image": "sheets/crescent.png",
+   "columns": 10,
+   "rows": 1,
+   "count": 10,
+   "frameW": 300,
+   "frameH": 674,
+   "originX": 154,
+   "originY": 664,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    4,
+    4,
+    8,
+    8,
+    8,
+    4,
+    4,
+    4
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_Moonlit_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "moonbeam": {
+  "sprite": {
+   "image": "sheets/moonbeam.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 401,
+   "frameH": 742,
+   "originX": 219,
+   "originY": 729,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    3,
+    4,
+    3,
+    3,
+    3,
+    4
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_Moonlit_Snap_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "dash-stop": {
+  "sprite": {
+   "image": "sheets/dash-stop.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 379,
+   "frameH": 376,
+   "originX": 179,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    6,
+    4
+   ]
+  },
+  "from": "Avner_Forward_Dash.png",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    32,
+    67
+   ],
+   [
+    18,
+    44
+   ]
+  ],
+  "reach": [
+   [
+    -88,
+    1,
+    98,
+    186
+   ],
+   [
+    -61,
+    1,
+    78,
+    186
+   ]
+  ]
+ },
+ "backdash-stop": {
+  "sprite": {
+   "image": "sheets/backdash-stop.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 276,
+   "frameH": 378,
+   "originX": 135,
+   "originY": 376,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4
+   ]
+  },
+  "from": "Avner_Back_Dash.png",
+  "drawings": [
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    15,
+    50
+   ],
+   [
+    20,
+    51
+   ]
+  ],
+  "reach": [
+   [
+    -66,
+    0,
+    59,
+    181
+   ],
+   [
+    -54,
+    0,
+    69,
+    187
+   ]
+  ]
+ },
+ "hit-stand": {
+  "sprite": {
+   "image": "sheets/hit-stand.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 262,
+   "frameH": 384,
+   "originX": 119,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    54,
+    88
+   ],
+   [
+    45,
+    68
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    0,
+    70,
+    186
+   ],
+   [
+    -43,
+    0,
+    57,
+    190
+   ]
+  ]
+ },
+ "hit-crouch": {
+  "sprite": {
+   "image": "sheets/hit-crouch.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 244,
+   "frameH": 291,
+   "originX": 105,
+   "originY": 289,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    53,
+    73
+   ],
+   [
+    32,
+    38
+   ]
+  ],
+  "reach": [
+   [
+    -50,
+    0,
+    68,
+    143
+   ],
+   [
+    -51,
+    0,
+    54,
+    139
+   ]
+  ]
+ },
+ "hit-stand-gut": {
+  "sprite": {
+   "image": "sheets/hit-stand-gut.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 234,
+   "frameH": 382,
+   "originX": 129,
+   "originY": 380,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -46,
+    80
+   ],
+   [
+    39,
+    50
+   ]
+  ],
+  "reach": [
+   [
+    -63,
+    0,
+    51,
+    164
+   ],
+   [
+    -49,
+    0,
+    50,
+    189
+   ]
+  ]
+ },
+ "hit-stand-heavy": {
+  "sprite": {
+   "image": "sheets/hit-stand-heavy.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 289,
+   "frameH": 327,
+   "originX": 140,
+   "originY": 325,
+   "scale": 0.5,
+   "holds": [
+    8,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Standing_And_Crouching.png",
+  "drawings": [
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    58,
+    97
+   ],
+   [
+    23,
+    52
+   ]
+  ],
+  "reach": [
+   [
+    -69,
+    0,
+    73,
+    160
+   ],
+   [
+    -47,
+    0,
+    64,
+    161
+   ]
+  ]
+ },
+ "hit-air": {
+  "sprite": {
+   "image": "sheets/hit-air.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 349,
+   "frameH": 370,
+   "originX": 151,
+   "originY": 383,
+   "scale": 0.5,
+   "holds": [
+    5,
+    1
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    68,
+    94
+   ],
+   [
+    21,
+    39
+   ]
+  ],
+  "reach": [
+   [
+    -51,
+    8,
+    97,
+    180
+   ],
+   [
+    -74,
+    15,
+    88,
+    190
+   ]
+  ]
+ },
+ "tumble": {
+  "sprite": {
+   "image": "sheets/tumble.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 358,
+   "frameH": 347,
+   "originX": 146,
+   "originY": 391,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    6,
+    91
+   ],
+   [
+    15,
+    46
+   ],
+   [
+    15,
+    50
+   ]
+  ],
+  "reach": [
+   [
+    -66,
+    28,
+    58,
+    182
+   ],
+   [
+    -60,
+    24,
+    104,
+    194
+   ],
+   [
+    -72,
+    28,
+    82,
+    193
+   ]
+  ]
+ },
+ "knockdown": {
+  "sprite": {
+   "image": "sheets/knockdown.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 356,
+   "frameH": 178,
+   "originX": 163,
+   "originY": 176,
+   "scale": 0.5,
+   "holds": [
+    6,
+    34
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    20,
+    21
+   ],
+   [
+    29,
+    20
+   ]
+  ],
+  "reach": [
+   [
+    -80,
+    0,
+    95,
+    87
+   ],
+   [
+    -73,
+    0,
+    95,
+    65
+   ]
+  ]
+ },
+ "wakeup": {
+  "sprite": {
+   "image": "sheets/wakeup.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 294,
+   "frameH": 376,
+   "originX": 143,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_HitReaction_Air_And_Wakeup.png",
+  "drawings": [
+   8,
+   9,
+   10
+  ],
+  "lantern": [
+   [
+    13,
+    39
+   ],
+   [
+    -11,
+    46
+   ],
+   [
+    22,
+    42
+   ]
+  ],
+  "reach": [
+   [
+    -59,
+    0,
+    74,
+    133
+   ],
+   [
+    -58,
+    0,
+    67,
+    158
+   ],
+   [
+    -70,
+    0,
+    71,
+    186
+   ]
+  ]
+ },
+ "2H": {
+  "sprite": {
+   "image": "sheets/2H.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 360,
+   "frameH": 304,
+   "originX": 124,
+   "originY": 302,
+   "scale": 0.5,
+   "holds": [
+    5,
+    6,
+    4,
+    10,
+    14
+   ]
+  },
+  "from": "Avner_Crouching_HeavyPunch_Slide.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    6,
+    31
+   ],
+   [
+    76,
+    38
+   ],
+   [
+    102,
+    22
+   ],
+   [
+    58,
+    15
+   ],
+   [
+    6,
+    31
+   ]
+  ],
+  "reach": [
+   [
+    -49,
+    0,
+    47,
+    150
+   ],
+   [
+    -42,
+    0,
+    90,
+    138
+   ],
+   [
+    -61,
+    0,
+    117,
+    123
+   ],
+   [
+    -51,
+    0,
+    70,
+    134
+   ],
+   [
+    -48,
+    0,
+    46,
+    149
+   ]
+  ]
+ },
+ "tmprow2": {
+  "sprite": {
+   "image": "sheets/tmprow2.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 707,
+   "frameH": 460,
+   "originX": 319,
+   "originY": 458,
+   "scale": 0.5,
+   "holds": [
+    3,
+    5,
+    4,
+    1,
+    1,
+    3,
+    8
+   ]
+  },
+  "from": "Avner_HeavyPunch_SecondRowFourthFrameOnlyAfterFourthFrameOfFirstRow.png",
+  "drawings": [
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14
+  ],
+  "lantern": [
+   [
+    112,
+    101
+   ],
+   [
+    112,
+    101
+   ],
+   [
+    112,
+    101
+   ],
+   [
+    112,
+    101
+   ],
+   [
+    112,
+    101
+   ],
+   [
+    112,
+    101
+   ],
+   [
+    112,
+    101
+   ]
+  ],
+  "reach": [
+   [
+    -57,
+    1,
+    53,
+    209
+   ],
+   [
+    -109,
+    1,
+    61,
+    204
+   ],
+   [
+    -57,
+    1,
+    83,
+    213
+   ],
+   [
+    -57,
+    1,
+    104,
+    164
+   ],
+   [
+    -158,
+    33,
+    -8,
+    228
+   ],
+   [
+    -57,
+    1,
+    192,
+    206
+   ],
+   [
+    -60,
+    1,
+    46,
+    196
+   ]
+  ]
+ },
+ "2L": {
+  "sprite": {
+   "image": "sheets/2L.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 265,
+   "frameH": 305,
+   "originX": 110,
+   "originY": 303,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    4,
+    5
+   ]
+  },
+  "from": "Avner_Crouching_LightPunch.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    10,
+    37
+   ],
+   [
+    10,
+    37
+   ],
+   [
+    5,
+    37
+   ],
+   [
+    10,
+    37
+   ],
+   [
+    11,
+    37
+   ]
+  ],
+  "reach": [
+   [
+    -46,
+    0,
+    52,
+    150
+   ],
+   [
+    -46,
+    0,
+    65,
+    150
+   ],
+   [
+    -54,
+    0,
+    76,
+    137
+   ],
+   [
+    -50,
+    0,
+    48,
+    150
+   ],
+   [
+    -45,
+    0,
+    53,
+    150
+   ]
+  ]
+ },
+ "air-crescent-swing": {
+  "sprite": {
+   "image": "sheets/air-crescent-swing.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 283,
+   "frameH": 356,
+   "originX": 117,
+   "originY": 335,
+   "scale": 0.5,
+   "holds": [
+    5,
+    7,
+    4,
+    8,
+    9,
+    76
+   ]
+  },
+  "from": "Avner_SpecialMove_AirCrescent.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    1,
+    53
+   ],
+   [
+    -43,
+    119
+   ],
+   [
+    40,
+    21
+   ],
+   [
+    65,
+    22
+   ],
+   [
+    64,
+    22
+   ],
+   [
+    0,
+    53
+   ]
+  ],
+  "reach": [
+   [
+    -42,
+    -9,
+    38,
+    166
+   ],
+   [
+    -57,
+    -1,
+    46,
+    157
+   ],
+   [
+    -49,
+    1,
+    74,
+    166
+   ],
+   [
+    -50,
+    2,
+    82,
+    149
+   ],
+   [
+    -51,
+    2,
+    81,
+    148
+   ],
+   [
+    -37,
+    -9,
+    37,
+    166
+   ]
+  ]
+ },
+ "air-crescent": {
+  "sprite": {
+   "image": "sheets/air-crescent.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 352,
+   "frameH": 309,
+   "originX": 241,
+   "originY": 208,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    3,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_AirCrescent_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "air-crescent-burst": {
+  "sprite": {
+   "image": "sheets/air-crescent-burst.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 410,
+   "frameH": 331,
+   "originX": 211,
+   "originY": 322,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    5
+   ],
+   "additive": true
+  },
+  "from": "Avner_SpecialMove_AirCrescent_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "throw-forward": {
+  "sprite": {
+   "image": "sheets/throw-forward.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 270,
+   "frameH": 384,
+   "originX": 111,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    4,
+    10,
+    11
+   ]
+  },
+  "from": "Avner_Forward_Throw.png",
+  "drawings": [
+   1,
+   2,
+   7
+  ],
+  "lantern": [
+   [
+    -4,
+    58
+   ],
+   [
+    -4,
+    58
+   ],
+   [
+    5,
+    56
+   ]
+  ],
+  "reach": [
+   [
+    -46,
+    0,
+    78,
+    190
+   ],
+   [
+    -54,
+    0,
+    51,
+    185
+   ],
+   [
+    -51,
+    0,
+    62,
+    186
+   ]
+  ]
+ },
+ "throw-forward-hold": {
+  "sprite": {
+   "image": "sheets/throw-forward-hold.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 270,
+   "frameH": 384,
+   "originX": 111,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    6
+   ]
+  },
+  "from": "Avner_Forward_Throw.png",
+  "drawings": [
+   1,
+   2,
+   3
+  ],
+  "lantern": [
+   [
+    -4,
+    58
+   ],
+   [
+    -4,
+    58
+   ],
+   [
+    53,
+    141
+   ]
+  ],
+  "reach": [
+   [
+    -46,
+    0,
+    78,
+    190
+   ],
+   [
+    -54,
+    0,
+    51,
+    185
+   ],
+   [
+    -47,
+    0,
+    65,
+    189
+   ]
+  ]
+ },
+ "throw-forward-finish": {
+  "sprite": {
+   "image": "sheets/throw-forward-finish.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 311,
+   "frameH": 384,
+   "originX": 130,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    6,
+    6,
+    10,
+    8
+   ]
+  },
+  "from": "Avner_Forward_Throw.png",
+  "drawings": [
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    51,
+    141
+   ],
+   [
+    -18,
+    61
+   ],
+   [
+    -48,
+    59
+   ],
+   [
+    5,
+    56
+   ]
+  ],
+  "reach": [
+   [
+    -44,
+    0,
+    65,
+    188
+   ],
+   [
+    -35,
+    0,
+    44,
+    190
+   ],
+   [
+    -64,
+    0,
+    89,
+    185
+   ],
+   [
+    -51,
+    0,
+    62,
+    186
+   ]
+  ]
+ },
+ "throw-back": {
+  "sprite": {
+   "image": "sheets/throw-back.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 288,
+   "frameH": 395,
+   "originX": 120,
+   "originY": 393,
+   "scale": 0.5,
+   "holds": [
+    4,
+    10,
+    11
+   ]
+  },
+  "from": "Avner_Back_Throw.png",
+  "drawings": [
+   1,
+   2,
+   7
+  ],
+  "lantern": [
+   [
+    -40,
+    68
+   ],
+   [
+    -40,
+    68
+   ],
+   [
+    -40,
+    68
+   ]
+  ],
+  "reach": [
+   [
+    -55,
+    0,
+    82,
+    195
+   ],
+   [
+    -58,
+    0,
+    68,
+    178
+   ],
+   [
+    -59,
+    0,
+    69,
+    186
+   ]
+  ]
+ },
+ "throw-back-hold": {
+  "sprite": {
+   "image": "sheets/throw-back-hold.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 287,
+   "frameH": 398,
+   "originX": 119,
+   "originY": 396,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    6
+   ]
+  },
+  "from": "Avner_Back_Throw.png",
+  "drawings": [
+   1,
+   2,
+   3
+  ],
+  "lantern": [
+   [
+    -40,
+    68
+   ],
+   [
+    -40,
+    68
+   ],
+   [
+    -36,
+    77
+   ]
+  ],
+  "reach": [
+   [
+    -55,
+    0,
+    82,
+    195
+   ],
+   [
+    -58,
+    0,
+    68,
+    178
+   ],
+   [
+    -55,
+    0,
+    59,
+    197
+   ]
+  ]
+ },
+ "throw-back-finish": {
+  "sprite": {
+   "image": "sheets/throw-back-finish.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 362,
+   "frameH": 400,
+   "originX": 181,
+   "originY": 398,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    7,
+    7
+   ]
+  },
+  "from": "Avner_Back_Throw.png",
+  "drawings": [
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    -32,
+    76
+   ],
+   [
+    -19,
+    68
+   ],
+   [
+    20,
+    78
+   ],
+   [
+    20,
+    78
+   ]
+  ],
+  "reach": [
+   [
+    -68,
+    0,
+    63,
+    186
+   ],
+   [
+    -89,
+    0,
+    89,
+    190
+   ],
+   [
+    -72,
+    0,
+    36,
+    198
+   ],
+   [
+    -59,
+    0,
+    69,
+    186
+   ]
+  ]
+ },
+ "throw-tech": {
+  "sprite": {
+   "image": "sheets/throw-tech.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 274,
+   "frameH": 385,
+   "originX": 118,
+   "originY": 383,
+   "scale": 0.5,
+   "holds": [
+    3,
+    4,
+    5,
+    4,
+    4
+   ]
+  },
+  "from": "Avner_Throw_Tech.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    26,
+    66
+   ],
+   [
+    31,
+    69
+   ],
+   [
+    38,
+    68
+   ],
+   [
+    32,
+    74
+   ],
+   [
+    15,
+    49
+   ]
+  ],
+  "reach": [
+   [
+    -37,
+    0,
+    42,
+    190
+   ],
+   [
+    -45,
+    0,
+    44,
+    190
+   ],
+   [
+    -58,
+    0,
+    77,
+    187
+   ],
+   [
+    -39,
+    0,
+    67,
+    186
+   ],
+   [
+    -50,
+    0,
+    60,
+    186
+   ]
+  ]
+ }
+}

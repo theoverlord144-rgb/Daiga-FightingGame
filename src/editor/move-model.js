@@ -22,6 +22,7 @@ export const FIELDS = [
   { key: 'pushbackHit', group: 'hit', label: 'Push opponent', unit: 'px', min: 0, max: 800, step: 2, big: 10, help: 'How far the opponent slides back on hit (not when it launches).' },
   { key: 'recoil', group: 'hit', label: 'Push attacker', unit: 'px', min: 0, max: 800, step: 2, big: 10, only: 'move', help: 'How far the attacker slides back whenever it touches (hit or block).' },
   { key: 'knockdown', group: 'hit', label: 'Knocks down', type: 'bool', help: 'A grounded opponent is knocked off their feet.' },
+  { key: 'hitsAirborne', group: 'hit', label: 'Hits airborne', type: 'bool', fallback: true, help: 'No: the hit passes through an opponent who is in the air (a wave along the ground). The hitbox still has to reach them: make it taller in the box editor.' },
 
   { key: 'blockstun', group: 'block', label: 'Blockstun', unit: 'f', min: 0, max: 240, help: 'How long the opponent is stuck after blocking it.' },
   { key: 'blockHitstop', group: 'block', label: 'Freeze on block', unit: 'f', min: 0, max: 60, inherit: 'hitstop', help: 'Hitstop when blocked. Left alone, it is the same as on hit.' },
@@ -111,7 +112,7 @@ export function readSetting(raw, target, key, rules) {
   }
   const at = find(layers, key);
   if (at && at[key] !== null && at[key] !== undefined) return { value: field.type === 'bool' ? !!at[key] : at[key], own: at === write };
-  if (field.type === 'bool') return { value: false, own: false };
+  if (field.type === 'bool') return { value: !!field.fallback, own: false };
   if (field.type === 'choice') return { value: field.choices[0], own: false };
   if (field.inherit) return { value: readSetting(raw, target, field.inherit, rules).value, own: false };
   if (key === 'juggleCost') {
@@ -224,8 +225,8 @@ export function writeSetting(raw, target, key, value, rules) {
     return;
   }
   if (field.type === 'bool') {
-    const below = target.layers.slice(1).some((x) => x && x[key]);
-    if (value || below) w[key] = !!value; else delete w[key];
+    const below = target.layers.slice(1).some((x) => x && x[key] !== undefined && x[key] !== null);
+    if (!!value !== !!field.fallback || below) w[key] = !!value; else delete w[key]; // the usual value is not written
     return;
   }
   if (field.type === 'choice') {

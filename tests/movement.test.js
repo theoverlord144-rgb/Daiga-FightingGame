@@ -9,6 +9,7 @@ import { loadWorld, loadChar, script, SYSTEM } from './helpers.js';
 const FIGHTER = loadChar('tests/fixtures/fighter.toska.json');
 const S = FIGHTER.stats; // units and frames
 const W = loadWorld(FIGHTER, FIGHTER);
+W.battle.maxGapUnits = 0; // these tests measure raw movement with the fighters set far apart; the distance limit has its own tests (stage-limit.test.js)
 
 /** P1 far left, P2 far right, so nothing gets in the way. */
 function setup(world = W) {

@@ -118,7 +118,7 @@ test('perCombo: a move limited to once per combo cannot hit twice in one combo, 
 
 // ---------- Avner: Brand of Light ----------
 
-const A = loadChar('data/characters/avner/avner.toska.json');
+const A = loadChar('data/characters/_archive/avner_chain/avner.toska.json');
 const W = loadWorld(A, A);
 const MAX = A.mechanic.vars.brand.max;
 const reach = (id) => A.states[id].move.reach / 100; // px

@@ -1,6 +1,6 @@
 {
   "notes": "Engine-wide battle rules (counter hits moved to systems.json). Pixels, frames, and percentages out of 10000 (10000 = 100%).",
-  "stage": { "halfWidth": 760, "startX": 150 },
+  "stage": { "halfWidth": 760, "startX": 150, "maxGap": 820 },
   "cornerZone": 4,
   "pushbackFrames": 8,
   "clash": { "hitstop": 10 },
@@ -9,5 +9,5 @@
   "airHit": { "x": 3, "y": 8 },
   "airBlock": true,
   "armorDamagePct": 10000,
-  "throwTech": { "stun": 12, "push": 60 }
+  "throwTech": { "stun": 20, "push": 60 }
 }

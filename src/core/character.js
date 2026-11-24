@@ -76,7 +76,7 @@ function inferStance(m, parsed) {
 // ---------- Compile ----------
 
 // Stats counted in frames, counts or percentages (everything else is a distance or speed, converted to units).
-const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'airTech', 'airTechInvuln', 'dashFrames', 'dashCancel', 'dashRecovery',
+const FRAME_STATS = new Set(['health', 'prejump', 'landing', 'throwBreak', 'throwHold', 'airTech', 'airTechInvuln', 'dashFrames', 'dashCancel', 'dashRecovery',
   'backdashFrames', 'backdashInvuln', 'backdashRecovery', 'airdashFrames', 'airdashCancel', 'airdashBackFrames',
   'airdashKeep', 'airJumps', 'airDashes', 'meterBars', 'meterStart']);
 const BOX_STATS = new Set(['standHurt', 'crouchHurt', 'airHurt', 'standPush', 'crouchPush', 'airPush']);
@@ -110,7 +110,7 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
@@ -170,6 +170,8 @@ function compileMoveData(m, ctx = {}) {
     airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
     throwSwap: !!m.throwSwap,
     throwDistance: px(m.throwDistance ?? 70),
+    throwHit: m.throwHit ?? 0, // frames after the hold ends before the throw's damage and knockdown (the hit drawing)
+    throwFx: m.throwFx ? [px(m.throwFx[0]), px(m.throwFx[1])] : null, // where its hit spark shows: [forward, up] from the thrower
     // Combo (Phase 5). null = use the default in data/system/combo.json.
     starterProration: m.starterProration ?? null,
     comboProration: m.comboProration ?? null,
@@ -190,10 +192,15 @@ function compileMoveData(m, ctx = {}) {
     pierce: !!m.pierce, // hits through Vow's guard (supers always do)
     crumple: !!m.crumple, // a grounded hit puts the opponent in the crumple (Vow's stronger strikes)
     vowStrike: !!m.vowStrike, // Vow's release strike: landing it forgives the Debt
-    oneAtATime: m.oneAtATime ?? null, // a projectile name: the move can't start while the fighter has one out
+    oneAtATime: m.oneAtATime ? [m.oneAtATime].flat() : null, // projectile names: the move can't start while the fighter has one of them out
+    needsOut: m.needsOut ?? null, // a projectile name: the move only starts while the fighter has one out
+    perJump: m.perJump ?? null, // a group name: one move of that group per jump (counted until the fighter lands)
+    noZoneMark: !!m.noZoneMark, // true: this hit never adds a zone's mark (the hit that spends the mark)
+    hitsAirborne: m.hitsAirborne !== false, // false: the hit passes through a fighter who is in the air
     // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
     chain: m.chain ?? null,
     hitFx: m.hitFx ?? null,
+    pinFx: m.pinFx ?? null, // drawing only: { effect, fromSprite } an effect pinned to the lantern from that drawing on
     // Devotion and the character mechanic. `meter: { hit, block }` on a move replaces the usual gain from damage
     // (Devotion points, before the character's give); null = the usual rule.
     devGain: m.meter ? { hit: own(m.meter.hit), block: own(m.meter.block) } : null,
@@ -224,6 +231,18 @@ function compileProjectiles(src, meter) {
       spawn: [px(sp[0]), px(sp[1])],
       fromGround: !!p.fromGround, // spawn[1] is a height above the floor, not above the fighter (it erupts from the ground)
       hitbox: boxes([p.hitbox ?? [0, 0, 0, 0]]),
+      // phases: [[fromAge, toAge, [x, y, w, h]]]: the hitbox is only out during these ages, with that box (none
+      // given = its `hitbox`). Without phases the hitbox is out all its life.
+      phases: p.phases ? p.phases.map(([from, to, box]) => ({ from, to, box: boxes([box ?? p.hitbox ?? [0, 0, 0, 0]]) })) : null,
+      noHit: !!p.noHit, // true: it never hits anything (a marker in the world, like a light or a beam that is only seen)
+      persist: !!p.persist, // it stays after its hit (it still hits only once) and never clashes with other projectiles
+      // zone: { box: [x, y, w, h] from its position, gravityPct, markVar }: an opponent inside falls at gravityPct of
+      // their gravity, and any hit their attacker lands on them there adds 1 to the attacker's var markVar.
+      zone: p.zone ? { box: boxes([p.zone.box])[0], gravityPct: p.zone.gravityPct ?? 10000, markVar: p.zone.markVar ?? null } : null,
+      onEnd: p.onEnd?.setVar ?? null, // { var: n }: set on its owner when it ends, however it ends
+      ownerOnHit: p.ownerOnHit ?? null, // on hit, an owner still in the move that made it switches to this state
+      endsOnGround: !!p.endsOnGround, // it ends when it reaches the floor (a diving projectile)
+      endFx: p.endFx ?? null, // drawing only: { why: effect name } played where it ended (why = hit, block, ground, edge...)
       lifetime: p.lifetime ?? 600,
       move: compileMoveData(p, { kind: 'special', meter }),
       sprite: p.sprite ?? null, // drawing only
@@ -453,6 +472,8 @@ function normalizeEvent(e, stats, sheetName) {
       if ('launch' in v) { out[k].launchType = full.launchType; out[k].launcher = full.launcher; }
     }
     else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
+    // spawn: a projectile name, or { name, x, y, under: "opponent" } to put this one somewhere else than its own spawn point.
+    else if (k === 'spawn' && typeof v === 'object') out[k] = { name: v.name, x: v.x === undefined ? null : px(v.x), y: v.y === undefined ? null : px(v.y), under: v.under ?? null };
     else out[k] = v;
   }
   return out;
@@ -492,7 +513,7 @@ export function compileCharacter(file, system) {
     states[name] = compileState(name, src, stats, { sheet: src.sprite, sheetName: name });
   }
   const projectiles = compileProjectiles(t.projectiles ?? file.projectiles, system.meter);
-  for (const p of Object.values(projectiles)) checkVars(ch.id, p.name, mechanic, [p.move.onHit, p.move.onBlock, p.move.stagger?.when]);
+  for (const p of Object.values(projectiles)) checkVars(ch.id, p.name, mechanic, [p.move.onHit, p.move.onBlock, p.move.stagger?.when, { vars: p.onEnd || {} }, { vars: p.zone?.markVar ? { [p.zone.markVar]: 1 } : {} }]);
 
   // Universal moves (burst, Vow). A character's own move with the same id is laid over the universal one, so it
   // can give just the art, or its own boxes and frame data.
@@ -522,7 +543,7 @@ export function compileCharacter(file, system) {
     const stance = inferStance(m, parsed);
     const move = compileMoveData(m, { kind, meter: system.meter, chord: !!parsed && parsed.buttons.length > 1 });
     checkVars(ch.id, m.id, mechanic, [move.cost, move.requires, move.onHit, move.onBlock, move.onWhiff, move.hitRequires, move.stagger?.when]);
-    if (move.oneAtATime && !projectiles[move.oneAtATime]) throw new Error(`${ch.id}: move ${m.id} names unknown projectile ${move.oneAtATime}`);
+    for (const name of [...(move.oneAtATime || []), move.needsOut].filter(Boolean)) if (!projectiles[name]) throw new Error(`${ch.id}: move ${m.id} names unknown projectile ${name}`);
     if (m.sprite) sheets[m.id] = m.sprite;
     const cancels = [...(m.cancels || []), ...gatlingCancels(m, t.gatlings?.[m.id] ?? t.gatlings?.[m.exOf], kind, move)];
     states[m.id] = compileState(m.id, { ...m, stance, next: m.next ?? (stance === 'air' ? 'fall' : stance === 'crouch' ? 'crouch' : 'idle') }, stats, {
@@ -539,6 +560,8 @@ export function compileCharacter(file, system) {
         anyDir: !!m.anyDir, // a plain button that works whatever direction is held (stance follow-ups)
         rite: riteIds.has(m.id) && !!rite.gauge, // spends a charge of the Rite gauge
         oneAtATime: move.oneAtATime,
+        needsOut: move.needsOut,
+        perJump: move.perJump,
         buttons: parsed.buttons,
         negativeEdge: !!m.negativeEdge,
         neutral: m.neutral !== false, // false: only reachable from a cancel window that names it (chains, follow-ups)
@@ -557,13 +580,17 @@ export function compileCharacter(file, system) {
         if (s.type === 'addVar' || s.type === 'setVar') checkVars(ch.id, st.name, mechanic, [{ vars: s.value }]);
         if (s.type === 'meter') s.value = Math.round(s.value * (system.meter?.unit ?? 1)); // written in Devotion points
         if (s.type === 'gauge' && !mechanic.gauge) throw new Error(`${ch.id}: ${st.name} changes the gauge, but the mechanic has none`);
-        if (s.type === 'spawn' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value}`);
+        if (s.type === 'spawn' && !projectiles[s.value?.name ?? s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value?.name ?? s.value}`);
+        if (s.type === 'endProjectile' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} ends unknown projectile ${s.value}`);
       }
     }
     for (const to of [st.next, st.timeout ? st.timeoutTo : null, st.onBack, st.move?.onHitState, st.move?.onBlockState, ...st.nextIf.map((b) => b.to)]) {
       if (to && !states[to]) throw new Error(`${ch.id}: state ${st.name} goes to unknown state ${to}`);
     }
     for (const b of st.nextIf) checkVars(ch.id, st.name, mechanic, [b.when]);
+  }
+  for (const p of Object.values(projectiles)) if (p.ownerOnHit && !states[p.ownerOnHit]) throw new Error(`${ch.id}: projectile ${p.name} sends its owner to unknown state ${p.ownerOnHit}`);
+  for (const st of Object.values(states)) {
     for (const c of st.cancels) {
       for (const into of c.into) {
         if (!into.startsWith('#') && !states[into]) throw new Error(`${ch.id}: ${st.name} cancels into unknown move ${into}`);
@@ -602,7 +629,8 @@ export function compileCharacter(file, system) {
   const devotion = compileArchetype(system.meter, t.meter ?? file.meter, ch.id);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
     sheets, mechanic, meterMax, meterStart, devotion, rite, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
-    effects: t.effects ?? file.effects ?? {} }; // drawing only: named sheet effects for `fx` cues
+    effects: t.effects ?? file.effects ?? {},
+    art: t.art ?? file.art ?? {} }; // drawing only: carried-over drawings, the guard pose, the lantern's moon phase // drawing only: named sheet effects for `fx` cues
 }
 
 // Placeholder colours for characters that don't list any (index 0 body, 1 limbs, 2 dark detail).
