@@ -1,5 +1,5 @@
 {
-  "notes": "Universal hit and block effects (drawing only: the game never reads this). One sheet in data/effects/, a row per effect, drawn as light (additive). A hit picks its row by the move's base damage: the first entry whose \"below\" it is under. A counter hit uses the next stronger row. A move with its own hitFx shows that instead.",
+  "notes": "Universal hit and block effects (drawing only: the game never reads this). One sheet in data/effects/, a row per effect, drawn as light (additive). A hit picks its row by the move's base damage: the first entry whose \"below\" it is under. A move with its own hitFx shows that instead. \"sparks\" are the newer hit effects, one strip each in data/effects/ (cut by scripts/hit-fx-prep.mjs) with its own holds, frames per drawing: a hit plays the strip named like its size (light / medium / heavy); \"sparkFor\" names the strip for a counter hit, a Witness counter and a projectile's hit, which come first in that order; a move whose hitFx is a strip's name (\"hitFx\": \"slash\") plays that one on a plain hit. A size with no strip falls back to its row of the old sheet (a counter one row stronger). The block flash is still the old sheet's row.",
   "sheet": { "image": "hit-block.png", "columns": 4, "rows": 4, "count": 16, "frameW": 384, "frameH": 432, "originX": 192, "originY": 216, "scale": 0.5 },
   "frames": 4,
   "hold": 3,
@@ -11,26 +11,35 @@
   "block": {
     "row": 3
   },
+  "sparkFor": { "witness": "witness", "counter": "counter", "projectile": "projectile" },
+  "sparks": {
+    "light": { "opacity": 0.85, "holds": [1,2,2,2,2], "sprite": { "image": "hit-light.png", "columns": 5, "rows": 1, "count": 5, "frameW": 264, "frameH": 264, "originX": 132, "originY": 132, "scale": 0.5 } },
+    "medium": { "opacity": 0.85, "holds": [1,2,2,2,3,3], "sprite": { "image": "hit-medium.png", "columns": 6, "rows": 1, "count": 6, "frameW": 344, "frameH": 344, "originX": 172, "originY": 172, "scale": 0.5 } },
+    "heavy": { "opacity": 0.85, "holds": [1,2,2,2,3,3,3,4], "sprite": { "image": "hit-heavy.png", "columns": 8, "rows": 1, "count": 8, "frameW": 424, "frameH": 424, "originX": 212, "originY": 212, "scale": 0.5 } },
+    "projectile": { "opacity": 0.85, "holds": [1,2,2,3,3,3], "sprite": { "image": "hit-projectile.png", "columns": 6, "rows": 1, "count": 6, "frameW": 304, "frameH": 304, "originX": 152, "originY": 152, "scale": 0.5 } },
+    "slash": { "opacity": 0.85, "holds": [1,2,2,2,3,3], "sprite": { "image": "hit-slash.png", "columns": 6, "rows": 1, "count": 6, "frameW": 384, "frameH": 384, "originX": 192, "originY": 192, "scale": 0.5 } },
+    "counter": { "opacity": 0.85, "holds": [1,2,2,3,3,3], "sprite": { "image": "hit-counter.png", "columns": 6, "rows": 1, "count": 6, "frameW": 444, "frameH": 444, "originX": 222, "originY": 222, "scale": 0.5 } },
+    "witness": { "opacity": 0.85, "holds": [1,2,3,3,3,3], "sprite": { "image": "hit-witness.png", "columns": 6, "rows": 1, "count": 6, "frameW": 464, "frameH": 464, "originX": 232, "originY": 232, "scale": 0.5 } }
+  },
   "slots": {
     "notes": "Effects of the universal systems (drawing only). Each sheet is in data/effects/ (cut from the owner's art in data/UniversalEffects/ with scripts/sprite-prep.mjs), one row of drawings, each held 'hold' frames; 'additive' sheets are drawn as light, the others as painted. A sheet with 'placeholder' in its file name is drawn by scripts/make-slot-placeholders.mjs and waits for real art. 'cues' = what plays once when the game reports something: 'on' is whose position (self = the fighter the cue is about, other = their opponent, between = halfway between the two, point = where the hit landed, screen = across the whole screen at the fighter's height), 'at' is feet / body / head, 'forward' moves it that many px the way the fighter faces. 'while' = what loops on a fighter for as long as they are in a state: it plays through once, then repeats from drawing 'loopFrom' (or stops on the last drawing with 'once'); 'behind' draws it behind the fighter, 'after' makes it wait that many frames, 'y' puts it that many px above the feet. 'flash' = the super flash: 'lines' is stretched over the whole screen, behind the fighters, while the game is frozen (screen effects are behind the fighters too). bodyY is in 'motion' below; headY = how far above the feet 'head' is. absorbPoseFrames = how long the vow_absorb drawing shows after an absorbed hit when the character's own art does not say (a character's vow_absorb state length wins). exTint = how strongly an EX move with no art of its own is brightened (0 to 1).",
     "absorbPoseFrames": 8,
     "exTint": 0.45,
     "headY": 200,
     "sheets": {
-      "vow_guard": { "sprite": { "image": "vow-guard.png", "columns": 8, "rows": 1, "count": 8, "frameW": 346, "frameH": 498, "originX": 173, "originY": 249, "scale": 0.5 }, "hold": 4, "additive": true },
-      "vow_absorb": { "sprite": { "image": "vow-absorb.png", "columns": 4, "rows": 1, "count": 4, "frameW": 352, "frameH": 488, "originX": 176, "originY": 244, "scale": 0.5 }, "hold": 3, "additive": true },
-      "vow_strike": { "sprite": { "image": "vow-strike.png", "columns": 6, "rows": 1, "count": 6, "frameW": 238, "frameH": 444, "originX": 119, "originY": 222, "scale": 0.5 }, "hold": 3, "additive": true },
-      "crumple_stun": { "sprite": { "image": "crumple-stun.png", "columns": 4, "rows": 1, "count": 4, "frameW": 300, "frameH": 130, "originX": 150, "originY": 65, "scale": 0.5 }, "hold": 5, "additive": true },
-      "absolve_burst": { "sprite": { "image": "absolve-burst.png", "columns": 8, "rows": 1, "count": 8, "frameW": 596, "frameH": 766, "originX": 298, "originY": 383, "scale": 0.5 }, "hold": 3, "additive": true },
-      "absolve_shroud": { "sprite": { "image": "absolve-shroud.png", "columns": 6, "rows": 1, "count": 6, "frameW": 322, "frameH": 526, "originX": 161, "originY": 263, "scale": 0.5 }, "hold": 5 },
-      "repel_wave": { "sprite": { "image": "repel-wave.png", "columns": 6, "rows": 1, "count": 6, "frameW": 412, "frameH": 414, "originX": 206, "originY": 209, "scale": 0.5 }, "hold": 3, "additive": true },
-      "draw_pull": { "sprite": { "image": "draw-pull.png", "columns": 6, "rows": 1, "count": 6, "frameW": 330, "frameH": 204, "originX": 165, "originY": 113, "scale": 0.5 }, "hold": 3, "additive": true },
-      "super_flash": { "sprite": { "image": "super-flash.png", "columns": 8, "rows": 1, "count": 8, "frameW": 556, "frameH": 686, "originX": 278, "originY": 343, "scale": 0.5 }, "hold": 3, "additive": true },
-      "super_slash": { "sprite": { "image": "super-slash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 964, "frameH": 482, "originX": 482, "originY": 241, "scale": 1 }, "hold": 3 },
-      "super_lines": { "sprite": { "image": "super-lines.png", "columns": 4, "rows": 1, "count": 4, "frameW": 644, "frameH": 644, "originX": 322, "originY": 322, "scale": 1 }, "hold": 2, "additive": true, "alpha": 0.7 },
-      "perfect_flash": { "sprite": { "image": "perfect_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 1.6 }, "hold": 3, "additive": true },
-      "witness_flash": { "sprite": { "image": "witness_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2.4 }, "hold": 3, "additive": true },
-      "ex_flash": { "sprite": { "image": "ex_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2 }, "hold": 3, "additive": true }
+      "vow_guard": { "opacity": 0.75, "sprite": { "image": "vow-guard.png", "columns": 8, "rows": 1, "count": 8, "frameW": 346, "frameH": 498, "originX": 173, "originY": 249, "scale": 0.5 }, "hold": 4, "additive": true },
+      "vow_absorb": { "opacity": 0.8, "sprite": { "image": "vow-absorb.png", "columns": 4, "rows": 1, "count": 4, "frameW": 352, "frameH": 488, "originX": 176, "originY": 244, "scale": 0.5 }, "hold": 3, "additive": true },
+      "vow_strike": { "opacity": 0.85, "sprite": { "image": "vow-strike.png", "columns": 6, "rows": 1, "count": 6, "frameW": 238, "frameH": 444, "originX": 119, "originY": 222, "scale": 0.5 }, "hold": 3, "additive": true },
+      "crumple_stun": { "opacity": 0.85, "sprite": { "image": "crumple-stun.png", "columns": 4, "rows": 1, "count": 4, "frameW": 300, "frameH": 130, "originX": 150, "originY": 65, "scale": 0.5 }, "hold": 5, "additive": true },
+      "absolve_burst": { "opacity": 0.8, "sprite": { "image": "absolve-burst.png", "columns": 8, "rows": 1, "count": 8, "frameW": 596, "frameH": 766, "originX": 298, "originY": 383, "scale": 0.5 }, "hold": 3, "additive": true },
+      "absolve_shroud": { "opacity": 0.8, "sprite": { "image": "absolve-shroud.png", "columns": 6, "rows": 1, "count": 6, "frameW": 322, "frameH": 526, "originX": 161, "originY": 263, "scale": 0.5 }, "hold": 5 },
+      "repel_wave": { "opacity": 0.75, "sprite": { "image": "repel-wave.png", "columns": 6, "rows": 1, "count": 6, "frameW": 412, "frameH": 414, "originX": 206, "originY": 209, "scale": 0.5 }, "hold": 3, "additive": true },
+      "draw_pull": { "opacity": 0.75, "sprite": { "image": "draw-pull.png", "columns": 6, "rows": 1, "count": 6, "frameW": 330, "frameH": 204, "originX": 165, "originY": 113, "scale": 0.5 }, "hold": 3, "additive": true },
+      "super_flash": { "opacity": 0.8, "sprite": { "image": "super-flash.png", "columns": 8, "rows": 1, "count": 8, "frameW": 556, "frameH": 686, "originX": 278, "originY": 343, "scale": 0.5 }, "hold": 3, "additive": true },
+      "super_slash": { "opacity": 0.8, "sprite": { "image": "super-slash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 964, "frameH": 482, "originX": 482, "originY": 241, "scale": 1 }, "hold": 3 },
+      "super_lines": { "opacity": 1, "sprite": { "image": "super-lines.png", "columns": 4, "rows": 1, "count": 4, "frameW": 644, "frameH": 644, "originX": 322, "originY": 322, "scale": 1 }, "hold": 2, "additive": true, "alpha": 0.7 },
+      "perfect_flash": { "opacity": 0.8, "sprite": { "image": "perfect_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 1.6 }, "hold": 3, "additive": true },
+      "ex_flash": { "opacity": 0.8, "sprite": { "image": "ex_flash-placeholder.png", "columns": 4, "rows": 1, "count": 4, "frameW": 128, "frameH": 128, "originX": 64, "originY": 64, "scale": 2 }, "hold": 3, "additive": true }
     },
     "cues": {
       "absorb": { "play": "vow_absorb", "on": "other", "at": "body" },
@@ -39,7 +48,6 @@
       "repel": { "play": "repel_wave", "on": "self", "at": "body", "forward": 70 },
       "draw": { "play": "draw_pull", "on": "between", "at": "body" },
       "perfect": { "play": "perfect_flash", "on": "self", "at": "body" },
-      "witness": { "play": "witness_flash", "on": "point" },
       "ex": { "play": "ex_flash", "on": "self", "at": "body" },
       "superflash": [{ "play": "super_flash", "on": "self", "at": "body" }, { "play": "super_slash", "on": "screen", "at": "body" }]
     },
@@ -55,15 +63,15 @@
     "bodyY": 95,
     "driftMax": 40,
     "sheets": {
-      "tech": { "sprite": { "image": "tech.png", "columns": 4, "rows": 1, "count": 4, "frameW": 324, "frameH": 294, "originX": 162, "originY": 147, "scale": 0.5 }, "hold": 3, "additive": true },
-      "dashDustF": { "sprite": { "image": "dash-dust-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 225, "originX": 352, "originY": 225, "scale": 0.32 }, "hold": 3, "fade": true },
-      "dashDustB": { "sprite": { "image": "dash-dust-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 224, "originX": 32, "originY": 224, "scale": 0.32 }, "hold": 3, "fade": true },
-      "landF": { "sprite": { "image": "land-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 155, "originX": 192, "originY": 155, "scale": 0.32 }, "hold": 3, "fade": true },
-      "landN": { "sprite": { "image": "land-n.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 133, "originX": 192, "originY": 133, "scale": 0.32 }, "hold": 3, "fade": true },
-      "landB": { "sprite": { "image": "land-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 170, "originX": 192, "originY": 170, "scale": 0.32 }, "hold": 3, "fade": true },
-      "airDashBurst": { "sprite": { "image": "airdash-burst.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 417, "originX": 211, "originY": 206, "scale": 0.4 }, "hold": 3, "additive": true },
-      "airDashTrail": { "sprite": { "image": "airdash-trail.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 210, "originX": 384, "originY": 98, "scale": 0.4 }, "hold": 3, "alpha": 0.7, "additive": true },
-      "airDashPuff": { "sprite": { "image": "airdash-puff.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 252, "originX": 150, "originY": 127, "scale": 0.4 }, "hold": 3, "additive": true }
+      "tech": { "opacity": 0.8, "sprite": { "image": "tech.png", "columns": 4, "rows": 1, "count": 4, "frameW": 324, "frameH": 294, "originX": 162, "originY": 147, "scale": 0.5 }, "hold": 3, "additive": true },
+      "dashDustF": { "opacity": 0.7, "sprite": { "image": "dash-dust-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 225, "originX": 352, "originY": 225, "scale": 0.32 }, "hold": 3, "fade": true },
+      "dashDustB": { "opacity": 0.7, "sprite": { "image": "dash-dust-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 224, "originX": 32, "originY": 224, "scale": 0.32 }, "hold": 3, "fade": true },
+      "landF": { "opacity": 0.7, "sprite": { "image": "land-f.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 155, "originX": 192, "originY": 155, "scale": 0.32 }, "hold": 3, "fade": true },
+      "landN": { "opacity": 0.7, "sprite": { "image": "land-n.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 133, "originX": 192, "originY": 133, "scale": 0.32 }, "hold": 3, "fade": true },
+      "landB": { "opacity": 0.7, "sprite": { "image": "land-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 170, "originX": 192, "originY": 170, "scale": 0.32 }, "hold": 3, "fade": true },
+      "airDashBurst": { "opacity": 0.8, "sprite": { "image": "airdash-burst.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 417, "originX": 211, "originY": 206, "scale": 0.4 }, "hold": 3, "additive": true },
+      "airDashTrail": { "opacity": 0.85, "sprite": { "image": "airdash-trail.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 210, "originX": 384, "originY": 98, "scale": 0.4 }, "hold": 3, "alpha": 0.7, "additive": true },
+      "airDashPuff": { "opacity": 0.7, "sprite": { "image": "airdash-puff.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 252, "originX": 150, "originY": 127, "scale": 0.4 }, "hold": 3, "additive": true }
     },
     "enter": {
       "dashF": { "play": "dashDustF", "at": "feet" },
@@ -72,6 +80,8 @@
       "airdashB": { "play": "airDashBurst", "at": "body", "trail": "airDashTrail", "back": true },
       "land": { "byDrift": [ "landF", "landN", "landB" ], "at": "feet" },
       "knockdown": { "play": "landN", "at": "feet" },
+      "knockdownSoft": { "play": "landN", "at": "feet" },
+      "slide": { "play": "dashDustB", "at": "feet" },
       "airTech": { "play": "tech", "at": "body" },
       "groundTech": { "play": "tech", "at": "body" }
     },
@@ -82,21 +92,84 @@
   },
   "devotion": {
     "notes": "The Devotion meter (the super meter's look; drawing only). Pieces in data/effects/, cut from data/UniversalEffects/Game_DevotionMeter*.png. Numbers are in the frame image's pixels; the HUD draws it at 'scale', 'margin' from the screen edge and 'bottom' above the screen bottom, mirrored for Player 2. 'windows' are the bar slots [x, y, w, h], one per bar; the last one ends in a point ('tip': straight until the first x, pointed at the second). A full bar uses fillFull / glowFull. 'glowBox' places a glow around its slot, in slot widths and heights. The glow pulses between pulse.min and 1 every pulse.period frames.",
-    "scale": 0.5, "margin": 12, "bottom": 34,
+    "scale": 0.3, "margin": 12, "bottom": 17,
+    "layout": { "notes": "belowFloor: nothing of the meter (its flames included) is drawn above the floor line, so it never covers feet or low attacks. lineBeside: the character mechanic's line (Moonmark...) sits beside the meter instead of above it. glowAlpha: how strong the flames are (1 = full).", "belowFloor": true, "lineBeside": true, "glowAlpha": 0.45 },
     "frame": { "image": "devotion-frame.png", "w": 603, "h": 123 },
     "windows": [[124, 42, 106, 45], [245, 42, 100, 45], [360, 42, 98, 45], [473, 42, 111, 45]],
     "tip": [563, 584],
     "fill": "devotion-fill.png", "fillFull": "devotion-fill-full.png",
     "glow": "devotion-glow.png", "glowFull": "devotion-glow-full.png",
     "glowBox": [-0.15, -1.55, 1.3, 3.07],
-    "pulse": { "min": 0.65, "period": 48 },
+    "pulse": { "min": 0.8, "period": 48 },
     "ring": [67, 62],
     "digits": { "image": "devotion-digits.png", "cellW": 84, "cellH": 100, "height": 56 },
-    "plate": { "image": "devotion-plate.png", "w": 470, "h": 93, "scale": 0.27, "gap": 1 }
+    "plate": { "image": "devotion-plate.png", "w": 470, "h": 93, "scale": 0.162, "gap": 1 }
   },
   "impact": {
     "notes": "Impact feel (drawing only, never part of the game). shake: how far the screen jolts, in px, by the hit spark size (light / medium / heavy, see \"hit\") and for a knockdown, wall bounce and ground bounce; it fades over \"frames\". 0 = no shake. flash: the fighter who is hit is drawn brighter for \"frames\" frames (alpha 0 to 1 = how bright; 0 = off).",
     "shake": { "light": 0, "medium": 3, "heavy": 6, "knockdown": 6, "wallbounce": 6, "groundbounce": 6, "frames": 8 },
     "flash": { "frames": 2, "alpha": 0.7 }
+  },
+  "shockwave": {
+    "notes": "Shockwave rings on big hits (drawing only, never part of the game): rings that bend the picture behind them, pushing it outward from the impact. on: false turns all of it off. charHeight: a character's height in px (ring sizes are shares of it). bands: how many steps the bend is drawn in across a ring. max: rings alive at once. edge: how bright the ring's edge is (1 = white); edgeWidth: its width as a share of the ring's thickness; fallbackEdge: the edge where the picture cannot be bent (the ring is then only light). sets: named groups of rings; scale multiplies size and strength. Per ring: delay (frames after the hit), startAt (frames of growth it already has when it appears, so it shows during hitstop), life (frames), radius (share of charHeight it grows to), thick [from, to] px, strength (px the picture is pushed at the ring's middle, fading to 0). pulse: a brief whole-screen brightening. when: which set the system's own hits play. A move plays a set when the character's art.shockwave names it: { moveOrProjectileId: setName }.",
+    "on": true,
+    "charHeight": 190,
+    "bands": 18,
+    "max": 9,
+    "edge": 0.1,
+    "edgeWidth": 0.3,
+    "fallbackEdge": 0.5,
+    "sets": {
+      "default": { "scale": 1, "rings": [
+        { "delay": 0, "startAt": 2, "life": 16, "radius": 0.45, "thick": [18, 30], "strength": 14 },
+        { "delay": 4, "life": 14, "radius": 0.3, "thick": [14, 24], "strength": 9 } ] },
+      "big": { "scale": 1.3, "rings": [
+        { "delay": 0, "startAt": 2, "life": 16, "radius": 0.45, "thick": [18, 30], "strength": 14 },
+        { "delay": 4, "life": 14, "radius": 0.3, "thick": [14, 24], "strength": 9 } ] },
+      "super": { "scale": 1.6, "pulse": { "frames": 8, "alpha": 0.25 }, "rings": [
+        { "delay": 0, "startAt": 2, "life": 16, "radius": 0.45, "thick": [18, 30], "strength": 14 },
+        { "delay": 4, "life": 14, "radius": 0.3, "thick": [14, 24], "strength": 9 },
+        { "delay": 8, "life": 16, "radius": 0.6, "thick": [16, 28], "strength": 11 } ] }
+    },
+    "when": { "counter": "big", "crumple": "big", "launcher": "big", "slam": "big", "groundbounce": "big", "wallbounce": "big", "superLast": "super", "ko": "super" }
+  },
+  "opacity": {
+    "notes": "How see-through every effect is drawn (drawing only), 0 to 1. An effect's own number is its \"opacity\" (the universal sheets in this file) or its entry in the character's art.opacity { effectOrProjectileName: number } (a mark is \"mark:<var>\"); one with neither takes its class below. Effects drawn as light are dimmed by it; the others become see-through. Where a sheet already has an alpha, the two multiply (air dash trail: 0.7 x 0.85 = 0.6). flashFirst: the first drawing of a hit spark. An effect whose drawn area (its cell shrunk by coverInset) covers more than coverShare of a fighter's body loses coverDrop while it does; an effect at 1 is never dropped. on: false draws everything as before. The player's Effects opacity setting multiplies all of it.",
+    "on": true,
+    "classes": { "hitSpark": 0.85, "block": 0.75, "burst": 0.8, "trail": 0.6, "dust": 0.7, "zone": 0.55, "aura": 0.55, "projectile": 0.85, "mark": 0.8 },
+    "flashFirst": 1,
+    "coverShare": 0.5,
+    "coverDrop": 0.15,
+    "coverInset": 0.7
+  },
+  "blockFx": {
+    "notes": "Owner, Nov 25: no held drawings for now, so loop is empty and all ten drawings play once (in, then out); to bring the hold back, move drawings into loop (they repeat while blockstun lasts). The block effect (drawing only): one spinning guard per defender at the contact point, drawn flat (not as light) at 'opacity'. on: false brings back the old block flash and Repel wave. holdInHitstop: true = its first drawing holds while the defender is frozen in hitstop and the rest plays after; false = it plays through the freeze (the owner asked for false twice, Nov 25: the hold reads as the game freezing). sparks = the spark of each block, as light at the contact point, on top of the guard; it always plays through hitstop; a strength's 'spark' names which one, or a list of them. shards = the burst for blocked heavies and physical specials (H, S and R normals, specials and supers that are the fighter's own body; additive: false = drawn flat, not as light). strengthOf.projectile = the strength of a blocked projectile that is not light, so projectiles get no shards. charHeight x height = the guard's height in game px at size 1. minFront = it is never nearer the defender's middle than this. in / loop / out = game frames for each drawing, in sheet order: the glass guard (third sheet, Nov 25) is drawing 1 in, drawings 2-4 looped while blockstun lasts (the glint crossing), drawings 5-10 breaking into shards. pop = extra scale on the 'in' drawings of a fresh guard (a block landing on a guard that is still up replays 'in' at full size instead). spin = degrees a frame the whole guard turns while it loops (0: the owner wants only the drawn swirl). flash = the white copy over a heavy block's first frames. strengths: by the blocked move (strengthOf: a normal by its button, anything else heavy; a projectile under lightProjectileBelow base damage is light). repel: outSpeed = how many times faster it breaks apart, drift = px it moves toward the attacker as it does.",
+    "on": true,
+    "holdInHitstop": false,
+    "charHeight": 190,
+    "height": 0.5,
+    "minFront": 30,
+    "opacity": 0.8,
+    "in": [2, 3, 3, 3],
+    "loop": [],
+    "out": [2, 2, 2, 3, 3, 3],
+    "pop": [0.85, 1, 1, 1],
+    "spin": 0,
+    "flash": { "frames": 2, "opacity": 0.85 },
+    "sprite": {"image": "block-guard.png", "columns": 10, "rows": 1, "count": 10, "frameW": 236, "frameH": 346, "originX": 118, "originY": 173, "scale": 0.5, "bodyH": 300},
+    "white": {"image": "block-guard-white.png", "columns": 10, "rows": 1, "count": 10, "frameW": 236, "frameH": 346, "originX": 118, "originY": 173, "scale": 0.5, "bodyH": 300},
+    "sparks": {
+      "normal": { "opacity": 0.85, "holds": [1, 2, 2, 3, 3], "sprite": {"image": "block-spark.png", "columns": 5, "rows": 1, "count": 5, "frameW": 264, "frameH": 226, "originX": 132, "originY": 113, "scale": 0.5} },
+      "shards": { "opacity": 0.9, "additive": false, "holds": [1, 2, 2, 2, 3, 3, 3], "sprite": {"image": "block-shards.png", "columns": 7, "rows": 1, "count": 7, "frameW": 212, "frameH": 306, "originX": 106, "originY": 153, "scale": 0.5} },
+      "heavy": { "opacity": 0.85, "holds": [1, 2, 2, 3, 3, 4], "sprite": {"image": "block-spark-heavy.png", "columns": 6, "rows": 1, "count": 6, "frameW": 370, "frameH": 384, "originX": 185, "originY": 192, "scale": 0.5} }
+    },
+    "strengths": {
+      "light": { "size": 0.8, "flash": false, "spark": "normal" },
+      "medium": { "size": 1, "flash": false, "spark": "normal" },
+      "heavy": { "size": 1.15, "flash": true, "spark": ["heavy", "shards"] },
+      "heavyProjectile": { "size": 1.15, "flash": true, "spark": "heavy" }
+    },
+    "strengthOf": { "buttons": { "L": "light", "M": "medium" }, "lightProjectileBelow": 500, "projectile": "heavyProjectile" },
+    "repel": { "size": 1.3, "flash": true, "spark": "heavy", "replacesWave": true, "outSpeed": 2, "drift": 6 }
   }
 }

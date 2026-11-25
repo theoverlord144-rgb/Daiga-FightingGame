@@ -1,11 +1,11 @@
 {
  "avner": {
   "idle": {
-   "duration": 48,
+   "duration": 77,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "90414afd",
+   "boxes": "ef941b06",
    "drawings": [
     [
      "sheets/idle.png",
@@ -15,85 +15,100 @@
     [
      "sheets/idle.png",
      1,
-     8
+     6
     ],
     [
      "sheets/idle.png",
-     2,
-     8
-    ],
-    [
-     "sheets/idle.png",
-     3,
-     8
-    ],
-    [
-     "sheets/idle.png",
-     4,
-     8
-    ],
-    [
-     "sheets/idle.png",
-     5,
-     8
-    ]
-   ]
-  },
-  "crouch": {
-   "duration": 121,
-   "data": null,
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "16485c57",
-   "drawings": [
-    [
-     "sheets/crouch.png",
-     0,
-     2
-    ],
-    [
-     "sheets/crouch.png",
-     1,
-     58
-    ],
-    [
-     "sheets/crouch.png",
      2,
      5
     ],
     [
-     "sheets/crouch.png",
+     "sheets/idle.png",
      3,
+     5
+    ],
+    [
+     "sheets/idle.png",
+     4,
      6
     ],
     [
+     "sheets/idle.png",
+     5,
+     8
+    ],
+    [
+     "sheets/idle.png",
+     6,
+     5
+    ],
+    [
+     "sheets/idle.png",
+     7,
+     5
+    ],
+    [
+     "sheets/idle.png",
+     8,
+     5
+    ],
+    [
+     "sheets/idle.png",
+     9,
+     8
+    ],
+    [
+     "sheets/idle.png",
+     10,
+     6
+    ],
+    [
+     "sheets/idle.png",
+     11,
+     10
+    ]
+   ]
+  },
+  "crouch": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "3e20310d",
+   "drawings": [
+    [
      "sheets/crouch.png",
-     4,
-     14
+     0,
+     4
     ],
     [
      "sheets/crouch.png",
-     5,
+     1,
      10
     ],
     [
      "sheets/crouch.png",
-     6,
-     16
+     2,
+     8
     ],
     [
      "sheets/crouch.png",
-     5,
+     3,
+     8
+    ],
+    [
+     "sheets/crouch.png",
+     4,
      10
     ]
    ]
   },
   "walkF": {
-   "duration": 30,
+   "duration": 52,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "6bba8055",
+   "boxes": "eec7955",
    "drawings": [
     [
      "sheets/walk.png",
@@ -103,7 +118,7 @@
     [
      "sheets/walk.png",
      1,
-     5
+     6
     ],
     [
      "sheets/walk.png",
@@ -123,16 +138,36 @@
     [
      "sheets/walk.png",
      5,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     6,
+     6
+    ],
+    [
+     "sheets/walk.png",
+     7,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     8,
+     5
+    ],
+    [
+     "sheets/walk.png",
+     9,
      5
     ]
    ]
   },
   "walkB": {
-   "duration": 36,
+   "duration": 48,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "e4815dad",
+   "boxes": "99df835d",
    "drawings": [
     [
      "sheets/walk-back.png",
@@ -162,6 +197,16 @@
     [
      "sheets/walk-back.png",
      5,
+     6
+    ],
+    [
+     "sheets/walk-back.png",
+     6,
+     6
+    ],
+    [
+     "sheets/walk-back.png",
+     7,
      6
     ]
    ]
@@ -171,7 +216,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "55ef1696",
+   "boxes": "558693f2",
    "drawings": [
     [
      "sheets/jumpsquat.png",
@@ -190,27 +235,32 @@
     [
      "sheets/jump.png",
      0,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      1,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      2,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      3,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      4,
-     12
+     10
+    ],
+    [
+     "sheets/jump.png",
+     5,
+     10
     ]
    ]
   },
@@ -224,27 +274,32 @@
     [
      "sheets/jump.png",
      0,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      1,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      2,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      3,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      4,
-     12
+     10
+    ],
+    [
+     "sheets/jump.png",
+     5,
+     10
     ]
    ]
   },
@@ -253,7 +308,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "55ef1696",
+   "boxes": "558693f2",
    "drawings": [
     [
      "sheets/land.png",
@@ -267,7 +322,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "4471f2cd",
+   "boxes": "54a64085",
    "drawings": [
     [
      "sheets/dash.png",
@@ -296,7 +351,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "55ef1696",
+   "boxes": "558693f2",
    "drawings": [
     [
      "sheets/dash-stop.png",
@@ -310,7 +365,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "13253515",
+   "boxes": "f179adf1",
    "drawings": [
     [
      "sheets/backdash.png",
@@ -320,12 +375,17 @@
     [
      "sheets/backdash.png",
      1,
-     5
+     3
     ],
     [
      "sheets/backdash.png",
      2,
-     6
+     5
+    ],
+    [
+     "sheets/backdash.png",
+     3,
+     3
     ]
    ]
   },
@@ -334,17 +394,17 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "b317ddf5",
+   "boxes": "b38fb621",
    "drawings": [
     [
      "sheets/backdash-stop.png",
      0,
-     4
+     5
     ],
     [
      "sheets/backdash-stop.png",
      1,
-     2
+     1
     ]
    ]
   },
@@ -358,17 +418,27 @@
     [
      "sheets/airdash.png",
      0,
-     3
+     2
     ],
     [
      "sheets/airdash.png",
      1,
-     6
+     3
     ],
     [
      "sheets/airdash.png",
      2,
-     5
+     3
+    ],
+    [
+     "sheets/airdash.png",
+     3,
+     3
+    ],
+    [
+     "sheets/airdash.png",
+     2,
+     3
     ]
    ]
   },
@@ -382,17 +452,22 @@
     [
      "sheets/airdash-back.png",
      0,
-     3
+     2
     ],
     [
      "sheets/airdash-back.png",
      1,
-     6
+     4
     ],
     [
      "sheets/airdash-back.png",
      2,
-     3
+     4
+    ],
+    [
+     "sheets/airdash-back.png",
+     3,
+     2
     ]
    ]
   },
@@ -406,27 +481,32 @@
     [
      "sheets/jump.png",
      0,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      1,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      2,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      3,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      4,
-     12
+     10
+    ],
+    [
+     "sheets/jump.png",
+     5,
+     10
     ]
    ]
   },
@@ -435,7 +515,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "55ef1696",
+   "boxes": "558693f2",
    "drawings": [
     [
      "sheets/jumpsquat.png",
@@ -454,27 +534,32 @@
     [
      "sheets/jump.png",
      0,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      1,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      2,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      3,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      4,
-     12
+     10
+    ],
+    [
+     "sheets/jump.png",
+     5,
+     10
     ]
    ]
   },
@@ -488,27 +573,32 @@
     [
      "sheets/jump.png",
      0,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      1,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      2,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      3,
-     12
+     10
     ],
     [
      "sheets/jump.png",
      4,
-     12
+     10
+    ],
+    [
+     "sheets/jump.png",
+     5,
+     10
     ]
    ]
   },
@@ -517,7 +607,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "6796f346",
+   "boxes": "2a36f69a",
    "drawings": [
     [
      "sheets/hit-stand.png",
@@ -569,6 +659,178 @@
     ]
    ]
   },
+  "hitSpin": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/spin.png",
+     0,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     1,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     2,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     3,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     0,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     1,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     2,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     3,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     0,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     1,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     2,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     3,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     0,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     1,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     2,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     3,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     0,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     1,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     2,
+     3
+    ],
+    [
+     "sheets/spin.png",
+     3,
+     3
+    ]
+   ]
+  },
+  "hitTumble": {
+   "duration": 24,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "8a429b85",
+   "drawings": [
+    [
+     "sheets/tumble.png",
+     0,
+     6
+    ],
+    [
+     "sheets/tumble.png",
+     1,
+     6
+    ],
+    [
+     "sheets/tumble.png",
+     2,
+     6
+    ],
+    [
+     "sheets/tumble.png",
+     3,
+     6
+    ]
+   ]
+  },
+  "slide": {
+   "duration": 29,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "962ef882",
+   "drawings": [
+    [
+     "sheets/slide.png",
+     0,
+     4
+    ],
+    [
+     "sheets/slide.png",
+     1,
+     8
+    ],
+    [
+     "sheets/slide.png",
+     2,
+     8
+    ],
+    [
+     "sheets/slide.png",
+     3,
+     8
+    ],
+    [
+     "sheets/slide.png",
+     4,
+     1
+    ]
+   ]
+  },
   "tumble": {
    "duration": 24,
    "data": null,
@@ -579,17 +841,22 @@
     [
      "sheets/tumble.png",
      0,
-     8
+     6
     ],
     [
      "sheets/tumble.png",
      1,
-     8
+     6
     ],
     [
      "sheets/tumble.png",
      2,
-     8
+     6
+    ],
+    [
+     "sheets/tumble.png",
+     3,
+     6
     ]
    ]
   },
@@ -601,9 +868,24 @@
    "boxes": "72489a51",
    "drawings": [
     [
-     null,
-     null,
-     12
+     "sheets/air-tech.png",
+     0,
+     3
+    ],
+    [
+     "sheets/air-tech.png",
+     1,
+     3
+    ],
+    [
+     "sheets/air-tech.png",
+     2,
+     3
+    ],
+    [
+     "sheets/air-tech.png",
+     3,
+     3
     ]
    ]
   },
@@ -612,12 +894,27 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "ab16eb7d",
+   "boxes": "5067d71d",
    "drawings": [
     [
-     null,
-     null,
-     16
+     "sheets/ground-tech.png",
+     0,
+     4
+    ],
+    [
+     "sheets/ground-tech.png",
+     1,
+     4
+    ],
+    [
+     "sheets/ground-tech.png",
+     2,
+     4
+    ],
+    [
+     "sheets/ground-tech.png",
+     3,
+     4
     ]
    ]
   },
@@ -626,12 +923,17 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "f540c8d",
+   "boxes": "e48bbca5",
    "drawings": [
     [
      "sheets/block-stand.png",
+     0,
+     4
+    ],
+    [
+     "sheets/block-stand.png",
      1,
-     60
+     56
     ]
    ]
   },
@@ -644,8 +946,13 @@
    "drawings": [
     [
      "sheets/block-crouch.png",
+     0,
+     4
+    ],
+    [
+     "sheets/block-crouch.png",
      1,
-     60
+     56
     ]
    ]
   },
@@ -658,12 +965,36 @@
    "drawings": [
     [
      "sheets/block-air.png",
+     0,
+     4
+    ],
+    [
+     "sheets/block-air.png",
      1,
-     60
+     56
     ]
    ]
   },
   "knockdown": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a115ab3d",
+   "drawings": [
+    [
+     "sheets/knockdown.png",
+     0,
+     6
+    ],
+    [
+     "sheets/knockdown.png",
+     1,
+     34
+    ]
+   ]
+  },
+  "knockdownSoft": {
    "duration": 40,
    "data": null,
    "measured": null,
@@ -687,36 +1018,56 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "4471f2cd",
+   "boxes": "54a64085",
    "drawings": [
     [
      "sheets/wakeup.png",
      0,
-     4
+     3
     ],
     [
      "sheets/wakeup.png",
      1,
-     4
+     3
     ],
     [
      "sheets/wakeup.png",
      2,
-     4
+     3
+    ],
+    [
+     "sheets/wakeup.png",
+     3,
+     3
     ]
    ]
   },
   "thrown": {
-   "duration": 1,
+   "duration": 60,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "1f9d39e8",
+   "boxes": "534251ad",
    "drawings": [
     [
-     "sheets/hit-stand.png",
+     "sheets/thrown.png",
      0,
-     1
+     7
+    ],
+    [
+     "sheets/thrown.png",
+     1,
+     7
+    ],
+    [
+     "sheets/thrown.png",
+     2,
+     6
+    ],
+    [
+     "sheets/thrown.png",
+     3,
+     40
     ]
    ]
   },
@@ -725,7 +1076,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "360bf17e",
+   "boxes": "14b2748e",
    "drawings": [
     [
      null,
@@ -739,7 +1090,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "6bba8055",
+   "boxes": "3dd7df51",
    "drawings": [
     [
      null,
@@ -767,7 +1118,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "8a016d6d",
+   "boxes": "81c73e15",
    "drawings": [
     [
      "sheets/throw-tech.png",
@@ -801,22 +1152,17 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "d056295d",
+   "boxes": "d7680d",
    "drawings": [
     [
      "sheets/absolve-recovery.png",
      0,
-     13
+     20
     ],
     [
      "sheets/absolve-recovery.png",
      1,
-     13
-    ],
-    [
-     "sheets/absolve-recovery.png",
-     2,
-     14
+     20
     ]
    ]
   },
@@ -830,17 +1176,12 @@
     [
      "sheets/absolve-recovery-air-placeholder.png",
      0,
-     13
+     20
     ],
     [
      "sheets/absolve-recovery-air-placeholder.png",
      1,
-     13
-    ],
-    [
-     "sheets/absolve-recovery-air-placeholder.png",
-     2,
-     14
+     20
     ]
    ]
   },
@@ -849,12 +1190,22 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "f540c8d",
+   "boxes": "e48bbca5",
    "drawings": [
     [
-     "sheets/repel-placeholder.png",
+     "sheets/repel.png",
      1,
-     60
+     3
+    ],
+    [
+     "sheets/repel.png",
+     2,
+     9
+    ],
+    [
+     "sheets/repel.png",
+     3,
+     48
     ]
    ]
   },
@@ -863,12 +1214,27 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "f540c8d",
+   "boxes": "e48bbca5",
    "drawings": [
     [
-     "sheets/draw-placeholder.png",
-     0,
-     60
+     "sheets/draw.png",
+     1,
+     3
+    ],
+    [
+     "sheets/draw.png",
+     2,
+     3
+    ],
+    [
+     "sheets/draw.png",
+     3,
+     3
+    ],
+    [
+     "sheets/draw.png",
+     4,
+     51
     ]
    ]
   },
@@ -877,7 +1243,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "6796f346",
+   "boxes": "2a36f69a",
    "drawings": [
     [
      "sheets/drawn-placeholder.png",
@@ -896,7 +1262,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "e4815dad",
+   "boxes": "cd3ed3f5",
    "drawings": [
     [
      "sheets/vow-hold.png",
@@ -925,7 +1291,7 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "267094ce",
+   "boxes": "218c33c6",
    "drawings": [
     [
      "sheets/crumple.png",
@@ -964,75 +1330,202 @@
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "13253515",
+   "boxes": "f179adf1",
    "drawings": [
     [
      "sheets/vow-absorb.png",
      0,
-     2
+     8
     ],
     [
      "sheets/vow-absorb.png",
      1,
-     5
-    ],
-    [
-     "sheets/vow-absorb.png",
-     2,
-     4
-    ],
-    [
-     "sheets/vow-absorb.png",
-     3,
-     3
-    ]
-   ]
-  },
-  "tidePull": {
-   "duration": 23,
-   "data": null,
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "24e42386",
-   "drawings": [
-    [
-     "sheets/tide.png",
-     4,
-     3
-    ],
-    [
-     "sheets/tide.png",
-     5,
-     10
-    ],
-    [
-     "sheets/tide.png",
-     6,
-     4
-    ],
-    [
-     "sheets/tide.png",
-     7,
      6
     ]
    ]
   },
-  "airCrescentLand": {
-   "duration": 6,
+  "fullPhaseLand": {
+   "duration": 10,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "b317ddf5",
+   "boxes": "53ca339",
    "drawings": [
     [
-     "sheets/land.png",
+     "sheets/full-moon-land.png",
      0,
-     3
+     10
+    ]
+   ]
+  },
+  "fullPhaseFall": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/full-moon-swing.png",
+     4,
+     4
     ],
     [
-     "sheets/land.png",
+     "sheets/full-moon-swing.png",
+     5,
+     6
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     6,
+     50
+    ]
+   ]
+  },
+  "moonSmashLand": {
+   "duration": 18,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b40c7f49",
+   "drawings": [
+    [
+     "sheets/moon-smash-land.png",
+     0,
+     10
+    ],
+    [
+     "sheets/moon-smash-land.png",
+     1,
+     8
+    ]
+   ]
+  },
+  "j2HLand": {
+   "duration": 18,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b40c7f49",
+   "drawings": [
+    [
+     "sheets/jS-land.png",
+     0,
+     12
+    ],
+    [
+     "sheets/jS-land.png",
+     1,
+     6
+    ]
+   ]
+  },
+  "j2HRebound": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "72489a51",
+   "drawings": [
+    [
+     "sheets/j2H-rebound.png",
+     0,
+     6
+    ],
+    [
+     "sheets/j2H-rebound.png",
+     1,
+     6
+    ]
+   ]
+  },
+  "j2HGuarded": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/j2H-rebound.png",
+     0,
+     6
+    ],
+    [
+     "sheets/j2H-rebound.png",
+     1,
+     54
+    ]
+   ]
+  },
+  "j2HLandGuard": {
+   "duration": 9,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a683f9e",
+   "drawings": [
+    [
+     "sheets/jS-land.png",
+     0,
+     6
+    ],
+    [
+     "sheets/jS-land.png",
      1,
      3
+    ]
+   ]
+  },
+  "crashLand": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "f179adf1",
+   "drawings": [
+    [
+     "sheets/jS-land.png",
+     0,
+     8
+    ],
+    [
+     "sheets/jS-land.png",
+     1,
+     6
+    ]
+   ]
+  },
+  "crashFall": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "1bcd3ee1",
+   "drawings": [
+    [
+     "sheets/jS.png",
+     4,
+     60
+    ]
+   ]
+  },
+  "haloLand": {
+   "duration": 14,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "f179adf1",
+   "drawings": [
+    [
+     "sheets/lunar-halo-land.png",
+     0,
+     8
+    ],
+    [
+     "sheets/lunar-halo-land.png",
+     1,
+     6
     ]
    ]
   },
@@ -1052,7 +1545,7 @@
     4,
     5
    ],
-   "boxes": "5eb0f36d",
+   "boxes": "b7849597",
    "drawings": [
     [
      "sheets/5L.png",
@@ -1072,12 +1565,22 @@
     [
      "sheets/5L.png",
      3,
-     4
+     3
     ],
     [
      "sheets/5L.png",
      4,
-     5
+     2
+    ],
+    [
+     "sheets/5L.png",
+     5,
+     2
+    ],
+    [
+     "sheets/5L.png",
+     6,
+     2
     ]
    ]
   },
@@ -1098,22 +1601,22 @@
     8,
     9
    ],
-   "boxes": "8825a94c",
+   "boxes": "36d5d28d",
    "drawings": [
     [
      "sheets/5M.png",
      0,
-     3
+     2
     ],
     [
      "sheets/5M.png",
      1,
-     4
+     3
     ],
     [
      "sheets/5M.png",
      2,
-     1
+     2
     ],
     [
      "sheets/5M.png",
@@ -1123,34 +1626,44 @@
     [
      "sheets/5M.png",
      4,
-     7
+     3
     ],
     [
      "sheets/5M.png",
      5,
-     6
+     4
+    ],
+    [
+     "sheets/5M.png",
+     6,
+     3
+    ],
+    [
+     "sheets/5M.png",
+     7,
+     4
     ]
    ]
   },
   "5H": {
-   "duration": 39,
+   "duration": 35,
    "data": {
-    "startup": 14,
+    "startup": 12,
     "active": 4,
-    "recovery": 22
+    "recovery": 20
    },
    "measured": {
-    "startup": 14,
+    "startup": 12,
     "active": 4,
-    "recovery": 22
+    "recovery": 20
    },
    "hitFrames": [
+    11,
+    12,
     13,
-    14,
-    15,
-    16
+    14
    ],
-   "boxes": "30cf7a96",
+   "boxes": "18ef9f92",
    "drawings": [
     [
      "sheets/5H.png",
@@ -1160,37 +1673,47 @@
     [
      "sheets/5H.png",
      1,
-     5
-    ],
-    [
-     "sheets/5H.png",
-     2,
-     4
-    ],
-    [
-     "sheets/5H.png",
-     3,
-     1
-    ],
-    [
-     "sheets/5H.png",
-     4,
-     1
-    ],
-    [
-     "sheets/5H.png",
-     5,
      3
     ],
     [
      "sheets/5H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/5H.png",
+     3,
+     2
+    ],
+    [
+     "sheets/5H.png",
+     4,
+     4
+    ],
+    [
+     "sheets/5H.png",
+     5,
+     4
+    ],
+    [
+     "sheets/5H.png",
      6,
-     8
+     5
     ],
     [
      "sheets/5H.png",
      7,
-     14
+     4
+    ],
+    [
+     "sheets/5H.png",
+     8,
+     4
+    ],
+    [
+     "sheets/5H.png",
+     9,
+     3
     ]
    ]
   },
@@ -1210,7 +1733,7 @@
     4,
     5
    ],
-   "boxes": "ad44ff0f",
+   "boxes": "977542f7",
    "drawings": [
     [
      "sheets/2L.png",
@@ -1230,168 +1753,196 @@
     [
      "sheets/2L.png",
      3,
-     4
+     2
     ],
     [
      "sheets/2L.png",
      4,
-     5
+     3
+    ],
+    [
+     "sheets/2L.png",
+     5,
+     4
     ]
    ]
   },
   "2M": {
-   "duration": 26,
+   "duration": 25,
    "data": {
-    "startup": 9,
+    "startup": 8,
     "active": 3,
     "recovery": 15
    },
    "measured": {
-    "startup": 9,
+    "startup": 8,
     "active": 3,
     "recovery": 15
    },
    "hitFrames": [
+    7,
     8,
-    9,
-    10
+    9
    ],
-   "boxes": "7dafbafa",
+   "boxes": "496b72e6",
    "drawings": [
     [
      "sheets/2M.png",
      0,
-     3
+     2
     ],
     [
      "sheets/2M.png",
      1,
-     4
-    ],
-    [
-     "sheets/2M.png",
-     2,
-     1
-    ],
-    [
-     "sheets/2M.png",
-     3,
      3
     ],
     [
      "sheets/2M.png",
-     4,
-     7
-    ],
-    [
-     "sheets/2M.png",
-     5,
-     8
-    ]
-   ]
-  },
-  "2H": {
-   "duration": 39,
-   "data": {
-    "startup": 12,
-    "active": 4,
-    "recovery": 24
-   },
-   "measured": {
-    "startup": 12,
-    "active": 4,
-    "recovery": 24
-   },
-   "hitFrames": [
-    11,
-    12,
-    13,
-    14
-   ],
-   "boxes": "2dfe5353",
-   "drawings": [
-    [
-     "sheets/2H.png",
-     0,
-     5
-    ],
-    [
-     "sheets/2H.png",
-     1,
-     6
-    ],
-    [
-     "sheets/2H.png",
-     2,
-     4
-    ],
-    [
-     "sheets/2H.png",
-     3,
-     10
-    ],
-    [
-     "sheets/2H.png",
-     4,
-     14
-    ]
-   ]
-  },
-  "5S": {
-   "duration": 37,
-   "data": {
-    "startup": 11,
-    "active": 5,
-    "recovery": 22
-   },
-   "measured": {
-    "startup": 11,
-    "active": 5,
-    "recovery": 22
-   },
-   "hitFrames": [
-    10,
-    11,
-    12,
-    13,
-    14
-   ],
-   "boxes": "d8306763",
-   "drawings": [
-    [
-     "sheets/5S.png",
-     0,
-     3
-    ],
-    [
-     "sheets/5S.png",
-     1,
-     6
-    ],
-    [
-     "sheets/5S.png",
      2,
      2
     ],
     [
+     "sheets/2M.png",
+     3,
+     3
+    ],
+    [
+     "sheets/2M.png",
+     4,
+     4
+    ],
+    [
+     "sheets/2M.png",
+     5,
+     5
+    ],
+    [
+     "sheets/2M.png",
+     6,
+     6
+    ]
+   ]
+  },
+  "2H": {
+   "duration": 38,
+   "data": {
+    "startup": 12,
+    "active": 3,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 12,
+    "active": 3,
+    "recovery": 24
+   },
+   "hitFrames": [
+    11,
+    12,
+    13
+   ],
+   "boxes": "c2508bb3",
+   "drawings": [
+    [
+     "sheets/2H.png",
+     0,
+     4
+    ],
+    [
+     "sheets/2H.png",
+     1,
+     4
+    ],
+    [
+     "sheets/2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/2H.png",
+     4,
+     4
+    ],
+    [
+     "sheets/2H.png",
+     5,
+     7
+    ],
+    [
+     "sheets/2H.png",
+     6,
+     7
+    ],
+    [
+     "sheets/2H.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "5S": {
+   "duration": 35,
+   "data": {
+    "startup": 10,
+    "active": 4,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 10,
+    "active": 4,
+    "recovery": 22
+   },
+   "hitFrames": [
+    9,
+    10,
+    11,
+    12
+   ],
+   "boxes": "b8392f4a",
+   "drawings": [
+    [
+     "sheets/5S.png",
+     0,
+     3
+    ],
+    [
+     "sheets/5S.png",
+     1,
+     3
+    ],
+    [
+     "sheets/5S.png",
+     2,
+     3
+    ],
+    [
      "sheets/5S.png",
      3,
-     5
+     4
     ],
     [
      "sheets/5S.png",
      4,
-     8
+     4
     ],
     [
      "sheets/5S.png",
      5,
-     8
+     6
     ],
     [
      "sheets/5S.png",
      6,
-     5
+     6
+    ],
+    [
+     "sheets/5S.png",
+     7,
+     6
     ]
    ]
   },
@@ -1408,7 +1959,7 @@
     "recovery": 22
    },
    "hitFrames": [],
-   "boxes": "20d77122",
+   "boxes": "8097abd2",
    "drawings": [
     [
      "sheets/throw-forward.png",
@@ -1440,7 +1991,7 @@
     "recovery": 22
    },
    "hitFrames": [],
-   "boxes": "20d77122",
+   "boxes": "8097abd2",
    "drawings": [
     [
      "sheets/throw-back.png",
@@ -1460,60 +2011,189 @@
    ]
   },
   "backHeavy": {
-   "duration": 40,
+   "duration": 35,
    "data": {
-    "startup": 14,
-    "active": 5,
-    "recovery": 22
+    "startup": 12,
+    "active": 4,
+    "recovery": 20
    },
    "measured": {
-    "startup": 14,
-    "active": 5,
-    "recovery": 22
+    "startup": 12,
+    "active": 4,
+    "recovery": 20
    },
    "hitFrames": [
+    11,
+    12,
     13,
-    14,
-    15,
-    16,
-    17
+    14
    ],
-   "boxes": "f382dc10",
+   "boxes": "7e53a5b0",
    "drawings": [
     [
      "sheets/4H.png",
      0,
-     2
+     4
     ],
     [
      "sheets/4H.png",
      1,
-     5
+     4
     ],
     [
      "sheets/4H.png",
      2,
-     5
+     3
     ],
     [
      "sheets/4H.png",
      3,
-     1
+     4
     ],
     [
      "sheets/4H.png",
      4,
-     5
+     4
     ],
     [
      "sheets/4H.png",
      5,
-     10
+     6
     ],
     [
      "sheets/4H.png",
      6,
-     12
+     6
+    ],
+    [
+     "sheets/4H.png",
+     7,
+     4
+    ]
+   ]
+  },
+  "lanternDrag": {
+   "duration": 45,
+   "data": {
+    "startup": 16,
+    "active": 6,
+    "recovery": 24
+   },
+   "measured": {
+    "startup": 16,
+    "active": 6,
+    "recovery": 24
+   },
+   "hitFrames": [
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+   ],
+   "boxes": "1bc01beb",
+   "drawings": [
+    [
+     "sheets/lantern-drag.png",
+     0,
+     6
+    ],
+    [
+     "sheets/lantern-drag.png",
+     1,
+     5
+    ],
+    [
+     "sheets/lantern-drag.png",
+     2,
+     4
+    ],
+    [
+     "sheets/lantern-drag.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lantern-drag.png",
+     4,
+     3
+    ],
+    [
+     "sheets/lantern-drag.png",
+     5,
+     8
+    ],
+    [
+     "sheets/lantern-drag.png",
+     6,
+     8
+    ],
+    [
+     "sheets/lantern-drag.png",
+     7,
+     8
+    ]
+   ]
+  },
+  "waningHop": {
+   "duration": 40,
+   "data": {
+    "startup": 22,
+    "active": 3,
+    "recovery": 16
+   },
+   "measured": {
+    "startup": 22,
+    "active": 3,
+    "recovery": 16
+   },
+   "hitFrames": [
+    21,
+    22,
+    23
+   ],
+   "boxes": "aacdcc73",
+   "drawings": [
+    [
+     "sheets/waning-hop.png",
+     0,
+     7
+    ],
+    [
+     "sheets/waning-hop.png",
+     1,
+     7
+    ],
+    [
+     "sheets/waning-hop.png",
+     2,
+     7
+    ],
+    [
+     "sheets/waning-hop.png",
+     3,
+     3
+    ],
+    [
+     "sheets/waning-hop.png",
+     4,
+     4
+    ],
+    [
+     "sheets/waning-hop.png",
+     5,
+     4
+    ],
+    [
+     "sheets/waning-hop.png",
+     6,
+     4
+    ],
+    [
+     "sheets/waning-hop.png",
+     7,
+     4
     ]
    ]
   },
@@ -1534,17 +2214,17 @@
     5,
     6
    ],
-   "boxes": "f32918a2",
+   "boxes": "48296e23",
    "drawings": [
     [
      "sheets/jL.png",
      0,
-     3
+     2
     ],
     [
      "sheets/jL.png",
      1,
-     1
+     2
     ],
     [
      "sheets/jL.png",
@@ -1554,468 +2234,85 @@
     [
      "sheets/jL.png",
      3,
-     4
+     3
     ],
     [
      "sheets/jL.png",
      4,
-     6
+     3
+    ],
+    [
+     "sheets/jL.png",
+     5,
+     4
     ]
    ]
   },
   "j.M": {
-   "duration": 26,
+   "duration": 24,
    "data": {
-    "startup": 8,
-    "active": 5,
+    "startup": 7,
+    "active": 4,
     "recovery": 14
    },
    "measured": {
-    "startup": 8,
-    "active": 5,
+    "startup": 7,
+    "active": 4,
     "recovery": 14
    },
    "hitFrames": [
-    7,
-    8,
-    9,
-    10,
-    11
-   ],
-   "boxes": "e08dd5e0",
-   "drawings": [
-    [
-     "sheets/jM.png",
-     0,
-     3
-    ],
-    [
-     "sheets/jM.png",
-     1,
-     4
-    ],
-    [
-     "sheets/jM.png",
-     2,
-     1
-    ],
-    [
-     "sheets/jM.png",
-     3,
-     3
-    ],
-    [
-     "sheets/jM.png",
-     4,
-     2
-    ],
-    [
-     "sheets/jM.png",
-     5,
-     13
-    ]
-   ]
-  },
-  "j.H": {
-   "duration": 34,
-   "data": {
-    "startup": 12,
-    "active": 5,
-    "recovery": 18
-   },
-   "measured": {
-    "startup": 12,
-    "active": 5,
-    "recovery": 18
-   },
-   "hitFrames": [
-    11,
-    12,
-    13,
-    14,
-    15
-   ],
-   "boxes": "da3f97c6",
-   "drawings": [
-    [
-     "sheets/jH.png",
-     0,
-     3
-    ],
-    [
-     "sheets/jH.png",
-     1,
-     7
-    ],
-    [
-     "sheets/jH.png",
-     2,
-     1
-    ],
-    [
-     "sheets/jH.png",
-     3,
-     5
-    ],
-    [
-     "sheets/jH.png",
-     4,
-     6
-    ],
-    [
-     "sheets/jH.png",
-     5,
-     6
-    ],
-    [
-     "sheets/jH.png",
-     6,
-     6
-    ]
-   ]
-  },
-  "j.S": {
-   "duration": 48,
-   "data": {
-    "startup": 14,
-    "active": 5,
-    "recovery": 30
-   },
-   "measured": {
-    "startup": 14,
-    "active": 5,
-    "recovery": 30
-   },
-   "hitFrames": [
-    13,
-    14,
-    15,
-    16,
-    17
-   ],
-   "boxes": "7201548c",
-   "drawings": [
-    [
-     "sheets/jS.png",
-     0,
-     3
-    ],
-    [
-     "sheets/jS.png",
-     1,
-     4
-    ],
-    [
-     "sheets/jS.png",
-     2,
-     5
-    ],
-    [
-     "sheets/jS.png",
-     3,
-     1
-    ],
-    [
-     "sheets/jS.png",
-     4,
-     5
-    ],
-    [
-     "sheets/jS.png",
-     5,
-     8
-    ],
-    [
-     "sheets/jS.png",
-     6,
-     22
-    ]
-   ]
-  },
-  "risingMoonL": {
-   "duration": 35,
-   "data": {
-    "startup": 10,
-    "active": 0,
-    "recovery": 26
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "5a9a616",
-   "drawings": [
-    [
-     "sheets/rising-moon.png",
-     0,
-     2
-    ],
-    [
-     "sheets/rising-moon.png",
-     1,
-     6
-    ],
-    [
-     "sheets/rising-moon.png",
-     2,
-     1
-    ],
-    [
-     "sheets/rising-moon.png",
-     3,
-     4
-    ],
-    [
-     "sheets/rising-moon.png",
-     4,
-     10
-    ],
-    [
-     "sheets/rising-moon.png",
-     5,
-     6
-    ],
-    [
-     "sheets/rising-moon.png",
-     6,
-     6
-    ]
-   ]
-  },
-  "risingMoonM": {
-   "duration": 35,
-   "data": {
-    "startup": 10,
-    "active": 0,
-    "recovery": 26
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "5a9a616",
-   "drawings": [
-    [
-     "sheets/rising-moon.png",
-     0,
-     2
-    ],
-    [
-     "sheets/rising-moon.png",
-     1,
-     6
-    ],
-    [
-     "sheets/rising-moon.png",
-     2,
-     1
-    ],
-    [
-     "sheets/rising-moon.png",
-     3,
-     4
-    ],
-    [
-     "sheets/rising-moon.png",
-     4,
-     10
-    ],
-    [
-     "sheets/rising-moon.png",
-     5,
-     6
-    ],
-    [
-     "sheets/rising-moon.png",
-     6,
-     6
-    ]
-   ]
-  },
-  "risingMoonH": {
-   "duration": 35,
-   "data": {
-    "startup": 10,
-    "active": 0,
-    "recovery": 26
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "5a9a616",
-   "drawings": [
-    [
-     "sheets/rising-moon.png",
-     0,
-     2
-    ],
-    [
-     "sheets/rising-moon.png",
-     1,
-     6
-    ],
-    [
-     "sheets/rising-moon.png",
-     2,
-     1
-    ],
-    [
-     "sheets/rising-moon.png",
-     3,
-     4
-    ],
-    [
-     "sheets/rising-moon.png",
-     4,
-     10
-    ],
-    [
-     "sheets/rising-moon.png",
-     5,
-     6
-    ],
-    [
-     "sheets/rising-moon.png",
-     6,
-     6
-    ]
-   ]
-  },
-  "haloL": {
-   "duration": 45,
-   "data": {
-    "startup": 6,
-    "active": 10,
-    "recovery": 30
-   },
-   "measured": {
-    "startup": 6,
-    "active": 10,
-    "recovery": 30
-   },
-   "hitFrames": [
-    5,
     6,
     7,
     8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14
+    9
    ],
-   "boxes": "b82425ce",
+   "boxes": "ad74b485",
    "drawings": [
     [
-     "sheets/lunar-halo.png",
+     "sheets/jM.png",
      0,
-     2
+     3
     ],
     [
-     "sheets/lunar-halo.png",
-     1,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     2,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     3,
-     4
-    ],
-    [
-     "sheets/lunar-halo.png",
-     4,
-     12
-    ],
-    [
-     "sheets/lunar-halo.png",
-     5,
-     14
-    ],
-    [
-     "sheets/lunar-halo.png",
-     6,
-     11
-    ]
-   ]
-  },
-  "haloM": {
-   "duration": 47,
-   "data": {
-    "startup": 8,
-    "active": 10,
-    "recovery": 30
-   },
-   "measured": {
-    "startup": 8,
-    "active": 10,
-    "recovery": 30
-   },
-   "hitFrames": [
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    15,
-    16
-   ],
-   "boxes": "2639aff4",
-   "drawings": [
-    [
-     "sheets/lunar-halo.png",
-     0,
-     2
-    ],
-    [
-     "sheets/lunar-halo.png",
+     "sheets/jM.png",
      1,
      3
     ],
     [
-     "sheets/lunar-halo.png",
+     "sheets/jM.png",
      2,
-     1
+     4
     ],
     [
-     "sheets/lunar-halo.png",
+     "sheets/jM.png",
      3,
      4
     ],
     [
-     "sheets/lunar-halo.png",
+     "sheets/jM.png",
      4,
-     12
+     4
     ],
     [
-     "sheets/lunar-halo.png",
+     "sheets/jM.png",
      5,
-     14
-    ],
-    [
-     "sheets/lunar-halo.png",
-     6,
-     11
+     6
     ]
    ]
   },
-  "haloH": {
-   "duration": 50,
+  "j.2H": {
+   "duration": 52,
    "data": {
-    "startup": 11,
-    "active": 10,
-    "recovery": 30
+    "startup": 12,
+    "active": 40,
+    "recovery": 1
    },
    "measured": {
-    "startup": 11,
-    "active": 10,
-    "recovery": 30
+    "startup": 12,
+    "active": 40,
+    "recovery": 1
    },
    "hitFrames": [
-    10,
     11,
     12,
     13,
@@ -2024,9 +2321,1240 @@
     16,
     17,
     18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50
+   ],
+   "boxes": "3b10b651",
+   "drawings": [
+    [
+     "sheets/j2H.png",
+     0,
+     6
+    ],
+    [
+     "sheets/j2H.png",
+     1,
+     5
+    ],
+    [
+     "sheets/j2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     3,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     2,
+     3
+    ],
+    [
+     "sheets/j2H.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "j.H": {
+   "duration": 31,
+   "data": {
+    "startup": 10,
+    "active": 4,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 10,
+    "active": 4,
+    "recovery": 18
+   },
+   "hitFrames": [
+    9,
+    10,
+    11,
+    12
+   ],
+   "boxes": "e70a7c06",
+   "drawings": [
+    [
+     "sheets/jH.png",
+     0,
+     3
+    ],
+    [
+     "sheets/jH.png",
+     1,
+     3
+    ],
+    [
+     "sheets/jH.png",
+     2,
+     3
+    ],
+    [
+     "sheets/jH.png",
+     3,
+     4
+    ],
+    [
+     "sheets/jH.png",
+     4,
+     4
+    ],
+    [
+     "sheets/jH.png",
+     5,
+     5
+    ],
+    [
+     "sheets/jH.png",
+     6,
+     5
+    ],
+    [
+     "sheets/jH.png",
+     7,
+     4
+    ]
+   ]
+  },
+  "j.S": {
+   "duration": 105,
+   "data": {
+    "startup": 12,
+    "active": 4,
+    "recovery": 90
+   },
+   "measured": {
+    "startup": 12,
+    "active": 4,
+    "recovery": 90
+   },
+   "hitFrames": [
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "4f8d190",
+   "drawings": [
+    [
+     "sheets/jS.png",
+     0,
+     4
+    ],
+    [
+     "sheets/jS.png",
+     1,
+     4
+    ],
+    [
+     "sheets/jS.png",
+     2,
+     3
+    ],
+    [
+     "sheets/jS.png",
+     3,
+     4
+    ],
+    [
+     "sheets/jS.png",
+     4,
+     90
+    ]
+   ]
+  },
+  "waxingL": {
+   "duration": 34,
+   "data": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    17,
+    18,
     19
    ],
-   "boxes": "14835c7b",
+   "boxes": "571d77ef",
+   "drawings": [
+    [
+     "sheets/waxing.png",
+     0,
+     7
+    ],
+    [
+     "sheets/waxing.png",
+     1,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     2,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     4,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     5,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     6,
+     6
+    ],
+    [
+     "sheets/waxing.png",
+     7,
+     8
+    ]
+   ]
+  },
+  "waxingM": {
+   "duration": 34,
+   "data": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    17,
+    18,
+    19
+   ],
+   "boxes": "571d77ef",
+   "drawings": [
+    [
+     "sheets/waxing.png",
+     0,
+     7
+    ],
+    [
+     "sheets/waxing.png",
+     1,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     2,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     4,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     5,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     6,
+     6
+    ],
+    [
+     "sheets/waxing.png",
+     7,
+     8
+    ]
+   ]
+  },
+  "waxingH": {
+   "duration": 34,
+   "data": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    17,
+    18,
+    19
+   ],
+   "boxes": "571d77ef",
+   "drawings": [
+    [
+     "sheets/waxing.png",
+     0,
+     7
+    ],
+    [
+     "sheets/waxing.png",
+     1,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     2,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     4,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     5,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     6,
+     6
+    ],
+    [
+     "sheets/waxing.png",
+     7,
+     8
+    ]
+   ]
+  },
+  "halfMoonL": {
+   "duration": 13,
+   "data": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "measured": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "boxes": "9b19aad0",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     0,
+     7
+    ],
+    [
+     "sheets/half-moon.png",
+     1,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     2,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "halfMoonEndL": {
+   "duration": 23,
+   "data": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "measured": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "hitFrames": [
+    3,
+    4,
+    5
+   ],
+   "boxes": "12aaafad",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     4,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     5,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     6,
+     5
+    ],
+    [
+     "sheets/half-moon.png",
+     7,
+     6
+    ],
+    [
+     "sheets/half-moon.png",
+     8,
+     6
+    ]
+   ]
+  },
+  "halfMoonM": {
+   "duration": 13,
+   "data": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "measured": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "boxes": "9b19aad0",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     0,
+     7
+    ],
+    [
+     "sheets/half-moon.png",
+     1,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     2,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "halfMoonEndM": {
+   "duration": 23,
+   "data": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "measured": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "hitFrames": [
+    3,
+    4,
+    5
+   ],
+   "boxes": "12aaafad",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     4,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     5,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     6,
+     5
+    ],
+    [
+     "sheets/half-moon.png",
+     7,
+     6
+    ],
+    [
+     "sheets/half-moon.png",
+     8,
+     6
+    ]
+   ]
+  },
+  "halfMoonH": {
+   "duration": 13,
+   "data": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "measured": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "boxes": "9b19aad0",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     0,
+     7
+    ],
+    [
+     "sheets/half-moon.png",
+     1,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     2,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "halfMoonEndH": {
+   "duration": 23,
+   "data": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "measured": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "hitFrames": [
+    3,
+    4,
+    5
+   ],
+   "boxes": "12aaafad",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     4,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     5,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     6,
+     5
+    ],
+    [
+     "sheets/half-moon.png",
+     7,
+     6
+    ],
+    [
+     "sheets/half-moon.png",
+     8,
+     6
+    ]
+   ]
+  },
+  "fullPhaseL": {
+   "duration": 115,
+   "data": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 100
+   },
+   "measured": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 100
+   },
+   "hitFrames": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "6b72bcd0",
+   "drawings": [
+    [
+     "sheets/full-moon-swing.png",
+     0,
+     4
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     1,
+     5
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     2,
+     3
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     4,
+     4
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     5,
+     6
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     6,
+     90
+    ]
+   ]
+  },
+  "fullPhaseM": {
+   "duration": 115,
+   "data": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 100
+   },
+   "measured": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 100
+   },
+   "hitFrames": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "6b72bcd0",
+   "drawings": [
+    [
+     "sheets/full-moon-swing.png",
+     0,
+     4
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     1,
+     5
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     2,
+     3
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     4,
+     4
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     5,
+     6
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     6,
+     90
+    ]
+   ]
+  },
+  "fullPhaseH": {
+   "duration": 115,
+   "data": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 100
+   },
+   "measured": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 100
+   },
+   "hitFrames": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "6b72bcd0",
+   "drawings": [
+    [
+     "sheets/full-moon-swing.png",
+     0,
+     4
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     1,
+     5
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     2,
+     3
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     4,
+     4
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     5,
+     6
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     6,
+     90
+    ]
+   ]
+  },
+  "halfMoonEx": {
+   "duration": 13,
+   "data": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "measured": {
+    "startup": 8,
+    "active": 6,
+    "recovery": 0
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "boxes": "9b19aad0",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     0,
+     7
+    ],
+    [
+     "sheets/half-moon.png",
+     1,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     2,
+     2
+    ],
+    [
+     "sheets/half-moon.png",
+     3,
+     2
+    ]
+   ]
+  },
+  "halfMoonEndEx": {
+   "duration": 23,
+   "data": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "measured": {
+    "startup": 4,
+    "active": 3,
+    "recovery": 17
+   },
+   "hitFrames": [
+    3,
+    4,
+    5
+   ],
+   "boxes": "12aaafad",
+   "drawings": [
+    [
+     "sheets/half-moon.png",
+     4,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     5,
+     3
+    ],
+    [
+     "sheets/half-moon.png",
+     6,
+     5
+    ],
+    [
+     "sheets/half-moon.png",
+     7,
+     6
+    ],
+    [
+     "sheets/half-moon.png",
+     8,
+     6
+    ]
+   ]
+  },
+  "fullPhaseEx": {
+   "duration": 15,
+   "data": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 0
+   },
+   "measured": {
+    "startup": 10,
+    "active": 6,
+    "recovery": 0
+   },
+   "hitFrames": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+   ],
+   "boxes": "be2400ac",
+   "drawings": [
+    [
+     "sheets/full-moon-swing.png",
+     0,
+     4
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     1,
+     5
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     2,
+     3
+    ],
+    [
+     "sheets/full-moon-swing.png",
+     3,
+     3
+    ]
+   ]
+  },
+  "moonSmash": {
+   "duration": 114,
+   "data": {
+    "startup": 12,
+    "active": 3,
+    "recovery": 100
+   },
+   "measured": {
+    "startup": 12,
+    "active": 3,
+    "recovery": 100
+   },
+   "hitFrames": [
+    11,
+    12,
+    13
+   ],
+   "boxes": "88f7d8bf",
+   "drawings": [
+    [
+     "sheets/moon-smash.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moon-smash.png",
+     1,
+     3
+    ],
+    [
+     "sheets/moon-smash.png",
+     2,
+     4
+    ],
+    [
+     "sheets/moon-smash.png",
+     3,
+     3
+    ],
+    [
+     "sheets/moon-smash.png",
+     4,
+     100
+    ]
+   ]
+  },
+  "risingMoonL": {
+   "duration": 43,
+   "data": {
+    "startup": 14,
+    "active": 0,
+    "recovery": 30
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "69d56142",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     5
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     5
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     8
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     7
+    ],
+    [
+     "sheets/rising-moon.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "risingMoonM": {
+   "duration": 43,
+   "data": {
+    "startup": 14,
+    "active": 0,
+    "recovery": 30
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "69d56142",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     5
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     5
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     8
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     7
+    ],
+    [
+     "sheets/rising-moon.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "risingMoonH": {
+   "duration": 43,
+   "data": {
+    "startup": 14,
+    "active": 0,
+    "recovery": 30
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "69d56142",
+   "drawings": [
+    [
+     "sheets/rising-moon.png",
+     0,
+     5
+    ],
+    [
+     "sheets/rising-moon.png",
+     1,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     2,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     3,
+     4
+    ],
+    [
+     "sheets/rising-moon.png",
+     4,
+     5
+    ],
+    [
+     "sheets/rising-moon.png",
+     5,
+     8
+    ],
+    [
+     "sheets/rising-moon.png",
+     6,
+     7
+    ],
+    [
+     "sheets/rising-moon.png",
+     7,
+     6
+    ]
+   ]
+  },
+  "haloL": {
+   "duration": 100,
+   "data": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "measured": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "boxes": "b081cca5",
    "drawings": [
     [
      "sheets/lunar-halo.png",
@@ -2036,80 +3564,189 @@
     [
      "sheets/lunar-halo.png",
      1,
-     6
+     2
     ],
     [
      "sheets/lunar-halo.png",
      2,
-     1
+     3
     ],
     [
      "sheets/lunar-halo.png",
      3,
-     4
+     3
     ],
     [
      "sheets/lunar-halo.png",
      4,
-     12
+     6
     ],
     [
      "sheets/lunar-halo.png",
      5,
-     14
+     84
+    ]
+   ]
+  },
+  "haloM": {
+   "duration": 100,
+   "data": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "measured": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "boxes": "488d390f",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     2
     ],
     [
      "sheets/lunar-halo.png",
-     6,
-     11
+     1,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     6
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     84
+    ]
+   ]
+  },
+  "haloH": {
+   "duration": 100,
+   "data": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "measured": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "boxes": "a218397f",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     6
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     84
     ]
    ]
   },
   "tideL": {
-   "duration": 32,
+   "duration": 43,
    "data": {
-    "startup": 7,
-    "active": 0,
-    "recovery": 26
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
    },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "6b55febd",
+   "measured": {
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
+   },
+   "hitFrames": [
+    24
+   ],
+   "boxes": "5ffb0ed6",
    "drawings": [
     [
      "sheets/tide.png",
      0,
-     2
+     5
     ],
     [
      "sheets/tide.png",
      1,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      2,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      3,
-     6
+     4
     ],
     [
      "sheets/tide.png",
      4,
-     3
+     5
     ],
     [
      "sheets/tide.png",
      5,
-     3
+     6
     ],
     [
      "sheets/tide.png",
      6,
-     4
+     7
     ],
     [
      "sheets/tide.png",
@@ -2119,50 +3756,56 @@
    ]
   },
   "tideM": {
-   "duration": 32,
+   "duration": 43,
    "data": {
-    "startup": 7,
-    "active": 0,
-    "recovery": 26
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
    },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "6b55febd",
+   "measured": {
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
+   },
+   "hitFrames": [
+    24
+   ],
+   "boxes": "5ffb0ed6",
    "drawings": [
     [
      "sheets/tide.png",
      0,
-     2
+     5
     ],
     [
      "sheets/tide.png",
      1,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      2,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      3,
-     6
+     4
     ],
     [
      "sheets/tide.png",
      4,
-     3
+     5
     ],
     [
      "sheets/tide.png",
      5,
-     3
+     6
     ],
     [
      "sheets/tide.png",
      6,
-     4
+     7
     ],
     [
      "sheets/tide.png",
@@ -2172,50 +3815,56 @@
    ]
   },
   "tideH": {
-   "duration": 32,
+   "duration": 43,
    "data": {
-    "startup": 7,
-    "active": 0,
-    "recovery": 26
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
    },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "6b55febd",
+   "measured": {
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
+   },
+   "hitFrames": [
+    24
+   ],
+   "boxes": "5ffb0ed6",
    "drawings": [
     [
      "sheets/tide.png",
      0,
-     2
+     5
     ],
     [
      "sheets/tide.png",
      1,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      2,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      3,
-     6
+     4
     ],
     [
      "sheets/tide.png",
      4,
-     3
+     5
     ],
     [
      "sheets/tide.png",
      5,
-     3
+     6
     ],
     [
      "sheets/tide.png",
      6,
-     4
+     7
     ],
     [
      "sheets/tide.png",
@@ -2224,346 +3873,199 @@
     ]
    ]
   },
-  "moonlit5": {
-   "duration": 26,
-   "data": {
-    "startup": 9,
-    "active": 0,
-    "recovery": 18
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "601197a5",
-   "drawings": [
-    [
-     "sheets/moonlit-5.png",
-     0,
-     4
-    ],
-    [
-     "sheets/moonlit-5.png",
-     1,
-     4
-    ],
-    [
-     "sheets/moonlit-5.png",
-     2,
-     10
-    ],
-    [
-     "sheets/moonlit-5.png",
-     3,
-     8
-    ]
-   ]
-  },
-  "moonlit6": {
-   "duration": 28,
-   "data": {
-    "startup": 9,
-    "active": 0,
-    "recovery": 20
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "ccd0ed0d",
-   "drawings": [
-    [
-     "sheets/moonlit-6.png",
-     0,
-     4
-    ],
-    [
-     "sheets/moonlit-6.png",
-     1,
-     4
-    ],
-    [
-     "sheets/moonlit-6.png",
-     2,
-     12
-    ],
-    [
-     "sheets/moonlit-6.png",
-     3,
-     8
-    ]
-   ]
-  },
-  "moonlit2": {
-   "duration": 26,
-   "data": {
-    "startup": 9,
-    "active": 0,
-    "recovery": 18
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "52d824f1",
-   "drawings": [
-    [
-     "sheets/moonlit-2.png",
-     0,
-     4
-    ],
-    [
-     "sheets/moonlit-2.png",
-     1,
-     4
-    ],
-    [
-     "sheets/moonlit-2.png",
-     2,
-     10
-    ],
-    [
-     "sheets/moonlit-2.png",
-     3,
-     8
-    ]
-   ]
-  },
-  "moonlitJ": {
-   "duration": 26,
-   "data": {
-    "startup": 9,
-    "active": 0,
-    "recovery": 18
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "b7bb822b",
-   "drawings": [
-    [
-     "sheets/moonlit-j.png",
-     0,
-     4
-    ],
-    [
-     "sheets/moonlit-j.png",
-     1,
-     4
-    ],
-    [
-     "sheets/moonlit-j.png",
-     2,
-     10
-    ],
-    [
-     "sheets/moonlit-j.png",
-     3,
-     8
-    ]
-   ]
-  },
-  "airCrescentL": {
-   "duration": 102,
-   "data": {
-    "startup": 13,
-    "active": 0,
-    "recovery": 90
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "27b59ddf",
-   "drawings": [
-    [
-     "sheets/air-crescent-swing.png",
-     0,
-     5
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     1,
-     7
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     2,
-     4
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     3,
-     8
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     4,
-     9
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     5,
-     69
-    ]
-   ]
-  },
-  "airCrescentM": {
-   "duration": 102,
-   "data": {
-    "startup": 13,
-    "active": 0,
-    "recovery": 90
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "27b59ddf",
-   "drawings": [
-    [
-     "sheets/air-crescent-swing.png",
-     0,
-     5
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     1,
-     7
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     2,
-     4
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     3,
-     8
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     4,
-     9
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     5,
-     69
-    ]
-   ]
-  },
-  "airCrescentH": {
-   "duration": 102,
-   "data": {
-    "startup": 13,
-    "active": 0,
-    "recovery": 90
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "27b59ddf",
-   "drawings": [
-    [
-     "sheets/air-crescent-swing.png",
-     0,
-     5
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     1,
-     7
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     2,
-     4
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     3,
-     8
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     4,
-     9
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     5,
-     69
-    ]
-   ]
-  },
   "moonSnap": {
-   "duration": 28,
+   "duration": 39,
    "data": {
-    "startup": 10,
+    "startup": 14,
     "active": 1,
-    "recovery": 18
+    "recovery": 25
    },
    "measured": {
-    "startup": 10,
+    "startup": 14,
     "active": 1,
-    "recovery": 18
+    "recovery": 25
    },
    "hitFrames": [
-    9
+    13
    ],
-   "boxes": "bf94365",
+   "boxes": "b65a0492",
    "drawings": [
     [
      "sheets/moon-snap.png",
      0,
+     4
+    ],
+    [
+     "sheets/moon-snap.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moon-snap.png",
+     2,
      3
     ],
     [
      "sheets/moon-snap.png",
-     1,
-     4
-    ],
-    [
-     "sheets/moon-snap.png",
-     2,
-     2
-    ],
-    [
-     "sheets/moon-snap.png",
      3,
-     5
+     10
     ],
     [
      "sheets/moon-snap.png",
      4,
-     8
+     6
     ],
     [
      "sheets/moon-snap.png",
      5,
      6
+    ],
+    [
+     "sheets/moon-snap.png",
+     6,
+     6
     ]
    ]
   },
-  "moonRecall": {
-   "duration": 15,
+  "moonlit5": {
+   "duration": 30,
    "data": {
-    "startup": 6,
+    "startup": 9,
     "active": 0,
-    "recovery": 10
+    "recovery": 22
    },
    "measured": null,
    "hitFrames": [],
-   "boxes": "695457e6",
+   "boxes": "3dd7df51",
    "drawings": [
     [
-     "sheets/moon-recall-placeholder.png",
+     "sheets/moonlit-5.png",
      0,
-     3
+     4
     ],
     [
-     "sheets/moon-recall-placeholder.png",
+     "sheets/moonlit-5.png",
      1,
-     3
+     4
     ],
     [
-     "sheets/moon-recall-placeholder.png",
+     "sheets/moonlit-5.png",
      2,
      4
     ],
     [
-     "sheets/moon-recall-placeholder.png",
+     "sheets/moonlit-5.png",
      3,
-     5
+     10
+    ],
+    [
+     "sheets/moonlit-5.png",
+     4,
+     8
+    ]
+   ]
+  },
+  "moonlit6": {
+   "duration": 30,
+   "data": {
+    "startup": 9,
+    "active": 0,
+    "recovery": 22
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "3dd7df51",
+   "drawings": [
+    [
+     "sheets/moonlit-5.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moonlit-5.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moonlit-5.png",
+     2,
+     4
+    ],
+    [
+     "sheets/moonlit-5.png",
+     3,
+     10
+    ],
+    [
+     "sheets/moonlit-5.png",
+     4,
+     8
+    ]
+   ]
+  },
+  "moonlit2": {
+   "duration": 30,
+   "data": {
+    "startup": 9,
+    "active": 0,
+    "recovery": 22
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "d190f5e9",
+   "drawings": [
+    [
+     "sheets/moonlit-2.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moonlit-2.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moonlit-2.png",
+     2,
+     4
+    ],
+    [
+     "sheets/moonlit-2.png",
+     3,
+     10
+    ],
+    [
+     "sheets/moonlit-2.png",
+     4,
+     8
+    ]
+   ]
+  },
+  "moonlitJ": {
+   "duration": 16,
+   "data": {
+    "startup": 5,
+    "active": 0,
+    "recovery": 12
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "ccfd532d",
+   "drawings": [
+    [
+     "sheets/moonlit-j.png",
+     0,
+     4
+    ],
+    [
+     "sheets/moonlit-j.png",
+     1,
+     4
+    ],
+    [
+     "sheets/moonlit-j.png",
+     2,
+     8
     ]
    ]
   },
@@ -2585,7 +4087,7 @@
     12,
     13
    ],
-   "boxes": "b1954a45",
+   "boxes": "8e2ed505",
    "drawings": [
     [
      "sheets/new-moon.png",
@@ -2673,7 +4175,7 @@
    },
    "measured": null,
    "hitFrames": [],
-   "boxes": "f540c8d",
+   "boxes": "e48bbca5",
    "drawings": [
     [
      "sheets/full-moon-placeholder.png",
@@ -2721,7 +4223,7 @@
    },
    "measured": null,
    "hitFrames": [],
-   "boxes": "edcfbe2d",
+   "boxes": "8d5cedb5",
    "drawings": [
     [
      "sheets/vow-start.png",
@@ -2752,32 +4254,42 @@
     10,
     11
    ],
-   "boxes": "54da27bb",
+   "boxes": "2174657b",
    "drawings": [
     [
      "sheets/vow-quick.png",
      0,
-     6
+     5
     ],
     [
      "sheets/vow-quick.png",
      1,
-     6
+     4
     ],
     [
      "sheets/vow-quick.png",
      2,
-     7
+     3
     ],
     [
      "sheets/vow-quick.png",
      3,
-     6
+     5
     ],
     [
      "sheets/vow-quick.png",
      4,
-     7
+     5
+    ],
+    [
+     "sheets/vow-quick.png",
+     5,
+     5
+    ],
+    [
+     "sheets/vow-quick.png",
+     6,
+     5
     ]
    ]
   },
@@ -2798,7 +4310,7 @@
     14,
     15
    ],
-   "boxes": "3c3de4f4",
+   "boxes": "853dd7e8",
    "drawings": [
     [
      "sheets/vow-strike.png",
@@ -2808,22 +4320,32 @@
     [
      "sheets/vow-strike.png",
      1,
-     8
+     6
     ],
     [
      "sheets/vow-strike.png",
      2,
-     7
+     3
     ],
     [
      "sheets/vow-strike.png",
      3,
-     8
+     6
     ],
     [
      "sheets/vow-strike.png",
      4,
-     8
+     6
+    ],
+    [
+     "sheets/vow-strike.png",
+     5,
+     5
+    ],
+    [
+     "sheets/vow-strike.png",
+     6,
+     5
     ]
    ]
   },
@@ -2845,7 +4367,7 @@
     17,
     18
    ],
-   "boxes": "13aa3c26",
+   "boxes": "bcae15b2",
    "drawings": [
     [
      "sheets/vow-full.png",
@@ -2855,22 +4377,32 @@
     [
      "sheets/vow-full.png",
      1,
-     9
+     7
     ],
     [
      "sheets/vow-full.png",
      2,
-     8
+     4
     ],
     [
      "sheets/vow-full.png",
      3,
-     9
+     6
     ],
     [
      "sheets/vow-full.png",
      4,
-     9
+     6
+    ],
+    [
+     "sheets/vow-full.png",
+     5,
+     6
+    ],
+    [
+     "sheets/vow-full.png",
+     6,
+     6
     ]
    ]
   },
@@ -2892,7 +4424,7 @@
     9,
     10
    ],
-   "boxes": "d258d5fe",
+   "boxes": "f81a39fa",
    "drawings": [
     [
      "sheets/absolve.png",
@@ -2968,31 +4500,232 @@
     ]
    ]
   },
-  "risingMoonL_ex": {
-   "duration": 35,
+  "waxingL_ex": {
+   "duration": 34,
    "data": {
-    "startup": 10,
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    17,
+    18,
+    19
+   ],
+   "boxes": "571d77ef",
+   "drawings": [
+    [
+     "sheets/waxing.png",
+     0,
+     7
+    ],
+    [
+     "sheets/waxing.png",
+     1,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     2,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     4,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     5,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     6,
+     6
+    ],
+    [
+     "sheets/waxing.png",
+     7,
+     8
+    ]
+   ]
+  },
+  "waxingM_ex": {
+   "duration": 34,
+   "data": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    17,
+    18,
+    19
+   ],
+   "boxes": "571d77ef",
+   "drawings": [
+    [
+     "sheets/waxing.png",
+     0,
+     7
+    ],
+    [
+     "sheets/waxing.png",
+     1,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     2,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     4,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     5,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     6,
+     6
+    ],
+    [
+     "sheets/waxing.png",
+     7,
+     8
+    ]
+   ]
+  },
+  "waxingH_ex": {
+   "duration": 34,
+   "data": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "measured": {
+    "startup": 8,
+    "active": 13,
+    "recovery": 14
+   },
+   "hitFrames": [
+    7,
+    8,
+    9,
+    12,
+    13,
+    14,
+    17,
+    18,
+    19
+   ],
+   "boxes": "571d77ef",
+   "drawings": [
+    [
+     "sheets/waxing.png",
+     0,
+     7
+    ],
+    [
+     "sheets/waxing.png",
+     1,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     2,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     3,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     4,
+     2
+    ],
+    [
+     "sheets/waxing.png",
+     5,
+     3
+    ],
+    [
+     "sheets/waxing.png",
+     6,
+     6
+    ],
+    [
+     "sheets/waxing.png",
+     7,
+     8
+    ]
+   ]
+  },
+  "risingMoonL_ex": {
+   "duration": 43,
+   "data": {
+    "startup": 14,
     "active": 0,
-    "recovery": 26
+    "recovery": 30
    },
    "measured": null,
    "hitFrames": [],
-   "boxes": "5a9a616",
+   "boxes": "69d56142",
    "drawings": [
     [
      "sheets/rising-moon.png",
      0,
-     2
+     5
     ],
     [
      "sheets/rising-moon.png",
      1,
-     6
+     4
     ],
     [
      "sheets/rising-moon.png",
      2,
-     1
+     4
     ],
     [
      "sheets/rising-moon.png",
@@ -3002,45 +4735,50 @@
     [
      "sheets/rising-moon.png",
      4,
-     10
+     5
     ],
     [
      "sheets/rising-moon.png",
      5,
-     6
+     8
     ],
     [
      "sheets/rising-moon.png",
      6,
+     7
+    ],
+    [
+     "sheets/rising-moon.png",
+     7,
      6
     ]
    ]
   },
   "risingMoonM_ex": {
-   "duration": 35,
+   "duration": 43,
    "data": {
-    "startup": 10,
+    "startup": 14,
     "active": 0,
-    "recovery": 26
+    "recovery": 30
    },
    "measured": null,
    "hitFrames": [],
-   "boxes": "5a9a616",
+   "boxes": "69d56142",
    "drawings": [
     [
      "sheets/rising-moon.png",
      0,
-     2
+     5
     ],
     [
      "sheets/rising-moon.png",
      1,
-     6
+     4
     ],
     [
      "sheets/rising-moon.png",
      2,
-     1
+     4
     ],
     [
      "sheets/rising-moon.png",
@@ -3050,45 +4788,50 @@
     [
      "sheets/rising-moon.png",
      4,
-     10
+     5
     ],
     [
      "sheets/rising-moon.png",
      5,
-     6
+     8
     ],
     [
      "sheets/rising-moon.png",
      6,
+     7
+    ],
+    [
+     "sheets/rising-moon.png",
+     7,
      6
     ]
    ]
   },
   "risingMoonH_ex": {
-   "duration": 35,
+   "duration": 43,
    "data": {
-    "startup": 10,
+    "startup": 14,
     "active": 0,
-    "recovery": 26
+    "recovery": 30
    },
    "measured": null,
    "hitFrames": [],
-   "boxes": "5a9a616",
+   "boxes": "69d56142",
    "drawings": [
     [
      "sheets/rising-moon.png",
      0,
-     2
+     5
     ],
     [
      "sheets/rising-moon.png",
      1,
-     6
+     4
     ],
     [
      "sheets/rising-moon.png",
      2,
-     1
+     4
     ],
     [
      "sheets/rising-moon.png",
@@ -3098,31 +4841,36 @@
     [
      "sheets/rising-moon.png",
      4,
-     10
+     5
     ],
     [
      "sheets/rising-moon.png",
      5,
-     6
+     8
     ],
     [
      "sheets/rising-moon.png",
      6,
+     7
+    ],
+    [
+     "sheets/rising-moon.png",
+     7,
      6
     ]
    ]
   },
   "haloL_ex": {
-   "duration": 44,
+   "duration": 100,
    "data": {
     "startup": 5,
-    "active": 10,
-    "recovery": 30
+    "active": 6,
+    "recovery": 90
    },
    "measured": {
     "startup": 5,
-    "active": 10,
-    "recovery": 30
+    "active": 6,
+    "recovery": 90
    },
    "hitFrames": [
     4,
@@ -3130,222 +4878,201 @@
     6,
     7,
     8,
-    9,
-    10,
-    11,
-    12,
-    13
+    9
    ],
-   "boxes": "10a3eedd",
+   "boxes": "a218397f",
    "drawings": [
     [
      "sheets/lunar-halo.png",
-     0,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     1,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     2,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     3,
-     4
-    ],
-    [
-     "sheets/lunar-halo.png",
-     4,
-     12
-    ],
-    [
-     "sheets/lunar-halo.png",
-     5,
-     14
-    ],
-    [
-     "sheets/lunar-halo.png",
-     6,
-     11
-    ]
-   ]
-  },
-  "haloM_ex": {
-   "duration": 44,
-   "data": {
-    "startup": 5,
-    "active": 10,
-    "recovery": 30
-   },
-   "measured": {
-    "startup": 5,
-    "active": 10,
-    "recovery": 30
-   },
-   "hitFrames": [
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13
-   ],
-   "boxes": "10a3eedd",
-   "drawings": [
-    [
-     "sheets/lunar-halo.png",
-     0,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     1,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     2,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     3,
-     4
-    ],
-    [
-     "sheets/lunar-halo.png",
-     4,
-     12
-    ],
-    [
-     "sheets/lunar-halo.png",
-     5,
-     14
-    ],
-    [
-     "sheets/lunar-halo.png",
-     6,
-     11
-    ]
-   ]
-  },
-  "haloH_ex": {
-   "duration": 44,
-   "data": {
-    "startup": 5,
-    "active": 10,
-    "recovery": 30
-   },
-   "measured": {
-    "startup": 5,
-    "active": 10,
-    "recovery": 30
-   },
-   "hitFrames": [
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13
-   ],
-   "boxes": "10a3eedd",
-   "drawings": [
-    [
-     "sheets/lunar-halo.png",
-     0,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     1,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     2,
-     1
-    ],
-    [
-     "sheets/lunar-halo.png",
-     3,
-     4
-    ],
-    [
-     "sheets/lunar-halo.png",
-     4,
-     12
-    ],
-    [
-     "sheets/lunar-halo.png",
-     5,
-     14
-    ],
-    [
-     "sheets/lunar-halo.png",
-     6,
-     11
-    ]
-   ]
-  },
-  "tideL_ex": {
-   "duration": 32,
-   "data": {
-    "startup": 7,
-    "active": 0,
-    "recovery": 26
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "6b55febd",
-   "drawings": [
-    [
-     "sheets/tide.png",
      0,
      2
     ],
     [
+     "sheets/lunar-halo.png",
+     1,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     6
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     84
+    ]
+   ]
+  },
+  "haloM_ex": {
+   "duration": 100,
+   "data": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "measured": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "boxes": "a218397f",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     6
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     84
+    ]
+   ]
+  },
+  "haloH_ex": {
+   "duration": 100,
+   "data": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "measured": {
+    "startup": 5,
+    "active": 6,
+    "recovery": 90
+   },
+   "hitFrames": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "boxes": "a218397f",
+   "drawings": [
+    [
+     "sheets/lunar-halo.png",
+     0,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     1,
+     2
+    ],
+    [
+     "sheets/lunar-halo.png",
+     2,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     3,
+     3
+    ],
+    [
+     "sheets/lunar-halo.png",
+     4,
+     6
+    ],
+    [
+     "sheets/lunar-halo.png",
+     5,
+     84
+    ]
+   ]
+  },
+  "tideL_ex": {
+   "duration": 43,
+   "data": {
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
+   },
+   "measured": {
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
+   },
+   "hitFrames": [
+    24
+   ],
+   "boxes": "5ffb0ed6",
+   "drawings": [
+    [
+     "sheets/tide.png",
+     0,
+     5
+    ],
+    [
      "sheets/tide.png",
      1,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      2,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      3,
-     6
+     4
     ],
     [
      "sheets/tide.png",
      4,
-     3
+     5
     ],
     [
      "sheets/tide.png",
      5,
-     3
+     6
     ],
     [
      "sheets/tide.png",
      6,
-     4
+     7
     ],
     [
      "sheets/tide.png",
@@ -3355,50 +5082,56 @@
    ]
   },
   "tideM_ex": {
-   "duration": 32,
+   "duration": 43,
    "data": {
-    "startup": 7,
-    "active": 0,
-    "recovery": 26
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
    },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "6b55febd",
+   "measured": {
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
+   },
+   "hitFrames": [
+    24
+   ],
+   "boxes": "5ffb0ed6",
    "drawings": [
     [
      "sheets/tide.png",
      0,
-     2
+     5
     ],
     [
      "sheets/tide.png",
      1,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      2,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      3,
-     6
+     4
     ],
     [
      "sheets/tide.png",
      4,
-     3
+     5
     ],
     [
      "sheets/tide.png",
      5,
-     3
+     6
     ],
     [
      "sheets/tide.png",
      6,
-     4
+     7
     ],
     [
      "sheets/tide.png",
@@ -3408,184 +5141,61 @@
    ]
   },
   "tideH_ex": {
-   "duration": 32,
+   "duration": 43,
    "data": {
-    "startup": 7,
-    "active": 0,
-    "recovery": 26
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
    },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "6b55febd",
+   "measured": {
+    "startup": 25,
+    "active": 1,
+    "recovery": 18
+   },
+   "hitFrames": [
+    24
+   ],
+   "boxes": "5ffb0ed6",
    "drawings": [
     [
      "sheets/tide.png",
      0,
-     2
+     5
     ],
     [
      "sheets/tide.png",
      1,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      2,
-     4
+     5
     ],
     [
      "sheets/tide.png",
      3,
-     6
+     4
     ],
     [
      "sheets/tide.png",
      4,
-     3
+     5
     ],
     [
      "sheets/tide.png",
      5,
-     3
+     6
     ],
     [
      "sheets/tide.png",
      6,
-     4
+     7
     ],
     [
      "sheets/tide.png",
      7,
      6
-    ]
-   ]
-  },
-  "airCrescentL_ex": {
-   "duration": 102,
-   "data": {
-    "startup": 13,
-    "active": 0,
-    "recovery": 90
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "27b59ddf",
-   "drawings": [
-    [
-     "sheets/air-crescent-swing.png",
-     0,
-     5
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     1,
-     7
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     2,
-     4
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     3,
-     8
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     4,
-     9
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     5,
-     69
-    ]
-   ]
-  },
-  "airCrescentM_ex": {
-   "duration": 102,
-   "data": {
-    "startup": 13,
-    "active": 0,
-    "recovery": 90
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "27b59ddf",
-   "drawings": [
-    [
-     "sheets/air-crescent-swing.png",
-     0,
-     5
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     1,
-     7
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     2,
-     4
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     3,
-     8
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     4,
-     9
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     5,
-     69
-    ]
-   ]
-  },
-  "airCrescentH_ex": {
-   "duration": 102,
-   "data": {
-    "startup": 13,
-    "active": 0,
-    "recovery": 90
-   },
-   "measured": null,
-   "hitFrames": [],
-   "boxes": "27b59ddf",
-   "drawings": [
-    [
-     "sheets/air-crescent-swing.png",
-     0,
-     5
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     1,
-     7
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     2,
-     4
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     3,
-     8
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     4,
-     9
-    ],
-    [
-     "sheets/air-crescent-swing.png",
-     5,
-     69
     ]
    ]
   }
@@ -3985,12 +5595,12 @@
    "boxes": "e6d3384d",
    "drawings": [
     [
-     "sheets/fall.png",
+     "sheets/airdash-end.png",
      0,
      8
     ],
     [
-     "sheets/fall.png",
+     "sheets/airdash-end.png",
      1,
      52
     ]
@@ -4079,29 +5689,39 @@
    ]
   },
   "hitStand": {
-   "duration": 1,
+   "duration": 7,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "aefff2b8",
+   "boxes": "5ba1c1da",
    "drawings": [
     [
      "sheets/hit-stand.png",
      0,
+     6
+    ],
+    [
+     "sheets/hit-stand.png",
+     1,
      1
     ]
    ]
   },
   "hitCrouch": {
-   "duration": 1,
+   "duration": 7,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "fc4a57e7",
+   "boxes": "faee9abb",
    "drawings": [
     [
      "sheets/hit-crouch.png",
      0,
+     6
+    ],
+    [
+     "sheets/hit-crouch.png",
+     1,
      1
     ]
    ]
@@ -4122,6 +5742,63 @@
      "sheets/hit-air.png",
      1,
      1
+    ]
+   ]
+  },
+  "hitSpin": {
+   "duration": 6,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "cd973d5",
+   "drawings": [
+    [
+     "sheets/hit-air.png",
+     0,
+     5
+    ],
+    [
+     "sheets/hit-air.png",
+     1,
+     1
+    ]
+   ]
+  },
+  "hitTumble": {
+   "duration": 12,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "47e25a0d",
+   "drawings": [
+    [
+     "sheets/tumble.png",
+     0,
+     6
+    ],
+    [
+     "sheets/tumble.png",
+     1,
+     6
+    ]
+   ]
+  },
+  "slide": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "889a17b5",
+   "drawings": [
+    [
+     "sheets/knockdown.png",
+     0,
+     6
+    ],
+    [
+     "sheets/knockdown.png",
+     1,
+     34
     ]
    ]
   },
@@ -4173,16 +5850,16 @@
    ]
   },
   "blockStand": {
-   "duration": 9,
+   "duration": 5,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "f9a09db0",
+   "boxes": "a41f687c",
    "drawings": [
     [
      "sheets/block-stand.png",
      0,
-     8
+     4
     ],
     [
      "sheets/block-stand.png",
@@ -4192,16 +5869,16 @@
    ]
   },
   "blockCrouch": {
-   "duration": 9,
+   "duration": 5,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "458ccf7",
+   "boxes": "3368ff6f",
    "drawings": [
     [
      "sheets/block-crouch.png",
      0,
-     8
+     4
     ],
     [
      "sheets/block-crouch.png",
@@ -4211,16 +5888,16 @@
    ]
   },
   "blockAir": {
-   "duration": 9,
+   "duration": 5,
    "data": null,
    "measured": null,
    "hitFrames": [],
-   "boxes": "be662459",
+   "boxes": "dc17d2e9",
    "drawings": [
     [
      "sheets/block-air.png",
      0,
-     8
+     4
     ],
     [
      "sheets/block-air.png",
@@ -4230,6 +5907,25 @@
    ]
   },
   "knockdown": {
+   "duration": 40,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a115ab3d",
+   "drawings": [
+    [
+     "sheets/knockdown.png",
+     0,
+     6
+    ],
+    [
+     "sheets/knockdown.png",
+     1,
+     34
+    ]
+   ]
+  },
+  "knockdownSoft": {
    "duration": 40,
    "data": null,
    "measured": null,
@@ -4735,6 +6431,87 @@
     ]
    ]
   },
+  "installJumpSquat": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52fa8b66",
+   "drawings": [
+    [
+     "sheets/install-jumpsquat.png",
+     0,
+     3
+    ]
+   ]
+  },
+  "installJump": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b048b5c9",
+   "drawings": [
+    [
+     "sheets/install-jump.png",
+     0,
+     5
+    ],
+    [
+     "sheets/install-jump.png",
+     1,
+     9
+    ],
+    [
+     "sheets/install-jump.png",
+     2,
+     9
+    ],
+    [
+     "sheets/install-jump.png",
+     3,
+     9
+    ],
+    [
+     "sheets/install-jump.png",
+     4,
+     28
+    ]
+   ]
+  },
+  "installFall": {
+   "duration": 60,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "b048b5c9",
+   "drawings": [
+    [
+     "sheets/install-fall.png",
+     0,
+     8
+    ],
+    [
+     "sheets/install-fall.png",
+     1,
+     52
+    ]
+   ]
+  },
+  "installLand": {
+   "duration": 3,
+   "data": null,
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "52fa8b66",
+   "drawings": [
+    [
+     "sheets/install-land.png",
+     0,
+     3
+    ]
+   ]
+  },
   "spirit5L": {
    "duration": 12,
    "data": {
@@ -4754,32 +6531,32 @@
    "boxes": "b1e5351b",
    "drawings": [
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      0,
      2
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      1,
      2
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      2,
      2
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      3,
      2
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      4,
      2
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      5,
      2
     ]
@@ -4807,32 +6584,32 @@
    "boxes": "6ac33096",
    "drawings": [
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      0,
      4
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      1,
      4
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      2,
      4
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      3,
      4
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      4,
      3
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      5,
      3
     ]
@@ -4858,32 +6635,32 @@
    "boxes": "aab83297",
    "drawings": [
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      0,
      5
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      1,
      5
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      2,
      5
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      3,
      5
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      4,
      5
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-solo.png",
      5,
      4
     ]
@@ -4925,7 +6702,7 @@
     [
      "sheets/5L.png",
      3,
-     3
+     2
     ],
     [
      "sheets/5L.png",
@@ -4936,6 +6713,62 @@
      "sheets/5L.png",
      5,
      2
+    ],
+    [
+     "sheets/5L.png",
+     6,
+     1
+    ]
+   ]
+  },
+  "stomp": {
+   "duration": 34,
+   "data": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 22
+   },
+   "measured": {
+    "startup": 10,
+    "active": 3,
+    "recovery": 22
+   },
+   "hitFrames": [
+    9,
+    10,
+    11
+   ],
+   "boxes": "831d36e4",
+   "drawings": [
+    [
+     "sheets/stomp.png",
+     0,
+     3
+    ],
+    [
+     "sheets/stomp.png",
+     1,
+     6
+    ],
+    [
+     "sheets/stomp.png",
+     2,
+     3
+    ],
+    [
+     "sheets/stomp.png",
+     3,
+     8
+    ],
+    [
+     "sheets/stomp.png",
+     4,
+     7
+    ],
+    [
+     "sheets/stomp.png",
+     5,
+     7
     ]
    ]
   },
@@ -4963,12 +6796,12 @@
     [
      "sheets/5M.png",
      0,
-     2
+     3
     ],
     [
      "sheets/5M.png",
      1,
-     1
+     2
     ],
     [
      "sheets/5M.png",
@@ -4978,7 +6811,7 @@
     [
      "sheets/5M.png",
      3,
-     2
+     3
     ],
     [
      "sheets/5M.png",
@@ -4988,12 +6821,17 @@
     [
      "sheets/5M.png",
      5,
-     6
+     3
     ],
     [
      "sheets/5M.png",
      6,
-     6
+     3
+    ],
+    [
+     "sheets/5M.png",
+     7,
+     3
     ]
    ]
   },
@@ -5024,12 +6862,12 @@
     [
      "sheets/5H.png",
      1,
-     2
+     3
     ],
     [
      "sheets/5H.png",
      2,
-     3
+     2
     ],
     [
      "sheets/5H.png",
@@ -5039,12 +6877,17 @@
     [
      "sheets/5H.png",
      4,
-     9
+     7
     ],
     [
      "sheets/5H.png",
      5,
-     9
+     6
+    ],
+    [
+     "sheets/5H.png",
+     6,
+     5
     ]
    ]
   },
@@ -5069,17 +6912,17 @@
     [
      "sheets/2L.png",
      0,
-     3
-    ],
-    [
-     "sheets/2L.png",
-     1,
      2
     ],
     [
      "sheets/2L.png",
+     1,
+     1
+    ],
+    [
+     "sheets/2L.png",
      2,
-     3
+     2
     ],
     [
      "sheets/2L.png",
@@ -5089,6 +6932,11 @@
     [
      "sheets/2L.png",
      4,
+     3
+    ],
+    [
+     "sheets/2L.png",
+     5,
      2
     ]
    ]
@@ -5135,12 +6983,22 @@
     [
      "sheets/2M.png",
      4,
-     6
+     4
     ],
     [
      "sheets/2M.png",
      5,
-     7
+     3
+    ],
+    [
+     "sheets/2M.png",
+     6,
+     3
+    ],
+    [
+     "sheets/2M.png",
+     7,
+     3
     ]
    ]
   },
@@ -5171,31 +7029,36 @@
     [
      "sheets/2H.png",
      1,
-     3
+     2
     ],
     [
      "sheets/2H.png",
      2,
-     3
+     2
     ],
     [
      "sheets/2H.png",
      3,
-     3
+     2
     ],
     [
      "sheets/2H.png",
      4,
-     8
+     3
     ],
     [
      "sheets/2H.png",
      5,
-     7
+     8
     ],
     [
      "sheets/2H.png",
      6,
+     7
+    ],
+    [
+     "sheets/2H.png",
+     7,
      7
     ]
    ]
@@ -5286,7 +7149,7 @@
     [
      "sheets/4H.png",
      0,
-     3
+     4
     ],
     [
      "sheets/4H.png",
@@ -5296,7 +7159,7 @@
     [
      "sheets/4H.png",
      2,
-     4
+     3
     ],
     [
      "sheets/4H.png",
@@ -5306,22 +7169,17 @@
     [
      "sheets/4H.png",
      4,
-     5
+     8
     ],
     [
      "sheets/4H.png",
      5,
-     5
+     7
     ],
     [
      "sheets/4H.png",
      6,
-     6
-    ],
-    [
-     "sheets/4H.png",
-     7,
-     6
+     7
     ]
    ]
   },
@@ -5363,12 +7221,17 @@
     [
      "sheets/jL.png",
      3,
-     4
+     2
     ],
     [
      "sheets/jL.png",
      4,
-     4
+     3
+    ],
+    [
+     "sheets/jL.png",
+     5,
+     3
     ]
    ]
   },
@@ -5395,7 +7258,7 @@
     [
      "sheets/jM.png",
      0,
-     3
+     2
     ],
     [
      "sheets/jM.png",
@@ -5405,7 +7268,7 @@
     [
      "sheets/jM.png",
      2,
-     4
+     1
     ],
     [
      "sheets/jM.png",
@@ -5420,6 +7283,11 @@
     [
      "sheets/jM.png",
      5,
+     4
+    ],
+    [
+     "sheets/jM.png",
+     6,
      4
     ]
    ]
@@ -5554,27 +7422,27 @@
     [
      "sheets/5S.png",
      0,
-     4
-    ],
-    [
-     "sheets/5S.png",
-     1,
-     4
-    ],
-    [
-     "sheets/5S.png",
-     2,
      3
     ],
     [
      "sheets/5S.png",
+     1,
+     3
+    ],
+    [
+     "sheets/5S.png",
+     2,
+     2
+    ],
+    [
+     "sheets/5S.png",
      3,
-     6
+     3
     ],
     [
      "sheets/5S.png",
      4,
-     6
+     8
     ],
     [
      "sheets/5S.png",
@@ -5584,7 +7452,12 @@
     [
      "sheets/5S.png",
      6,
-     6
+     5
+    ],
+    [
+     "sheets/5S.png",
+     7,
+     5
     ]
    ]
   },
@@ -5610,7 +7483,7 @@
     [
      "sheets/fireball.png",
      0,
-     3
+     4
     ],
     [
      "sheets/fireball.png",
@@ -5620,7 +7493,7 @@
     [
      "sheets/fireball.png",
      2,
-     4
+     3
     ],
     [
      "sheets/fireball.png",
@@ -5635,12 +7508,17 @@
     [
      "sheets/fireball.png",
      5,
-     8
+     6
     ],
     [
      "sheets/fireball.png",
      6,
-     6
+     4
+    ],
+    [
+     "sheets/fireball.png",
+     7,
+     4
     ]
    ]
   },
@@ -5664,39 +7542,44 @@
    "boxes": "999a5ed2",
    "drawings": [
     [
-     "sheets/fireball.png",
+     "sheets/fireball-M.png",
      0,
-     4
+     5
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-M.png",
      1,
      5
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-M.png",
      2,
-     6
+     5
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-M.png",
      3,
      3
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-M.png",
      4,
      8
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-M.png",
      5,
-     8
+     6
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-M.png",
      6,
-     6
+     4
+    ],
+    [
+     "sheets/fireball-M.png",
+     7,
+     4
     ]
    ]
   },
@@ -5720,39 +7603,49 @@
    "boxes": "5c27176f",
    "drawings": [
     [
-     "sheets/fireball.png",
+     "sheets/fireball-H.png",
      0,
-     6
+     5
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-H.png",
      1,
-     7
+     5
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-H.png",
      2,
-     7
+     5
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-H.png",
      3,
+     5
+    ],
+    [
+     "sheets/fireball-H.png",
+     4,
      3
     ],
     [
-     "sheets/fireball.png",
-     4,
-     8
-    ],
-    [
-     "sheets/fireball.png",
+     "sheets/fireball-H.png",
      5,
      8
     ],
     [
-     "sheets/fireball.png",
+     "sheets/fireball-H.png",
      6,
      6
+    ],
+    [
+     "sheets/fireball-H.png",
+     7,
+     4
+    ],
+    [
+     "sheets/fireball-H.png",
+     8,
+     4
     ]
    ]
   },
@@ -6137,34 +8030,112 @@
    "boxes": "85b59c75",
    "drawings": [
     [
-     "sheets/install-idle.png",
+     "sheets/install-change.png",
      0,
-     7
+     3
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-change.png",
      1,
-     7
+     3
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-change.png",
      2,
-     7
+     3
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-change.png",
      3,
-     7
+     3
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/install-change.png",
      4,
+     4
+    ],
+    [
+     "sheets/install-change.png",
+     5,
+     4
+    ],
+    [
+     "sheets/install-change.png",
+     6,
+     4
+    ],
+    [
+     "sheets/install-change.png",
+     7,
+     4
+    ],
+    [
+     "sheets/install-change.png",
+     8,
+     3
+    ],
+    [
+     "sheets/install-change.png",
+     9,
+     3
+    ],
+    [
+     "sheets/install-change.png",
+     10,
+     3
+    ],
+    [
+     "sheets/install-change.png",
+     11,
+     3
+    ]
+   ]
+  },
+  "rite_4": {
+   "duration": 33,
+   "data": {
+    "startup": 8,
+    "active": 0,
+    "recovery": 26
+   },
+   "measured": null,
+   "hitFrames": [],
+   "boxes": "a6a8ae18",
+   "drawings": [
+    [
+     "sheets/rite-4.png",
+     0,
+     3
+    ],
+    [
+     "sheets/rite-4.png",
+     1,
+     5
+    ],
+    [
+     "sheets/rite-4.png",
+     2,
      6
     ],
     [
-     "sheets/install-idle.png",
+     "sheets/rite-4.png",
+     3,
+     5
+    ],
+    [
+     "sheets/rite-4.png",
+     4,
+     5
+    ],
+    [
+     "sheets/rite-4.png",
      5,
-     6
+     5
+    ],
+    [
+     "sheets/rite-4.png",
+     6,
+     4
     ]
    ]
   },
@@ -6281,21 +8252,26 @@
     [
      "sheets/rite-j.png",
      0,
-     10
+     5
     ],
     [
      "sheets/rite-j.png",
      1,
-     4
+     6
     ],
     [
      "sheets/rite-j.png",
      2,
-     8
+     4
     ],
     [
      "sheets/rite-j.png",
      3,
+     7
+    ],
+    [
+     "sheets/rite-j.png",
+     4,
      6
     ]
    ]
@@ -6340,7 +8316,7 @@
     [
      "sheets/vow-strike-quick.png",
      0,
-     6
+     3
     ],
     [
      "sheets/vow-strike-quick.png",
@@ -6350,17 +8326,22 @@
     [
      "sheets/vow-strike-quick.png",
      2,
-     9
+     3
     ],
     [
      "sheets/vow-strike-quick.png",
      3,
-     7
+     3
     ],
     [
      "sheets/vow-strike-quick.png",
      4,
-     7
+     10
+    ],
+    [
+     "sheets/vow-strike-quick.png",
+     5,
+     10
     ]
    ]
   },
@@ -6386,27 +8367,32 @@
     [
      "sheets/vow-strike.png",
      0,
-     4
+     5
     ],
     [
      "sheets/vow-strike.png",
      1,
-     6
+     4
     ],
     [
      "sheets/vow-strike.png",
      2,
-     3
+     4
     ],
     [
      "sheets/vow-strike.png",
      3,
-     13
+     3
     ],
     [
      "sheets/vow-strike.png",
      4,
-     12
+     11
+    ],
+    [
+     "sheets/vow-strike.png",
+     5,
+     11
     ]
    ]
   },
@@ -6433,27 +8419,32 @@
     [
      "sheets/vow-strike-full.png",
      0,
-     4
+     5
     ],
     [
      "sheets/vow-strike-full.png",
      1,
-     8
+     5
     ],
     [
      "sheets/vow-strike-full.png",
      2,
-     3
+     5
     ],
     [
      "sheets/vow-strike-full.png",
      3,
-     8
+     4
     ],
     [
      "sheets/vow-strike-full.png",
      4,
-     20
+     12
+    ],
+    [
+     "sheets/vow-strike-full.png",
+     5,
+     12
     ]
    ]
   },

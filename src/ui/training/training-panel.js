@@ -8,10 +8,11 @@ const LABEL = {
   stance: 'Dummy stance',
   block: 'Dummy blocks',
   blockGuard: 'Block height',
-  tech: 'Air recovery',
+  tech: 'Recovery (air and soft knockdown)',
   refill: 'Health refill',
   meter: 'Devotion, Rite, gauge',
   absolve: 'Absolve',
+  counter: 'Hits on the dummy land as',
   position: 'Start position (R)',
 };
 

@@ -9,6 +9,8 @@ import { createStageRenderer } from './stage-renderer.js';
 import { paletteSheet, placeholderColors } from './palette.js';
 import FX from '../../data/system/effects.json';
 import { POLISH } from './polish.js';
+import { FXO } from './fx-opacity.js'; // FXOPACITY
+import CAMERA from '../../data/system/camera.json';
 
 // Game-ready sheets only (data/characters/<id>/sheets/): raw art dropped elsewhere in a character's folder is not
 // shipped with the game.
@@ -63,8 +65,9 @@ const SPARK = {
 };
 
 export function createFightRenderer(ctx, W, H) {
-  const GROUND = H - 70;
-  const cam = { x: 0, y: 0 };
+  const GROUND = Math.round(H * CAMERA.groundLine);
+  // x, y: where the view looks, in px. z: how much the fight is enlarged (data/system/camera.json), about the ground line.
+  const cam = { x: 0, y: 0, z: 0 };
   const effects = []; // visual only: spawned from the game's cues, never fed back into the game
   let lastFrame = -1;
   let front = 1; // which fighter is drawn in front (presentation only; P2 until someone attacks)
@@ -72,7 +75,10 @@ export function createFightRenderer(ctx, W, H) {
   const hud = createHud(ctx, W, (name) => spriteImage(null, name));
   let stageR = null; // { id, r }: the stage renderer, made when a stage is first drawn
 
+  // Where a game position is drawn BEFORE the zoom (everything in the fight is drawn inside the zoom).
   const toScreen = (x, y) => [W / 2 + (x / UNIT - cam.x), GROUND - y / UNIT + cam.y];
+  /** Where a game position ends up on the screen, zoom included (for anything drawn outside the fight itself). */
+  const onScreen = (x, y) => { const [sx, sy] = toScreen(x, y), z = cam.z || 1; return [W / 2 + (sx - W / 2) * z, GROUND + (sy - GROUND) * z]; };
 
   /** A character-space box [x, y, w, h] (units) to a screen rect, flipped by facing. */
   function boxRect(p, b) {
@@ -140,6 +146,7 @@ export function createFightRenderer(ctx, W, H) {
       if (m.sprite) {
         ctx.save();
         ctx.globalAlpha = fade;
+        fxOp = opOf(m, oppDef, `mark:${k}`, 'mark'); // FXOPACITY
         drawSheetFrame(oppDef, m.sprite, Math.floor(frame / (m.hold ?? 5)) % m.sprite.count, x, y, 1);
         ctx.restore();
         continue;
@@ -161,9 +168,35 @@ export function createFightRenderer(ctx, W, H) {
     }
   }
 
+  /**
+   * A sheet coloured by a sprite's `tint` ("#rrggbb": an EX effect in gold): the whole sheet multiplied by the colour,
+   * made once and kept. Without a real canvas (the picture tools) the sheet is drawn as it is.
+   */
+  const tints = new Map();
+  function tinted(img, colour) {
+    if (!img || !colour || !canTint) return img;
+    const key = `${img.src}|${colour}`;
+    let c = tints.get(key);
+    if (!c) {
+      c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.naturalWidth = c.width; c.naturalHeight = c.height;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0);
+      g.globalCompositeOperation = 'multiply';
+      g.fillStyle = colour;
+      g.fillRect(0, 0, c.width, c.height);
+      g.globalCompositeOperation = 'destination-in'; // keep the sheet's own shape
+      g.drawImage(img, 0, 0);
+      tints.set(key, c);
+    }
+    return c;
+  }
+
   /** One frame of a sheet (effects, marks, chain pieces: no palette), centred on its origin at screen x, y. */
   function drawSheetFrame(def, sheet, index, x, y, facing, angle = 0) {
-    const img = spriteImage(def ? def.id : null, sheet.image);
+    const op = fxOp; fxOp = null; // FXOPACITY
+    const img = tinted(spriteImage(def ? def.id : null, sheet.image), sheet.tint);
     if (!img) return false;
     const cols = sheet.columns ?? 1;
     const fw = sheet.frameW ?? img.naturalWidth / cols;
@@ -173,6 +206,7 @@ export function createFightRenderer(ctx, W, H) {
     ctx.translate(x, y);
     if (angle) ctx.rotate(angle);
     ctx.scale(facing * k, k);
+    if (op !== null) ctx.globalAlpha *= opFor(op, sheet, x, y, facing, k, fw, fh); // FXOPACITY
     if (sheet.additive) ctx.globalCompositeOperation = 'lighter';
     ctx.drawImage(img, (index % cols) * fw, Math.floor(index / cols) * fh, fw, fh, -(sheet.originX ?? fw / 2), -(sheet.originY ?? fh / 2), fw, fh);
     ctx.restore();
@@ -234,7 +268,7 @@ export function createFightRenderer(ctx, W, H) {
 
   function drawPlaceholder(p, def, fr, col) {
     // On the floor (knockdown, KO): no hurtbox, and the figure lies down, head away from the opponent's side.
-    if (!fr.hurt.length && p.y === 0 && (p.state === 'knockdown' || p.state === 'koDown')) {
+    if (p.y === 0 && (p.state === 'knockdown' || p.state === 'knockdownSoft' || p.state === 'slide' || (!fr.hurt.length && p.state === 'koDown'))) {
       const [fx, fy] = toScreen(p.x, 0);
       const len = 150;
       const back = -p.facing; // falls backwards
@@ -342,7 +376,7 @@ export function createFightRenderer(ctx, W, H) {
     const T = pfx[p.id];
     T.land++; T.takeoff++; T.push++; T.over++;
     const air = p.y > 0;
-    if (T.wasAir && !air && !p.stun && p.state !== 'knockdown') T.land = 0;
+    if (T.wasAir && !air && !p.stun && p.state !== 'knockdown' && p.state !== 'knockdownSoft') T.land = 0;
     if (!T.wasAir && air && p.vy > 0 && !p.stun) T.takeoff = 0;
     T.wasAir = air;
     const base = frameOf(def, p.state, p.frame);
@@ -567,6 +601,7 @@ export function createFightRenderer(ctx, W, H) {
       // One pass of the effect per pass of the state, whatever the number of drawings on either side.
       const st = def.states[p.state];
       const at2 = Math.min(st.duration - 1, p.frame);
+      fxOp = opOf(e, def, l.effect, 'trail'); // FXOPACITY
       drawSheetFrame(def, e.sprite, Math.floor((at2 * e.sprite.count) / st.duration) % e.sprite.count, x, y, p.facing);
     }
   }
@@ -597,6 +632,7 @@ export function createFightRenderer(ctx, W, H) {
         const [x, y] = toScreen(p.x + p.facing * now[0] * UNIT, p.y + (now[1] + bob) * UNIT);
         ctx.save();
         ctx.globalAlpha *= Math.min(1, n / 60) * (e.alpha ?? 1);
+        fxOp = opOf(e, def, swap ? l.swap[p.state] : l.effect, 'aura'); // FXOPACITY
         drawSheetFrame(def, e.sprite, swap ? heldFrame(e.holds, p.frame, false)[0] : Math.floor(frame / (e.hold ?? 4)) % e.sprite.count, x, y, p.facing);
         ctx.restore();
       }
@@ -627,6 +663,15 @@ export function createFightRenderer(ctx, W, H) {
     return [i, false];
   }
 
+  /** A named effect from an `fx` cue: where it was played, or on its fighter if it follows them. */
+  function drawNamed(e, game) {
+    let x = e.x, y = e.y;
+    if (e.sheet.follow && e.owner !== undefined) { const o = game.players[e.owner]; x = o.x + e.facing * e.off[0] * UNIT; y = o.y + e.off[1] * UNIT; }
+    const [sx, sy] = toScreen(x, y);
+    fxOp = opNamed(e); // FXOPACITY
+    drawSheetFrame(e.def, e.sheet.sprite, e.sheet.holds ? heldFrame(e.sheet.holds, e.age, false)[0] : Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
+  }
+
   /** Live projectiles (game state) and the ones that just ended (their impact frames, where they vanished). */
   function drawProjectiles(game, world) {
     for (const pr of game.projectiles) {
@@ -639,6 +684,7 @@ export function createFightRenderer(ctx, W, H) {
       const [x, y] = toScreen(...rootOf(pr, d));
       ctx.save();
       if (d.sprite.additive) ctx.globalCompositeOperation = 'lighter';
+      fxOp = opOf(d, def, pr.kind, d.zone ? 'zone' : 'projectile'); // FXOPACITY
       drawSheetFrame(def, d.sprite, index, x, y, pr.facing, tiltOf(d, pr.facing));
       ctx.restore();
     }
@@ -679,8 +725,294 @@ export function createFightRenderer(ctx, W, H) {
   const shake = { amp: 0, left: 0 };
   const hitFlash = [0, 0];
   const jolt = (amp) => { if (amp > 0 && amp >= (shake.left > 0 ? shake.amp : 0)) { shake.amp = amp; shake.left = FX.impact.shake.frames; } };
+  // FXOPACITY BEGIN (drawing only; data/system/effects.json "opacity": every effect is drawn a little see-through)
+  const OP = FX.opacity ?? { classes: {} };
+  let fxOp = null; // the opacity of the next effect drawing (drawSheetFrame takes it once); null = not an effect
+  let fxPlain = false; // opts.effectsOpacity: false draws every effect as it was before (for comparison pictures)
+  let bodies = []; // each fighter's body on the screen in this drawing [x, y, w, h], to notice an effect covering it
+  const fxNames = new WeakMap(); // character → (an effect or projectile entry → its name in the character's file)
+  function nameOf(def, entry) {
+    if (!def || !entry) return undefined;
+    if (!fxNames.has(def)) {
+      const m = new Map();
+      for (const [k, v] of Object.entries(def.effects ?? {})) m.set(v, k);
+      for (const [k, v] of Object.entries(def.projectiles ?? {})) m.set(v, k);
+      fxNames.set(def, m);
+    }
+    return fxNames.get(def).get(entry);
+  }
+  /** An effect's opacity: its own "opacity", else the character's art.opacity entry for its name, else its class. */
+  const opOf = (entry, def, name, cls) => (OP.on === false ? 1 : entry?.opacity ?? def?.art?.opacity?.[name] ?? OP.classes?.[cls] ?? 1);
+  /** A hit spark: its first drawing (the flash) is drawn at flashFirst, the rest at its opacity. */
+  const opSpark = (entry, index) => (OP.on === false ? 1 : index === 0 && OP.flashFirst ? OP.flashFirst : entry?.opacity ?? OP.classes?.hitSpark ?? 1);
+  /** A named effect of a character; one with no name there is a move's own hit effect, which counts as a hit spark. */
+  const opNamed = (e) => { const n = nameOf(e.def, e.sheet); return n ? opOf(e.sheet, e.def, n, 'burst') : opSpark(e.sheet, e.sheet.holds ? heldFrame(e.sheet.holds, e.age, false)[0] : Math.floor(e.age / (e.sheet.hold ?? 3))); };
+  function bodyRect(p, world) {
+    const fr = frameOf(world.chars[p.id], p.state, p.frame);
+    const boxes = fr.hurt?.length ? fr.hurt : fr.push ? [fr.push] : [];
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const b of boxes) { const [x, y, w, h] = boxRect(p, b); x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x + w); y1 = Math.max(y1, y + h); }
+    return x1 > x0 && y1 > y0 ? [x0, y0, x1 - x0, y1 - y0] : null;
+  }
+  /** What one effect drawing is multiplied by: its opacity, less while it covers too much of a fighter, times the player's setting. */
+  function opFor(op, sheet, x, y, facing, k, fw, fh) {
+    if (fxPlain) return 1;
+    let a = op;
+    const w = fw * k * (OP.coverInset ?? 1), h = fh * k * (OP.coverInset ?? 1);
+    if (OP.on !== false && a < 1 && OP.coverDrop && w > 0 && w < W * 0.9) {
+      const cx = x + facing * (fw / 2 - (sheet.originX ?? fw / 2)) * k, cy = y + (fh / 2 - (sheet.originY ?? fh / 2)) * k;
+      for (const b of bodies) {
+        if (!b) continue;
+        const ox = Math.min(cx + w / 2, b[0] + b[2]) - Math.max(cx - w / 2, b[0]), oy = Math.min(cy + h / 2, b[1] + b[3]) - Math.max(cy - h / 2, b[1]);
+        if (ox > 0 && oy > 0 && ox * oy > (OP.coverShare ?? 0.5) * b[2] * b[3]) { a = Math.max(0, a - OP.coverDrop); break; }
+      }
+    }
+    return a * FXO.global;
+  }
+  // FXOPACITY END
+  // BLOCKFX BEGIN (drawing only; data/system/effects.json "blockFx": the guard and the spark of a blocked hit)
+  const BLK = FX.blockFx;
+  const guards = [null, null]; // one per defender
+  const blockSparks = []; // { id: the defender, kind, x, y, facing, t }
+  const btnOf = new WeakMap(); // character → { move: its buttons }
+  const sumOf = (a) => a.reduce((p, q) => p + q, 0);
+  /** light / medium / heavy, from the move that was blocked. */
+  function blockStrength(c, world) {
+    const src = world.chars[c.p], st = src?.states[c.move], by = BLK.strengthOf ?? {};
+    if (!st) return (src?.projectiles[c.move]?.move?.damage ?? 0) < (by.lightProjectileBelow ?? 0) ? 'light' : by.projectile ?? 'heavy';
+    if (st.move?.kind !== 'normal') return 'heavy';
+    if (!btnOf.has(src)) { const m = {}; for (const cmd of src.commands) m[cmd.move] ??= cmd.buttons; btnOf.set(src, m); }
+    return by.buttons?.[btnOf.get(src)[c.move]] ?? 'heavy';
+  }
+  /** A block (or a Repel) on defender d at x, y. A guard that is still up is not started over: it pops again at full size, then its loop goes on. */
+  function guardHit(d, how, x, y, repel) {
+    const front = Math.max((BLK.minFront ?? 0) * UNIT, (x - d.x) * d.facing); // in front of the defender, never inside the body
+    let g = guards[d.id];
+    if (!g) g = guards[d.id] = { dx: front, y, size: how.size, turn: 0, again: false };
+    else g.again = true;
+    g.phase = 'in'; g.t = 0;
+    g.facing = d.facing; g.toDx = front; g.toY = y; g.toSize = how.size;
+    g.flash = !!how.flash; g.repel = repel;
+    if (repel) g.size = how.size;
+    for (const kind of [].concat(how.spark ?? [])) if (BLK.sparks?.[kind]) blockSparks.push({ id: d.id, kind, x, y, facing: d.facing, t: 0 }); // one name or a list
+  }
+  function blockCue(c, game, world) {
+    if (!BLK || BLK.on === false) return false;
+    guardHit(game.players[1 - c.p], BLK.strengths[blockStrength(c, world)], c.x, c.y, false);
+    return true;
+  }
+  function blockRepel(c, game) {
+    if (!BLK || BLK.on === false || !BLK.repel) return;
+    const d = game.players[c.p], g = guards[d.id];
+    guardHit(d, BLK.repel, g ? d.x + d.facing * g.dx : d.x, g ? g.y : d.y + FX.motion.bodyY * UNIT, true);
+  }
+  /** One game frame. With holdInHitstop, the first drawing holds while the defender is frozen in hitstop; the rest plays after it. */
+  function blockAge(game, world) {
+    for (let i = blockSparks.length - 1; i >= 0; i--) if (++blockSparks[i].t >= sumOf(BLK.sparks[blockSparks[i].kind].holds)) blockSparks.splice(i, 1); // sparks play through hitstop
+    for (const d of game.players) {
+      const g = guards[d.id];
+      if (!g) continue;
+      if (d.hitstop > 0 && BLK.holdInHitstop !== false && g.phase === 'in' && g.t === 0) continue;
+      const stunned = (d.state.startsWith('block') || world.chars[d.id].states[d.state]?.blocking) && d.stun > 0;
+      g.t++;
+      g.dx += (g.toDx - g.dx) * 0.5; g.y += (g.toY - g.y) * 0.5; g.size += (g.toSize - g.size) * 0.5;
+      if (g.phase === 'in' && g.t >= sumOf(BLK.in)) { g.phase = stunned && BLK.loop.length ? 'loop' : 'out'; g.t = 0; } // an empty loop list: no held drawings, it plays straight through
+      else if (g.phase === 'loop') { g.turn += BLK.spin ?? 0; if (!stunned) { g.phase = 'out'; g.t = 0; } }
+      else if (g.phase === 'out' && g.t * (g.repel ? BLK.repel.outSpeed ?? 1 : 1) >= sumOf(BLK.out)) guards[d.id] = null;
+    }
+  }
+  /** Drawn right after the defender, so it is in front of them and behind an attacker who is drawn after. */
+  function blockDraw(p) {
+    guardDraw(p);
+    for (const sp of blockSparks) {
+      if (sp.id !== p.id) continue;
+      const K = BLK.sparks[sp.kind], [sx, sy] = toScreen(sp.x, sp.y);
+      fxOp = K.opacity;
+      drawSheetFrame(null, { ...K.sprite, additive: K.additive !== false }, heldFrame(K.holds, sp.t, false)[0], sx, sy, sp.facing);
+    }
+  }
+  function guardDraw(p) {
+    const g = guards[p.id];
+    if (!g) return;
+    const f = g.facing, n = BLK.in.length;
+    let frame, pop = 1, drift = 0;
+    if (g.phase === 'in') { frame = heldFrame(BLK.in, g.t, false)[0]; if (!g.again) pop = BLK.pop?.[frame] ?? 1; }
+    else if (g.phase === 'loop') frame = n + heldFrame(BLK.loop, g.t, true)[0];
+    else {
+      const t = Math.floor(g.t * (g.repel ? BLK.repel.outSpeed ?? 1 : 1)), total = sumOf(BLK.out);
+      frame = n + BLK.loop.length + heldFrame(BLK.out, Math.min(t, total - 1), false)[0];
+      if (g.repel) drift = (BLK.repel.drift ?? 0) * Math.min(1, t / total); // a Repel moves toward the attacker as it breaks apart
+    }
+    const at = toScreen(p.x + f * g.dx, g.y);
+    const x = at[0] + f * drift, y = at[1];
+    const k = (BLK.charHeight * BLK.height * g.size * pop) / BLK.sprite.bodyH;
+    const angle = (f * g.turn * Math.PI) / 180; // the whole guard turns while it loops, on top of the drawn swirl
+    fxOp = BLK.opacity; // flat, ordinary drawing, a little see-through
+    drawSheetFrame(null, { ...BLK.sprite, scale: k }, frame, x, y, f, angle);
+    if (g.flash && g.phase === 'in' && g.t < BLK.flash.frames) { fxOp = BLK.flash.opacity; drawSheetFrame(null, { ...BLK.white, scale: k }, frame, x, y, f, angle); }
+  }
+  // BLOCKFX END
+  // SHOCKWAVE BEGIN (drawing only; data/system/effects.json "shockwave"; remove the three marked blocks to take it out)
+  // Rings that bend the picture behind them. Each ring: where it is (game units), who froze with it, its age in game
+  // frames (negative = not started yet) and its numbers, already multiplied by its set's scale.
+  const SW = FX.shockwave;
+  const rings = [];
+  let pulse = null; // the brief whole-screen brightening of the biggest set
+  let warp = null, wctx = null; // a copy of the finished fight picture, to bend
+  function shockStart(name, x, y, frozenWith) {
+    const set = SW?.sets?.[name];
+    if (!set || SW.on === false) return;
+    const k = set.scale ?? 1;
+    for (const r of set.rings) {
+      if (rings.length >= (SW.max ?? 8)) rings.shift();
+      rings.push({ x, y, who: frozenWith, age: (r.startAt ?? 0) - (r.delay ?? 0), life: r.life, radius: r.radius * SW.charHeight * k, thick: [r.thick[0] * k, r.thick[1] * k], strength: r.strength * k });
+    }
+    if (set.pulse) pulse = { age: 0, life: set.pulse.frames, alpha: set.pulse.alpha };
+  }
+  /** Which set a cue plays, or none: the rules in "when", then the move's own entry in the character's art.shockwave. */
+  function shockCue(c, game, world) {
+    if (!SW || SW.on === false) return;
+    const W1 = SW.when ?? {};
+    if (c.type === 'groundbounce' && struck[c.p]?.rule.ring) return; // GROUNDFX: that effect fires its own ring
+    if (c.type === 'wallbounce' || c.type === 'groundbounce') { if (W1[c.type]) shockStart(W1[c.type], c.x, c.y + (c.type === 'wallbounce' ? FX.motion.bodyY * UNIT : 0), c.p); return; }
+    if (c.type !== 'hit' && c.type !== 'counter' && c.type !== 'witness') return;
+    const src = world.chars[c.p], st = src?.states[c.move];
+    const mv = st?.move ?? src?.projectiles[c.move]?.move;
+    const own = src?.art?.shockwave?.[c.move] ?? null;
+    let name = null;
+    if (game.players[1 - c.p].health <= 0) name = W1.ko;
+    else if (mv?.kind === 'super' && st) {
+      // A super's last hit: no later frame of the move hits again.
+      const f = game.players[c.p].frame, id = st.frames[Math.min(f, st.frames.length - 1)]?.hitId;
+      if (!st.frames.some((fr, i) => i > f && fr.hit.length && fr.hitId !== id)) name = W1.superLast;
+    }
+    if (!name && own && c.type !== 'hit') name = W1.counter;
+    if (!name && !c.fellOut) name = (mv?.crumple ? W1.crumple : mv?.launchType === 'hard' ? W1.launcher : mv?.hitReaction === 'hardKD' ? W1.slam : null) ?? null;
+    if (!name) name = own;
+    if (name) shockStart(name, c.x, c.y, 1 - c.p);
+  }
+  /** One game frame: rings stand still while the fighter they hit is frozen in hitstop, then play out. */
+  function shockAge(game) {
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const r = rings[i];
+      if (!(game.players[r.who]?.hitstop > 0)) r.age++;
+      if (r.age > r.life) rings.splice(i, 1);
+    }
+    if (pulse && ++pulse.age > pulse.life) pulse = null;
+  }
+  /** After the fight is drawn, before the HUD: bend the picture inside each ring, pushing it outward from the centre. */
+  function shockDraw() {
+    if (!rings.length && !pulse) return;
+    const cv = ctx.canvas, real = cv && typeof cv.width === 'number' && cv.width > 1 && typeof ctx.clip === 'function' && typeof ctx.setTransform === 'function';
+    const z = cam.z || 1;
+    const k = real ? cv.width / W : 1; // real pixels for each of the game's own
+    const bands = SW.bands ?? 10;
+    let fill = false; // whether there is a copy of the picture to bend
+    if (real && SW.warp !== false && rings.some((r) => r.age >= 0)) {
+      if (!warp && typeof document !== 'undefined') { warp = document.createElement('canvas'); wctx = warp.getContext?.('2d') ?? null; }
+      if (wctx) {
+        if (warp.width !== cv.width || warp.height !== cv.height) { warp.width = cv.width; warp.height = cv.height; }
+        // Only the part of the picture the rings cover is copied.
+        let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+        for (const r of rings) {
+          if (r.age < 0) continue;
+          const [lx, ly] = onScreen(r.x, r.y), reach = (r.radius + r.thick[1]) * z;
+          x0 = Math.min(x0, lx - reach); y0 = Math.min(y0, ly - reach); x1 = Math.max(x1, lx + reach); y1 = Math.max(y1, ly + reach);
+        }
+        x0 = Math.max(0, Math.floor(x0 * k)); y0 = Math.max(0, Math.floor(y0 * k)); x1 = Math.min(cv.width, Math.ceil(x1 * k)); y1 = Math.min(cv.height, Math.ceil(y1 * k));
+        if (x1 > x0 && y1 > y0) {
+          wctx.globalCompositeOperation = 'copy';
+          wctx.drawImage(cv, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
+          fill = true;
+        }
+      }
+    }
+    for (const r of rings) {
+      if (r.age < 0) continue;
+      const t = Math.min(1, r.age / r.life), out = 1 - (1 - t) ** 3; // grows fast, then settles
+      const [lx, ly] = onScreen(r.x, r.y);
+      const mid = r.radius * out * z, thick = (r.thick[0] + (r.thick[1] - r.thick[0]) * t) * z, strength = r.strength * (1 - t) * z;
+      const r0 = Math.max(0, mid - thick / 2), r1 = mid + thick / 2;
+      if (fill && strength > 0.05) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        const cx = lx * k, cy = ly * k;
+        for (let b = 0; b < bands; b++) {
+          const a0 = (r0 + ((r1 - r0) * b) / bands) * k, a1 = (r0 + ((r1 - r0) * (b + 1)) / bands) * k, am = (a0 + a1) / 2;
+          const d = strength * k * Math.sin((Math.PI * (b + 0.5)) / bands) ** 2; // a smooth bump: 0 at both edges
+          if (d < 0.25 || am - d < 1) continue;
+          const s = am / (am - d); // the picture inside this band is drawn this much larger about the centre
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, a1, 0, Math.PI * 2);
+          ctx.arc(cx, cy, a0, 0, Math.PI * 2, true);
+          ctx.clip();
+          ctx.drawImage(warp, cx - a1 / s, cy - a1 / s, (2 * a1) / s, (2 * a1) / s, cx - a1, cy - a1, 2 * a1, 2 * a1);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+      // The edge catches the light (and where the picture cannot be bent, this ring alone is the effect).
+      const edge = (fill ? SW.edge ?? 0.1 : SW.fallbackEdge ?? 0.5) * (1 - t);
+      if (edge > 0.004 && mid > 0.5) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = edge;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(1, thick * (SW.edgeWidth ?? 0.3));
+        ctx.beginPath();
+        ctx.arc(lx, ly, mid, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+    if (pulse) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = pulse.alpha * (1 - pulse.age / pulse.life);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
+  }
+  // SHOCKWAVE END
   // The universal systems' effect slots (data/system/effects.json "slots").
   const SLOTS = FX.slots || { sheets: {}, absorbPoseFrames: 8, exTint: 0.45 };
+  // GROUNDFX BEGIN (drawing only). art.groundFx: { <move>: { play: <effect>, ring: { frame, set } } } in a character's
+  // file: when a fighter last hit by that move next touches the ground (a ground bounce or a knockdown), the effect
+  // plays at that spot on the ground line; ring = a shockwave set fired when the effect reaches that drawing (1 = first).
+  const struck = [null, null]; // per fighter hit: { rule, by, up } (up: seen off the ground since the hit)
+  const ringsDue = []; // { left, set, x, y, who }
+  /** An effect whose entry has ring: { frame, set } fires that shockwave set when it reaches that drawing (1 = the first). */
+  const ringOf = (named, x, y, who) => { const g = named.ring; if (g) ringsDue.push({ left: (named.holds ?? []).slice(0, Math.max(0, (g.frame ?? 1) - 1)).reduce((a, b) => a + b, 0), set: g.set, x, y, who }); };
+  function groundFxHit(c, world) {
+    const rule = world.chars[c.p]?.art?.groundFx?.[c.move];
+    struck[1 - c.p] = rule ? { rule, by: c.p, up: false } : null; // any other hit takes over
+  }
+  function groundFxLand(id, x, game, world) {
+    const s = struck[id];
+    struck[id] = null;
+    const def = world.chars[s.by], named = def?.effects?.[s.rule.play];
+    if (!named) return;
+    effects.push({ sheet: named, def, x, y: 0, facing: game.players[s.by].facing, age: 0, life: lifeOf(named) });
+    ringOf({ holds: named.holds, ring: s.rule.ring }, x, 0, id);
+  }
+  function groundFxAge(game, world) {
+    for (let i = ringsDue.length - 1; i >= 0; i--) {
+      const r = ringsDue[i];
+      if (r.left-- > 0) continue;
+      shockStart(r.set, r.x, r.y, r.who);
+      ringsDue.splice(i, 1);
+    }
+    for (const p of game.players) {
+      const s = struck[p.id];
+      if (!s) continue;
+      if (p.y > 0) s.up = true;
+      else if (s.up) groundFxLand(p.id, p.x, game, world); // came down without a bounce: a knockdown
+      else if (!p.combo) struck[p.id] = null; // the combo ended on the ground
+    }
+  }
+  // GROUNDFX END
   const lastMove = [null, null]; // drawing only: last seen state and x, to notice a dash starting or a landing
   const absorbUntil = [-1, -1]; // drawing only: the game frame until which a fighter shows the vow_absorb drawing
   const absorbLen = [0, 0]; // and how many frames that drawing plays for
@@ -712,6 +1044,7 @@ export function createFightRenderer(ctx, W, H) {
     }
     if ((c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && String(c.move).startsWith('vow_strike')) slotPlay(rules.vowhit, p, game, c);
     if (c.type === 'draw' && c.whiffed) return; // a Draw that caught nothing pulls nothing
+    if (c.type === 'repel' && BLK && BLK.on !== false && BLK.repel?.replacesWave) return; // BLOCKFX
     slotPlay(rules[c.type], p, game, c);
   }
   /** The effect looping on a fighter for as long as they are in a state (the Vow guard, the crumple stars...). */
@@ -726,6 +1059,7 @@ export function createFightRenderer(ctx, W, H) {
     const [x, y] = toScreen(p.x, p.y + (rule.y !== undefined ? rule.y * UNIT : heightOf(rule.at)));
     ctx.save();
     if (s.additive) ctx.globalCompositeOperation = 'lighter';
+    fxOp = opOf(s, null, null, 'aura'); // FXOPACITY
     drawSheetFrame(null, s.sprite, index, x, y, p.facing);
     ctx.restore();
   }
@@ -765,7 +1099,12 @@ export function createFightRenderer(ctx, W, H) {
     for (const i of [0, 1]) if (hitFlash[i] > 0) hitFlash[i]--;
     if (impactLeft > 0) impactLeft--;
     for (const T of pfx) if (T.flash > 0) T.flash--;
+    blockAge(game, world); // BLOCKFX
+    shockAge(game); // SHOCKWAVE
     for (const c of game.cues) {
+      shockCue(c, game, world); // SHOCKWAVE
+      if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') groundFxHit(c, world); // GROUNDFX
+      if (c.type === 'groundbounce' && struck[c.p]) groundFxLand(c.p, c.x, game, world); // GROUNDFX
       if (FX.impact) {
         if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') {
           const src = world.chars[c.p];
@@ -777,10 +1116,13 @@ export function createFightRenderer(ctx, W, H) {
       }
       if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') polishHit(c, game, world);
       slotCue(c, game, world);
+      if (c.type === 'repel') blockRepel(c, game); // BLOCKFX
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
         const at = named.at ?? [0, 0];
-        effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: lifeOf(named) });
+        // `follow: true` keeps it on the fighter as they move; `behind: true` draws it behind their body.
+        effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: lifeOf(named), owner: named.follow || named.behind ? c.p : undefined, off: at });
+        ringOf(named, c.x + c.facing * at[0] * UNIT, c.y + at[1] * UNIT, undefined); // GROUNDFX: a move's effect can bring a ring
       }
       if (c.type === 'projectileEnd') {
         // The projectile's impact frames play where it hit or vanished.
@@ -793,35 +1135,42 @@ export function createFightRenderer(ctx, W, H) {
           effects.push({ proj: d, def: world.chars[c.p], first, x: ex, y: ey, facing: c.facing, age: 0, life: d.anim.impact.reduce((a, b) => a + b, 0) - 1 });
         }
       }
-      if (!SPARK[c.type]) continue;
+      if (!SPARK[c.type] && c.type !== 'witness') continue; // (a Witness counter has art only, no code-drawn spark)
+      if (c.type === 'block' && blockCue(c, game, world)) continue; // BLOCKFX
       // A move (or projectile) with its own hit effect (art) shows that instead of the generic spark.
       const src = world.chars[c.p];
-      const fx = (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
+      // (hitFx as a name, "slash", picks one of the universal strips instead: see below.)
+      const ownFx = (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
+      const fx = ownFx && typeof ownFx === 'object' ? ownFx : null;
       if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: lifeOf(fx) });
-      // The universal sheet: a hit spark sized by the move's base damage (a counter hit goes one size up), or the
-      // block flash, which curves toward the attacker.
+      // The universal effects: a Witness counter, a counter hit and a projectile's hit have their own strips, a move
+      // can name one (a slash), and every other hit is sized by the move's base damage. A block is the block flash,
+      // which curves toward the attacker.
       const isHit = c.type === 'hit' || c.type === 'counter' || c.type === 'witness';
       let uni = false;
       const ownFlash = isHit && String(c.move).startsWith('vow_strike') && !!SLOTS.sheets[SLOTS.cues?.vowhit?.play];
       if ((isHit && !fx && !ownFlash) || c.type === 'block') {
-        let row;
+        let row, spark = null;
         let facing = game.players[c.p].facing;
         if (isHit) {
           const base = (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.damage ?? 0;
           let i = FX.hit.findIndex((h) => h.below === undefined || base < h.below);
           if (i < 0) i = FX.hit.length - 1;
+          const byKind = FX.sparkFor?.[c.type] ?? (typeof ownFx === 'string' ? ownFx : null) ?? (src?.projectiles[c.move] && !src.states[c.move] ? FX.sparkFor?.projectile : null);
+          spark = FX.sparks?.[byKind] ?? FX.sparks?.[FX.hit[i].name] ?? null;
           if (c.type === 'counter' || c.type === 'witness') i = Math.min(FX.hit.length - 1, i + 1);
           row = FX.hit[i].row;
         } else {
           row = FX.block.row;
           facing = game.players[1 - c.p].facing;
         }
-        effects.push({ uni: row * FX.sheet.columns, x: c.x, y: c.y, facing, age: 0, life: FX.frames * FX.hold });
+        if (spark) effects.push({ spark, x: c.x, y: c.y, facing, age: 0, life: spark.holds.reduce((a, b) => a + b, 0) });
+        else effects.push({ uni: row * FX.sheet.columns, x: c.x, y: c.y, facing, age: 0, life: FX.frames * FX.hold });
         uni = true;
       }
       // The drawn-in-code spark stays for what has no art (clash, armor, throw, tech, bounces, burst), and as the
       // COUNTER label over the art.
-      if (!uni && !fx && !ownFlash) effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
+      if (!uni && !fx && !ownFlash && SPARK[c.type]) effects.push({ ...SPARK[c.type], x: c.x, y: c.y, age: 0 });
       else if (c.type === 'counter') effects.push({ ...SPARK.counter, labelOnly: true, x: c.x, y: c.y, age: 0 });
     }
     // A mark that runs out (the Brand fading by itself) plays its fizzle on the opponent.
@@ -837,6 +1186,7 @@ export function createFightRenderer(ctx, W, H) {
         }
       }
     }
+    groundFxAge(game, world); // GROUNDFX
     for (const p of game.players) {
       const was = lastMove[p.id];
       if (was && was.state !== p.state && p.state.endsWith('_ex')) slotPlay(SLOTS.cues?.ex, p, game);
@@ -846,7 +1196,7 @@ export function createFightRenderer(ctx, W, H) {
         const rule = world.chars[p.id].art?.exit?.find((r) => r.from === was.state && r.into.includes(p.state) && was.since >= (r.after ?? 0));
         exitArt[p.id] = rule ? { rule, t: 0, total: rule.holds.reduce((a, b) => a + b, 0) } : null;
         const dx = p.x - was.x;
-        if (FX.impact && p.state === 'knockdown') jolt(FX.impact.shake.knockdown);
+        if (FX.impact && (p.state === 'knockdown' || p.state === 'knockdownSoft' || p.state === 'slide')) jolt(FX.impact.shake.knockdown);
         if (FX.motion.leave[was.state]) motionFx(FX.motion.leave[was.state], p, dx);
         if (FX.motion.enter[p.state]) motionFx(FX.motion.enter[p.state], p, dx);
       }
@@ -876,7 +1226,7 @@ export function createFightRenderer(ctx, W, H) {
 
   return {
     cam,
-    toScreen,
+    toScreen: onScreen,
     notice: collect,
     /**
      * One fighter alone, on one frame of one state, feet at screen x, y, enlarged by zoom, facing right (the box
@@ -909,6 +1259,8 @@ export function createFightRenderer(ctx, W, H) {
       return drawn;
     },
     /** opts: { boxes: bool, labels: bool } */
+    /** Play a shockwave set at a place in the game (for picture and timing tools; the game itself uses the hit cues). */
+    shock(name, x, y) { shockStart(name, x, y, -1); }, // SHOCKWAVE
     draw(game, world, opts = {}) {
       if (game.frame !== lastFrame) {
         collect(game, world);
@@ -922,20 +1274,37 @@ export function createFightRenderer(ctx, W, H) {
           }
         }
       }
+      // The zoom: close in while the fighters are near each other, widening steadily as they move apart, and never
+      // so close that either is nearer the edge than the side margin (eased: presentation only).
+      const Z = CAMERA.zoom;
+      const gap = Math.abs(game.players[0].x - game.players[1].x) / UNIT;
+      const t = Math.max(0, Math.min(1, (gap - Z.nearGap) / Math.max(1, Z.farGap - Z.nearGap)));
+      const wide = W / Z.near + (W / Z.far - W / Z.near) * t; // px of stage in view
+      // A fighter high in the air widens the view first (so the one on the ground stays in the picture); only what
+      // the widest view still cannot hold lifts the camera.
+      const top = Math.max(game.players[0].y, game.players[1].y) / UNIT + CAMERA.jump.headroom;
+      const tall = CAMERA.jump.zoomOut ? (GROUND - CAMERA.jump.topMargin) / top : Z.near;
+      const wantZ = opts.zoom === false ? 1 : Math.max(Math.min(Z.far, Z.near), Math.min(Z.near, W / wide, W / (gap + 2 * Z.sideMargin), tall));
+      cam.z = cam.z ? cam.z + (wantZ - cam.z) * Z.ease : wantZ;
+      if (Math.abs(wantZ - cam.z) < 0.0005) cam.z = wantZ;
       // Camera follows the midpoint, held inside the stage.
       const mid = (game.players[0].x + game.players[1].x) / 2 / UNIT;
       const half = world.battle.stage.halfWidth;
-      const lim = Math.max(0, half - W / 2 + 20);
+      const lim = Math.max(0, half - W / cam.z / 2 + CAMERA.wallMargin);
       cam.x = Math.max(-lim, Math.min(lim, mid));
-      // Rise with the highest fighter so super jumps stay on screen (eased: presentation only).
-      const top = Math.max(game.players[0].y, game.players[1].y) / UNIT + 200;
-      const wantY = Math.max(0, top - (GROUND - 40));
-      cam.y += (wantY - cam.y) * 0.25;
+      // Rise with the highest fighter so jumps and super jumps stay on screen, then settle back.
+      const wantY = Math.max(0, top - (GROUND - CAMERA.jump.topMargin) / cam.z);
+      cam.y += (wantY - cam.y) * CAMERA.jump.ease;
       // The screen jolt: the world shifts for this drawing only (the HUD stays still), mostly up and down.
       const jk = shake.left > 0 ? (shake.amp * shake.left) / FX.impact.shake.frames * (shake.left % 2 ? 1 : -1) : 0;
       const joltX = -jk * 0.4, joltY = jk;
       cam.x += joltX;
       cam.y += joltY;
+      // Everything in the fight is enlarged about the ground line under the middle of the screen; the HUD is not.
+      ctx.save();
+      ctx.translate(W / 2, GROUND);
+      ctx.scale(cam.z, cam.z);
+      ctx.translate(-W / 2, -GROUND);
       drawStage(world, opts);
       const impact = impactLeft > 0 && POLISH.impactFrame.on && canTint;
       if (impact) {
@@ -967,7 +1336,9 @@ export function createFightRenderer(ctx, W, H) {
           ctx.save();
           ctx.globalAlpha = lines.alpha ?? 1;
           const k = (W * 1.24) / lines.sprite.frameW, at = Math.floor(game.flash / lines.hold);
+          fxOp = opOf(lines, null, null, 'burst'); // FXOPACITY
           drawSheetFrame(null, { ...lines.sprite, scale: k, additive: lines.additive }, at % lines.sprite.count, W / 2, H / 2, 1);
+          fxOp = opOf(lines, null, null, 'burst'); // FXOPACITY
           drawSheetFrame(null, { ...lines.sprite, scale: k * 0.58, additive: lines.additive }, (at + 2) % lines.sprite.count, W / 2, H / 2, 1);
           ctx.restore();
         }
@@ -978,6 +1349,7 @@ export function createFightRenderer(ctx, W, H) {
         const m = e.motion;
         ctx.save();
         if (m.additive) ctx.globalCompositeOperation = 'lighter';
+        fxOp = opOf(m, null, null, 'burst'); // FXOPACITY
         drawSheetFrame(null, { ...m.sprite, scale: (W * 1.04) / m.sprite.frameW }, Math.min(m.sprite.count - 1, Math.floor((e.age - 1) / m.hold)), W / 2, toScreen(e.x, e.y)[1], e.facing);
         ctx.restore();
       }
@@ -991,6 +1363,7 @@ export function createFightRenderer(ctx, W, H) {
       const r0 = rank(game.players[0]), r1 = rank(game.players[1]);
       if (r0 !== r1) front = r0 > r1 ? 0 : 1;
       const order = [game.players[1 - front], game.players[front]];
+      bodies = game.players.map((q) => bodyRect(q, world)); fxPlain = opts.effectsOpacity === false; // FXOPACITY
       for (const p of order) {
         const def = world.chars[p.id];
         const fr = frameOf(def, p.state, p.frame);
@@ -1016,6 +1389,7 @@ export function createFightRenderer(ctx, W, H) {
         drawAuras(p, def, T.still, true);
         drawWhile(p, true);
         drawLayers(p, def, fr, true);
+        for (const e of effects) if (e.sheet?.behind && e.owner === p.id) drawNamed(e, game);
         const shown = ruleFrame(p, def, artFrame(p, def, timed(p, def, fr).fr), game, world);
         const [nx, ny] = polishOffset(p, T);
         ctx.save();
@@ -1053,6 +1427,7 @@ export function createFightRenderer(ctx, W, H) {
         ctx.restore();
         drawAuras(p, def, T.still, false);
         drawWhile(p, false);
+        blockDraw(p); // BLOCKFX
         drawChain(p, def, game.players[1 - p.id]);
         ctx.globalAlpha = 1;
         drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame);
@@ -1081,6 +1456,7 @@ export function createFightRenderer(ctx, W, H) {
         if (e.proj) {
           ctx.save();
           if (e.proj.sprite.additive) ctx.globalCompositeOperation = 'lighter';
+          fxOp = opOf(e.proj, e.def, nameOf(e.def, e.proj), 'projectile'); // FXOPACITY
           drawSheetFrame(e.def, e.proj.sprite, e.first + heldFrame(e.proj.anim.impact, e.age - 1, false)[0], sx, sy, e.facing, tiltOf(e.proj, e.facing));
           ctx.restore();
           continue;
@@ -1094,25 +1470,36 @@ export function createFightRenderer(ctx, W, H) {
           if (m.alpha) ctx.globalAlpha = m.alpha;
           // Dust thins out over its last drawing.
           if (m.fade && fr === n - 1) ctx.globalAlpha = Math.max(0.15, 1 - ((e.age - 1) - (n - 1) * m.hold) / m.hold);
+          fxOp = opOf(m, null, null, 'dust'); // FXOPACITY
           drawSheetFrame(null, m.sprite, fr, sx, sy, e.facing);
+          ctx.restore();
+          continue;
+        }
+        if (e.spark) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          fxOp = opSpark(e.spark, heldFrame(e.spark.holds, Math.max(0, e.age - 1), false)[0]); // FXOPACITY
+          drawSheetFrame(null, e.spark.sprite, heldFrame(e.spark.holds, Math.max(0, e.age - 1), false)[0], sx, sy, e.facing);
           ctx.restore();
           continue;
         }
         if (e.uni !== undefined) {
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
+          fxOp = opOf(null, null, null, 'hitSpark'); // FXOPACITY
           drawSheetFrame(null, FX.sheet, e.uni + Math.min(FX.frames - 1, Math.floor((e.age - 1) / FX.hold)), sx, sy, e.facing);
           ctx.restore();
           continue;
         }
         if (e.sheet) {
-          drawSheetFrame(e.def, e.sheet.sprite, e.sheet.holds ? heldFrame(e.sheet.holds, e.age, false)[0] : Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
+          if (!(e.sheet.behind && e.owner !== undefined)) drawNamed(e, game); // the ones behind a fighter were drawn with them
           continue;
         }
         const t = e.age / e.life;
         const r = e.size * (0.5 + t);
         ctx.globalAlpha = 1 - t;
         ctx.strokeStyle = e.color;
+        ctx.globalAlpha *= opFor(opOf(null, null, null, 'hitSpark'), {}, 0, 0, 1, 0, 0, 0); // FXOPACITY
         ctx.lineWidth = 4 * (1 - t) + 1;
         ctx.beginPath();
         for (let k = 0; k < 8 && !e.labelOnly; k++) {
@@ -1129,8 +1516,10 @@ export function createFightRenderer(ctx, W, H) {
         }
         ctx.globalAlpha = 1;
       }
+      ctx.restore(); // the zoom ends here
       cam.x -= joltX;
       cam.y -= joltY;
+      if (opts.shockwave !== false) shockDraw(); // SHOCKWAVE
       // Combo counter, on the attacker's side: hits, damage, current scaling.
       for (const v of [0, 1]) {
         const s = comboShow[v];

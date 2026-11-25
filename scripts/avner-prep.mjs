@@ -4,6 +4,9 @@
 //   node scripts/avner-prep.mjs                 every sheet in the table below
 //   node scripts/avner-prep.mjs --only 5H,jump  just those
 //   node scripts/avner-prep.mjs --analyze       print what was found in each sheet, write nothing
+//   node scripts/avner-prep.mjs --char malik    another character: the table is scripts/malik-sheets.mjs (SHEETS, and
+//                                               MEASURE = 'area': no lantern, so a drawing's size is read from how
+//                                               much of the sheet its body covers). JPEG sheets are read through ffmpeg.
 //
 // For every sheet it writes:
 //   data/characters/avner/sheets/<name>.png          the sheet the game draws (2 sheet px per game px)
@@ -24,7 +27,13 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'node
 import { execFileSync } from 'node:child_process';
 import { decodePng, encodePng } from './png.mjs';
 
-const DIR = 'data/characters/avner/';
+const args = process.argv.slice(2);
+const flag = (n) => args.includes(`--${n}`);
+const optv = (n) => (args.includes(`--${n}`) ? args[args.indexOf(`--${n}`) + 1] : null);
+const CHAR = optv('char') ?? 'avner';
+const OTHER = CHAR === 'avner' ? null : await import(`./${CHAR}-sheets.mjs`);
+const BY_AREA = OTHER?.MEASURE === 'area';
+const DIR = `data/characters/${CHAR}/`;
 const OUT = `${DIR}sheets/`;
 const PREVIEWS = `${DIR}previews/`;
 const RES = 2; // sheet px per game px
@@ -38,130 +47,211 @@ const AIR_CENTRE = 92; // game px above the fighter's position where an air draw
 // (when most of the row is in the air). fx parts: use: [first, last] drawing.
 // mode: ground | air | fx. anchor (ground): core = body centre, rear = the back foot. holds: game frames per
 // drawing (also written into the character file). parts: several game sheets cut from one drawn sheet.
+// bb: true = the newer sheets (owner, Nov 24, BlazBlue style): sized from their own idle (scaleRef + bb, stand = its
+// height in game px). anchor upper = the centre of the top 40% of the body. measureOnly: read for its size, never cut.
+// A ground part's air: [drawings] = those drawings are in the air (cut about the body; the game supplies the height).
+// fx variants: [{ name, flip: 'v' | turn: true }]: the same effect stored upside down, or laid flat (a quarter turn).
+// fx sheets: feather: px (a dark drawing on white: fade its pale rim away); arc: 'right' (see processEffect).
 // fx sheets: anchor = centre | ground (bottom centre) | bright (the brightest point); size = game px of the
 // largest drawing's longer side.
-const SHEETS = [
-  { name: 'idle', file: 'Avner_Idle.png', n: 6, holds: [8, 8, 8, 8, 8, 8], scaleRef: true },
-  { ref: [1, 186], name: 'walk', file: 'Avner_Forward_Walk.png', n: 6, holds: [5, 5, 5, 5, 5, 5] },
-  { ref: [1, 186], name: 'walk-back', file: 'Avner_Back_Walk.png', n: 6, holds: [6, 6, 6, 6, 6, 6] },
-  { name: 'crouch', file: 'Avner_Crouch.png', n: 10, rows: 2, holds: [2, 3, 5, 6, 14, 10, 16, 10, 2, 2] },
-  { file: 'Avner_Jump.png', n: 8, parts: [
-    { name: 'jumpsquat', frames: [1], holds: [4] },
-    { name: 'jump', frames: [2, 3, 4, 5, 6], mode: 'air', holds: [8, 8, 8, 8, 8] },
-    { name: 'land', frames: [7, 8], holds: [5, 6] },
+const AVNER_SHEETS = [
+  // The older idle: only measured. It sets the size of the older sheets further down (specials, throws, hit reactions).
+  { name: 'idle-old', file: 'Avner_Idle.png', n: 6, scaleRef: true, measureOnly: true },
+  // ---- The newer sheets (owner, Nov 24, BlazBlue style). The holds are the owner's, drawing by drawing. Most are
+  // already cut out (real transparency); a few are on magenta. He stands 190 px. ----
+  { name: 'idle', bb: true, scaleRef: true, stand: 190, file: 'Avner_Test_Idle.png', n: 12, rows: 3, anchor: 'upper', holds: [8, 6, 5, 5, 6, 8, 5, 5, 5, 8, 6, 6] },
+  { ref: [3, 190], name: 'walk', bb: true, file: 'Avner_Test_Walk_Forward.png', n: 10, rows: 2, anchor: 'upper', holds: [5, 6, 5, 5, 5, 5, 6, 5, 5, 5] },
+  { ref: [4, 190], name: 'walk-back', bb: true, file: 'Avner_Back_Walk.png', n: 8, rows: 2, anchor: 'upper', holds: [6, 6, 6, 6, 6, 6, 6, 6] },
+  // Crouch: 5 drawings (the owner's list says 6: 4, 4, then loop 2-6). Wired as 1 going down for 4, then 2-5 looped
+  // at 10, 8, 8, 10; standing up plays 2 then 1, 4 each (art.exit in his file).
+  { ref: [2, 138], name: 'crouch', bb: true, file: 'Avner_Crouch.png', n: 5, rows: 2, anchor: 'upper', holds: [4, 10, 8, 8, 10] },
+  // Jump: 1 the squat, 2-7 in the air (the game picks one by vertical speed), 8-9 the landing.
+  { ref: [9, 190], bb: true, file: 'Avner_Jump.png', n: 9, rows: 3, parts: [
+    { name: 'jumpsquat', frames: [1], anchor: 'upper', lineFrom: [1], holds: [3] },
+    { name: 'jump', frames: [2, 3, 4, 5, 6, 7], mode: 'air', holds: [3, 4, 5, 6, 5, 7] },
+    { name: 'land', frames: [8, 9], anchor: 'upper', lineFrom: [8, 9], holds: [4, 4] },
   ] },
-  { ref: [6, 186], file: 'Avner_Forward_Dash.png', n: 6, parts: [
-    { name: 'dash', frames: [1, 2, 3, 4], holds: [3, 3, 3, 3] },
-    { name: 'dash-stop', frames: [5, 6], holds: [6, 4] },
+  { ref: [7, 190], bb: true, file: 'Avner_Forward_Dash.png', n: 7, rows: 2, parts: [
+    { name: 'dash', frames: [1, 2, 3, 4, 5], anchor: 'upper', holds: [3, 3, 2, 2, 2] },
+    { name: 'dash-stop', frames: [6, 7], anchor: 'upper', holds: [5, 5] },
   ] },
-  { ref: [1, 186], file: 'Avner_Back_Dash.png', n: 5, parts: [
-    { name: 'backdash', frames: [1, 2, 3], holds: [3, 5, 6] },
-    { name: 'backdash-stop', frames: [4, 5], holds: [4, 4] },
+  { ref: [6, 190], bb: true, file: 'Avner_Back_Dash.png', n: 6, rows: 2, parts: [
+    { name: 'backdash', frames: [1, 2, 3, 4], anchor: 'upper', holds: [3, 3, 5, 3] },
+    { name: 'backdash-stop', frames: [5, 6], anchor: 'upper', holds: [5, 5] },
   ] },
-  { name: 'airdash', file: 'Avner_Forward_AirDash.png', n: 4, mode: 'air', holds: [3, 6, 6, 5] },
-  { name: 'airdash-back', file: 'Avner_Back_AirDash.png', n: 4, mode: 'air', holds: [3, 6, 6, 5] },
-  { ref: [1, 196], file: 'Avner_Blocks_And_Pushback.png', n: 6, rows: 3, parts: [
-    { name: 'block-stand', frames: [1, 2], holds: [8, 8] },
-    { name: 'block-crouch', frames: [3, 4], holds: [8, 8] },
-    { name: 'block-air', frames: [5, 6], mode: 'air', holds: [8, 8] },
+  { name: 'airdash', bb: true, file: 'Avner_Forward_AirDash.png', n: 5, rows: 2, mode: 'air', holds: [2, 3, 3, 3, 3] },
+  { name: 'airdash-back', bb: true, file: 'Avner_Back_AirDash.png', n: 4, mode: 'air', holds: [2, 4, 3, 3] },
+  { ref: [1, 190], name: 'turnaround', bb: true, file: 'Avner_Turnaround.png', n: 3, anchor: 'upper', holds: [2, 2, 2] }, // cut, not used: the engine has no turnaround state
+  // 5L: 7 drawings where the owner's list says 6, so his holds are not applied; these are the earlier ones.
+  { ref: [7, 190], name: '5L', bb: true, file: 'Avner_Test_LightPunch.png', n: 7, rows: 2, anchor: 'upper', holds: [2, 2, 2, 3, 2, 2, 2] },
+  { ref: [8, 190], name: '5M', bb: true, file: 'Avner_MediumPunch.png', n: 8, rows: 2, anchor: 'upper', holds: [2, 3, 2, 3, 3, 4, 3, 4] },
+  // 5H Pendulum (redrawn Nov 25: 10 drawings, an overhead swing). No holds came with it: 1-4 are the 11 frames before the
+  // hit, 5 is held for the 4 hitting frames, 6 follows through, 7-10 are the recovery (35 frames in all). Its arc is the effect 'pendulum-arc', below.
+  { ref: [10, 190], name: '5H', bb: true, file: 'Avner_HeavyPunch.png', n: 10, rows: 3, anchor: 'upper', holds: [3, 3, 3, 2, 4, 4, 5, 4, 4, 3], shift: [0, -18, -61, -49, 45, 32, -4, -6, 3, -4] },
+  // The arc is one circle drawn in stages, so every drawing is placed by the circle's middle (`centres`, sheet px, read off the sheet by eye).
+  // It plays as 5H's layer, in step with the move (so it freezes in hitstop with him): 12 cells spread over the move's 35 frames, the arc from frame 6, its second drawing (the leading edge out past the lantern) on the hit frame.
+  { name: 'pendulum-arc', file: 'Avner_HeavyPunch_Effect.png', n: 7, rows: 2, perRow: [4, 3], mode: 'fx', anchor: 'centre', size: 230, centres: [[269, 358], [896, 358], [1577, 358], [2285, 358], [475, 1111], [1254, 1120], [2016, 1111]], blank: [2, 3], holds: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3] },
+  { ref: [8, 190], name: '5S', bb: true, file: 'Avner_SLauncher.png', n: 8, rows: 2, anchor: 'upper', holds: [3, 3, 3, 4, 4, 6, 6, 6] },
+  // 4H Crescent Withdraw: a hop back. Drawings 2-6 are off the ground and keep their drawn height.
+  { ref: [8, 190], bb: true, file: 'Avner_Back_HeavyPunch.png', n: 8, rows: 2, parts: [
+    { name: '4H', frames: [1, 2, 3, 4, 5, 6, 7, 8], anchor: 'upper', lineFrom: [1, 7, 8], holds: [4, 4, 3, 4, 4, 6, 6, 4] },
   ] },
-  { ref: [1, 186], name: '5L', file: 'Avner_LightPunch.png', n: 5, anchor: 'rear', holds: [2, 2, 2, 4, 5] },
-  { ref: [1, 186], name: '5M', file: 'Avner_MediumPunch.png', n: 6, anchor: 'rear', holds: [3, 4, 1, 3, 7, 7] },
-  // 5H: row 1, plus row 2's fourth drawing (11) after drawing 4: it sits on the frame the hit lands, so it is the
-  // drawing held through hitstop (owner, Nov 23). The rest of row 2 is not used. Its arc is drawn apart from the body
-  // (shape 12), so it is joined on.
-  { ref: [1, 186], file: 'Avner_HeavyPunch_SecondRowFourthFrameOnlyAfterFourthFrameOfFirstRow.png', n: 14, rows: 2, join: [[11, 12]], parts: [
-    { name: '5H', frames: [1, 2, 3, 4, 11, 5, 6, 7], anchor: 'rear', holds: [3, 5, 4, 1, 1, 3, 8, 14] },
+  { ref: [8, 190], bb: true, file: 'Avner_WaningHop.png', n: 8, rows: 2, parts: [
+    { name: 'waning-hop', frames: [1, 2, 3, 4, 5, 6, 7, 8], anchor: 'upper', lineFrom: [1, 5, 6, 7, 8], holds: [7, 7, 7, 3, 4, 4, 4, 4] },
   ] },
-  { ref: [1, 150], name: '2L', file: 'Avner_Crouching_LightPunch.png', n: 5, holds: [2, 2, 2, 4, 5] },
-  { ref: [1, 150], name: '2H', file: 'Avner_Crouching_HeavyPunch_Slide.png', n: 5, holds: [5, 6, 4, 10, 14] },
-  { ref: [1, 186], name: '4H', file: 'Avner_Back_HeavyPunch.png', n: 7, holds: [2, 5, 5, 1, 5, 10, 12] },
-  { ref: [1, 186], name: '5S', file: 'Avner_SLauncher.png', n: 7, anchor: 'rear', holds: [3, 6, 2, 5, 8, 8, 6] },
-  { ref: [1, 150], name: '2M', file: 'Avner_Crouching_MediumPunch.png', n: 6, holds: [3, 4, 1, 3, 7, 8] },
-  { name: 'jL', file: 'Avner_Air_LightPunch.png', n: 5, mode: 'air', holds: [3, 1, 3, 4, 6] },
-  { name: 'jM', file: 'Avner_Air_MediumPunch.png', n: 6, mode: 'air', holds: [3, 4, 1, 3, 2, 14] },
-  { name: 'jH', file: 'Avner_Air_HeavyPunch.png', n: 7, mode: 'air', holds: [3, 7, 1, 5, 6, 6, 6] },
-  { name: 'jS', file: 'Avner_Air_S.png', n: 7, mode: 'air', holds: [3, 4, 5, 1, 5, 8, 10] },
-  { ref: [1, 186], name: 'rising-moon', file: 'Avner_SpecialMove_RisingMoon.png', n: 7, anchor: 'rear', holds: [2, 6, 1, 4, 10, 6, 6] },
-  { ref: [1, 186], name: 'lunar-halo', file: 'Avner_SpecialMove_LunarHalo.png', n: 7, holds: [2, 5, 1, 4, 12, 8, 6] },
-  { ref: [1, 186], name: 'tide', file: 'Avner_SpecialMove_Tide.png', n: 8, rows: 2, holds: [2, 4, 4, 6, 3, 3, 4, 6] },
-  { name: 'moon', file: 'Avner_SpecialMove_RisingMoon_Projectile.png', n: 10, rows: 2, mode: 'fx', anchor: 'ground', size: 230, holds: [3, 3, 2, 2, 3, 3, 4, 4, 4, 5] },
+  // Crouching attacks: cut at the crouch sheet's scale (0.49 sheet px per drawn px, from the lantern's size), given here as drawing 1's height.
+  { ref: [1, 137], name: '2L', bb: true, file: 'Avner_Crouching_LightPunch.png', n: 6, rows: 2, anchor: 'upper', holds: [2, 2, 2, 2, 3, 4] },
+  { ref: [1, 124], name: '2M', bb: true, file: 'Avner_Crouching_MediumPunch.png', n: 7, rows: 2, anchor: 'upper', holds: [2, 3, 2, 3, 4, 5, 6] },
+  { ref: [1, 127], name: '2H', bb: true, file: 'Avner_Crouching_HeavyPunch.png', n: 8, rows: 2, anchor: 'upper', holds: [4, 4, 3, 3, 4, 7, 7, 6] },
+  { ref: [8, 190], name: 'lantern-drag', bb: true, file: 'Avner_LanternDrag.png', n: 8, rows: 2, anchor: 'upper', holds: [6, 5, 4, 3, 3, 8, 8, 8] },
+  // Rebound move (j.2H; owner, Nov 25: his air down sheet, a downward lantern swing): 1-2 the wind-up, 3-4 the dive
+  // (looped), 5-6 the rebound after it touches. A miss lands in the Lantern Crash landing drawings.
+  { bb: true, file: 'Avner_Air_DownMedium.png', n: 6, rows: 2, perRow: [4, 2], parts: [
+    { name: 'j2H', frames: [1, 2, 3, 4], mode: 'air', holds: [6, 5, 3, 3] },
+    { name: 'j2H-rebound', frames: [5, 6], mode: 'air', holds: [6, 6] },
+  ] },
+  // Moon Phase Assault (j.236, a three-part air rekka; owner, Nov 25, his holds). Full Moon: 1-6 the swing, 7 held
+  // until he lands, 8 the landing. Moonfall Smash (the EX finish): 1-4 the smash, 5 held until he lands, 6-7 the landing.
+  { name: 'waxing', bb: true, file: 'Avner_SpecialMove_WaxingCrescent.png', n: 8, rows: 2, mode: 'air', holds: [7, 3, 2, 3, 2, 3, 6, 8] },
+  { name: 'half-moon', bb: true, file: 'Avner_SpecialMove_HalfMoon.png', n: 9, rows: 3, mode: 'air', holds: [7, 2, 2, 2, 3, 3, 5, 6, 6] },
+  { bb: true, file: 'Avner_SpecialMove_FullMoon.png', n: 8, rows: 2, parts: [
+    { name: 'full-moon-swing', frames: [1, 2, 3, 4, 5, 6, 7], mode: 'air', holds: [4, 5, 3, 3, 4, 6, 90] },
+    { name: 'full-moon-land', frames: [8], anchor: 'upper', lineFrom: [8], holds: [10] },
+  ] },
+  { bb: true, file: 'Avner_SpecialMove_MoonFallSmash.png', n: 7, rows: 2, parts: [
+    { name: 'moon-smash', frames: [1, 2, 3, 4, 5], mode: 'air', holds: [4, 3, 4, 3, 90] },
+    { name: 'moon-smash-land', frames: [6, 7], anchor: 'upper', lineFrom: [6, 7], holds: [10, 8] },
+  ] },
+  { name: 'three-crescents', file: 'Avner_SpecialMove_WaxingCrescent_Effect.png', n: 8, rows: 2, mode: 'fx', anchor: 'centre', feather: 26, size: 190, holds: [2, 3, 2, 3, 2, 3, 4, 4] },
+  { name: 'half-moon-arc', file: 'Avner_SpecialMove_HalfMoon_Effect.png', n: 7, rows: 2, perRow: [4, 3], mode: 'fx', anchor: 'centre', arc: 'right', size: 250, holds: [4, 3, 2, 3, 3, 4, 4] },
+  { name: 'full-moon-burst', file: 'Avner_SpecialMove_FullMoon_Effect.png', n: 10, rows: 2, mode: 'fx', anchor: 'centre', size: 280, holds: [2, 2, 2, 3, 3, 3, 1, 2, 3, 4] },
+  { name: 'moon-crash', file: 'Avner_SpecialMove_MoonFallSmash_Effect.png', n: 7, rows: 2, perRow: [4, 3], mode: 'fx', anchor: 'ground', size: 330, holds: [2, 1, 2, 3, 3, 4, 4] },
+  { name: 'drag-sparks', file: 'Avner_LanternDrag_Effect.png', n: 6, mode: 'fx', anchor: 'bright', size: 150, cuts: [[365, 745, 1325, 1820, 2290]], holds: [3, 3, 3, 3, 3, 3] },
+  { name: 'drag-dust', file: 'Avner_LanternDrag_Effect2.png', n: 6, mode: 'fx', anchor: 'ground', size: 160, holds: [4, 4, 4, 4, 4, 4] },
+  { name: 'hop-crescent', file: 'Avner_WaningHop_Effect.png', n: 5, mode: 'fx', anchor: 'centre', size: 190, holds: [2, 2, 2, 2, 2], variants: [{ name: 'hop-crescent-up', flip: 'v' }, { name: 'hop-crescent-flat', turn: true }] },
+  { name: 'j2H-trail', file: 'Avner_MoonFall_Effect.png', n: 4, mode: 'fx', anchor: 'bright', size: 230, cuts: [[698, 1384, 2019]], holds: [3, 3, 3, 3] },
+  // Air normals (owner, Nov 24, the newer style; his holds). j.S: 1-4 the slam, 5 held until he lands, 6-7 its own landing.
+  { name: 'jL', bb: true, file: 'Avner_Air_LightPunch.png', n: 6, rows: 2, mode: 'air', holds: [2, 2, 3, 3, 3, 4] },
+  { name: 'jM', bb: true, file: 'Avner_Air_MediumPunch.png', n: 6, rows: 2, mode: 'air', holds: [3, 3, 4, 4, 4, 6] },
+  { ref: [1, 162], name: 'jH', bb: true, file: 'Avner_Air_HeavyPunch.png', n: 8, rows: 2, mode: 'air', holds: [3, 3, 3, 4, 4, 5, 5, 4] },
+  { bb: true, file: 'Avner_Air_S.png', n: 7, rows: 2, parts: [
+    { name: 'jS', frames: [1, 2, 3, 4, 5], mode: 'air', holds: [4, 4, 3, 4, 90] },
+    { name: 'jS-land', frames: [6, 7], anchor: 'upper', lineFrom: [6, 7], holds: [8, 6] },
+  ] },
+  // ---- Specials (owner, Nov 25): the newer drawings with his holds. ----
+  { ref: [8, 190], name: 'rising-moon', bb: true, file: 'Avner_SpecialMove_RisingMoon.png', n: 8, rows: 2, anchor: 'upper', holds: [5, 4, 4, 4, 5, 8, 7, 6] },
+  // Lunar Halo: 1 crouched on the ground, 2-6 in the air (the game lifts him, so those are cut about his body, not the
+  // ground line), 7-8 the landing.
+  { ref: [8, 190], bb: true, file: 'Avner_SpecialMove_LunarHalo.png', n: 8, rows: 2, parts: [
+    { name: 'lunar-halo', frames: [1, 2, 3, 4, 5, 6], anchor: 'upper', lineFrom: [1], air: [2, 3, 4, 5, 6], holds: [2, 2, 3, 3, 6, 90] },
+    { name: 'lunar-halo-land', frames: [7, 8], anchor: 'upper', lineFrom: [7, 8], holds: [8, 6] },
+  ] },
+  { ref: [8, 190], name: 'tide', bb: true, file: 'Avner_SpecialMove_Tide.png', n: 8, rows: 2, anchor: 'upper', holds: [5, 5, 5, 4, 5, 6, 7, 6] },
+  // Rite: Moonlit. Row 1 in front and far (R, 6R), row 2 over himself (2R), row 3 from the air (j.R).
+  { ref: [1, 190], bb: true, file: 'Avner_SpecialMove_Moonlit_InFrontAndFar_Overhimself_Air.png', n: 14, rows: 3, parts: [
+    { name: 'moonlit-5', frames: [1, 2, 3, 4, 5], anchor: 'upper', holds: [4, 4, 4, 10, 8] },
+    { name: 'moonlit-2', frames: [6, 7, 8, 9, 10], anchor: 'upper', holds: [4, 4, 4, 10, 8] },
+    { name: 'moonlit-j', frames: [11, 12, 13], mode: 'air', holds: [4, 4, 8] }, // drawing 14 is not used: the jump's falling drawing follows
+  ] },
+  { ref: [7, 190], name: 'moon-snap', bb: true, file: 'Avner_SpecialMove_Moonlit_Snap.png', n: 7, rows: 2, anchor: 'upper', holds: [4, 4, 3, 10, 6, 6, 6] },
+  // Their effects, light on black. The orb: 1-3 appearing, 4-7 flying (looped), 8-10 bursting.
+  { name: 'moon', file: 'Avner_SpecialMove_RisingMoon_Projectile.png', n: 10, rows: 2, mode: 'fx', anchor: 'bright', size: 150, holds: [3, 3, 3, 3, 3, 3, 3, 2, 3, 4] },
   { name: 'lantern-flare', file: 'Avner_SpecialMove_RisingMoon_Projectile_Effect1.png', n: 6, mode: 'fx', anchor: 'bright', size: 150, holds: [2, 2, 3, 4, 5, 6] },
-  { name: 'halo-burst', file: 'Avner_SpecialMove_LunarHalo_Effect1.png', n: 10, rows: 2, mode: 'fx', anchor: 'centre', size: 300, cuts: [[320, 690, 1113, 1563], null], holds: [1, 2, 2, 3, 3, 4, 4, 4, 5, 6] },
-  { name: 'tide-wave', file: 'Avner_SpecialMove_Tide_Effect1.png', n: 10, rows: 2, mode: 'fx', anchor: 'ground', size: 230, holds: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3] },
-  // Rite: Moonlit. One row per version: R (in front), 6R (far), 2R (over himself), j.R (from the air).
-  { ref: [4, 172], file: 'Avner_SpecialMove_Moonlit.png', n: 16, rows: 4, parts: [
-    { name: 'moonlit-5', frames: [1, 2, 3, 4], holds: [4, 4, 10, 8] },
-    { name: 'moonlit-6', frames: [5, 6, 7, 8], holds: [4, 4, 12, 8] },
-    { name: 'moonlit-2', frames: [9, 10, 11, 12], holds: [4, 4, 10, 8] },
-    { name: 'moonlit-j', frames: [13, 14, 15, 16], mode: 'air', holds: [4, 4, 10, 8] },
-  ] },
-  { ref: [1, 186], name: 'moon-snap', file: 'Avner_SpecialMove_Moonlit_Snap.png', n: 6, holds: [3, 4, 2, 5, 8, 6] },
-  // Air Crescent (j.236): the swing, and its crescent (drawings 1-6 fly, 7-9 burst on the ground).
-  { name: 'air-crescent-swing', file: 'Avner_SpecialMove_AirCrescent.png', n: 6, mode: 'air', holds: [5, 7, 4, 8, 9, 76] },
-  { file: 'Avner_SpecialMove_AirCrescent_Effect.png', n: 9, rows: 3, mode: 'fx', parts: [
-    { name: 'air-crescent', use: [1, 6], anchor: 'bright', size: 150, holds: [2, 2, 3, 3, 3, 3] },
-    { name: 'air-crescent-burst', use: [7, 9], anchor: 'ground', size: 200, holds: [3, 4, 5] },
-  ] },
-  { name: 'crescent', file: 'Avner_SpecialMove_Moonlit_Effect.png', n: 10, rows: 2, mode: 'fx', anchor: 'ground', size: 330, holds: [3, 3, 4, 4, 8, 8, 8, 4, 4, 4] },
-  { name: 'moonbeam', file: 'Avner_SpecialMove_Moonlit_Snap_Effect.png', n: 8, rows: 2, mode: 'fx', anchor: 'ground', size: 360, holds: [2, 2, 3, 4, 3, 3, 3, 4] },
+  { name: 'halo-burst', file: 'Avner_SpecialMove_LunarHalo_Effect1.png', n: 8, rows: 2, mode: 'fx', anchor: 'centre', size: 300, holds: [2, 2, 3, 3, 3, 4, 4, 4] },
+  // The wave: 1-3 rising, 4-7 rolling (looped), 8-10 drawn back when he pulls.
+  { name: 'tide-wave', file: 'Avner_SpecialMove_Tide_Effect1.png', n: 10, rows: 3, perRow: [4, 4, 2], mode: 'fx', anchor: 'ground', size: 230, holds: [3, 3, 3, 3, 3, 3, 3, 3, 3, 4] },
+  // The moonlit zone: 1-3 appearing, 4-7 while it lasts (looped), 8-10 fading.
+  { name: 'crescent', file: 'Avner_SpecialMove_Moonlit_Effect.png', n: 10, rows: 2, mode: 'fx', anchor: 'ground', size: 330, holds: [4, 4, 4, 6, 6, 6, 6, 4, 4, 4] },
+  { name: 'moonbeam', file: 'Avner_SpecialMove_Moonlit_Snap_Effect.png', n: 8, rows: 2, mode: 'fx', anchor: 'ground', size: 360, holds: [3, 2, 3, 3, 3, 3, 4, 4] },
+  { name: 'moonmark', file: 'Avner_SpecialMove_Moonlit_Mark.png', n: 6, rows: 2, mode: 'fx', anchor: 'centre', size: 70, holds: [6, 6, 6, 6, 6, 6] },
   // Supers. New Moon's sheet has two rows of the same 15 drawings with timing numbers written under them: the top row is read.
   { ref: [1, 186], name: 'new-moon', file: 'Avner_SuperMove_NewMoon.png', n: 15, crop: [0, 150, 2687, 650], holds: [3, 3, 3, 3, 3, 3, 4, 3, 3, 4, 5, 5, 5, 5, 8] },
   { file: 'Avner_SuperMove_NewMoon_Effect.png', n: 10, rows: 2, mode: 'fx', parts: [
     { name: 'eclipse', use: [1, 5], anchor: 'centre', size: 300, holds: [4, 4, 4, 8, 8] },
     { name: 'moon-slash', use: [6, 10], anchor: 'centre', size: 240, holds: [2, 2, 3, 3, 4] },
   ] },
-  // Hit reactions. Standing / crouching sheet: drawings 1-2 standing, 5-6 crouching (3-4 a gut hit and 7-8 a heavy
-  // hit wait for per-strength reactions in the engine). Air sheet: 1-2 the hit, 3-5 the tumble, 6-7 down, 8-10 up.
-  { ref: [2, 190], file: 'Avner_HitReaction_Standing_And_Crouching.png', n: 8, rows: 2, parts: [
-    { name: 'hit-stand', frames: [1, 2], holds: [6, 1] },
-    { name: 'hit-crouch', frames: [5, 6], holds: [6, 1] },
-    { name: 'hit-stand-gut', frames: [3, 4], holds: [6, 1] },
-    { name: 'hit-stand-heavy', frames: [7, 8], holds: [8, 1] },
-  ] },
-  { ref: [10, 186], file: 'Avner_HitReaction_Air_And_Wakeup.png', n: 10, rows: 2, parts: [
-    { name: 'hit-air', frames: [1, 2], mode: 'air', holds: [5, 1] },
-    { name: 'tumble', frames: [3, 4, 5], mode: 'air', holds: [8, 8, 8] },
-    { name: 'knockdown', frames: [6, 7], holds: [6, 34] },
-    { name: 'wakeup', frames: [8, 9, 10], holds: [4, 4, 4] },
-  ] },
   // Throws: the grab is the move's own sheet (drawings 1, 2 and the idle for a miss); the hold (the drawings shown
   // while the throw can still be broken) and the finish are the shared throw states, per throw (art.throws). The back
   // throw turns him round, so its first two finish drawings are stored mirrored.
-  { ref: [7, 186], file: 'Avner_Forward_Throw.png', n: 7, parts: [
-    { name: 'throw-forward', frames: [1, 2, 7], holds: [4, 10, 11] },
-    { name: 'throw-forward-hold', frames: [1, 2, 3], holds: [4, 4, 6] },
-    { name: 'throw-forward-finish', frames: [4, 5, 6, 7], holds: [6, 6, 10, 8] },
+  // ---- The newer drawings for blocks, hit reactions, throws and the universal systems (owner, Nov 25). No holds
+  // came with these: each keeps the length the rules give its state, and the holds below are fitted to that. ----
+  // Blocks: 1 the impact, 2 the guard, 3 coming out of it (4 is the plain stance, not used).
+  { ref: [4, 190], bb: true, file: 'Avner_Block_Standing_Pushback.png', n: 4, parts: [{ name: 'block-stand', frames: [1, 2, 3], anchor: 'upper', lineFrom: [1, 2, 3, 4], holds: [4, 8, 3] }] },
+  { ref: [4, 138], bb: true, file: 'Avner_Crouch_Block.png', n: 4, parts: [{ name: 'block-crouch', frames: [1, 2, 3], anchor: 'upper', lineFrom: [1, 2, 3, 4], holds: [4, 8, 3] }] },
+  { name: 'block-air', bb: true, file: 'Avner_Block_Air_Pushback.png', n: 3, mode: 'air', holds: [4, 8, 4] },
+  // Hit reactions, one row each: a hit high, a hit to the body, a hit while crouching (the third of each row is the plain stance).
+  { ref: [3, 190], bb: true, file: 'Avner_Ground_HitReactions_Crouch_HitReactions.png', n: 9, rows: 3, parts: [
+    { name: 'hit-stand', frames: [1, 2], anchor: 'upper', holds: [6, 1] },
+    { name: 'hit-stand-gut', frames: [4, 5], anchor: 'upper', holds: [6, 1] },
+    { name: 'hit-crouch', frames: [7, 8], anchor: 'upper', holds: [6, 1] },
   ] },
-  { ref: [7, 186], file: 'Avner_Back_Throw.png', n: 7, parts: [
-    { name: 'throw-back', frames: [1, 2, 7], holds: [4, 10, 11] },
-    { name: 'throw-back-hold', frames: [1, 2, 3], holds: [4, 4, 6] },
-    { name: 'throw-back-finish', frames: [4, 5, 6, 7], holds: [8, 8, 7, 7], mirror: [1, 2] },
+  // In the air: 1-2 the hit, 3-4 falling (not used: the tumble has its own sheet), 5-6 landing on his back and lying.
+  { bb: true, file: 'Avner_Being_Launched_Air_HitReaction.png', n: 6, rows: 2, parts: [
+    { name: 'hit-air', frames: [1, 2], mode: 'air', holds: [5, 1] },
+    { name: 'knockdown', frames: [5, 6], lineFrom: [5, 6], holds: [6, 34] },
   ] },
+  { name: 'spin', bb: true, file: 'Avner_Spin.png', n: 4, mode: 'air', holds: [3, 3, 3, 3] },
+  { ref: [1, 180], name: 'tumble', bb: true, file: 'Avner_Tumble.png', n: 4, mode: 'air', holds: [6, 6, 6, 6] },
+  { ref: [5, 58], name: 'slide', bb: true, file: 'Avner_Slide.png', n: 5, rows: 2, holds: [4, 8, 8, 8, 1] },
+  { ref: [1, 190], name: 'crumple', bb: true, file: 'Avner_Crumple.png', n: 6, rows: 2, holds: [5, 6, 7, 8, 9, 10] },
+  // Getting up, a row each: on the spot (the wake-up), rolling forward (no state for it yet), rolling back (the ground tech).
+  { ref: [4, 190], bb: true, file: 'Avner_Getup_Neutral_Forward_Back.png', n: 12, rows: 3, parts: [
+    { name: 'wakeup', frames: [1, 2, 3, 4], holds: [3, 3, 3, 3] },
+    { name: 'getup-forward', frames: [5, 6, 7, 8], holds: [4, 4, 4, 4] },
+    { name: 'ground-tech', frames: [9, 10, 11, 12], holds: [4, 4, 4, 4] },
+  ] },
+  { name: 'air-tech', bb: true, file: 'Avner_Forward_And_Back_AirTech.png', n: 4, mode: 'air', holds: [3, 3, 3, 3] },
+  // Thrown: 1-2 grabbed, 3 lifted, 4 flung (5, lying, is not used: the knockdown follows).
+  { bb: true, file: 'Avner_Being_Thrown.png', n: 5, rows: 2, parts: [{ name: 'thrown', frames: [1, 2, 3, 4], lineFrom: [1, 2], holds: [7, 7, 6, 40] }] },
+  // Throws: the grab is the move's own sheet (drawings 1, 2 and the stance for a miss); the hold (shown while the throw
+  // can still be broken) and the finish are the shared throw states, per throw (art.throws). The back throw turns him
+  // round, so its first two finish drawings are stored mirrored.
+  { ref: [7, 190], bb: true, file: 'Avner_Forward_Throw.png', n: 7, rows: 2, parts: [
+    { name: 'throw-forward', frames: [1, 2, 7], anchor: 'upper', holds: [4, 10, 11] },
+    { name: 'throw-forward-hold', frames: [1, 2, 3], anchor: 'upper', holds: [4, 4, 6] },
+    { name: 'throw-forward-finish', frames: [4, 5, 6, 7], anchor: 'upper', holds: [6, 6, 10, 8] },
+  ] },
+  { ref: [7, 190], bb: true, file: 'Avner_Back_Throw.png', n: 7, rows: 2, parts: [
+    { name: 'throw-back', frames: [1, 2, 7], anchor: 'upper', holds: [4, 10, 11] },
+    { name: 'throw-back-hold', frames: [1, 2, 3], anchor: 'upper', holds: [4, 4, 6] },
+    { name: 'throw-back-finish', frames: [4, 5, 6, 7], anchor: 'upper', holds: [8, 8, 7, 7], mirror: [1, 2] },
+  ] },
+  // Vow: 1 the guard coming up, 2-4 holding it, 5 a hit absorbed, 6 settling.
+  { bb: true, file: 'Avner_Vow_Guard.png', n: 6, rows: 2, parts: [
+    { name: 'vow-start', frames: [1, 2], anchor: 'upper', holds: [2, 2] },
+    { name: 'vow-hold', frames: [2, 3, 4, 3], anchor: 'upper', holds: [9, 9, 9, 9] },
+    { name: 'vow-absorb', frames: [5, 6], anchor: 'upper', holds: [8, 6] },
+  ] },
+  // The Vow strike: only the full one was drawn; the quick and the middle strike play the same drawings faster.
+  { ref: [7, 190], bb: true, file: 'Avner_Vow_Strike_Full.png', n: 7, rows: 2, parts: [
+    { name: 'vow-quick', frames: [1, 2, 3, 4, 5, 6, 7], anchor: 'upper', holds: [5, 4, 3, 5, 5, 5, 5] },
+    { name: 'vow-strike', frames: [1, 2, 3, 4, 5, 6, 7], anchor: 'upper', holds: [7, 6, 3, 6, 6, 5, 5] },
+    { name: 'vow-full', frames: [1, 2, 3, 4, 5, 6, 7], anchor: 'upper', holds: [8, 7, 4, 6, 6, 6, 6] },
+  ] },
+  { ref: [5, 190], name: 'repel', bb: true, file: 'Avner_Repel.png', n: 5, rows: 2, anchor: 'upper', holds: [2, 3, 9, 4, 4] },
+  { ref: [6, 138], name: 'draw', bb: true, file: 'Avner_Draw.png', n: 6, rows: 2, anchor: 'upper', holds: [2, 3, 3, 3, 3, 3] },
+  // Absolve: 1-5 the burst (3-5 off the ground), 6-7 coming down from it.
+  { ref: [7, 190], bb: true, file: 'Avner_Absolve.png', n: 7, rows: 2, parts: [
+    { name: 'absolve', frames: [1, 2, 3, 4, 5], anchor: 'upper', lineFrom: [1, 2, 6, 7], holds: [4, 4, 4, 4, 4] },
+    { name: 'absolve-recovery', frames: [6, 7], anchor: 'upper', lineFrom: [6, 7], holds: [20, 20] },
+  ] },
+  // Not used by the game yet (there is no intro or win state): cut so they are ready.
+  { ref: [1, 190], name: 'win-pose', bb: true, file: 'Avner_WinPose.png', n: 8, rows: 2, anchor: 'upper', holds: [6, 6, 6, 8, 8, 6, 6, 30] },
+  { ref: [8, 190], name: 'intro', bb: true, file: 'Avner_Intro.png', n: 8, rows: 2, anchor: 'upper', holds: [8, 8, 6, 8, 8, 8, 6, 20] },
   { ref: [5, 186], name: 'throw-tech', file: 'Avner_Throw_Tech.png', n: 5, holds: [3, 4, 5, 4, 4] },
   // Universal systems.
-  { ref: [2, 186], file: 'Avner_Vow_And_Absorb.png', n: 9, rows: 2, parts: [
-    { name: 'vow-start', frames: [1, 2], holds: [2, 2] },
-    { name: 'vow-hold', frames: [2, 3, 4, 5], holds: [9, 9, 9, 9] },
-    { name: 'vow-absorb', frames: [6, 7, 8, 9], holds: [2, 5, 4, 3] },
-  ] },
-  { ref: [1, 186], file: 'Avner_Vow_Quick_Strike_Full.png', n: 15, rows: 3, parts: [
-    { name: 'vow-quick', frames: [1, 2, 3, 4, 5], holds: [4, 4, 4, 4, 4] },
-    { name: 'vow-strike', frames: [6, 7, 8, 9, 10], holds: [4, 4, 4, 4, 4] },
-    { name: 'vow-full', frames: [11, 12, 13, 14, 15], holds: [4, 4, 4, 4, 4] },
-  ] },
-  { ref: [1, 190], name: 'crumple', file: 'Avner_Crumple.png', n: 6, holds: [5, 6, 7, 8, 9, 10] },
-  { ref: [5, 180], file: 'Avner_Absolve_Recovery.png', n: 8, rows: 2, parts: [
-    { name: 'absolve', frames: [1, 2, 3, 4, 5], lineFrom: [4, 5], holds: [4, 4, 4, 4, 4] },
-    { name: 'absolve-recovery', frames: [6, 7, 8], holds: [14, 13, 13] },
-  ] },
 ];
 
-const args = process.argv.slice(2);
-const flag = (n) => args.includes(`--${n}`);
-const optv = (n) => (args.includes(`--${n}`) ? args[args.indexOf(`--${n}`) + 1] : null);
+const SHEETS = OTHER?.SHEETS ?? AVNER_SHEETS;
 const ONLY = optv('only')?.split(',') ?? null;
 const ANALYZE = flag('analyze');
+
+/** A drawn sheet as pixels. A JPEG (whatever its file name says) is converted by ffmpeg first. */
+function readSheet(path) {
+  const raw = readFileSync(path);
+  if (raw[0] === 0x89 && raw[1] === 0x50) return decodePng(raw);
+  return decodePng(execFileSync('ffmpeg', ['-loglevel', 'error', '-i', path, '-f', 'image2pipe', '-vcodec', 'png', '-pix_fmt', 'rgba', '-'], { maxBuffer: 1 << 28 }));
+}
 
 // ---------- Background ----------
 
@@ -244,7 +334,7 @@ function despill(W, H, a, rgb) {
 }
 
 /** Effect sheets: everything outside the effect becomes black; then brightness is the opacity (drawn additive). */
-function keyEffect(img) {
+function keyEffect(img, feather = 0) {
   const { width: W, height: H, data } = img;
   const N = W * H;
   const a = new Float32Array(N);
@@ -263,6 +353,22 @@ function keyEffect(img) {
     kind = 'white';
     const outside = floodFromEdges(W, H, (i) => sat(i) < 28 && src[i * 3 + 1] > 90);
     for (let i = 0; i < N; i++) if (outside[i]) src[i * 3] = src[i * 3 + 1] = src[i * 3 + 2] = 0;
+    // feather: a dark drawing on white fades to the paper through pale pixels, which would be left as a bright rim.
+    // Dim everything by its distance from the outside, to nothing at the edge and untouched `feather` px in.
+    if (feather > 0) {
+      const dist = new Float32Array(N).fill(feather + 1);
+      let ring = [];
+      for (let i = 0; i < N; i++) if (outside[i]) { dist[i] = 0; ring.push(i); }
+      for (let d = 1; d <= feather && ring.length; d++) {
+        const next = [];
+        for (const i of ring) {
+          const x = i % W;
+          for (const j of [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, i - W, i + W]) if (j >= 0 && j < N && dist[j] > d) { dist[j] = d; next.push(j); }
+        }
+        ring = next;
+      }
+      for (let i = 0; i < N; i++) if (!outside[i] && dist[i] <= feather) { const t = dist[i] / feather, k = t * t * (3 - 2 * t); for (let c = 0; c < 3; c++) src[i * 3 + c] *= k; }
+    }
   }
   // The blob each drawing sits in (for splitting): where the source was opaque, or lit.
   const blob = new Uint8Array(N);
@@ -374,7 +480,7 @@ function drawings(W, H, mask, n, rows) {
 }
 
 /** Effect sheets: cut the sheet into rows and each row into drawings along its darkest lines. */
-function gridDrawings(K, n, rows, hand = null) {
+function gridDrawings(K, n, rows, hand = null, perRow = null) {
   const { W, H, a } = K;
   const cuts = (profile, parts, near = null) => {
     // Smooth, then take the parts-1 darkest places that are far enough apart; lit ends are trimmed first.
@@ -399,10 +505,10 @@ function gridDrawings(K, n, rows, hand = null) {
   const rowP = new Float64Array(H);
   for (let y = 0; y < H; y++) { let t = 0; for (let x = 0; x < W; x++) t += a[y * W + x]; rowP[y] = t; }
   const ys = cuts(rowP, rows);
-  const per = n / rows;
   const label = new Int32Array(W * H);
   const boxes = [];
   for (let r = 0; r < rows; r++) {
+    const per = perRow?.[r] ?? n / rows; // perRow: [drawings in each row] when the rows are not equally full
     const colP = new Float64Array(W);
     for (let x = 0; x < W; x++) { let t = 0; for (let y = ys[r]; y < ys[r + 1]; y++) t += a[y * W + x]; colP[x] = t; }
     const xs = cuts(colP, per, hand?.[r] ?? null);
@@ -451,7 +557,7 @@ function measureBody(K, D, i) {
     const p = y * W + x;
     if (!inside(p)) continue;
     if (y > bottom) bottom = y;
-    if (isLantern(rgb[p * 3], rgb[p * 3 + 1], rgb[p * 3 + 2])) { lan++; lx += x; ly += y; }
+    if (BY_AREA || isLantern(rgb[p * 3], rgb[p * 3 + 1], rgb[p * 3 + 2])) { lan++; lx += x; ly += y; }
   }
   // The body's core: the thickest part (head, torso, hips), limbs and streaks eroded away.
   const cap = 60;
@@ -461,11 +567,15 @@ function measureBody(K, D, i) {
   const cut = max * 0.55;
   let cx = 0, cy = 0, cn = 0;
   for (let y = 0; y < T.h; y++) for (let x = 0; x < T.w; x++) if (T.d[y * T.w + x] >= cut) { cx += x; cy += y; cn++; }
+  // The upper body: the centre of the top 40% of the drawing (head and chest), which stays put while limbs move.
+  let ux = 0, un = 0;
+  const upTo = box.y0 + (bottom - box.y0) * 0.4;
+  for (let y = box.y0; y <= upTo; y++) for (let x = box.x0; x <= box.x1; x++) if (inside(y * W + x)) { ux += x; un++; }
   // Feet: what touches the lowest band of the drawing.
   const band = bottom - 14;
   let fx0 = W, fx1 = 0;
   for (let y = band; y <= bottom; y++) for (let x = box.x0; x <= box.x1; x++) if (inside(y * W + x)) { if (x < fx0) fx0 = x; if (x > fx1) fx1 = x; }
-  return { box, bottom, lantern: lan, lanternAt: lan > 40 ? [lx / lan, ly / lan] : null, core: [box.x0 - 1 + cx / cn, box.y0 - 1 + cy / cn], thick: max, feet: [fx0, fx1], height: bottom - box.y0 + 1 };
+  return { box, bottom, lantern: lan, lanternAt: lan > 40 ? [lx / lan, ly / lan] : null, core: [box.x0 - 1 + cx / cn, box.y0 - 1 + cy / cn], upper: un ? ux / un : (box.x0 + box.x1) / 2, thick: max, feet: [fx0, fx1], height: bottom - box.y0 + 1 };
 }
 
 // ---------- Drawing into a sheet ----------
@@ -554,19 +664,31 @@ function gif(name, sheet, W, cols, cell, holds, fx) {
 let SCALE = null; // sheet px per drawn px for a drawing whose lantern is as big as the idle's
 let IDLE_LANTERN = null;
 
-function bodyScale(ms) {
+let BB_LANTERN = 0, BB_SCALE = 0; // the same two measures for the newer sheets (bb: true), taken from their own idle
+function bodyScale(ms, bb = false) {
+  if (bb) {
+    const sizes = ms.map((m) => m.lantern).filter((n) => n > 200);
+    return sizes.length && BB_LANTERN ? BB_SCALE * Math.sqrt(BB_LANTERN / median(sizes)) : BB_SCALE || null;
+  }
   // The lantern's area says how big the drawing was made; the idle sets what that should be.
   const sizes = ms.map((m) => m.lantern).filter((n) => n > 200);
   if (!sizes.length || !IDLE_LANTERN) return null;
   return SCALE * Math.sqrt(IDLE_LANTERN / median(sizes));
 }
 
+/** A scaleRef sheet sets how big its family of sheets is drawn: its lantern's size and its standing height. */
+function setScale(spec, ms) {
+  if (spec.bb) { BB_LANTERN = median(ms.map((m) => m.lantern)); BB_SCALE = ((spec.stand ?? STAND) * RES) / median(ms.map((m) => m.height)); return; }
+  IDLE_LANTERN = median(ms.map((m) => m.lantern));
+  SCALE = (STAND * RES) / median(ms.map((m) => m.height));
+}
+
 function processBody(spec, manifest) {
-  const K = keyBody(decodePng(readFileSync(DIR + spec.file)));
+  const K = keyBody(readSheet(DIR + spec.file));
   if (spec.crop) for (let y = 0; y < K.H; y++) for (let x = 0; x < K.W; x++) if (x < spec.crop[0] || y < spec.crop[1] || x > spec.crop[2] || y > spec.crop[3]) K.a[y * K.W + x] = 0;
   const mask = new Uint8Array(K.W * K.H);
   for (let i = 0; i < mask.length; i++) mask[i] = K.a[i] > 0.5 ? 1 : 0;
-  const D = spec.grid ? gridDrawings(K, spec.n, spec.rows ?? 1) : drawings(K.W, K.H, mask, spec.n, spec.rows ?? 1); // grid: drawings packed so tight they touch
+  const D = spec.grid ? gridDrawings(K, spec.n, spec.rows ?? 1, spec.cuts) : drawings(K.W, K.H, mask, spec.n, spec.rows ?? 1); // grid: drawings packed so tight they touch
   // join: [[keep, loose]]: a shape drawn apart from its body (a slash arc) that was counted as a drawing of its own.
   for (const [keep, loose] of spec.join ?? []) {
     for (let i = 0; i < D.owner.length; i++) if (D.owner[i] === loose - 1) D.owner[i] = keep - 1;
@@ -574,11 +696,8 @@ function processBody(spec, manifest) {
     D.boxes[keep - 1] = { x0: Math.min(b.x0, c.x0), y0: Math.min(b.y0, c.y0), x1: Math.max(b.x1, c.x1), y1: Math.max(b.y1, c.y1) };
   }
   const ms = D.boxes.map((_, i) => measureBody(K, D, i));
-  if (spec.scaleRef) {
-    IDLE_LANTERN = median(ms.map((m) => m.lantern));
-    SCALE = (STAND * RES) / median(ms.map((m) => m.height));
-  }
-  const k = (spec.ref ? (spec.ref[1] * RES) / ms[spec.ref[0] - 1].height : bodyScale(ms) ?? SCALE) * (spec.fix ?? 1);
+  if (spec.scaleRef) setScale(spec, ms);
+  const k = (spec.ref ? (spec.ref[1] * RES) / ms[spec.ref[0] - 1].height : bodyScale(ms, spec.bb) ?? SCALE) * (spec.fix ?? 1);
   if (ANALYZE) {
     console.log(`${(spec.name ?? spec.file).padEnd(14)} ${K.kind.padEnd(11)} scale ${k.toFixed(3)}  heights ${ms.map((m) => m.height).join(' ')}  lantern ${ms.map((m) => m.lantern).join(' ')}`);
     return;
@@ -593,10 +712,16 @@ function processBody(spec, manifest) {
     const pts = idx.map((i) => {
       const m = ms[i];
       if (mode === 'air') return { ax: m.core[0], ay: m.core[1] };
-      const mates = part.lineFrom ? part.lineFrom.map((f) => ms[f - 1].bottom) : ms.filter((_, j) => Math.abs(rowOf[j] - rowOf[i]) < 300).map((o) => o.bottom);
+      // air: [drawings]: he has left the ground there and the game lifts him, so the drawing hangs from his body.
+      if (part.air?.includes(i + 1)) return { ax: anchor === 'upper' ? m.upper : m.core[0], ay: m.core[1] + (AIR_CENTRE * RES) / k };
+      // lineFrom: only its drawings in this drawing's own row count (a sheet of two rows has two ground lines).
+      const sameRow = (part.lineFrom ?? []).filter((f) => Math.abs(rowOf[f - 1] - rowOf[i]) < 700);
+      const mates = part.lineFrom ? (sameRow.length ? sameRow : part.lineFrom).map((f) => ms[f - 1].bottom) : ms.filter((_, j) => Math.abs(rowOf[j] - rowOf[i]) < 300).map((o) => o.bottom);
       const line = median(mates);
       const ay = Math.abs(m.bottom - line) <= 16 ? m.bottom + 1 : line + 1;
-      return { ax: anchor === 'rear' ? m.feet[0] + 60 : m.core[0], ay };
+      // shift: [game px per drawing]: moves a drawing forward (+) or back from where its anchor put it, for a move whose feet must stay planted.
+      const sh = ((part.shift ?? spec.shift)?.[i] ?? 0) * RES / k;
+      return { ax: (anchor === 'rear' ? m.feet[0] + 60 : anchor === 'upper' ? m.upper : m.core[0]) - sh, ay };
     });
     // One cell that holds every drawing with the anchor in the same place.
     let left = 0, right = 0, up = 0, down = 0;
@@ -633,10 +758,10 @@ function processBody(spec, manifest) {
 }
 
 function processEffect(spec, manifest) {
-  const K = keyEffect(decodePng(readFileSync(DIR + spec.file)));
+  const K = keyEffect(readSheet(DIR + spec.file), spec.feather ?? 0);
   // Split on the blobs; a lit sheet on plain black has loose sparks, so join what is close first.
   // Split by the dark gaps: rows first, then the darkest columns between the drawings of each row (glows may touch).
-  const D = gridDrawings(K, spec.n, spec.rows ?? 1, spec.cuts);
+  const D = gridDrawings(K, spec.n, spec.rows ?? 1, spec.cuts, spec.perRow);
   if (ANALYZE) { console.log(`${(spec.name ?? spec.file).padEnd(14)} ${K.kind}  boxes ${D.boxes.map((b) => `${b.x1 - b.x0}x${b.y1 - b.y0}`).join(' ')}`); return; }
   const pts = D.boxes.map((box, i) => {
     let x0 = K.W, x1 = 0, y0 = K.H, y1 = 0, bx = 0, by = 0, bw = 0, gx0 = K.W, gx1 = 0;
@@ -648,11 +773,19 @@ function processEffect(spec, manifest) {
     }
     for (let y = y1 - 12; y <= y1; y++) for (let x = x0; x <= x1; x++) if (K.a[y * K.W + x] >= 0.12 && D.owner[D.label[y * K.W + x]] === i) { if (x < gx0) gx0 = x; if (x > gx1) gx1 = x; }
     const lit = { x0, y0, x1, y1 };
+    if (spec.centres) return { lit, ax: spec.centres[i][0], ay: spec.centres[i][1] }; // placed by hand: a point that is the same place in every drawing
     const anchor = (spec.parts?.find((q) => i + 1 >= q.use[0] && i + 1 <= q.use[1]) ?? spec).anchor;
     if (anchor === 'ground') return { lit, ax: (gx0 + gx1) / 2, ay: y1 + 1 };
     if (anchor === 'bright' && bw) return { lit, ax: bx / bw, ay: by / bw };
     return { lit, ax: (x0 + x1) / 2, ay: (y0 + y1) / 2 };
   });
+  // arc: 'right': every drawing is a piece of the right side of one circle (a crescent growing and fading), so each is
+  // placed by that circle's middle: the tallest drawing gives the radius, and the middle is that far in from a
+  // drawing's right edge.
+  if (spec.arc === 'right') {
+    const R = Math.max(...pts.map((p) => (p.lit.y1 - p.lit.y0) / 2));
+    for (const p of pts) { p.ax = p.lit.x1 - R; p.ay = (p.lit.y0 + p.lit.y1) / 2; }
+  }
   for (const part of spec.parts ?? [spec]) {
   const use = part.use ? pts.map((_, i) => i).filter((i) => i + 1 >= part.use[0] && i + 1 <= part.use[1]) : pts.map((_, i) => i);
   const biggest = Math.max(...use.map((i) => Math.max(pts[i].lit.x1 - pts[i].lit.x0, pts[i].lit.y1 - pts[i].lit.y0)));
@@ -665,10 +798,24 @@ function processEffect(spec, manifest) {
   });
   const originX = Math.ceil(left) + 2, originY = Math.ceil(up) + 2;
   const cell = { w: originX + Math.ceil(right) + 2, h: originY + Math.ceil(down) + 2 };
-  const OW = cell.w * use.length, OH = cell.h;
+  // blank: [before, after] adds empty cells, so an effect played as a move's layer (spread evenly over the move) starts and ends when it should.
+  const lead = part.blank?.[0] ?? 0, cells = use.length + lead + (part.blank?.[1] ?? 0);
+  const OW = cell.w * cells, OH = cell.h;
   const out = new Uint8Array(OW * OH * 4);
-  use.forEach((i, n) => blit(K, D, i, out, OW, OH, { x: n * cell.w, y: 0, w: cell.w, h: cell.h }, pts[i].ax, pts[i].ay, originX, originY, k));
-  finish(part.name, out, OW, OH, use.length, cell, { x: originX, y: originY }, { originX, originY }, part.holds, true, manifest, { from: spec.file, additive: true });
+  use.forEach((i, n) => blit(K, D, i, out, OW, OH, { x: (n + lead) * cell.w, y: 0, w: cell.w, h: cell.h }, pts[i].ax, pts[i].ay, originX, originY, k));
+  finish(part.name, out, OW, OH, cells, cell, { x: originX, y: originY }, { originX, originY }, part.holds, true, manifest, { from: spec.file, additive: true });
+  // The same effect stored another way up: upside down (flip: 'v') or laid flat (turn: a quarter turn clockwise).
+  for (const v of part.variants ?? []) {
+    const c2 = v.turn ? { w: cell.h, h: cell.w } : cell;
+    const o2 = v.turn ? { originX: cell.h - 1 - originY, originY: originX } : { originX, originY: cell.h - 1 - originY };
+    const W2 = c2.w * use.length, out2 = new Uint8Array(W2 * c2.h * 4);
+    for (let n = 0; n < use.length; n++) for (let y = 0; y < cell.h; y++) for (let x = 0; x < cell.w; x++) {
+      const [x2, y2] = v.turn ? [cell.h - 1 - y, x] : [x, cell.h - 1 - y];
+      const p = (y * OW + n * cell.w + x) * 4, q = (y2 * W2 + n * c2.w + x2) * 4;
+      for (let c = 0; c < 4; c++) out2[q + c] = out[p + c];
+    }
+    finish(v.name, out2, W2, c2.h, use.length, c2, { x: o2.originX, y: o2.originY }, o2, part.holds, true, manifest, { from: spec.file, additive: true });
+  }
   }
 }
 
@@ -693,6 +840,7 @@ for (const spec of SHEETS) {
   const wanted = !ONLY || names.some((n) => ONLY.includes(n));
   if (!wanted && !spec.scaleRef) continue;
   if (!existsSync(DIR + spec.file)) { console.log(`${names.join(', ')}: ${spec.file} is not there (skipped)`); continue; }
+  if (spec.measureOnly) { processBodyQuiet(spec); continue; } // an older sheet kept only because it sets its family's size
   if (spec.mode === 'fx') processEffect(spec, manifest);
   else if (!wanted) { const was = ANALYZE; processBodyQuiet(spec); void was; } else processBody(spec, manifest);
 }
@@ -700,11 +848,10 @@ if (!ANALYZE) writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 1)}\
 
 /** The idle is always measured (it sets the body size), even when only other sheets are asked for. */
 function processBodyQuiet(spec) {
-  const K = keyBody(decodePng(readFileSync(DIR + spec.file)));
+  const K = keyBody(readSheet(DIR + spec.file));
   const mask = new Uint8Array(K.W * K.H);
   for (let i = 0; i < mask.length; i++) mask[i] = K.a[i] > 0.5 ? 1 : 0;
   const D = drawings(K.W, K.H, mask, spec.n, spec.rows ?? 1);
   const ms = D.boxes.map((_, i) => measureBody(K, D, i));
-  IDLE_LANTERN = median(ms.map((m) => m.lantern));
-  SCALE = (STAND * RES) / median(ms.map((m) => m.height));
+  setScale(spec, ms);
 }

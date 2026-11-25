@@ -1,0 +1,75 @@
+<!doctype html>
+<!--
+  Real-screen pictures of the fight camera and HUD (stage, HUD, text and all), for a headless browser:
+    http://localhost:5300/scripts/camera-shots.html?scene=start|mid|far|superjump   (&time=1 also times the drawing; &fps=1 also runs 3 seconds live and reports the frame rate)
+  It plays a short scripted situation with the real rules and the real renderer, then leaves the last frame on screen.
+  When it is done the page title becomes "done" (with &time=1: "done avg <ms> max <ms>" for 300 drawn frames).
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>working</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0b0a0f; overflow: hidden; }
+      #game { display: block; margin: 0 auto; image-rendering: pixelated; }
+      #ui { position: absolute; inset: 0; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div id="ui"></div>
+    <script type="module">
+      import { W, H, setupCanvas, loadCharacters, makeWorld, STAGES, MATCH } from '/src/ui/boot.js';
+      import { createFightRenderer } from '/src/render/fight-renderer.js';
+      import { createGame, step } from '/src/core/game.js';
+      import { RAW } from '/src/core/input.js';
+
+      const q = new URLSearchParams(location.search);
+      const { ctx } = setupCanvas();
+      const chars = loadCharacters();
+      const stage = Object.values(STAGES)[0];
+      const renderer = createFightRenderer(ctx, W, H);
+      const world = makeWorld(chars.avner, chars.malik, { ...MATCH });
+      // gap in px between the players, then [P1 input, frames] steps.
+      const SCENES = {
+        start: { gap: null, play: [[0, 150]] },
+        mid: { gap: 520, play: [[0, 150]] },
+        far: { gap: 820, play: [[0, 150]] },
+        superjump: { gap: 300, play: [[0, 110], [RAW.DOWN, 2], [RAW.UP, 3], [0, 22]] },
+        jump: { gap: 300, play: [[0, 110], [RAW.UP, 3], [0, 18]] },
+      };
+      const scene = SCENES[q.get('scene')] ?? SCENES.start;
+      let game;
+      const draw = () => renderer.draw(game, world, { stage, palettes: [0, 0], labels: false });
+      function run() {
+        game = createGame(world);
+        if (scene.gap) { game.players[0].x = -scene.gap * 50; game.players[1].x = scene.gap * 50; }
+        for (const p of game.players) p.meter = 25000;
+        for (const [input, frames] of scene.play) for (let i = 0; i < frames; i++) { step(game, [input, 0], world); draw(); }
+      }
+      run(); // starts every picture loading
+      setTimeout(() => {
+        run();
+        let note = '';
+        if (q.has('time')) {
+          let sum = 0, max = 0;
+          for (let i = 0; i < 300; i++) { const t = performance.now(); draw(); const d = performance.now() - t; sum += d; if (d > max) max = d; }
+          note = ` avg ${(sum / 300).toFixed(2)} max ${max.toFixed(2)}`;
+        }
+        if (q.has("fps")) {
+          // Three seconds of the real thing: one game step and one drawing per screen refresh, P1 walking in and out.
+          const gaps = []; let last = performance.now(), n = 0;
+          const tick = (now) => {
+            gaps.push(now - last); last = now;
+            step(game, [Math.floor(n / 45) % 2 ? RAW.LEFT : RAW.RIGHT, 0], world); draw();
+            if (++n < 180) requestAnimationFrame(tick);
+            else { gaps.shift(); document.title = `done${note} fps ${(1000 / (gaps.reduce((x, y) => x + y, 0) / gaps.length)).toFixed(1)} worst ${Math.max(...gaps).toFixed(1)}ms framesOver20ms ${gaps.filter((g) => g > 20).length}`; }
+          };
+          requestAnimationFrame(tick);
+          return;
+        }
+        document.title = `done${note}`;
+      }, 2500);
+    </script>
+  </body>
+</html>

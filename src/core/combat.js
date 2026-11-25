@@ -2,7 +2,7 @@
 // throws and throw techs, hitstop, hitstun/blockstun, pushback (and corner pushback), damage with guts.
 
 import { frameOf } from './character.js';
-import { CONTACT, enterState, isAirborne, inZone, startSlide, applyResources, meets, gainDevotion } from './fighter.js';
+import { CONTACT, enterState, isAirborne, inZone, startSlide, applyResources, meets, gainDevotion, fallState } from './fighter.js';
 import { perPercent } from './devotion.js';
 import { soften } from './systems.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
@@ -179,11 +179,23 @@ function blockKind(d, ddef, a, move, world) {
  * plain 'hit'. fd = the defender's frame at the start of this step.
  */
 export function hitKind(world, d, fd) {
+  if (d.forceCounter) return d.forceCounter === 2 ? 'witness' : 'counter'; // training mode's switch
   if (!fd.counter) return 'hit';
   if (fd.counter === 2) return 'witness';
   const mv = world.chars[d.id].states[d.state].move;
   if (mv && (mv.kind === 'special' || mv.kind === 'super') && d.frame >= mv.startup - 1 && d.contact === CONTACT.NONE && d.hitsDone === 0) return 'witness';
   return 'counter';
+}
+
+/**
+ * A fighter lying in a hard knockdown can only be touched by an OTG move, and only while the combo they are in
+ * still has an OTG left (after a throw there is no combo: combo.json says whether an OTG may start one).
+ */
+function floorBlocks(world, move, d) {
+  if (!world.chars[d.id].states[d.state].floor) return false;
+  const O = world.combo.hit.otg;
+  if (!move || !move.otg || O.perCombo <= 0) return true;
+  return d.combo ? (d.combo.otg | 0) >= O.perCombo : !O.afterThrow;
 }
 
 function cue(game, type, p, rect, extra = {}) {
@@ -362,11 +374,16 @@ function applyStrike(game, world, r) {
   const starts = !d.combo;
   // Absolve's own hit is never one: it only knocks the attacker away.
   const plain = move.kind === 'burst';
-  // Hit while standing in the attacker's light (a projectile with a zone): the attacker's mark var goes up.
+  // Hit while standing in the attacker's light (a projectile with a zone): the attacker's mark var goes up, and the
+  // move's `inZone` settings (its reaction and juggle cost there) take over.
+  let lit = false;
   for (const pr of game.projectiles) {
     const z = pr.owner === a.id ? world.chars[a.id].projectiles[pr.kind].zone : null;
-    if (z?.markVar && !move.noZoneMark && inZone(pr, z, d)) applyResources(a, world.chars[a.id], { vars: { [z.markVar]: 1 } });
+    if (!z || !inZone(pr, z, d)) continue;
+    lit = true;
+    if (z.markVar && !move.noZoneMark) applyResources(a, world.chars[a.id], { vars: { [z.markVar]: 1 } });
   }
+  const zoneHit = lit ? move.zoneHit : null;
   const witness = starts && !plain && (r.kind === 'witness' || !!r.witness);
   const counter = starts && !plain && r.kind === 'counter' && !witness;
   const ch = witness ? world.sys.witness : world.sys.counter; // read only when one of the two is true
@@ -381,7 +398,8 @@ function applyStrike(game, world, r) {
   // took / gave: Devotion this combo has given its victim (capped) and its attacker (Absolve wipes it); by: the
   // same per source, for the training readouts.
   // cls / side: the last hit's guard class and the attacker's side, for the trickster's variety.
-  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0, took: 0, gave: 0, by: {}, cls: '', side: 0, hard: 0, juggle: 0, links: 0,
+  // otg / crumple / slide: how many of each this combo has had (each is limited, see combo.json hitStates).
+  if (starter) d.combo = { hits: 0, damage: 0, time: 0, scale: 10000, used: {}, wb: 0, gb: 0, took: 0, gave: 0, by: {}, cls: '', side: 0, hard: 0, juggle: 0, links: 0, otg: 0, crumple: 0, slide: 0,
     witness: witness ? 1 : 0, extend: witness ? world.sys.witness.decayExtend : 0 };
   const combo = d.combo;
   const moveId = r.moveId;
@@ -394,6 +412,10 @@ function applyStrike(game, world, r) {
   base = pct(base, damageMod(world, a));
   base = pct(base, combo.scale);
   if (uses > 0) base = pct(base, C.repeatDamage); // a move used again in the same combo
+  // Lying in a hard knockdown: only an OTG move reaches here. It does a share of its damage and lifts the fighter.
+  const H = C.hit;
+  const floored = !!ddef.states[d.state].floor;
+  if (floored) base = pct(base, H.otg.damagePct);
   const dmg = gutsDamage(base, d.health, maxHp, battle);
   applyDamage(d, ddef, dmg);
   combo.damage += cashDebt(game, world, d); // hit while Debt remains: it comes due, with the penalty
@@ -430,48 +452,73 @@ function applyStrike(game, world, r) {
   if (body) a.hitstop = d.hitstop;
   const airborne = isAirborne(ddef, d);
   // Launches. One hard launch per combo: another one acts as a soft launch.
-  const hard = move.launchType === 'hard' && combo.hard < C.hardLaunchLimit;
-  const soft = !!move.launchType && !hard;
+  // The reaction: the move's own, or its counter-hit one. Crumple and slide are limited per combo.
+  let react = floored ? 'normal' : (special && move.counterReaction) || (airborne && zoneHit?.airReaction) || zoneHit?.hitReaction || (airborne && move.airReaction) || move.hitReaction || 'normal';
+  if ((react === 'crumple' || react === 'slide') && combo[react] >= H[react].perCombo) react = 'normal';
+  const whirlOf = (x) => x === 'spin' || x === 'tumble';
+  // spin and tumble are air states: on a grounded fighter they are a soft launch, even if the move names no launch.
+  const launchType = floored ? null : move.launchType ?? (whirlOf(react) && !airborne ? 'soft' : null);
+  const skid = react === 'slide' && !airborne; // a grounded fighter starts skidding at once
+  const hard = launchType === 'hard' && combo.hard < C.hardLaunchLimit;
+  const soft = !!launchType && !hard;
   if (hard) combo.hard++;
   // Juggle: every hit on an airborne fighter, and every soft launch, adds to the combo's total. Past the limit
   // the fighter falls out: the hit does its damage but gives no untechable time, no launch and no bounce.
-  if (airborne || soft) combo.juggle += move.juggleCost ?? (soft && !airborne ? C.softLaunchCost : C.juggleCost);
-  const out = (airborne || soft) && combo.juggle > C.juggleLimit;
-  const launches = !!move.launchType && !out;
-  const inAir = launches || airborne;
+  if (floored) { combo.otg++; combo.juggle += H.otg.juggleCost; }
+  else if (airborne || soft || skid) combo.juggle += zoneHit?.juggleCost ?? move.juggleCost ?? (skid ? H.slide.juggleCost : soft && !airborne ? C.softLaunchCost : C.juggleCost);
+  const out = (airborne || soft || skid || floored) && combo.juggle > C.juggleLimit;
+  if (out) react = 'normal'; // past the juggle limit every special reaction is gone
+  const whirl = whirlOf(react);
+  const R = H[react];
+  const launches = !!launchType && !out;
+  const inAir = launches || airborne || floored;
   // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
-  let rawStun = (inAir ? move.untech ?? move.hitstun : move.hitstun) + (r.stagger | 0);
+  let rawStun = floored ? H.otg.untech : (inAir ? move.untech ?? R.untech ?? move.hitstun : move.hitstun) + (r.stagger | 0);
   if (special) rawStun = pct(rawStun, ch.hitstunPct);
   if (uses > 0) rawStun = pct(rawStun, C.repeatHitstun);
   const clock = Math.max(0, combo.time - combo.extend); // a Witness combo's decay timer runs late
-  const stun = out && airborne ? 0 : Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, clock)));
+  const stun = out && (airborne || floored) ? 0 : Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, clock)));
+  // A slide lasts its own time, shortened like untechable time (combo time, a repeated move).
+  const skidFor = react === 'slide' ? Math.max(1, pct(uses > 0 ? pct(R.frames, C.repeatHitstun) : R.frames, decayAt(C.untechDecay, clock))) : 0;
 
   // Bounces: armed by the move, each kind limited per combo.
   const limit = move.bounceLimit ?? C.bounceLimit;
   if (!out && move.wallBounce && combo.wb < limit) { d.wbX = move.wallBounce.x; d.wbY = move.wallBounce.y; }
   if (!out && move.groundBounce && combo.gb < limit) d.gbY = move.groundBounce.y;
 
+  // The knockdown this hit asks for when the fighter reaches the ground (0 = the system's rule).
+  d.kd = react === 'hardKD' ? 1 : react === 'softKD' ? 2 : react === 'slide' ? (R.endsHard ? 1 : 2) : 0;
+  d.slideV = d.slideT = 0;
   if (inAir) {
-    const v = (launches ? (hard || move.launchType === 'soft' ? move.launch : null) ?? (hard ? C.hardLaunchUnits : C.softLaunchUnits) : null)
-      || (out ? null : move.airHit) || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
-    enterState(d, ddef, 'hitAir');
+    const v = (floored ? H.otg.lift : null)
+      || (launches ? (hard || launchType === 'soft' ? move.launch : null) ?? (!hard && whirl ? R.launch : null) ?? (hard ? C.hardLaunchUnits : C.softLaunchUnits) : null)
+      || (out ? null : move.airHit ?? (whirl ? R.launch : react === 'slide' ? R.slam : null)) || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
+    enterState(d, ddef, react === 'spin' ? 'hitSpin' : react === 'tumble' ? 'hitTumble' : 'hitAir');
+    if (react === 'slide') { d.slideV = away * R.speed; d.slideT = skidFor; combo.slide++; } // slammed down: the skid starts on landing
     d.vx = v.x * away; // x is authored as "away from the attacker"
     d.vy = v.y;
     if (d.y === 0 && d.vy > 0) d.y = 1; // leave the ground this frame
-  } else if (move.knockdown) {
-    enterState(d, ddef, 'knockdown');
-  } else if (move.crumple && ddef.states.crumple) {
+  } else if (skid) {
+    enterState(d, ddef, 'slide');
+    d.y = 0;
+    d.vx = away * R.speed;
+    d.vy = 0;
+    combo.slide++;
+  } else if (react === 'hardKD' || react === 'softKD') {
+    enterState(d, ddef, fallState(d, world));
+  } else if (react === 'crumple' && ddef.states.crumple) {
     enterState(d, ddef, 'crumple');
+    combo.crumple++;
   } else {
     enterState(d, ddef, ddef.states[d.state].stance === 'crouch' ? 'hitCrouch' : 'hitStand');
   }
-  d.stun = d.state === 'crumple' ? world.sys.vow.crumpleStun : stun;
+  d.stun = d.state === 'crumple' ? world.sys.vow.crumpleStun : d.state === 'slide' ? skidFor : stun;
   if (move.pull) {
     // Pull-in: the defender slides toward the attacker (instead of pushback), ending pull.to in front of them.
     if (inAir) d.vx = 0;
     const gap = Math.abs(d.x - a.x) - move.pull.to;
     startSlide(d, gap > 0 ? -away * gap : 0, move.pull.frames);
-  } else if (!airborne && !launches) {
+  } else if (!airborne && !launches && !skid && !floored) {
     if (body) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
     else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackHit, battle.pushbackFrames);
   }
@@ -481,7 +528,7 @@ function applyStrike(game, world, r) {
     enterState(a, world.chars[a.id], move.onHitState);
     a.contact = CONTACT.HIT;
   }
-  const extra = { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale, stagger: r.stagger | 0, fellOut: out, linked };
+  const extra = { move: moveId, damage: dmg, hits: combo.hits, scale: combo.scale, stagger: r.stagger | 0, fellOut: out, linked, react, otg: floored };
   if (witness) extra.slow = world.sys.witness.slowFrames;
   cue(game, witness ? 'witness' : counter ? 'counter' : 'hit', a, rect, extra);
 }
@@ -526,7 +573,7 @@ export function resolveProjectiles(game, world) {
     const ddef = world.chars[d.id];
     const fd = frameOf(ddef, d.state, d.frame);
     const box = boxOf(pr, def);
-    const rect = !box || fd.invStrike || (!def.move.hitsAirborne && isAirborne(ddef, d)) ? null : contact(pr, box, d, fd.hurt);
+    const rect = !box || fd.invStrike || floorBlocks(world, def.move, d) || (!def.move.hitsAirborne && isAirborne(ddef, d)) ? null : contact(pr, box, d, fd.hurt);
     if (rect) {
       const move = def.move;
       const away = pr.facing; // it pushes the way it flies, and is blocked by holding away from where it came from
@@ -604,6 +651,7 @@ function startThrow(game, world, a, d) {
   a.hitsDone = -1;
   d.throwBy = a.id;
   d.throwMove = a.state;
+  d.kd = 1; // a throw ends in the hard knockdown
   // The hold lasts `throwHold` frames (the thrower's stat; without it, as long as the break window).
   const hold = Math.max(adef.stats.throwHold ?? 0, adef.stats.throwBreak);
   enterState(a, adef, 'throwHold');
@@ -692,6 +740,7 @@ export function resolveHits(game, world, frozen) {
     if (!live(p) || !fp.hit.length || !fp.hitId || (p.hitsDone & (1 << fp.hitId)) || p.hitsDone === -1) return null;
     if (fq.invStrike) return null;
     const mv = world.chars[p.id].states[snap[p.id].state].move;
+    if (floorBlocks(world, mv, q)) return null; // lying in a hard knockdown: OTG moves only
     if (mv?.hitRequires && !meets(p, mv.hitRequires)) return null; // e.g. only a branded opponent can be hit
     if (mv && mv.hitsAirborne === false && isAirborne(world.chars[q.id], q)) return null; // a ground-only hit
     // A remote hit lands wherever the opponent is: the "contact" is their body (their position if they have no hurtbox).

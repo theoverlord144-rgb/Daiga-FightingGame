@@ -4,6 +4,7 @@
 // It only reads the game; the only things it remembers are presentation (how far the red trail has drained, and
 // the pop-up words still on screen).
 import FX from '../../data/system/effects.json';
+import CAMERA from '../../data/system/camera.json';
 
 const FONT = 'system-ui, sans-serif';
 
@@ -96,6 +97,12 @@ export function createHud(ctx, W, image = () => null) {
     const slots = D.windows.slice(0, Math.max(1, Math.min(D.windows.length, Math.round(def.meterMax / bar))));
     const share = slots.map((_, i) => Math.max(0, Math.min(1, (p.meter - i * bar) / bar)));
     ctx.save();
+    if (D.layout?.belowFloor) { // the strip under the fighters' feet: nothing of the meter rises over the floor line
+      ctx.beginPath();
+      ctx.rect(0, Math.round(H * CAMERA.groundLine) + 2, W, H);
+      ctx.clip();
+      ctx.beginPath();
+    }
     ctx.translate(x0, y0);
     ctx.scale(left ? s : -s, s); // from here on: the frame image's own pixels, mirrored for Player 2
     const frameImg = image(D.frame.image);
@@ -131,7 +138,7 @@ export function createHud(ctx, W, image = () => null) {
       ctx.rect(x + gx * w, y + gy * h, (f >= 1 ? gw : f - gx) * w, gh * h);
       ctx.clip();
       ctx.globalCompositeOperation = 'lighter';
-      ctx.globalAlpha = pulse;
+      ctx.globalAlpha = pulse * (D.layout?.glowAlpha ?? 1);
       ctx.drawImage(img, x + gx * w, y + gy * h, gw * w, gh * h);
       ctx.restore();
     });
@@ -232,7 +239,11 @@ export function createHud(ctx, W, image = () => null) {
       ctx.font = `600 12px ${FONT}`;
       ctx.fillStyle = '#c9a2ff';
       ctx.textAlign = left ? 'left' : 'right';
-      ctx.fillText(line.trim(), left ? FX.devotion.margin + 4 : W - FX.devotion.margin - 4, top - 6);
+      const D = FX.devotion;
+      if (D.layout?.lineBeside) { // beside the meter, inside the strip under the floor
+        const off = D.margin + D.frame.w * D.scale + 8;
+        ctx.fillText(line.trim(), left ? off : W - off, top + (D.frame.h * D.scale) / 2 + 4);
+      } else ctx.fillText(line.trim(), left ? D.margin + 4 : W - D.margin - 4, top - 6);
     }
   }
 

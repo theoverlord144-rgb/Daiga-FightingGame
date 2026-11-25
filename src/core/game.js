@@ -9,12 +9,12 @@ import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from
 import { createFighter, advanceAndDecide, move, land, resolveGuardActions, tickRite } from './fighter.js';
 import { separate, holdTogether, resolveHits, checkThrowBreaks, throwLands, throwTurns, moveProjectiles, resolveProjectiles } from './combat.js';
 import { px } from './fixed.js';
-import { compileSystems } from './systems.js';
+import { compileSystems, compileHitStates } from './systems.js';
 
 export const FPS = 60;
 
 /** States a fighter can be in while still being comboed. */
-export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'tumble', 'knockdown', 'thrown', 'crumple']);
+export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'hitSpin', 'hitTumble', 'slide', 'tumble', 'knockdown', 'knockdownSoft', 'thrown', 'crumple']);
 
 /** Bundle the system data and two compiled characters into the read-only world. */
 export function createWorld({ input, battle, combo, meter = null, burst = null, match = null, systems = null, chars }) {
@@ -26,6 +26,7 @@ export function createWorld({ input, battle, combo, meter = null, burst = null, 
       ...combo,
       hardLaunchUnits: { x: px(combo.hardLaunch?.x ?? 0), y: px(combo.hardLaunch?.y ?? 24) },
       softLaunchUnits: { x: px(combo.softLaunch?.x ?? 0), y: px(combo.softLaunch?.y ?? 13) },
+      hit: compileHitStates(combo.hitStates), // hit states: reactions, knockdowns, OTG
     },
     meter,
     burst: burst && {

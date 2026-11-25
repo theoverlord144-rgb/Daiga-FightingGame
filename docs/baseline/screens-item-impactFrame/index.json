@@ -1,0 +1,146 @@
+{
+ "idle-both": {
+  "frame": 40,
+  "hash": 1998034992,
+  "states": [
+   "idle 40",
+   "idle 40"
+  ]
+ },
+ "heavy-avner-last-startup": {
+  "frame": 33,
+  "hash": 2084591980,
+  "states": [
+   "5H 12",
+   "idle 33"
+  ]
+ },
+ "heavy-avner-impact": {
+  "frame": 34,
+  "hash": 2250825024,
+  "states": [
+   "5H 13",
+   "hitStand 0"
+  ]
+ },
+ "heavy-avner-impact-2": {
+  "frame": 35,
+  "hash": 706803352,
+  "states": [
+   "5H 13",
+   "hitStand 0"
+  ]
+ },
+ "heavy-avner-hit": {
+  "frame": 37,
+  "hash": 3160436992,
+  "states": [
+   "5H 13",
+   "hitStand 0"
+  ]
+ },
+ "heavy-avner-after": {
+  "frame": 62,
+  "hash": 1476467268,
+  "states": [
+   "5H 21",
+   "hitStand 8"
+  ]
+ },
+ "heavy-malik-hit": {
+  "frame": 31,
+  "hash": 3372867562,
+  "states": [
+   "5H 8",
+   "hitStand 0"
+  ]
+ },
+ "heavy-malik-after": {
+  "frame": 50,
+  "hash": 2480139802,
+  "states": [
+   "5H 17",
+   "hitStand 9"
+  ]
+ },
+ "launcher-hit": {
+  "frame": 34,
+  "hash": 744047276,
+  "states": [
+   "5S 10",
+   "hitAir 0"
+  ]
+ },
+ "launcher-launched": {
+  "frame": 64,
+  "hash": 3264781615,
+  "states": [
+   "5S 18",
+   "hitAir 8"
+  ]
+ },
+ "super-flash": {
+  "frame": 40,
+  "hash": 4007496655,
+  "states": [
+   "newMoon 1",
+   "idle 27"
+  ]
+ },
+ "super-strike": {
+  "frame": 68,
+  "hash": 3033607508,
+  "states": [
+   "newMoon 10",
+   "knockdown 0"
+  ]
+ },
+ "super-hit": {
+  "frame": 74,
+  "hash": 1082459474,
+  "states": [
+   "newMoon 10",
+   "knockdown 0"
+  ]
+ },
+ "jump-takeoff": {
+  "frame": 6,
+  "hash": 2782398186,
+  "states": [
+   "jump 2",
+   "jump 2"
+  ]
+ },
+ "jump-top": {
+  "frame": 24,
+  "hash": 3087794582,
+  "states": [
+   "jump 20",
+   "jump 20"
+  ]
+ },
+ "jump-land": {
+  "frame": 44,
+  "hash": 3111451580,
+  "states": [
+   "land 2",
+   "land 2"
+  ]
+ },
+ "install-guardian": {
+  "frame": 100,
+  "hash": 3815918649,
+  "states": [
+   "idle 2",
+   "idle 22"
+  ]
+ },
+ "install-guardian-heavy": {
+  "frame": 120,
+  "hash": 2740645251,
+  "states": [
+   "spirit5H 8",
+   "hitStand 0"
+  ]
+ }
+}

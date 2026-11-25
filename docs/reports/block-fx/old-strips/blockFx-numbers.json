@@ -1,0 +1,191 @@
+{
+ "notes": "The block effect (drawing only): one shield per defender at the contact point, a sigil inside it and a spark. on: false brings back the old block flash and Repel wave. holdInHitstop: true = the first drawing of every layer holds while the defender is frozen in hitstop (the owner's first spec; it made blocks look like the game froze), false = the effect plays through the freeze. charHeight x height = the shield's height in px at size 1; minFront: the nearest the shield stands to the defender's middle, px. shield: in / loop / out are the frames each drawing is held (in = the first drawings, loop = the next ones for as long as blockstun lasts, out = the rest); opacity = the dark body, drawn normally; rimAdd = its bright rim drawn again as light; flashFrames = how long the rim is white. sigil: size = share of the shield's height. strengths: what a light / medium / heavy block shows; strengthOf: a normal by its button (any other button, a special or a super = heavy), a projectile light below that base damage, else heavy. A new block on a shield that is still up replays the sigil and spark, flashes the rim and holds the shield. repel: size, spark, spin (degrees the sigil turns over frames, easing out), echo (copies of sigil drawing 'drawing' growing to 'grow' and fading over 'frames', 'gap' frames apart), drift (px toward the attacker as it fades). A spark's freezeAt: the drawing it holds through hitstop (0 = its first; the heavy spark holds its second, because its first is a white flash larger than the defender). Strips are cut by scripts/block-fx-prep.mjs.",
+ "on": true,
+ "holdInHitstop": false,
+ "charHeight": 190,
+ "height": 0.6,
+ "minFront": 30,
+ "shield": {
+  "opacity": 0.75,
+  "rimAdd": 0.5,
+  "flashFrames": 2,
+  "in": [
+   1,
+   2,
+   2
+  ],
+  "loop": [
+   3,
+   3
+  ],
+  "out": [
+   3,
+   3,
+   4
+  ],
+  "sprite": {
+   "image": "block-shield.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 142,
+   "frameH": 322,
+   "originX": 71,
+   "originY": 161,
+   "scale": 0.5,
+   "bodyH": 300
+  },
+  "rim": {
+   "image": "block-shield-rim.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 142,
+   "frameH": 322,
+   "originX": 71,
+   "originY": 161,
+   "scale": 0.5,
+   "bodyH": 300
+  },
+  "rimWhite": {
+   "image": "block-shield-rim-white.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 142,
+   "frameH": 322,
+   "originX": 71,
+   "originY": 161,
+   "scale": 0.5,
+   "bodyH": 300
+  }
+ },
+ "sigil": {
+  "opacity": 0.75,
+  "size": 0.6,
+  "holds": [
+   1,
+   2,
+   2,
+   3,
+   3,
+   3,
+   4,
+   4
+  ],
+  "sprite": {
+   "image": "block-sigil.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 126,
+   "frameH": 274,
+   "originX": 63,
+   "originY": 137,
+   "scale": 0.5,
+   "bodyH": 250
+  },
+  "white": {
+   "image": "block-sigil-white.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 126,
+   "frameH": 274,
+   "originX": 63,
+   "originY": 137,
+   "scale": 0.5,
+   "bodyH": 250
+  }
+ },
+ "sparks": {
+  "normal": {
+   "opacity": 0.85,
+   "holds": [
+    1,
+    2,
+    2,
+    3,
+    3
+   ],
+   "sprite": {
+    "image": "block-spark.png",
+    "columns": 5,
+    "rows": 1,
+    "count": 5,
+    "frameW": 264,
+    "frameH": 226,
+    "originX": 132,
+    "originY": 113,
+    "scale": 0.5
+   }
+  },
+  "heavy": {
+   "opacity": 0.85,
+   "holds": [
+    1,
+    2,
+    2,
+    3,
+    3,
+    4
+   ],
+   "freezeAt": 1,
+   "sprite": {
+    "image": "block-spark-heavy.png",
+    "columns": 6,
+    "rows": 1,
+    "count": 6,
+    "frameW": 370,
+    "frameH": 384,
+    "originX": 185,
+    "originY": 192,
+    "scale": 0.5
+   }
+  }
+ },
+ "strengths": {
+  "light": {
+   "size": 0.8,
+   "sigil": false,
+   "spark": "normal",
+   "flash": false
+  },
+  "medium": {
+   "size": 1,
+   "sigil": true,
+   "spark": "normal",
+   "flash": false
+  },
+  "heavy": {
+   "size": 1.15,
+   "sigil": true,
+   "spark": "heavy",
+   "flash": true
+  }
+ },
+ "strengthOf": {
+  "buttons": {
+   "L": "light",
+   "M": "medium"
+  },
+  "lightProjectileBelow": 500
+ },
+ "repel": {
+  "size": 1.3,
+  "spark": "heavy",
+  "replacesWave": true,
+  "spin": {
+   "degrees": 25,
+   "frames": 20
+  },
+  "echo": {
+   "count": 2,
+   "gap": 4,
+   "frames": 12,
+   "grow": 1.4,
+   "drawing": 2
+  },
+  "drift": 6
+ }
+}

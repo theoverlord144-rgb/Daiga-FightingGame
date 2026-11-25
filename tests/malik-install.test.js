@@ -68,11 +68,15 @@ test('the guardian\'s attacks chain like his standing normals', () => {
   for (const [, own, spirit] of PAIRS) assert.deepEqual(RAW.gatlings[spirit], RAW.gatlings[own], `${spirit} chains like ${own}`);
 });
 
+// (The newer install drawings have the guardian drawn with him, so during its attacks he is the older drawing of him
+// alone, `install-solo`, and the aura entry shows nothing except in those attacks.)
 test('drawing data: Malik holds his install idle through each attack while the guardian aura plays the strike', () => {
-  const aura = RAW.mechanic.vars.install.aura.find((l) => l.effect === 'guardian');
+  const aura = RAW.mechanic.vars.install.aura.find((l) => l.swap);
+  assert.equal(RAW.effects[aura.effect], undefined, 'no separate guardian outside its attacks');
   for (const [, , spirit] of PAIRS) {
     const mv = RAW.moves.find((m) => m.id === spirit);
-    assert.equal(mv.sprite.image, 'sheets/install-idle.png');
+    assert.equal(mv.sprite.image, 'sheets/install-solo.png');
+    assert.ok(existsSync('data/characters/malik/sheets/install-solo.png'));
     const fx = RAW.effects[aura.swap[spirit]];
     assert.ok(existsSync(`data/characters/malik/${fx.sprite.image}`), fx.sprite.image);
     assert.equal(fx.holds.length, fx.sprite.count);

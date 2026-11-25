@@ -66,10 +66,10 @@ test('Avner: the Vigil follow-ups still come out of the stance entered with R', 
 
 // ---------- Malik: Guardian Palm ----------
 
-test('Malik: the Rite data: a gauge of 3 charges, 240 frames each, unlimited during his install; four Rite moves', () => {
-  assert.deepEqual(MALIK_FILE.rite, { gauge: { charges: 3, rechargeFrames: 240, unlimitedWhile: 'install' }, moves: ['rite_5', 'rite_2', 'rite_6', 'rite_j'] });
+test('Malik: the Rite data: a gauge of 3 charges, 240 frames each, unlimited during his install; five Rite moves', () => {
+  assert.deepEqual(MALIK_FILE.rite, { gauge: { charges: 3, rechargeFrames: 240, unlimitedWhile: 'install' }, moves: ['rite_4', 'rite_5', 'rite_2', 'rite_6', 'rite_j'] });
   const inputs = Object.fromEntries(MALIK_FILE.moves.filter((m) => m.id.startsWith('rite_')).map((m) => [m.id, m.input]));
-  assert.deepEqual(inputs, { rite_5: '5R', rite_2: '2R', rite_6: '6R', rite_j: 'j.R' });
+  assert.deepEqual(inputs, { rite_4: '4R', rite_5: '5R', rite_2: '2R', rite_6: '6R', rite_j: 'j.R' });
   assert.equal(createGame(WM).players[0].rite, 3, 'a round starts with all three');
 });
 

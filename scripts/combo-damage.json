@@ -1,0 +1,63 @@
+{
+  "notes": "The combos measured by scripts/combo-damage.mjs (see the top of that file for how a combo is written). defender = who each character's combos are tried on. Add, remove or change lines freely: this file is only read by the measuring tool, never by the game.",
+  "defender": {
+    "avner": "malik",
+    "malik": "avner"
+  },
+  "combos": {
+    "avner": [
+      { "name": "Throw", "combo": "6H", "gap": 50 },
+      { "name": "Light, medium, heavy", "combo": "5L > 5M > 5H" },
+      { "name": "Basic into Lunar Halo", "combo": "5L > 5M > 5H > 623H" },
+      { "name": "Heavy into Lunar Halo", "combo": "5H > 623H" },
+      { "name": "Launcher, air string", "combo": "5L > 5M > 5H > 5S > 9 > j.M > j.H > j.S" },
+      { "name": "Medium start: launcher, air string", "combo": "5M > 5H > 5S > 9 > j.M > j.H > j.S" },
+      { "name": "Heavy start: launcher, air string", "combo": "5H > 5S > 9 > j.M > j.H > j.S" },
+      { "name": "Jump-in heavy, launcher, air string", "combo": "9 > j.H > 5H > 5S > 9 > j.M > j.H > j.S", "gap": 260 },
+      { "name": "Launcher into New Moon", "combo": "5L > 5M > 5H > 5S > 236236S", "bars": 1 },
+      { "name": "Launcher into Lunar Halo", "combo": "5L > 5M > 5H > 5S > 623H" },
+      { "name": "Basic into EX Halo", "combo": "5L > 5M > 5H > 623HS", "bars": 1 },
+      { "name": "Basic into New Moon", "combo": "5L > 5M > 5H > 236236S", "bars": 1 },
+      { "name": "Heavy into New Moon", "combo": "5H > 236236S", "bars": 1 },
+      { "name": "New Moon alone", "combo": "236236S", "bars": 1 },
+      { "name": "Heavy into Full Moon", "combo": "5H > 214214S", "bars": 4 },
+      { "name": "Full Moon alone", "combo": "214214S", "bars": 4 },
+      { "name": "Counter hit: launcher, air string", "combo": "5H > 5S > 9 > j.M > j.H > j.S", "start": "counter" },
+      { "name": "Witness: launcher, air string", "combo": "5H > 5S > 9 > j.M > j.H > j.S", "start": "witness" },
+      { "name": "Perfect Links into New Moon", "combo": "5L > link:5M > link:5H > link:236236S", "bars": 1 },
+      { "name": "Heavy start, Perfect Links, air string", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S" },
+      { "name": "Heavy, Perfect Link into New Moon", "combo": "5H > link:236236S", "bars": 1 },
+      { "name": "Counter hit, Perfect Links, air string", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S", "start": "counter" },
+      { "name": "Witness, Perfect Links, air string", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S", "start": "witness" },
+      { "name": "Witness, heavy, Perfect Link New Moon", "combo": "5H > link:236236S", "start": "witness", "bars": 1 },
+      { "name": "Sweep, floor pickup, Lunar Halo", "combo": "5L > 5M > 2H > 2L > 623H" },
+      { "name": "Air string, slam, floor pickup, Lunar Halo", "combo": "5M > 5H > 5S > 9 > j.M > j.H > j.S > 66 > 2L > 623H" },
+      { "name": "Air string, slam, floor pickup, New Moon", "combo": "5M > 5H > 5S > 9 > j.M > j.H > j.S > 66 > 2L > 236236S", "bars": 1 },
+      { "name": "Your example route", "combo": "5M > 5H > 5S > 9 > j.L > j.M > j.S > 2L > 236236S", "bars": 1 },
+      { "name": "Counter-hit heavy (crumple), full route, New Moon", "combo": "5H > 5M > 5H > 5S > 9 > j.M > j.H > j.S > 2L > 236236S", "start": "counter", "bars": 1 },
+      { "name": "Witness, Perfect Links, slam, pickup, New Moon", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S > 66 > 2L > 236236S", "start": "witness", "bars": 1 }
+    ],
+    "malik": [
+      { "name": "Throw", "combo": "6H", "gap": 50 },
+      { "name": "Light, medium, heavy", "combo": "5L > 5M > 5H" },
+      { "name": "Basic into Pillar", "combo": "5L > 5M > 5H > 623H" },
+      { "name": "Basic into Lariat", "combo": "5L > 5M > 5H > 214H" },
+      { "name": "Heavy into Pillar", "combo": "5H > 623H" },
+      { "name": "Basic into Pillar (L)", "combo": "5L > 5M > 5H > 623L" },
+      { "name": "Basic into Lariat (L)", "combo": "5L > 5M > 5H > 214L" },
+      { "name": "Heavy into Lariat (L)", "combo": "5H > 214L" },
+      { "name": "Basic into Spirit Orb", "combo": "5L > 5M > 5H > 236H" },
+      { "name": "Heavy start: launcher, air string", "combo": "5H > 5S > 9 > j.M > j.H > j.S" },
+      { "name": "Jump-in heavy, launcher, air string", "combo": "9 > j.H > 5H > 5S > 9 > j.M > j.H > j.S", "gap": 260 },
+      { "name": "Launcher, air string", "combo": "5L > 5M > 5H > 5S > 9 > j.M > j.H > j.S" },
+      { "name": "Basic into EX Lariat", "combo": "5L > 5M > 5H > 214HS", "bars": 1 },
+      { "name": "Counter hit: launcher, air string", "combo": "5H > 5S > 9 > j.M > j.H > j.S", "start": "counter" },
+      { "name": "Heavy start, Perfect Links, air string", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S" },
+      { "name": "Witness, Perfect Links, air string", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S", "start": "witness" },
+      { "name": "Sweep, floor pickup, Lariat (L)", "combo": "5L > 5M > 2H > 2L > 214L" },
+      { "name": "Air string, slam, floor pickup, Pillar (L)", "combo": "5M > 5H > 5S > 9 > j.M > j.H > j.S > 2L > 623L" },
+      { "name": "EX Lariat (slide), pickup", "combo": "5L > 5M > 5H > 214HS > 66 > 5M > 5H", "bars": 1 },
+      { "name": "Counter-hit heavy (crumple), full route", "combo": "5H > 5M > 5H > 5S > 9 > j.M > j.H > j.S > 2L > 623L", "start": "counter" }
+    ]
+  }
+}

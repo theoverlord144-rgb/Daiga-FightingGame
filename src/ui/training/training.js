@@ -18,11 +18,12 @@ export const OPTIONS = {
   refill: ['on', 'off'],
   meter: ['normal', 'always full'], // infinite meter: Devotion, the Rite gauge, the mechanic gauge
   absolve: ['normal', 'always available'],
+  counter: ['normal', 'counter hit', 'Witness counter'], // how a hit on the dummy lands (a combo's first hit, as in play)
   position: ['center', 'left corner', 'right corner'],
 };
 
 export function defaultSettings() {
-  return { stance: 'stand', block: 'none', blockGuard: 'correct', tech: 'air tech', refill: 'on', meter: 'normal', absolve: 'normal', position: 'center' };
+  return { stance: 'stand', block: 'none', blockGuard: 'correct', tech: 'air tech', refill: 'on', meter: 'normal', absolve: 'normal', counter: 'normal', position: 'center' };
 }
 
 const DIRS = RAW.LEFT | RAW.RIGHT | RAW.UP | RAW.DOWN;
@@ -93,8 +94,8 @@ export function createTraining(world, settings = defaultSettings(), { seed = 123
       const away = a.x > d.x ? RAW.LEFT : a.x < d.x ? RAW.RIGHT : (d.facing > 0 ? RAW.LEFT : RAW.RIGHT);
       let raw = s.stance === 'crouch' ? RAW.DOWN : s.stance === 'jump' ? RAW.UP : 0;
 
-      // Air tech: any button as soon as the engine allows it.
-      if (s.tech === 'air tech' && d.state === 'tumble') return RAW.L;
+      // Tech: any button as soon as the engine allows it (in the air, and getting up from a soft knockdown).
+      if (s.tech === 'air tech' && (d.state === 'tumble' || d.state === 'knockdownSoft')) return RAW.L;
 
       // Blocking.
       const ast = world.chars[0].states[a.state];
@@ -127,6 +128,7 @@ export function createTraining(world, settings = defaultSettings(), { seed = 123
 
     /** Between frames: refill health once both fighters have been free for a moment. */
     afterStep(game) {
+      game.players[1].forceCounter = settings.counter === 'counter hit' ? 1 : settings.counter === 'Witness counter' ? 2 : 0;
       if (settings.meter === 'always full') {
         for (const p of game.players) {
           const def = world.chars[p.id];

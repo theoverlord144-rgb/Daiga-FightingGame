@@ -34,9 +34,10 @@ test('every universal effect sheet exists, and every effect rule names a sheet t
   for (const r of [...Object.values(fx.motion.enter), ...Object.values(fx.motion.leave)]) {
     for (const name of [r.play, r.trail, ...(r.byDrift || [])].filter(Boolean)) assert.ok(fx.motion.sheets[name], `movement rule plays "${name}"`);
   }
-  // The effects the owner drew are in (not placeholders); only these three still wait for art.
+  // The effects the owner drew are in (not placeholders); only these two still wait for art (the Witness flash is
+  // the universal Witness hit effect now).
   const waiting = Object.entries(S.sheets).filter(([, s]) => s.sprite.image.includes('placeholder')).map(([k]) => k).sort();
-  assert.deepEqual(waiting, ['ex_flash', 'perfect_flash', 'witness_flash']);
+  assert.deepEqual(waiting, ['ex_flash', 'perfect_flash']);
 });
 
 test("Malik: every drawn attack's drawings fill the move exactly", () => {
@@ -71,7 +72,8 @@ test('Malik: the universal systems use his own drawings, timed to the rules', ()
   // The guard loop repeats without a hold at its end.
   assert.equal(c.states.vow_hold.duration, c.sheets.vow_hold.holds.reduce((a, b) => a + b, 0));
   // Each strike's hitting drawing (the palm out) is on screen when the hitbox comes out.
-  for (const [name, drawing] of [['vow_strike_quick', 2], ['vow_strike', 3], ['vow_strike_full', 3]]) {
+  // (One sheet of six for the three strikes now: the palm is drawing 4.)
+  for (const [name, drawing] of [['vow_strike_quick', 3], ['vow_strike', 3], ['vow_strike_full', 3]]) {
     const st = c.states[name];
     const first = st.frames.findIndex((f) => f.hit.length);
     assert.equal(st.frames[first].sprite.index, drawing, `${name}: drawing ${drawing + 1} shows on the first hitting frame`);

@@ -68,7 +68,18 @@ export function resolveGuardActions(game, world) {
 }
 
 /** Hitstun states a fighter can tech out of once the combo has run past combo.json techOutAt. */
-const TECH_OUT_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'crumple']);
+const TECH_OUT_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'hitSpin', 'hitTumble', 'slide', 'crumple']);
+
+/**
+ * The knockdown a fall ends in: the hard one (lying still, an OTG move can pick the fighter up) or the soft one
+ * (a button gets them up early). The last hit decides (p.kd); a hit that names neither leaves it to the rule in
+ * combo.json. Once the combo has used its OTG, every knockdown is the soft one.
+ */
+export function fallState(p, world) {
+  const H = world.combo.hit;
+  const hard = p.kd === 1 || (p.kd === 0 && H.landing === 'hardKD');
+  return hard && !(p.combo && p.combo.otg > 0) ? 'knockdown' : 'knockdownSoft';
+}
 
 /** Fighter fields, merged into a player object. */
 export function createFighter(def, side, x) {
@@ -88,6 +99,7 @@ export function createFighter(def, side, x) {
     health: def.stats.health,
     contact: CONTACT.NONE,
     hitsDone: 0, // bitmask of this move's hit ids that already connected (multi-hit moves)
+    forceCounter: 0, // training only: 1 = every hit on this fighter is a counter hit, 2 = a Witness counter (0 in real play)
     armorUsed: 0,
     consumed: [-1, -1, -1, -1, -1], // game frame of the last press used per button, so one press = one move
     viaCancel: 0, // 1 = the current move was cancelled into (not started from a free state)
@@ -115,6 +127,9 @@ export function createFighter(def, side, x) {
     wbX: 0, // pending wall bounce (rebound speed, units; 0 = none)
     wbY: 0,
     gbY: 0, // pending ground bounce (upward speed, units; 0 = none)
+    kd: 0, // the knockdown the last hit asked for: 0 = the system's, 1 = hard, 2 = soft
+    slideV: 0, // pending slide: the speed the fighter skids at once they reach the ground (signed, units; 0 = none)
+    slideT: 0, // and for how many frames
     throwBy: -1, // while being thrown: the attacker's id
     throwMove: '',
     throwWait: 0, // frames this throw waits after the hold before it hits (the move's throwHit)
@@ -646,7 +661,7 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
       if (st.throwVictim && p.throwWait > 0 && p.stun === p.throwWait - 1) hooks.throwTurns(p);
     } else {
       if (st.throwVictim) hooks.throwLands(p);
-      enterState(p, def, st.next);
+      enterState(p, def, st.next === 'knockdown' ? fallState(p, world) : st.next);
     }
   } else {
     p.frame++;
@@ -671,6 +686,7 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
       opp.meter -= wiped;
       p.stun = 0;
       p.wbX = p.wbY = p.gbY = 0;
+      p.slideV = p.slideT = 0;
       enterState(p, def, isAirborne(def, p) ? 'absolve_air' : 'absolve');
       game.cues.push({ p: p.id, type: 'burst', x: p.x, y: p.y, cost: absolveCost, wiped });
       p.freezeAge = 0;
@@ -701,12 +717,14 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
   // any button techs out of hitstun itself, in the air or on the ground.
   const st1 = def.states[p.state];
   const late = !!p.combo && p.combo.time - p.combo.extend >= (world.combo.techOutAt ?? Infinity) && TECH_OUT_STATES.has(p.state);
-  if (st1.techable || late) {
+  const lying = p.state === 'knockdownSoft' && p.stateTime < world.combo.hit.softKD_techFrom; // not yet: a moment on the floor first
+  if ((st1.techable && !lying) || late) {
     const buffer = world.input.pressBuffer + p.freezeAge;
     if ([BTN.L, BTN.M, BTN.H, BTN.S, BTN.R].some((b) => pressedWithin(p.input, b, buffer) >= 0)) {
       const air = st1.stance === 'air';
       p.stun = 0;
       p.wbX = p.wbY = p.gbY = 0;
+      p.slideV = p.slideT = 0;
       if (!air) { p.slide = 0; p.slideLeft = 0; }
       enterState(p, def, air ? 'airTech' : 'groundTech');
       if (late) game.cues.push({ p: p.id, type: 'techout', x: p.x, y: p.y });
@@ -729,6 +747,8 @@ export function move(game, p, def, world) {
   p.y += p.vy;
   if (fr.gravity) {
     let g = def.stats.gravity;
+    const share = world.combo.hit.gravity[p.state]; // spin and tumble fall at their own share of gravity
+    if (share) g = pct(g, share);
     // Juggle gravity: the longer the combo, the faster a juggled fighter falls.
     if (p.combo && (st.stun || st.techable)) {
       const C = world.combo;
@@ -742,6 +762,7 @@ export function move(game, p, def, world) {
     }
     p.vy -= g;
   }
+  if (p.state === 'slide') p.vx = pct(p.vx, world.combo.hit.slide.frictionPct); // the skid slows down
   p.slid = 0;
   if (p.slideLeft > 0) {
     // Pushback slides over several frames, fastest first: frame i of n moves 2(n-i)/(n(n+1)) of the total.
@@ -768,6 +789,17 @@ export function land(game, p, def, world) {
     game.cues.push({ type: 'groundbounce', p: p.id, x: p.x, y: 0 });
     return;
   }
+  if (st.stance === 'air' && p.y <= 0 && p.vy < 0 && p.slideV !== 0 && p.combo) {
+    // Slide: slammed down, the fighter skids along the ground (still airborne for combos) before the knockdown.
+    p.y = 0;
+    p.vy = 0;
+    enterState(p, def, 'slide');
+    p.vx = p.slideV;
+    p.stun = p.slideT;
+    p.slideV = p.slideT = 0;
+    game.cues.push({ type: 'slide', p: p.id, x: p.x, y: 0 });
+    return;
+  }
   if (st.stance === 'air' && p.y <= 0 && p.vy < 0) {
     p.y = 0;
     p.vy = 0;
@@ -776,7 +808,8 @@ export function land(game, p, def, world) {
     p.airJumpsUsed = 0;
     p.airDashesUsed = 0;
     p.airUsed = [];
-    enterState(p, def, st.landTo);
+    p.slideV = p.slideT = 0;
+    enterState(p, def, st.landTo === 'knockdown' ? fallState(p, world) : st.landTo);
     fireOnEnter(game, p, def);
   } else if (st.stance !== 'air' && p.y !== 0) {
     p.y = 0;

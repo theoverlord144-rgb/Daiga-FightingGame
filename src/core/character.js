@@ -4,7 +4,7 @@
 
 import { px } from './fixed.js';
 import { compileArchetype } from './devotion.js';
-import { universalContent } from './systems.js';
+import { universalContent, HIT_REACTIONS } from './systems.js';
 
 export const LATEST_VERSION = 2;
 const SUPPORTED = [1, 2];
@@ -140,7 +140,15 @@ function compileMoveData(m, ctx = {}) {
   const own = (v) => (v === undefined ? null : Math.round(v * U));
   // Launch: "hard" | "soft" (the system's speeds) or { type, x, y } (its own). No type = soft; `launcher: true` = hard.
   const lsrc = m.launch;
-  const launchType = typeof lsrc === 'string' ? lsrc : lsrc ? lsrc.type ?? (m.launcher ? 'hard' : 'soft') : null;
+  // The hit reaction (hit states, combo.json): the older flags `knockdown` and `crumple` still mean hardKD and crumple.
+  const hitReaction = m.hitReaction ?? (m.knockdown ? 'hardKD' : m.crumple ? 'crumple' : 'normal');
+  for (const r of [hitReaction, m.counterReaction, m.airReaction]) if (r != null && !HIT_REACTIONS.includes(r)) throw new Error(`hitReaction must be one of ${HIT_REACTIONS.join(', ')} (got ${JSON.stringify(r)})`);
+  // inZone: { hitReaction, airReaction, juggleCost }: what the hit does instead while the fighter it lands on stands in
+  // a zone of the attacker's (a projectile with `zone`: Avner's moonlight). Anything left out stays the move's own.
+  const zsrc = m.inZone ?? null;
+  for (const r of [zsrc?.hitReaction, zsrc?.airReaction]) if (r != null && !HIT_REACTIONS.includes(r)) throw new Error(`inZone reactions must be one of ${HIT_REACTIONS.join(', ')} (got ${JSON.stringify(r)})`);
+  // spin and tumble are air states: a move that names one and no launch pops a grounded fighter up (a soft launch).
+  const launchType = typeof lsrc === 'string' ? lsrc : lsrc ? lsrc.type ?? (m.launcher ? 'hard' : 'soft') : hitReaction === 'spin' || hitReaction === 'tumble' ? 'soft' : null;
   if (launchType && launchType !== 'hard' && launchType !== 'soft') throw new Error(`launch must be "hard", "soft" or { type, x, y } (got ${JSON.stringify(lsrc)})`);
   const launchVel = lsrc && typeof lsrc === 'object' && (lsrc.x !== undefined || lsrc.y !== undefined) ? { x: px(lsrc.x ?? 0), y: px(lsrc.y ?? 0) } : null;
   return {
@@ -163,10 +171,15 @@ function compileMoveData(m, ctx = {}) {
     chip: m.chip ?? 0,
     blockHitstop: m.blockHitstop ?? m.hitstop ?? 0,
     airBlockable: m.airBlockable ?? true,
-    knockdown: !!m.knockdown,
+    knockdown: hitReaction === 'hardKD',
+    hitReaction, // normal | slide | spin | tumble | crumple | softKD | hardKD
+    airReaction: m.airReaction ?? null, // the reaction on a fighter already in the air (null = the same as hitReaction)
+    counterReaction: m.counterReaction ?? null, // the reaction when the hit is a counter or Witness counter (null = the same)
+    otg: !!m.otg, // can hit a fighter lying in a hard knockdown (once per combo, for a share of its damage)
     launchType, // 'hard' | 'soft' | null (no launch)
     launch: launchVel, // its own launch speeds; null with a launchType = the system's (combo.json)
     juggleCost: m.juggleCost ?? null, // null = the default in combo.json
+    zoneHit: zsrc ? { hitReaction: zsrc.hitReaction ?? null, airReaction: zsrc.airReaction ?? null, juggleCost: zsrc.juggleCost ?? null } : null, // inside the attacker's zone
     airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
     throwSwap: !!m.throwSwap,
     throwDistance: px(m.throwDistance ?? 70),
@@ -190,7 +203,7 @@ function compileMoveData(m, ctx = {}) {
     onHitState: m.onHitState ?? null, // on hit (not block) the attacker switches to this state (an animation branch)
     remote: !!m.remote, // the hit lands wherever the opponent is (no box check)
     pierce: !!m.pierce, // hits through Vow's guard (supers always do)
-    crumple: !!m.crumple, // a grounded hit puts the opponent in the crumple (Vow's stronger strikes)
+    crumple: hitReaction === 'crumple', // a grounded hit puts the opponent in the crumple (Vow's stronger strikes)
     vowStrike: !!m.vowStrike, // Vow's release strike: landing it forgives the Debt
     oneAtATime: m.oneAtATime ? [m.oneAtATime].flat() : null, // projectile names: the move can't start while the fighter has one of them out
     needsOut: m.needsOut ?? null, // a projectile name: the move only starts while the fighter has one out
@@ -437,6 +450,7 @@ function compileState(name, src, stats, extra = {}) {
     vow: !!src.vow, // Vow's guard: hits are absorbed into Debt
     blocking: !!src.blocking, // counts as a block state (Repel's and Draw's poses): further hits can be blocked
     techable: !!src.techable,
+    floor: !!src.floor, // lying in a hard knockdown: only an OTG move can touch the fighter
     next: src.next ?? (stance === 'air' ? 'fall' : 'idle'),
     // Branches and held stances (all optional):
     nextIf: (src.nextIf || []).map((b) => ({ when: condition(b.when), to: b.to })), // at the end: the first whose condition holds, else `next`
@@ -470,6 +484,8 @@ function normalizeEvent(e, stats, sheetName) {
       const full = compileMoveData(v);
       out[k] = Object.fromEntries(Object.keys(v).filter((f) => f in full).map((f) => [f, full[f]]));
       if ('launch' in v) { out[k].launchType = full.launchType; out[k].launcher = full.launcher; }
+      if ('airReaction' in v) out[k].airReaction = full.airReaction;
+      if ('knockdown' in v || 'crumple' in v || 'hitReaction' in v) { out[k].hitReaction = full.hitReaction; out[k].knockdown = full.knockdown; out[k].crumple = full.crumple; }
     }
     else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
     // spawn: a projectile name, or { name, x, y, under: "opponent" } to put this one somewhere else than its own spawn point.

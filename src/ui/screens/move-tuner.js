@@ -27,6 +27,9 @@ export function createTuner(env) {
   let paused = false;
   let boxes = true;
   let picked = null; // the selected setting's key
+  let scroll = 0; // rows the settings columns are scrolled down by (mouse wheel over them)
+  let scrollMax = 0;
+  const FIT = Math.floor((H - 26 - (TOP + 6)) / ROW_H); // rows of settings that fit above the help line
   let typing = ''; // digits being typed for the selected setting
   let trail = [];
   let drag = null;
@@ -108,7 +111,7 @@ export function createTuner(env) {
       ctx.save();
       ctx.translate(OX, OY);
       ctx.scale(K, K);
-      renderer.draw(pv.game, pv.world, { stage: app.stage, boxes, labels: false, hud: false });
+      renderer.draw(pv.game, pv.world, { stage: app.stage, boxes, labels: false, hud: false, zoom: false });
       // Where the dummy has been this time round.
       ctx.fillStyle = '#ffd36b';
       trail.forEach(([x, y], i) => {
@@ -196,12 +199,18 @@ export function createTuner(env) {
     }
     if (owner() !== env.entry()) env.hint(`This move hits with its projectile, so these are the settings of "${owner().slice(5)}" (the same ones as its own entry in the list).`, true);
     let col = 0;
+    scrollMax = Math.max(0, ...GROUPS.map(([group]) => shown(t).filter((f) => f.group === group).length - FIT));
+    scroll = Math.max(0, Math.min(scrollMax, scroll));
     for (const [group, heading] of GROUPS) {
       const list = shown(t).filter((f) => f.group === group);
       if (!list.length) continue;
       const x = 190 + col * COL_W;
       text(heading, x, TOP, { color: GOLD, size: 10, weight: 800 });
-      list.forEach((f, i) => {
+      // A column longer than the screen scrolls with the mouse wheel; the arrows say there is more.
+      if (list.length > FIT) text(`${scroll > 0 ? '▲' : ' '} ${scroll + FIT < list.length ? `▼ ${list.length - FIT - scroll} more (wheel)` : ''}`, x + 60, TOP, { color: DIM, size: 9 });
+      list.forEach((f, n) => {
+        const i = n - scroll;
+        if (i < 0 || i >= FIT) return;
         const y = TOP + 6 + i * ROW_H;
         const v = readSetting(raw, t, f.key, RULES);
         const on = picked === f.key;
@@ -275,6 +284,10 @@ export function createTuner(env) {
     onWheel(e) {
       setDistance(distance() + (e.deltaY < 0 ? -10 : 10));
     },
+    /** The wheel over the settings: scroll the columns. */
+    onScroll(e) {
+      scroll = Math.max(0, Math.min(scrollMax, scroll + Math.sign(e.deltaY)));
+    },
     /** Esc with a number half typed only clears it. */
     cancel() {
       if (!typing) return false;
@@ -293,7 +306,9 @@ export function createTuner(env) {
       if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
         e.preventDefault();
         const i = list.findIndex((f) => f.key === picked);
-        picked = list[(i + (e.code === 'ArrowUp' ? -1 : 1) + list.length) % list.length].key;
+        const to = (i + (e.code === 'ArrowUp' ? -1 : 1) + list.length) % list.length;
+        picked = list[to].key;
+        scroll = Math.max(to - FIT + 1, Math.min(to, scroll)); // keep the picked row on screen
         typing = '';
         return true;
       }

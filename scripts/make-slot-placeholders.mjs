@@ -16,7 +16,6 @@ import { encodePng } from './png.mjs';
 // (The Vow guard and strike, the Absolve burst and the Repel wave have the owner's art now.)
 const EFFECTS = {
   perfect_flash: { color: [255, 255, 255], core: 1 },
-  witness_flash: { color: [201, 162, 255], core: 1 },
   ex_flash: { color: [255, 211, 107], core: 0 },
 };
 const SIZE = 128;

@@ -240,3 +240,24 @@ test('a throw that grabs is measured with its real startup (the grab frame count
   assert.equal(r.move, '6H');
   assert.equal(r.startup, W.chars[0].states['6H'].move.startup);
 });
+
+// Owner, Nov 25: training can make hits on the dummy land as counter hits or Witness counters.
+test('the counter switch: hits on the dummy land as a normal hit, a counter hit or a Witness counter, and only when it is on', () => {
+  const kindOf = (counter) => {
+    const tr = createTraining(W, { ...defaultSettings(), counter });
+    const game = tr.newGame();
+    game.players[0].x = -px(30); game.players[1].x = px(30);
+    const seen = [];
+    for (let f = 0; f < 30; f++) {
+      const raws = tr.inputs(game, { read: () => (f === 2 ? RAW.M : 0) });
+      step(game, [f === 2 ? RAW.M : 0, raws[1]], W);
+      tr.afterStep(game);
+      for (const c of game.cues) if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') seen.push(c.type);
+    }
+    return [seen[0], game.players[1].forceCounter, game.players[0].forceCounter];
+  };
+  assert.deepEqual(kindOf('normal'), ['hit', 0, 0]);
+  assert.deepEqual(kindOf('counter hit'), ['counter', 1, 0], 'the dummy only, never Player 1');
+  assert.deepEqual(kindOf('Witness counter'), ['witness', 2, 0]);
+  assert.equal(defaultSettings().counter, 'normal');
+});

@@ -21,7 +21,11 @@ export const FIELDS = [
   { key: 'hitstun', group: 'hit', label: 'Hitstun', unit: 'f', min: 0, max: 240, help: 'How long a grounded opponent is stuck after the hit.' },
   { key: 'pushbackHit', group: 'hit', label: 'Push opponent', unit: 'px', min: 0, max: 800, step: 2, big: 10, help: 'How far the opponent slides back on hit (not when it launches).' },
   { key: 'recoil', group: 'hit', label: 'Push attacker', unit: 'px', min: 0, max: 800, step: 2, big: 10, only: 'move', help: 'How far the attacker slides back whenever it touches (hit or block).' },
-  { key: 'knockdown', group: 'hit', label: 'Knocks down', type: 'bool', help: 'A grounded opponent is knocked off their feet.' },
+  { key: 'knockdown', group: 'hit', label: 'Knocks down', type: 'bool', help: 'A grounded opponent is knocked off their feet (the hard knockdown). The older way to write Reaction: hardKD.' },
+  { key: 'hitReaction', group: 'hit', label: 'Reaction', type: 'choice', unset: true, choices: ['normal', 'slide', 'spin', 'tumble', 'crumple', 'softKD', 'hardKD'], help: 'The state the opponent goes into. slide: skids along the ground, still airborne for combos. spin / tumble: air states with their own arc (they pop a grounded opponent up). crumple: slow fall forward. softKD: a knockdown they can get up from early. hardKD: they lie still, and an OTG move can pick them up. Numbers: data/system/combo.json hitStates.' },
+  { key: 'airReaction', group: 'hit', label: 'Reaction in the air', type: 'choice', unset: true, choices: ['same', 'normal', 'slide', 'spin', 'tumble', 'crumple', 'softKD', 'hardKD'], help: 'The reaction when the opponent is already in the air. same = the one above.' },
+  { key: 'counterReaction', group: 'hit', label: 'Reaction on counter', type: 'choice', unset: true, choices: ['same', 'normal', 'slide', 'spin', 'tumble', 'crumple', 'softKD', 'hardKD'], help: 'The reaction when the hit is a counter hit or a Witness counter. same = the usual one.' },
+  { key: 'otg', group: 'hit', label: 'Hits the floor (OTG)', type: 'bool', help: 'Yes: it can hit an opponent lying in a hard knockdown: half damage, a small lift, once per combo.' },
   { key: 'hitsAirborne', group: 'hit', label: 'Hits airborne', type: 'bool', fallback: true, help: 'No: the hit passes through an opponent who is in the air (a wave along the ground). The hitbox still has to reach them: make it taller in the box editor.' },
 
   { key: 'blockstun', group: 'block', label: 'Blockstun', unit: 'f', min: 0, max: 240, help: 'How long the opponent is stuck after blocking it.' },
@@ -231,6 +235,7 @@ export function writeSetting(raw, target, key, value, rules) {
   }
   if (field.type === 'choice') {
     if (!field.choices.includes(value)) throw new Error(`${field.label} must be one of ${field.choices.join(', ')}`);
+    if (field.unset && value === field.choices[0]) { delete w[key]; return; } // the usual value is not written
     w[key] = value;
     return;
   }

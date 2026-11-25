@@ -113,3 +113,47 @@ export function universalContent(system) {
   }
   return { states, moves };
 }
+
+/** The reactions a move's `hitReaction` may name (data/system/combo.json "hitStates"). */
+export const HIT_REACTIONS = ['normal', 'slide', 'spin', 'tumble', 'crumple', 'softKD', 'hardKD'];
+
+/**
+ * Hit states (combo.json "hitStates"), in game units. raw = that section, or nothing: then every knockdown is the
+ * hard one and there is no OTG, as before hit states existed.
+ */
+export function compileHitStates(raw) {
+  const r = raw || {};
+  const R = r.reactions || {};
+  const vel = (v, dx, dy) => ({ x: px(v?.x ?? dx), y: px(v?.y ?? dy) });
+  const air = (s, dx, dy) => ({ launch: vel(s?.launch, dx, dy), untech: s?.untech ?? null, gravityPct: s?.gravityPct ?? 10000 });
+  const sl = R.slide || {};
+  const o = r.otg || {};
+  const spin = air(R.spin, 5, 15);
+  const tumble = air(R.tumble, 2, 19);
+  return {
+    landing: r.landing === 'softKD' ? 'softKD' : 'hardKD', // what a fall ends in when the last hit names no knockdown
+    normal: {}, softKD: {}, hardKD: {},
+    spin,
+    tumble,
+    slide: {
+      speed: px(sl.speed ?? 13), // how fast the skid starts (px a frame, away from the attacker)
+      frames: sl.frames ?? 34, // how long it lasts before the knockdown (shortened by combo time, like untechable time)
+      frictionPct: sl.frictionPct ?? 9300, // share of the speed kept each frame
+      slam: vel(sl.slam, 6, -16), // an airborne fighter is thrown down at this speed first (a move's own airHit wins)
+      juggleCost: sl.juggleCost ?? 2,
+      perCombo: sl.perCombo ?? 1,
+      endsHard: sl.endsIn === 'hardKD',
+    },
+    crumple: { perCombo: R.crumple?.perCombo ?? 1 },
+    softKD_techFrom: r.softKD?.techFrom ?? 6, // frames lying before a button gets the fighter up
+    otg: {
+      damagePct: o.damagePct ?? 5000,
+      lift: vel(o.lift, 1, 10),
+      untech: o.untech ?? 26,
+      juggleCost: o.juggleCost ?? 3,
+      perCombo: raw ? o.perCombo ?? 1 : 0,
+      afterThrow: !!o.afterThrow,
+    },
+    gravity: { hitSpin: spin.gravityPct, hitTumble: tumble.gravityPct }, // by state: share of the fighter's gravity
+  };
+}

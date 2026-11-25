@@ -176,7 +176,8 @@ test('impact feel is drawing-only data: shake sizes, flash, and dust under the m
   const fx = loadJSON('data/system/effects.json');
   for (const size of fx.hit) assert.ok(size.name in fx.impact.shake, `a shake size for ${size.name} hits`);
   assert.ok(fx.impact.shake.frames > 0 && fx.impact.flash.frames >= 0);
-  for (const [id, states] of [['avner', ['2H']], ['malik', ['lariatL', 'lariatM', 'lariatH']]]) {
+  // (Avner's 2H stopped being a slide on Nov 25, owner's call, so it no longer has dust of its own.)
+  for (const [id, states] of [['avner', []], ['malik', ['lariatL', 'lariatM', 'lariatH']]]) {
     const raw = loadJSON(`data/characters/${id}/${id}.toska.json`);
     const def = loadChar(`data/characters/${id}/${id}.toska.json`);
     for (const st of states) {

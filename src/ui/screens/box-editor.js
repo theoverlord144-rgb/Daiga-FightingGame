@@ -373,6 +373,8 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
       tuner.onWheel(e);
     } else if (inside(p, STAGE)) {
       zoomMul = Math.max(0.5, Math.min(3, zoomMul * (e.deltaY < 0 ? 1.25 : 0.8)));
+    } else if (mode === 'hit' && p.y > STAGE.y + STAGE.h) {
+      tuner.onScroll(e);
     } else return;
     e.preventDefault();
   }

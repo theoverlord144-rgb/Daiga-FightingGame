@@ -52,7 +52,12 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `chip` | Damage dealt through a block (default 0). |
 | `blockHitstop` | Hitstop on block (default: `hitstop`). |
 | `airBlockable` | `false` = can't be blocked in the air (default `true`). |
-| `knockdown` | `true` = knocks a standing opponent down. |
+| `knockdown` | `true` = knocks a standing opponent down (the hard knockdown). The older way to write `hitReaction: "hardKD"`. |
+| `hitReaction` | The hit state the defender goes into: `normal` (default), `slide`, `spin`, `tumble`, `crumple`, `softKD`, `hardKD`. Each one's numbers are in `data/system/combo.json` under `hitStates` (a move's own `launch`, `airHit` and `untech` win). `spin` and `tumble` on a move with no `launch` pop a grounded defender up as a soft launch. `crumple` and `slide` are limited per combo; past the juggle limit every reaction is plain hitstun. |
+| `airReaction` | The reaction when the defender is already in the air (default: the same as `hitReaction`). A jumping slam: `airReaction: "hardKD"`. |
+| `inZone` | `{ hitReaction, airReaction, juggleCost }`: what the hit does instead while the fighter it lands on is standing in a zone of the attacker's (a projectile with `zone`, like Avner's moonlight). Anything left out stays the move's own. Works on moves and projectiles. A counter-hit reaction still comes first. |
+| `counterReaction` | The reaction when the hit is a counter hit or a Witness counter (default: the usual one). |
+| `otg` | `true` = it can hit a defender lying in a hard knockdown: a share of its damage, a small lift into air hitstun, once per combo (`hitStates.otg`). After the OTG every later knockdown in that combo is the soft one. |
 | `launch` | Sends the defender into the air. `"hard"` (the S launchers: high, super-jump cancel on hit, one per combo: another acts as a soft launch) or `"soft"` (a short pop, jump cancel on hit unless `jumpCancel` says otherwise; costs juggle), at the speeds in `data/system/combo.json`; or `{ type, x, y }` with its own speeds in px/frame (x = away from the attacker; no `type` = soft). |
 | `juggleCost` | What this move adds to the combo's juggle total when it hits an airborne fighter, or soft-launches a grounded one. Default in `data/system/combo.json` (`juggleCost` 1, `softLaunchCost` 3). Past `juggleLimit` the fighter falls out: damage, but no untechable time, launch or bounce. |
 | `airHit` | `{ x, y }`: how an airborne defender is knocked away (default in `battle.json`). |

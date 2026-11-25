@@ -204,9 +204,9 @@ test('ground bounce: once per combo, then a knockdown', () => {
   go(g, 10);
   hit(g, 'spike');
   let n = 0;
-  for (let i = 0; i < 60 && d.state !== 'knockdown'; i++) { step(g, [0, 0], W); n += g.cues.filter((c) => c.type === 'groundbounce').length; }
+  for (let i = 0; i < 60 && !d.state.startsWith('knockdown'); i++) { step(g, [0, 0], W); n += g.cues.filter((c) => c.type === 'groundbounce').length; }
   assert.equal(n, 0);
-  assert.equal(d.state, 'knockdown');
+  assert.equal(d.state, 'knockdownSoft', 'the soft knockdown: no hit asked for the hard one');
 });
 
 // ---------- Gatlings and cancels from data ----------

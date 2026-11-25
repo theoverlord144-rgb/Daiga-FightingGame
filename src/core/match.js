@@ -79,15 +79,15 @@ export function matchAfter(game, world) {
   if (m.phase === 'ko' || m.phase === 'timeup') {
     m.phaseTime++;
     // A knocked-out fighter stays down.
-    for (const p of ps) if (m.ko[p.id] && p.state === 'knockdown') enterState(p, world.chars[p.id], 'koDown');
+    for (const p of ps) if (m.ko[p.id] && (p.state === 'knockdown' || p.state === 'knockdownSoft')) enterState(p, world.chars[p.id], 'koDown');
     if (m.phaseTime >= (m.phase === 'ko' ? rules.koFrames : rules.timeupFrames)) endRound(game, world);
   }
 }
 
 function koFall(p, world) {
   // Being thrown or already down: the throw / knockdown plays out and ends in koDown.
-  if (p.state === 'thrown' || p.state === 'knockdown' || p.state === 'koDown') return;
-  const airborne = p.state === 'hitAir' || p.state === 'tumble' || p.y > 0;
+  if (p.state === 'thrown' || p.state === 'knockdown' || p.state === 'knockdownSoft' || p.state === 'koDown') return;
+  const airborne = p.state === 'hitAir' || p.state === 'hitSpin' || p.state === 'hitTumble' || p.state === 'slide' || p.state === 'tumble' || p.y > 0;
   enterState(p, world.chars[p.id], 'hitAir');
   p.stun = 999; // never recovers or techs: falls until it lands in a knockdown
   if (!airborne) { // standing: knocked off their feet

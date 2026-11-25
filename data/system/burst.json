@@ -6,7 +6,7 @@
   "start": 10000,
   "perFrame": 0,
   "hurtPct": 0,
-  "states": ["hitStand", "hitCrouch", "hitAir", "tumble", "crumple"],
+  "states": ["hitStand", "hitCrouch", "hitAir", "hitSpin", "hitTumble", "slide", "tumble", "crumple"],
   "recovery": {
     "absolve_recovery": { "stance": "stand", "duration": 40, "next": "idle" },
     "absolve_recovery_air": { "stance": "air", "loop": true, "duration": 40, "landTo": "absolve_recovery" }

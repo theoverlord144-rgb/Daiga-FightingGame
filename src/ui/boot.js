@@ -7,6 +7,7 @@ import common from '../../data/system/common-states.json';
 import systems from '../../data/system/systems.json';
 import burst from '../../data/system/burst.json';
 import match from '../../data/system/match.json';
+import camera from '../../data/system/camera.json';
 import { compileCharacter } from '../core/character.js';
 import { createWorld } from '../core/game.js';
 import { compileDevotion } from '../core/devotion.js';
@@ -25,8 +26,12 @@ export function setupCanvas() {
   const ctx = canvas.getContext('2d');
   const fit = () => {
     const s = Math.min(innerWidth / W, innerHeight / H);
-    canvas.width = W;
-    canvas.height = H;
+    // Drawn at the real screen resolution (data/system/camera.json "render"): every drawing call still works in the
+    // game's own 960x540 px; the canvas just holds k real pixels for each of them, so nothing is stretched afterwards.
+    const k = camera.render.native ? Math.max(1, Math.min(camera.render.maxScale, s * (globalThis.devicePixelRatio || 1))) : 1;
+    canvas.width = Math.round(W * k);
+    canvas.height = Math.round(H * k);
+    ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
     canvas.style.width = `${Math.floor(W * s)}px`;
     canvas.style.height = `${Math.floor(H * s)}px`;
     canvas.style.marginTop = `${Math.floor((innerHeight - H * s) / 2)}px`;

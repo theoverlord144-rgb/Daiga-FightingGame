@@ -1,6 +1,7 @@
 // Draws a stage from its data file (data/stages/*.json): layers back to front, each sliding with the camera at its
-// own parallax rate. Far layers are painted once into an offscreen canvas wide enough to cover the whole stage;
-// after that a frame is a handful of drawImage calls. Drawing only: the stage never affects the game.
+// own parallax rate. The far layers' outlines (ridges, arches, railing) are worked out once, wide enough to cover the
+// whole stage, and filled as shapes each frame: under the fight camera's zoom that is many times cheaper than
+// enlarging a stored picture of them, and the edges stay sharp at any zoom. Drawing only: the stage never affects the game.
 
 function lcg(seed) {
   let s = seed >>> 0 || 1;
@@ -28,25 +29,34 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
     const par = L.parallax ?? 0;
     const travel = Math.ceil(halfWidth * par) + 40;
     const width = W + travel * 2;
-    let canvas = null;
+    let canvas = null, shapes = null;
     if (L.type === 'ridge' || L.type === 'arches' || L.type === 'railing') {
-      canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = H;
-      paint(canvas.getContext('2d'), L, width);
+      if (typeof Path2D !== 'undefined') {
+        // The outlines, kept as shapes. Each closed piece is its own path, so overlapping pieces never cancel out.
+        shapes = [];
+        const pen = { fillStyle: '', beginPath() { shapes.push(new Path2D()); }, moveTo: (x, y) => shapes.at(-1).moveTo(x, y), lineTo: (x, y) => shapes.at(-1).lineTo(x, y),
+          arc: (...a) => shapes.at(-1).arc(...a), closePath: () => shapes.at(-1).closePath(), fill() {}, fillRect(x, y, w, h) { const p = new Path2D(); p.rect(x, y, w, h); shapes.push(p); } };
+        paint(pen, L, width);
+      } else {
+        // No shapes here (a picture tool's plain canvas): the layer is painted once into its own canvas instead.
+        canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = H;
+        paint(canvas.getContext('2d'), L, width);
+      }
     }
-    return { L, par, travel, canvas };
+    return { L, par, travel, canvas, shapes };
   });
 
   function paint(c, L, width) {
-    const base = GROUND; // the layer canvas is screen-high; heights are above the ground line
+    const base = GROUND; // heights are above the ground line
     c.fillStyle = L.color;
     if (L.type === 'ridge') {
       const h = ridgeHeights(width, L.roughness, L.seed);
       c.beginPath();
-      c.moveTo(0, H);
+      c.moveTo(0, H * 2); // well below the screen, so the camera rising never shows its lower edge
       for (let x = 0; x < width; x += 2) c.lineTo(x, base - L.height - h[x] * L.variation);
-      c.lineTo(width, H);
+      c.lineTo(width, H * 2);
       c.closePath();
       c.fill();
     } else if (L.type === 'arches') {
@@ -116,7 +126,7 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
   return {
     /** cam.x, cam.y in px (the fight renderer's camera). t: the frame count, for things that flicker or drift. */
     draw(ctx, cam, t = 0) {
-      for (const { L, par, travel, canvas, dots, glow: glowImg, shade, sheen } of layers) {
+      for (const { L, par, travel, canvas, shapes, dots, glow: glowImg, shade, sheen } of layers) {
         const dx = -cam.x * par;
         const dy = cam.y * par;
         if (L.type === 'sky') {
@@ -258,6 +268,12 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
           ctx.globalAlpha = L.alpha;
           ctx.drawImage(shade, 0, 0, W, gy, 0, 0, W, gy);
           ctx.globalAlpha = 1;
+        } else if (shapes) {
+          ctx.save();
+          ctx.translate(Math.round(dx - travel), Math.round(dy));
+          ctx.fillStyle = L.color;
+          for (const p of shapes) ctx.fill(p);
+          ctx.restore();
         } else if (canvas) {
           ctx.drawImage(canvas, Math.round(dx - travel), Math.round(dy));
         }

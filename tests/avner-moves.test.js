@@ -219,7 +219,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], [0, 1, 2, 3, 4, 5], `${name}: all six drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_5', 'rite_6', 'rite_j', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_4', 'rite_5', 'rite_6', 'rite_j', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'stomp', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -237,7 +237,7 @@ test('Malik: Standing Light comes out on frame 4, is drawn with the arm out whil
   const active = st.frames.map((f, i) => (f.hit.length ? i : -1)).filter((i) => i >= 0);
   assert.deepEqual(active, [3, 4]);
   for (const i of active) assert.equal(st.frames[i].sprite.index, 2, 'hits on drawing 3');
-  assert.equal(st.frames.at(-1).sprite.index, 5, 'ends back in his stance');
+  assert.equal(st.frames.at(-1).sprite.index, 6, 'ends back in his stance (seven drawings)');
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
   game.players[0].x = -px(35);
@@ -248,15 +248,17 @@ test('Malik: Standing Light comes out on frame 4, is drawn with the arm out whil
   assert.equal(game.players[1].state, 'hitStand');
 });
 
-test('Malik: Standing Medium hits twice, on drawings 4 and 5; Standing Heavy hits on drawing 4 and skips drawn frames 5 and 6', () => {
+// (The newer drawings, Nov 25: 5M is eight drawings with the hits on 3 and 4; 5H is seven, all used.)
+test('Malik: Standing Medium hits twice, on drawings 3 and 4; Standing Heavy hits on drawing 4 of its seven', () => {
   const c = loadChar('data/characters/malik/malik.toska.json');
   const m = c.states['5M'];
   const hits = m.frames.map((f, i) => (f.hit.length ? [i, f.hitId, f.sprite.index] : null)).filter(Boolean);
   assert.deepEqual([...new Set(hits.map((h) => h[1]))].length, 2, 'two separate hits');
-  assert.deepEqual([...new Set(hits.filter((h) => h[1] === hits[0][1]).map((h) => h[2]))], [3], 'first hit on drawing 4');
-  assert.deepEqual([...new Set(hits.filter((h) => h[1] !== hits[0][1]).map((h) => h[2]))], [4], 'second hit on drawing 5');
+  assert.deepEqual([...new Set(hits.filter((h) => h[1] === hits[0][1]).map((h) => h[2]))], [2], 'first hit on drawing 3');
+  assert.deepEqual([...new Set(hits.filter((h) => h[1] !== hits[0][1]).map((h) => h[2]))], [3], 'second hit on drawing 4');
   const h = c.states['5H'];
-  assert.equal(c.sheets['5H'].count, 6, 'eight drawn, two left out');
+  assert.equal(c.sheets['5H'].count, 7, 'seven drawn, all used');
+  assert.equal(new Set(h.frames.map((f) => f.sprite.index)).size, 7);
   assert.deepEqual([...new Set(h.frames.filter((f) => f.hit.length).map((f) => f.sprite.index))], [3], 'hits on drawing 4');
   assert.deepEqual(h.frames.map((f, i) => (f.hit.length ? i : -1)).filter((i) => i >= 0), [8, 9, 10]);
 
@@ -274,10 +276,11 @@ test('Malik: Standing Medium hits twice, on drawings 4 and 5; Standing Heavy hit
   assert.equal(most, 4, 'light, medium twice, heavy');
 });
 
-test('Malik: every new attack hits on the drawing Yahushua named, and every sheet exists', () => {
+test('Malik: every attack hits on the drawing its sheet shows the strike on, and every sheet exists', () => {
   const c = loadChar('data/characters/malik/malik.toska.json');
   // move -> the drawing (counted from 1) its hit lands on
-  const want = { '2L': 2, '2M': 4, '2H': 4, 'j.L': 3, 'j.M': 3, 'j.H': 3, backHeavy: 4, spiritOrb: 4 };
+  // (2L: the game sheet leaves out the sheet's first drawing, so its drawing 4 is the third here.)
+  const want = { '2L': 3, '2M': 4, '2H': 5, 'j.L': 3, 'j.M': 4, 'j.H': 3, backHeavy: 4, spiritOrb: 4, stomp: 3 };
   for (const [move, drawing] of Object.entries(want)) {
     const st = c.states[move];
     const hits = st.frames.filter((fr) => fr.hit.length);
@@ -340,13 +343,13 @@ test('Malik: every dash has its own art, covering the whole state', () => {
 test('Malik: blocks, hit reactions, knockdown and get-up have their own art', () => {
   const c = loadChar('data/characters/malik/malik.toska.json');
   // state -> how many different drawings it shows
-  const drawings = { blockStand: 2, blockCrouch: 2, blockAir: 2, hitStand: 1, hitCrouch: 1, hitAir: 2, tumble: 2, knockdown: 2, koDown: 1, wakeup: 3, thrown: 1 };
+  const drawings = { blockStand: 2, blockCrouch: 2, blockAir: 2, hitStand: 2, hitCrouch: 2, hitAir: 2, tumble: 2, knockdown: 2, koDown: 1, wakeup: 3, thrown: 1 };
   for (const [name, count] of Object.entries(drawings)) {
     const st = c.states[name];
     assert.ok(st.frames.every((fr) => fr.sprite), name + ' has art on every frame');
     assert.equal(new Set(st.frames.map((fr) => fr.sprite.index)).size, count, name);
   }
-  assert.equal(c.sheets[c.states.hitCrouch.frames[0].sprite.sheet].count, 1, 'crouching hit: one drawing only');
+  assert.equal(c.sheets[c.states.hitCrouch.frames[0].sprite.sheet].count, 2, 'crouching hit: the recoil, then settling');
   for (const sheet of Object.values(c.sheets)) assert.ok(fs.existsSync('data/characters/malik/' + sheet.image), sheet.image);
 });
 
@@ -390,11 +393,15 @@ test('Malik: Spirit Install (down, down, S+H) costs one bar, runs 10 seconds, an
   // Already installed: it can't be done again (no bar wasted).
   const d = run(40000, '2 5 2+HS 5*60 2 5 2+HS 5*30');
   assert.equal(d.game.players[0].meter, 30000, 'the other three bars are kept');
-  // Drawing data: the guardian and half of the lights behind him, flames and the other lights in front; idle art swapped.
+  // Drawing data: half of the lights behind him, flames and the other lights in front. The guardian is drawn with him
+  // in the newer install drawings, so the separate guardian ("none" = no effect) only shows while it attacks.
   const v = world.chars[0].mechanic.vars.install;
-  assert.deepEqual(v.aura.map((l) => [l.effect, !!l.behind]), [['guardian', true], ['installMotesBack', true], ['installFlames', false], ['installMotesFront', false]]);
-  for (const l of v.aura) assert.ok(fs.existsSync('data/characters/malik/' + world.chars[0].effects[l.effect].sprite.image), l.effect);
-  assert.deepEqual(v.art, { idle: 'installIdle', walkF: 'installWalkF', dashF: 'installDashF', dashStop: 'installDashStop' });
+  assert.deepEqual(v.aura.map((l) => [l.effect, !!l.behind]), [['none', true], ['installMotesBack', true], ['installFlames', false], ['installMotesFront', false]]);
+  assert.equal(world.chars[0].effects.none, undefined);
+  assert.deepEqual(Object.keys(v.aura[0].swap), ['spirit5L', 'spirit5M', 'spirit5H']);
+  for (const l of v.aura.slice(1)) assert.ok(fs.existsSync('data/characters/malik/' + world.chars[0].effects[l.effect].sprite.image), l.effect);
+  assert.deepEqual(v.art, { idle: 'installIdle', walkF: 'installWalkF', dashF: 'installDashF', dashStop: 'installDashStop', jumpSquat: 'installJumpSquat', superJumpSquat: 'installJumpSquat', jump: 'installJump', superJump: 'installJump', airJump: 'installJump', fall: 'installFall', land: 'installLand' });
+  assert.equal(new Set(world.chars[0].states.install.frames.map((f) => f.sprite.index)).size, 12, 'the change shows all twelve drawings');
   for (const [from, to] of Object.entries(v.art)) assert.ok(world.chars[0].states[from] && world.chars[0].states[to].frames.every((f) => f.sprite), `${from} -> ${to}`);
   assert.equal(world.chars[0].states.installIdle.frames.length, world.chars[0].states.idle.frames.length);
 });
@@ -451,20 +458,22 @@ test('Malik: Spirit Orb M and H start slower and throw a slower orb; H slides ba
   assert.ok(L.speed > M.speed && M.speed > H.speed && H.speed > 0, 'L orb fastest, H slowest');
   assert.equal(L.back, 0); assert.equal(M.back, 0);
   assert.ok(H.back >= px(20) && H.back <= px(45), 'H slides back a little');
-  // Every version still swipes on drawing 4, then throws on drawing 5.
-  for (const id of ['spiritOrb', 'spiritOrbM', 'spiritOrbH']) {
+  // Each button has its own sheet: the palm is on drawing 4 (L, M) or 5 (H) and the orb leaves on the next.
+  for (const [id, drawing] of [['spiritOrb', 4], ['spiritOrbM', 4], ['spiritOrbH', 5]]) {
     const hits = c.states[id].frames.filter((fr) => fr.hit.length);
-    assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4], id);
+    assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [drawing], id);
+    const spawnAt = c.states[id].onEnter.findIndex((evs) => evs?.some((e) => e.spawn !== undefined));
+    if (spawnAt >= 0) assert.equal(c.states[id].frames[spawnAt].sprite.index + 1, drawing + 1, id + ': the orb leaves on the next drawing');
   }
 });
 
-test('Malik: S is a launcher: the hit is on the smear (drawing 3), it sends them up, and every ground normal chains into it', () => {
+test('Malik: S is a launcher: the hit is on the high kick (drawing 4), it sends them up, and every ground normal chains into it', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const c = world.chars[0];
   const st = c.states['5S'];
   const hits = st.frames.filter((fr) => fr.hit.length);
-  assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [3]);
-  assert.equal(st.frames.at(-1).sprite.index + 1, 7, 'all seven drawings are used');
+  assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4]);
+  assert.equal(st.frames.at(-1).sprite.index + 1, 8, 'all eight drawings are used');
   assert.ok(fs.existsSync('data/characters/malik/sheets/5S.png'));
   const game = createGame(world);
   game.players[0].x = -px(35); game.players[1].x = px(35);
@@ -475,12 +484,12 @@ test('Malik: S is a launcher: the hit is on the smear (drawing 3), it sends them
   assert.ok(hp - game.players[1].health > 700);
 });
 
-test('Malik: Air S hits on drawing 4 (the big smear), Standing S on drawing 3, and the air normals chain into Air S', () => {
+test('Malik: Air S hits on drawing 4 (the heel coming down), Standing S on drawing 4, and the air normals chain into Air S', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const c = world.chars[0];
   const hitDrawings = (id) => [...new Set(c.states[id].frames.filter((fr) => fr.hit.length).map((fr) => fr.sprite.index + 1))];
   assert.deepEqual(hitDrawings('j.S'), [4]);
-  assert.deepEqual(hitDrawings('5S'), [3]);
+  assert.deepEqual(hitDrawings('5S'), [4]);
   assert.equal(c.states['j.S'].frames.at(-1).sprite.index + 1, 7);
   assert.ok(fs.existsSync('data/characters/malik/sheets/jS.png'));
   const file = JSON.parse(fs.readFileSync('data/characters/malik/malik.toska.json', 'utf8'));
@@ -506,4 +515,20 @@ test('Devotion meter: four bars of 100, supers cost one or three, and every piec
     assert.ok(x >= 0 && y >= 0 && x + w <= D.frame.w && y + h <= D.frame.h);
     if (i) assert.ok(x >= D.windows[i - 1][0] + D.windows[i - 1][2]);
   });
+});
+
+test('universal hit effects: one strip per kind with the holds the owner gave; counter, Witness and projectile hits have their own', () => {
+  const fx = loadJSON('data/system/effects.json');
+  const holds = { light: [1, 2, 2, 2, 2], medium: [1, 2, 2, 2, 3, 3], heavy: [1, 2, 2, 2, 3, 3, 3, 4], projectile: [1, 2, 2, 3, 3, 3], slash: [1, 2, 2, 2, 3, 3] };
+  for (const [k, h] of Object.entries(holds)) assert.deepEqual(fx.sparks[k].holds, h, k);
+  for (const size of fx.hit) assert.ok(fx.sparks[size.name], `a strip for ${size.name} hits`);
+  assert.deepEqual(fx.sparkFor, { witness: 'witness', counter: 'counter', projectile: 'projectile' });
+  for (const [k, sp] of Object.entries(fx.sparks)) {
+    assert.equal(sp.holds.length, sp.sprite.count, `${k}: one hold per drawing`);
+    assert.equal(sp.sprite.columns * sp.sprite.rows, sp.sprite.count);
+    const png = fs.readFileSync('data/effects/' + sp.sprite.image);
+    assert.equal(png.readUInt32BE(16), sp.sprite.frameW * sp.sprite.columns, `${k}: the strip is as wide as its drawings`);
+    assert.equal(png.readUInt32BE(20), sp.sprite.frameH);
+  }
+  assert.ok(fx.sparks.counter.sprite.frameW > fx.sparks.heavy.sprite.frameW && fx.sparks.heavy.sprite.frameW > fx.sparks.medium.sprite.frameW && fx.sparks.medium.sprite.frameW > fx.sparks.light.sprite.frameW, 'sizes rise with strength');
 });

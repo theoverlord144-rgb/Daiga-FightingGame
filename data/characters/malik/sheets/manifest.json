@@ -1,0 +1,5107 @@
+{
+ "idle": {
+  "sprite": {
+   "image": "sheets/idle.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 285,
+   "frameH": 394,
+   "originX": 125,
+   "originY": 392,
+   "scale": 0.5,
+   "holds": [
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+   ]
+  },
+  "from": "Malik_Idle.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    6,
+    91
+   ],
+   [
+    5,
+    95
+   ],
+   [
+    6,
+    98
+   ],
+   [
+    8,
+    89
+   ],
+   [
+    8,
+    83
+   ],
+   [
+    7,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -60,
+    0,
+    76,
+    186
+   ],
+   [
+    -61,
+    0,
+    73,
+    190
+   ],
+   [
+    -59,
+    0,
+    74,
+    195
+   ],
+   [
+    -57,
+    0,
+    78,
+    183
+   ],
+   [
+    -55,
+    0,
+    78,
+    175
+   ],
+   [
+    -57,
+    0,
+    77,
+    184
+   ]
+  ]
+ },
+ "walk": {
+  "sprite": {
+   "image": "sheets/walk.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 382,
+   "frameH": 377,
+   "originX": 165,
+   "originY": 375,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Malik_Walk.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    6,
+    92
+   ],
+   [
+    4,
+    94
+   ],
+   [
+    8,
+    89
+   ],
+   [
+    6,
+    96
+   ],
+   [
+    5,
+    91
+   ],
+   [
+    5,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -61,
+    0,
+    76,
+    186
+   ],
+   [
+    -61,
+    0,
+    64,
+    186
+   ],
+   [
+    -81,
+    0,
+    107,
+    186
+   ],
+   [
+    -52,
+    0,
+    64,
+    186
+   ],
+   [
+    -59,
+    0,
+    65,
+    185
+   ],
+   [
+    -61,
+    0,
+    75,
+    185
+   ]
+  ]
+ },
+ "walk-back": {
+  "sprite": {
+   "image": "sheets/walk-back.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 382,
+   "frameH": 377,
+   "originX": 165,
+   "originY": 375,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Malik_Walk.PNG",
+  "drawings": [
+   6,
+   5,
+   4,
+   3,
+   2,
+   1
+  ],
+  "lantern": [
+   [
+    5,
+    91
+   ],
+   [
+    5,
+    91
+   ],
+   [
+    6,
+    96
+   ],
+   [
+    8,
+    89
+   ],
+   [
+    4,
+    94
+   ],
+   [
+    6,
+    92
+   ]
+  ],
+  "reach": [
+   [
+    -61,
+    0,
+    75,
+    185
+   ],
+   [
+    -59,
+    0,
+    65,
+    185
+   ],
+   [
+    -52,
+    0,
+    64,
+    186
+   ],
+   [
+    -81,
+    0,
+    107,
+    186
+   ],
+   [
+    -61,
+    0,
+    64,
+    186
+   ],
+   [
+    -61,
+    0,
+    76,
+    186
+   ]
+  ]
+ },
+ "dash": {
+  "sprite": {
+   "image": "sheets/dash.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 348,
+   "frameH": 385,
+   "originX": 172,
+   "originY": 383,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Forward_Dash.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    3,
+    88
+   ],
+   [
+    5,
+    94
+   ],
+   [
+    2,
+    99
+   ],
+   [
+    1,
+    93
+   ]
+  ],
+  "reach": [
+   [
+    -85,
+    0,
+    83,
+    190
+   ],
+   [
+    -74,
+    0,
+    86,
+    183
+   ],
+   [
+    -79,
+    0,
+    80,
+    176
+   ],
+   [
+    -73,
+    0,
+    77,
+    171
+   ]
+  ]
+ },
+ "dash-stop": {
+  "sprite": {
+   "image": "sheets/dash-stop.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 325,
+   "frameH": 376,
+   "originX": 162,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    2,
+    1
+   ]
+  },
+  "from": "Malik_Forward_Dash.PNG",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    5,
+    94
+   ],
+   [
+    4,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -80,
+    0,
+    80,
+    181
+   ],
+   [
+    -73,
+    0,
+    79,
+    186
+   ]
+  ]
+ },
+ "backdash": {
+  "sprite": {
+   "image": "sheets/backdash.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 421,
+   "frameH": 375,
+   "originX": 143,
+   "originY": 373,
+   "scale": 0.5,
+   "holds": [
+    3,
+    6,
+    5
+   ]
+  },
+  "from": "Malik_Backdash.png",
+  "drawings": [
+   1,
+   2,
+   3
+  ],
+  "lantern": [
+   [
+    23,
+    89
+   ],
+   [
+    13,
+    105
+   ],
+   [
+    8,
+    95
+   ]
+  ],
+  "reach": [
+   [
+    -64,
+    1,
+    137,
+    185
+   ],
+   [
+    -70,
+    13,
+    91,
+    185
+   ],
+   [
+    -55,
+    1,
+    85,
+    183
+   ]
+  ]
+ },
+ "backdash-stop": {
+  "sprite": {
+   "image": "sheets/backdash-stop.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 348,
+   "frameH": 376,
+   "originX": 158,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Backdash.png",
+  "drawings": [
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    8,
+    88
+   ],
+   [
+    9,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -78,
+    1,
+    87,
+    180
+   ],
+   [
+    -70,
+    1,
+    93,
+    186
+   ]
+  ]
+ },
+ "jumpsquat": {
+  "sprite": {
+   "image": "sheets/jumpsquat.png",
+   "columns": 1,
+   "rows": 1,
+   "count": 1,
+   "frameW": 291,
+   "frameH": 301,
+   "originX": 139,
+   "originY": 299,
+   "scale": 0.5,
+   "holds": [
+    3
+   ]
+  },
+  "from": "Malik_Jump.PNG",
+  "drawings": [
+   1
+  ],
+  "lantern": [
+   [
+    4,
+    71
+   ]
+  ],
+  "reach": [
+   [
+    -68,
+    1,
+    74,
+    148
+   ]
+  ]
+ },
+ "jump": {
+  "sprite": {
+   "image": "sheets/jump.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 220,
+   "frameH": 462,
+   "originX": 112,
+   "originY": 370,
+   "scale": 0.5,
+   "holds": [
+    5,
+    9,
+    9,
+    9,
+    28
+   ]
+  },
+  "from": "Malik_Jump.PNG",
+  "drawings": [
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    2,
+    83
+   ],
+   [
+    5,
+    69
+   ],
+   [
+    -1,
+    82
+   ],
+   [
+    -3,
+    89
+   ],
+   [
+    -3,
+    89
+   ]
+  ],
+  "reach": [
+   [
+    -45,
+    -42,
+    52,
+    184
+   ],
+   [
+    -44,
+    -44,
+    52,
+    161
+   ],
+   [
+    -51,
+    -12,
+    47,
+    161
+   ],
+   [
+    -53,
+    12,
+    49,
+    164
+   ],
+   [
+    -55,
+    12,
+    49,
+    164
+   ]
+  ]
+ },
+ "fall": {
+  "sprite": {
+   "image": "sheets/fall.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 222,
+   "frameH": 499,
+   "originX": 113,
+   "originY": 390,
+   "scale": 0.5,
+   "holds": [
+    8,
+    52
+   ]
+  },
+  "from": "Malik_Jump.PNG",
+  "drawings": [
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    -2,
+    68
+   ],
+   [
+    0,
+    73
+   ]
+  ],
+  "reach": [
+   [
+    -53,
+    -53,
+    46,
+    177
+   ],
+   [
+    -55,
+    -46,
+    53,
+    194
+   ]
+  ]
+ },
+ "land": {
+  "sprite": {
+   "image": "sheets/land.png",
+   "columns": 1,
+   "rows": 1,
+   "count": 1,
+   "frameW": 293,
+   "frameH": 304,
+   "originX": 142,
+   "originY": 302,
+   "scale": 0.5,
+   "holds": [
+    3
+   ]
+  },
+  "from": "Malik_Jump.PNG",
+  "drawings": [
+   9
+  ],
+  "lantern": [
+   [
+    3,
+    72
+   ]
+  ],
+  "reach": [
+   [
+    -70,
+    1,
+    74,
+    150
+   ]
+  ]
+ },
+ "airdash": {
+  "sprite": {
+   "image": "sheets/airdash.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 395,
+   "frameH": 341,
+   "originX": 254,
+   "originY": 311,
+   "scale": 0.5,
+   "holds": [
+    2,
+    5,
+    5,
+    2
+   ]
+  },
+  "from": "Malik_Forward_AirDash.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -10,
+    74
+   ],
+   [
+    -17,
+    81
+   ],
+   [
+    -8,
+    86
+   ],
+   [
+    -6,
+    86
+   ]
+  ],
+  "reach": [
+   [
+    -108,
+    -13,
+    65,
+    154
+   ],
+   [
+    -126,
+    13,
+    69,
+    145
+   ],
+   [
+    -87,
+    15,
+    67,
+    145
+   ],
+   [
+    -83,
+    16,
+    66,
+    146
+   ]
+  ]
+ },
+ "airdash-end": {
+  "sprite": {
+   "image": "sheets/airdash-end.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 251,
+   "frameH": 428,
+   "originX": 125,
+   "originY": 340,
+   "scale": 0.5,
+   "holds": [
+    8,
+    52
+   ]
+  },
+  "from": "Malik_Forward_AirDash.PNG",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    -2,
+    73
+   ],
+   [
+    0,
+    71
+   ]
+  ],
+  "reach": [
+   [
+    -61,
+    -41,
+    61,
+    162
+   ],
+   [
+    -58,
+    -43,
+    60,
+    169
+   ]
+  ]
+ },
+ "block-stand": {
+  "sprite": {
+   "image": "sheets/block-stand.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 316,
+   "frameH": 364,
+   "originX": 125,
+   "originY": 362,
+   "scale": 0.5,
+   "holds": [
+    4,
+    1
+   ]
+  },
+  "from": "Malik_Standing_Crouching_Air_Block.PNG",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    10,
+    93
+   ],
+   [
+    7,
+    92
+   ]
+  ],
+  "reach": [
+   [
+    -61,
+    0,
+    94,
+    178
+   ],
+   [
+    -50,
+    0,
+    84,
+    180
+   ]
+  ]
+ },
+ "block-crouch": {
+  "sprite": {
+   "image": "sheets/block-crouch.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 294,
+   "frameH": 287,
+   "originX": 119,
+   "originY": 285,
+   "scale": 0.5,
+   "holds": [
+    4,
+    1
+   ]
+  },
+  "from": "Malik_Standing_Crouching_Air_Block.PNG",
+  "drawings": [
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    12,
+    69
+   ],
+   [
+    11,
+    65
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    0,
+    86,
+    141
+   ],
+   [
+    -46,
+    0,
+    78,
+    141
+   ]
+  ]
+ },
+ "block-air": {
+  "sprite": {
+   "image": "sheets/block-air.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 252,
+   "frameH": 310,
+   "originX": 133,
+   "originY": 301,
+   "scale": 0.5,
+   "holds": [
+    4,
+    1
+   ]
+  },
+  "from": "Malik_Standing_Crouching_Air_Block.PNG",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    -3,
+    79
+   ],
+   [
+    0,
+    78
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    -3,
+    58,
+    147
+   ],
+   [
+    -50,
+    0,
+    55,
+    149
+   ]
+  ]
+ },
+ "hit-stand": {
+  "sprite": {
+   "image": "sheets/hit-stand.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 286,
+   "frameH": 364,
+   "originX": 113,
+   "originY": 362,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Malik_HitReaction_Ground_And_Air.PNG",
+  "drawings": [
+   1,
+   2
+  ],
+  "lantern": [
+   [
+    9,
+    96
+   ],
+   [
+    12,
+    92
+   ]
+  ],
+  "reach": [
+   [
+    -55,
+    0,
+    85,
+    180
+   ],
+   [
+    -44,
+    0,
+    76,
+    178
+   ]
+  ]
+ },
+ "hit-crouch": {
+  "sprite": {
+   "image": "sheets/hit-crouch.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 278,
+   "frameH": 284,
+   "originX": 109,
+   "originY": 282,
+   "scale": 0.5,
+   "holds": [
+    6,
+    1
+   ]
+  },
+  "from": "Malik_HitReaction_Ground_And_Air.PNG",
+  "drawings": [
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    10,
+    71
+   ],
+   [
+    11,
+    66
+   ]
+  ],
+  "reach": [
+   [
+    -53,
+    0,
+    83,
+    140
+   ],
+   [
+    -44,
+    0,
+    79,
+    136
+   ]
+  ]
+ },
+ "hit-air": {
+  "sprite": {
+   "image": "sheets/hit-air.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 303,
+   "frameH": 346,
+   "originX": 106,
+   "originY": 331,
+   "scale": 0.5,
+   "holds": [
+    5,
+    1
+   ]
+  },
+  "from": "Malik_HitReaction_Ground_And_Air.PNG",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    15,
+    87
+   ],
+   [
+    14,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -52,
+    -6,
+    82,
+    164
+   ],
+   [
+    -48,
+    12,
+    97,
+    161
+   ]
+  ]
+ },
+ "tumble": {
+  "sprite": {
+   "image": "sheets/tumble.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 237,
+   "frameH": 329,
+   "originX": 118,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    6,
+    6
+   ]
+  },
+  "from": "Malik_HitReaction_Ground_And_Air.PNG",
+  "drawings": [
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    0,
+    100
+   ],
+   [
+    1,
+    100
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    38,
+    58,
+    159
+   ],
+   [
+    -54,
+    28,
+    54,
+    190
+   ]
+  ]
+ },
+ "crumple": {
+  "sprite": {
+   "image": "sheets/crumple.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 270,
+   "frameH": 384,
+   "originX": 131,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    5,
+    5,
+    6,
+    8,
+    8,
+    1
+   ]
+  },
+  "from": "Malik_HitReaction_Crumple.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    0,
+    99
+   ],
+   [
+    3,
+    92
+   ],
+   [
+    3,
+    79
+   ],
+   [
+    0,
+    70
+   ],
+   [
+    1,
+    60
+   ],
+   [
+    1,
+    64
+   ]
+  ],
+  "reach": [
+   [
+    -62,
+    0,
+    68,
+    190
+   ],
+   [
+    -59,
+    0,
+    57,
+    187
+   ],
+   [
+    -64,
+    0,
+    56,
+    169
+   ],
+   [
+    -58,
+    0,
+    54,
+    149
+   ],
+   [
+    -58,
+    0,
+    55,
+    135
+   ],
+   [
+    -59,
+    0,
+    53,
+    144
+   ]
+  ]
+ },
+ "5L": {
+  "sprite": {
+   "image": "sheets/5L.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 355,
+   "frameH": 376,
+   "originX": 144,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    2,
+    1,
+    2,
+    2,
+    2,
+    2,
+    1
+   ]
+  },
+  "from": "Malik_Light.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    9,
+    90
+   ],
+   [
+    7,
+    92
+   ],
+   [
+    1,
+    97
+   ],
+   [
+    2,
+    93
+   ],
+   [
+    6,
+    91
+   ],
+   [
+    7,
+    90
+   ],
+   [
+    7,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -54,
+    0,
+    81,
+    186
+   ],
+   [
+    -55,
+    0,
+    88,
+    186
+   ],
+   [
+    -71,
+    0,
+    104,
+    186
+   ],
+   [
+    -66,
+    0,
+    92,
+    186
+   ],
+   [
+    -59,
+    0,
+    76,
+    186
+   ],
+   [
+    -53,
+    0,
+    77,
+    186
+   ],
+   [
+    -58,
+    0,
+    85,
+    186
+   ]
+  ]
+ },
+ "5M": {
+  "sprite": {
+   "image": "sheets/5M.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 340,
+   "frameH": 377,
+   "originX": 144,
+   "originY": 375,
+   "scale": 0.5,
+   "holds": [
+    3,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Medium.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    9,
+    89
+   ],
+   [
+    6,
+    91
+   ],
+   [
+    1,
+    93
+   ],
+   [
+    0,
+    95
+   ],
+   [
+    -1,
+    91
+   ],
+   [
+    5,
+    90
+   ],
+   [
+    7,
+    90
+   ],
+   [
+    7,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -54,
+    1,
+    76,
+    186
+   ],
+   [
+    -52,
+    1,
+    74,
+    185
+   ],
+   [
+    -66,
+    1,
+    84,
+    185
+   ],
+   [
+    -71,
+    1,
+    96,
+    186
+   ],
+   [
+    -69,
+    1,
+    87,
+    184
+   ],
+   [
+    -56,
+    1,
+    68,
+    185
+   ],
+   [
+    -52,
+    1,
+    71,
+    186
+   ],
+   [
+    -53,
+    1,
+    78,
+    186
+   ]
+  ]
+ },
+ "5H": {
+  "sprite": {
+   "image": "sheets/5H.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 493,
+   "frameH": 398,
+   "originX": 275,
+   "originY": 396,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    2,
+    3,
+    7,
+    6,
+    5
+   ]
+  },
+  "from": "Malik_Heavy.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    10,
+    87
+   ],
+   [
+    14,
+    96
+   ],
+   [
+    -1,
+    97
+   ],
+   [
+    -13,
+    98
+   ],
+   [
+    -9,
+    93
+   ],
+   [
+    2,
+    92
+   ],
+   [
+    5,
+    89
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    1,
+    96,
+    186
+   ],
+   [
+    -50,
+    1,
+    78,
+    188
+   ],
+   [
+    -66,
+    1,
+    78,
+    187
+   ],
+   [
+    -136,
+    1,
+    107,
+    197
+   ],
+   [
+    -111,
+    1,
+    91,
+    189
+   ],
+   [
+    -76,
+    1,
+    70,
+    192
+   ],
+   [
+    -71,
+    1,
+    77,
+    189
+   ]
+  ]
+ },
+ "2L": {
+  "sprite": {
+   "image": "sheets/2L.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 389,
+   "frameH": 268,
+   "originX": 137,
+   "originY": 266,
+   "scale": 0.5,
+   "holds": [
+    2,
+    1,
+    2,
+    3,
+    3,
+    2
+   ]
+  },
+  "from": "Malik_Crouch_light.PNG",
+  "drawings": [
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    6,
+    64
+   ],
+   [
+    11,
+    61
+   ],
+   [
+    14,
+    58
+   ],
+   [
+    14,
+    60
+   ],
+   [
+    7,
+    62
+   ],
+   [
+    7,
+    61
+   ]
+  ],
+  "reach": [
+   [
+    -40,
+    0,
+    53,
+    132
+   ],
+   [
+    -42,
+    0,
+    92,
+    132
+   ],
+   [
+    -67,
+    0,
+    124,
+    132
+   ],
+   [
+    -47,
+    0,
+    106,
+    132
+   ],
+   [
+    -42,
+    0,
+    61,
+    132
+   ],
+   [
+    -45,
+    0,
+    65,
+    132
+   ]
+  ]
+ },
+ "2M": {
+  "sprite": {
+   "image": "sheets/2M.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 430,
+   "frameH": 268,
+   "originX": 108,
+   "originY": 266,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    3,
+    4,
+    3,
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Crouch_Medium.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    5,
+    63
+   ],
+   [
+    6,
+    57
+   ],
+   [
+    9,
+    57
+   ],
+   [
+    20,
+    58
+   ],
+   [
+    31,
+    57
+   ],
+   [
+    8,
+    64
+   ],
+   [
+    7,
+    61
+   ],
+   [
+    6,
+    63
+   ]
+  ],
+  "reach": [
+   [
+    -41,
+    0,
+    59,
+    132
+   ],
+   [
+    -45,
+    0,
+    62,
+    123
+   ],
+   [
+    -44,
+    0,
+    77,
+    125
+   ],
+   [
+    -48,
+    0,
+    114,
+    127
+   ],
+   [
+    -53,
+    0,
+    159,
+    131
+   ],
+   [
+    -47,
+    0,
+    69,
+    128
+   ],
+   [
+    -45,
+    0,
+    61,
+    128
+   ],
+   [
+    -40,
+    0,
+    60,
+    132
+   ]
+  ]
+ },
+ "2H": {
+  "sprite": {
+   "image": "sheets/2H.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 433,
+   "frameH": 268,
+   "originX": 92,
+   "originY": 266,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    2,
+    3,
+    8,
+    7,
+    7
+   ]
+  },
+  "from": "Malik_Crouch_Heavy.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    6,
+    61
+   ],
+   [
+    6,
+    61
+   ],
+   [
+    13,
+    54
+   ],
+   [
+    32,
+    52
+   ],
+   [
+    33,
+    50
+   ],
+   [
+    19,
+    58
+   ],
+   [
+    7,
+    60
+   ],
+   [
+    7,
+    60
+   ]
+  ],
+  "reach": [
+   [
+    -42,
+    1,
+    61,
+    132
+   ],
+   [
+    -36,
+    1,
+    53,
+    126
+   ],
+   [
+    -37,
+    1,
+    96,
+    124
+   ],
+   [
+    -45,
+    1,
+    169,
+    127
+   ],
+   [
+    -41,
+    1,
+    168,
+    125
+   ],
+   [
+    -35,
+    1,
+    88,
+    126
+   ],
+   [
+    -40,
+    1,
+    63,
+    130
+   ],
+   [
+    -41,
+    1,
+    63,
+    130
+   ]
+  ]
+ },
+ "5S": {
+  "sprite": {
+   "image": "sheets/5S.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 368,
+   "frameH": 510,
+   "originX": 132,
+   "originY": 508,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    2,
+    3,
+    8,
+    6,
+    5,
+    5
+   ]
+  },
+  "from": "Malik_SLauncher.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    12,
+    90
+   ],
+   [
+    21,
+    91
+   ],
+   [
+    4,
+    109
+   ],
+   [
+    0,
+    126
+   ],
+   [
+    0,
+    137
+   ],
+   [
+    3,
+    119
+   ],
+   [
+    8,
+    88
+   ],
+   [
+    8,
+    88
+   ]
+  ],
+  "reach": [
+   [
+    -53,
+    1,
+    97,
+    186
+   ],
+   [
+    -45,
+    1,
+    116,
+    184
+   ],
+   [
+    -61,
+    1,
+    72,
+    185
+   ],
+   [
+    -61,
+    1,
+    68,
+    222
+   ],
+   [
+    -63,
+    1,
+    57,
+    253
+   ],
+   [
+    -60,
+    1,
+    69,
+    204
+   ],
+   [
+    -54,
+    1,
+    74,
+    183
+   ],
+   [
+    -65,
+    1,
+    85,
+    182
+   ]
+  ]
+ },
+ "4H": {
+  "sprite": {
+   "image": "sheets/4H.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 449,
+   "frameH": 381,
+   "originX": 247,
+   "originY": 379,
+   "scale": 0.5,
+   "holds": [
+    4,
+    3,
+    3,
+    3,
+    8,
+    7,
+    7
+   ]
+  },
+  "from": "Malik_BackHeavy.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    11,
+    89
+   ],
+   [
+    12,
+    91
+   ],
+   [
+    0,
+    96
+   ],
+   [
+    -7,
+    94
+   ],
+   [
+    -4,
+    90
+   ],
+   [
+    4,
+    92
+   ],
+   [
+    7,
+    88
+   ]
+  ],
+  "reach": [
+   [
+    -55,
+    1,
+    97,
+    186
+   ],
+   [
+    -49,
+    1,
+    83,
+    185
+   ],
+   [
+    -63,
+    1,
+    77,
+    186
+   ],
+   [
+    -122,
+    1,
+    99,
+    188
+   ],
+   [
+    -111,
+    1,
+    94,
+    185
+   ],
+   [
+    -67,
+    1,
+    66,
+    188
+   ],
+   [
+    -66,
+    1,
+    85,
+    185
+   ]
+  ]
+ },
+ "stomp": {
+  "sprite": {
+   "image": "sheets/stomp.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 340,
+   "frameH": 391,
+   "originX": 163,
+   "originY": 389,
+   "scale": 0.5,
+   "holds": [
+    3,
+    6,
+    3,
+    8,
+    7,
+    7
+   ]
+  },
+  "from": "Malik_ForwardMedium.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    11,
+    93
+   ],
+   [
+    8,
+    109
+   ],
+   [
+    2,
+    81
+   ],
+   [
+    7,
+    78
+   ],
+   [
+    9,
+    91
+   ],
+   [
+    10,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -52,
+    0,
+    80,
+    186
+   ],
+   [
+    -50,
+    0,
+    71,
+    193
+   ],
+   [
+    -80,
+    0,
+    83,
+    173
+   ],
+   [
+    -69,
+    0,
+    87,
+    169
+   ],
+   [
+    -57,
+    0,
+    77,
+    182
+   ],
+   [
+    -54,
+    0,
+    85,
+    183
+   ]
+  ]
+ },
+ "stomp-wave": {
+  "sprite": {
+   "image": "sheets/stomp-wave.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 312,
+   "frameH": 303,
+   "originX": 154,
+   "originY": 297,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Malik_ForwardMedium_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "jL": {
+  "sprite": {
+   "image": "sheets/jL.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 351,
+   "frameH": 393,
+   "originX": 135,
+   "originY": 354,
+   "scale": 0.5,
+   "holds": [
+    2,
+    1,
+    4,
+    2,
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Air_Light.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    0,
+    87
+   ],
+   [
+    3,
+    84
+   ],
+   [
+    3,
+    81
+   ],
+   [
+    6,
+    79
+   ],
+   [
+    2,
+    81
+   ],
+   [
+    1,
+    84
+   ]
+  ],
+  "reach": [
+   [
+    -53,
+    -8,
+    58,
+    176
+   ],
+   [
+    -51,
+    -11,
+    81,
+    172
+   ],
+   [
+    -66,
+    -16,
+    100,
+    169
+   ],
+   [
+    -60,
+    -18,
+    106,
+    166
+   ],
+   [
+    -56,
+    -17,
+    62,
+    168
+   ],
+   [
+    -52,
+    -11,
+    56,
+    173
+   ]
+  ]
+ },
+ "jM": {
+  "sprite": {
+   "image": "sheets/jM.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 394,
+   "frameH": 466,
+   "originX": 159,
+   "originY": 387,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    1,
+    4,
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "Malik_Air_Medium.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    1,
+    88
+   ],
+   [
+    -3,
+    87
+   ],
+   [
+    4,
+    86
+   ],
+   [
+    6,
+    85
+   ],
+   [
+    4,
+    86
+   ],
+   [
+    0,
+    84
+   ],
+   [
+    3,
+    83
+   ]
+  ],
+  "reach": [
+   [
+    -52,
+    -1,
+    61,
+    171
+   ],
+   [
+    -56,
+    -16,
+    57,
+    170
+   ],
+   [
+    -59,
+    -21,
+    82,
+    183
+   ],
+   [
+    -78,
+    -38,
+    116,
+    192
+   ],
+   [
+    -72,
+    -38,
+    112,
+    192
+   ],
+   [
+    -62,
+    -14,
+    61,
+    172
+   ],
+   [
+    -51,
+    -6,
+    62,
+    166
+   ]
+  ]
+ },
+ "jH": {
+  "sprite": {
+   "image": "sheets/jH.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 342,
+   "frameH": 464,
+   "originX": 161,
+   "originY": 431,
+   "scale": 0.5,
+   "holds": [
+    4,
+    5,
+    3,
+    3,
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Air_Heavy.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    0,
+    91
+   ],
+   [
+    -7,
+    101
+   ],
+   [
+    -3,
+    83
+   ],
+   [
+    -5,
+    89
+   ],
+   [
+    -2,
+    91
+   ],
+   [
+    -2,
+    92
+   ]
+  ],
+  "reach": [
+   [
+    -57,
+    0,
+    61,
+    175
+   ],
+   [
+    -62,
+    3,
+    57,
+    214
+   ],
+   [
+    -79,
+    -15,
+    89,
+    180
+   ],
+   [
+    -77,
+    0,
+    58,
+    181
+   ],
+   [
+    -65,
+    4,
+    61,
+    177
+   ],
+   [
+    -54,
+    3,
+    60,
+    179
+   ]
+  ]
+ },
+ "jH-hand": {
+  "sprite": {
+   "image": "sheets/jH-hand.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 328,
+   "frameH": 357,
+   "originX": 164,
+   "originY": 178,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Malik_Air_Heavy_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "jS": {
+  "sprite": {
+   "image": "sheets/jS.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 295,
+   "frameH": 457,
+   "originX": 132,
+   "originY": 360,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    2,
+    4,
+    6,
+    6,
+    6
+   ]
+  },
+  "from": "Malik_Air_S.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    -2,
+    82
+   ],
+   [
+    4,
+    85
+   ],
+   [
+    4,
+    83
+   ],
+   [
+    1,
+    75
+   ],
+   [
+    -2,
+    78
+   ],
+   [
+    0,
+    85
+   ],
+   [
+    4,
+    82
+   ]
+  ],
+  "reach": [
+   [
+    -56,
+    -23,
+    59,
+    171
+   ],
+   [
+    -63,
+    -33,
+    65,
+    175
+   ],
+   [
+    -65,
+    -37,
+    74,
+    170
+   ],
+   [
+    -63,
+    -41,
+    80,
+    177
+   ],
+   [
+    -59,
+    -47,
+    57,
+    179
+   ],
+   [
+    -53,
+    -20,
+    56,
+    172
+   ],
+   [
+    -52,
+    3,
+    67,
+    163
+   ]
+  ]
+ },
+ "jS-arc": {
+  "sprite": {
+   "image": "sheets/jS-arc.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 312,
+   "frameH": 252,
+   "originX": 158,
+   "originY": 126,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Malik_Air_S_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "throw-forward": {
+  "sprite": {
+   "image": "sheets/throw-forward.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 359,
+   "frameH": 376,
+   "originX": 176,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    4,
+    10,
+    11
+   ]
+  },
+  "from": "Malik_Forward_Throw.PNG",
+  "drawings": [
+   1,
+   3,
+   8
+  ],
+  "lantern": [
+   [
+    -1,
+    93
+   ],
+   [
+    -9,
+    90
+   ],
+   [
+    8,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -64,
+    1,
+    88,
+    186
+   ],
+   [
+    -87,
+    1,
+    90,
+    178
+   ],
+   [
+    -50,
+    1,
+    83,
+    186
+   ]
+  ]
+ },
+ "throw-hold": {
+  "sprite": {
+   "image": "sheets/throw-hold.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 359,
+   "frameH": 375,
+   "originX": 176,
+   "originY": 373,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    6
+   ]
+  },
+  "from": "Malik_Forward_Throw.PNG",
+  "drawings": [
+   3,
+   2,
+   4
+  ],
+  "lantern": [
+   [
+    -9,
+    90
+   ],
+   [
+    0,
+    92
+   ],
+   [
+    2,
+    92
+   ]
+  ],
+  "reach": [
+   [
+    -87,
+    1,
+    90,
+    178
+   ],
+   [
+    -62,
+    1,
+    65,
+    185
+   ],
+   [
+    -65,
+    1,
+    72,
+    185
+   ]
+  ]
+ },
+ "throw-finish": {
+  "sprite": {
+   "image": "sheets/throw-finish.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 337,
+   "frameH": 376,
+   "originX": 129,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    6,
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Malik_Forward_Throw.PNG",
+  "drawings": [
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    4,
+    91
+   ],
+   [
+    10,
+    93
+   ],
+   [
+    6,
+    90
+   ],
+   [
+    8,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    1,
+    77,
+    185
+   ],
+   [
+    -61,
+    1,
+    102,
+    186
+   ],
+   [
+    -63,
+    1,
+    97,
+    184
+   ],
+   [
+    -50,
+    1,
+    83,
+    186
+   ]
+  ]
+ },
+ "throw-back": {
+  "sprite": {
+   "image": "sheets/throw-back.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 317,
+   "frameH": 376,
+   "originX": 139,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    4,
+    10,
+    11
+   ]
+  },
+  "from": "Malik_Back_Throw.PNG",
+  "drawings": [
+   1,
+   2,
+   6
+  ],
+  "lantern": [
+   [
+    8,
+    90
+   ],
+   [
+    2,
+    89
+   ],
+   [
+    8,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -60,
+    0,
+    87,
+    186
+   ],
+   [
+    -68,
+    0,
+    87,
+    182
+   ],
+   [
+    -61,
+    0,
+    85,
+    186
+   ]
+  ]
+ },
+ "throw-back-hold": {
+  "sprite": {
+   "image": "sheets/throw-back-hold.png",
+   "columns": 3,
+   "rows": 1,
+   "count": 3,
+   "frameW": 317,
+   "frameH": 376,
+   "originX": 139,
+   "originY": 374,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    6
+   ]
+  },
+  "from": "Malik_Back_Throw.PNG",
+  "drawings": [
+   1,
+   2,
+   2
+  ],
+  "lantern": [
+   [
+    8,
+    90
+   ],
+   [
+    2,
+    89
+   ],
+   [
+    2,
+    89
+   ]
+  ],
+  "reach": [
+   [
+    -60,
+    0,
+    87,
+    186
+   ],
+   [
+    -68,
+    0,
+    87,
+    182
+   ],
+   [
+    -68,
+    0,
+    87,
+    182
+   ]
+  ]
+ },
+ "throw-back-finish": {
+  "sprite": {
+   "image": "sheets/throw-back-finish.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 346,
+   "frameH": 443,
+   "originX": 173,
+   "originY": 441,
+   "scale": 0.5,
+   "holds": [
+    6,
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Malik_Back_Throw.PNG",
+  "drawings": [
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    -3,
+    124
+   ],
+   [
+    -4,
+    88
+   ],
+   [
+    -6,
+    85
+   ],
+   [
+    8,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    0,
+    83,
+    219
+   ],
+   [
+    -84,
+    0,
+    65,
+    184
+   ],
+   [
+    -85,
+    0,
+    64,
+    183
+   ],
+   [
+    -61,
+    0,
+    85,
+    186
+   ]
+  ]
+ },
+ "fireball": {
+  "sprite": {
+   "image": "sheets/fireball.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 318,
+   "frameH": 383,
+   "originX": 130,
+   "originY": 381,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    3,
+    3,
+    8,
+    6,
+    4,
+    4
+   ]
+  },
+  "from": "Malik_ProjectileMotion.jpg",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    7,
+    93
+   ],
+   [
+    8,
+    93
+   ],
+   [
+    7,
+    93
+   ],
+   [
+    4,
+    96
+   ],
+   [
+    3,
+    97
+   ],
+   [
+    3,
+    97
+   ],
+   [
+    5,
+    94
+   ],
+   [
+    7,
+    93
+   ]
+  ],
+  "reach": [
+   [
+    -44,
+    1,
+    65,
+    186
+   ],
+   [
+    -41,
+    1,
+    63,
+    186
+   ],
+   [
+    -44,
+    1,
+    64,
+    186
+   ],
+   [
+    -47,
+    1,
+    63,
+    184
+   ],
+   [
+    -64,
+    1,
+    92,
+    189
+   ],
+   [
+    -64,
+    1,
+    85,
+    189
+   ],
+   [
+    -62,
+    1,
+    66,
+    188
+   ],
+   [
+    -48,
+    1,
+    69,
+    186
+   ]
+  ]
+ },
+ "fireball-M": {
+  "sprite": {
+   "image": "sheets/fireball-M.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 386,
+   "frameH": 423,
+   "originX": 181,
+   "originY": 421,
+   "scale": 0.5,
+   "holds": [
+    7,
+    5,
+    3,
+    9,
+    8,
+    8
+   ]
+  },
+  "from": "Malik_SpecialMove_Medium_EnergySphere.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    3,
+    88
+   ],
+   [
+    3,
+    91
+   ],
+   [
+    2,
+    92
+   ],
+   [
+    9,
+    102
+   ],
+   [
+    6,
+    91
+   ],
+   [
+    6,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    0,
+    76,
+    186
+   ],
+   [
+    -54,
+    0,
+    66,
+    188
+   ],
+   [
+    -84,
+    0,
+    94,
+    185
+   ],
+   [
+    -89,
+    0,
+    101,
+    209
+   ],
+   [
+    -78,
+    0,
+    91,
+    187
+   ],
+   [
+    -69,
+    0,
+    84,
+    190
+   ]
+  ]
+ },
+ "fireball-H": {
+  "sprite": {
+   "image": "sheets/fireball-H.png",
+   "columns": 9,
+   "rows": 1,
+   "count": 9,
+   "frameW": 450,
+   "frameH": 407,
+   "originX": 201,
+   "originY": 405,
+   "scale": 0.5,
+   "holds": [
+    5,
+    5,
+    5,
+    5,
+    3,
+    8,
+    6,
+    4,
+    4
+   ]
+  },
+  "from": "Malik_SpecialMove_Heavy_EnergySphere.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "lantern": [
+   [
+    15,
+    92
+   ],
+   [
+    12,
+    80
+   ],
+   [
+    12,
+    80
+   ],
+   [
+    12,
+    90
+   ],
+   [
+    8,
+    91
+   ],
+   [
+    6,
+    101
+   ],
+   [
+    2,
+    95
+   ],
+   [
+    7,
+    88
+   ],
+   [
+    7,
+    91
+   ]
+  ],
+  "reach": [
+   [
+    -41,
+    1,
+    82,
+    189
+   ],
+   [
+    -49,
+    1,
+    83,
+    178
+   ],
+   [
+    -50,
+    1,
+    83,
+    177
+   ],
+   [
+    -56,
+    1,
+    89,
+    192
+   ],
+   [
+    -64,
+    1,
+    85,
+    180
+   ],
+   [
+    -99,
+    1,
+    122,
+    201
+   ],
+   [
+    -60,
+    1,
+    82,
+    183
+   ],
+   [
+    -58,
+    1,
+    74,
+    180
+   ],
+   [
+    -55,
+    1,
+    73,
+    186
+   ]
+  ]
+ },
+ "orb": {
+  "sprite": {
+   "image": "sheets/orb.png",
+   "columns": 9,
+   "rows": 1,
+   "count": 9,
+   "frameW": 210,
+   "frameH": 195,
+   "originX": 102,
+   "originY": 97,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    5
+   ],
+   "additive": true
+  },
+  "from": "Malik_SpecialMove_Light_EnergySphere_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "orb-M": {
+  "sprite": {
+   "image": "sheets/orb-M.png",
+   "columns": 9,
+   "rows": 1,
+   "count": 9,
+   "frameW": 222,
+   "frameH": 255,
+   "originX": 114,
+   "originY": 127,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    5
+   ],
+   "additive": true
+  },
+  "from": "Malik_SpecialMove_Medium_EnergySphere_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "orb-H": {
+  "sprite": {
+   "image": "sheets/orb-H.png",
+   "columns": 9,
+   "rows": 1,
+   "count": 9,
+   "frameW": 446,
+   "frameH": 296,
+   "originX": 170,
+   "originY": 334,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    5
+   ]
+  },
+  "from": "Malik_SpecialMove_EnergySphere_Effect.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "lantern": [
+   [
+    0,
+    92
+   ],
+   [
+    0,
+    91
+   ],
+   [
+    -1,
+    86
+   ],
+   [
+    -1,
+    87
+   ],
+   [
+    -1,
+    85
+   ],
+   [
+    -2,
+    86
+   ],
+   [
+    0,
+    91
+   ],
+   [
+    2,
+    92
+   ],
+   [
+    -16,
+    87
+   ]
+  ],
+  "reach": [
+   [
+    -52,
+    38,
+    54,
+    151
+   ],
+   [
+    -53,
+    38,
+    54,
+    148
+   ],
+   [
+    -60,
+    29,
+    60,
+    148
+   ],
+   [
+    -64,
+    30,
+    59,
+    150
+   ],
+   [
+    -65,
+    28,
+    58,
+    149
+   ],
+   [
+    -65,
+    29,
+    58,
+    149
+   ],
+   [
+    -64,
+    33,
+    61,
+    166
+   ],
+   [
+    -59,
+    21,
+    136,
+    160
+   ],
+   [
+    -84,
+    38,
+    36,
+    156
+   ]
+  ]
+ },
+ "lariat": {
+  "sprite": {
+   "image": "sheets/lariat.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 452,
+   "frameH": 409,
+   "originX": 219,
+   "originY": 407,
+   "scale": 0.5,
+   "holds": [
+    4,
+    3,
+    2,
+    2,
+    2,
+    4,
+    12,
+    12
+   ]
+  },
+  "from": "Malik_SpecialMove_Lariat.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    -1,
+    90
+   ],
+   [
+    -2,
+    107
+   ],
+   [
+    -4,
+    95
+   ],
+   [
+    -3,
+    94
+   ],
+   [
+    -3,
+    95
+   ],
+   [
+    -1,
+    103
+   ],
+   [
+    9,
+    90
+   ],
+   [
+    5,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -86,
+    1,
+    75,
+    187
+   ],
+   [
+    -95,
+    1,
+    79,
+    194
+   ],
+   [
+    -104,
+    1,
+    93,
+    170
+   ],
+   [
+    -105,
+    1,
+    95,
+    170
+   ],
+   [
+    -105,
+    1,
+    95,
+    170
+   ],
+   [
+    -108,
+    1,
+    115,
+    202
+   ],
+   [
+    -68,
+    1,
+    87,
+    185
+   ],
+   [
+    -74,
+    1,
+    83,
+    186
+   ]
+  ]
+ },
+ "lariat-trail": {
+  "sprite": {
+   "image": "sheets/lariat-trail.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 445,
+   "frameH": 149,
+   "originX": 222,
+   "originY": 74,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    4
+   ],
+   "additive": true
+  },
+  "from": "Malik_SpecialMove_Lariat_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "pillar": {
+  "sprite": {
+   "image": "sheets/pillar.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 370,
+   "frameH": 458,
+   "originX": 164,
+   "originY": 436,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    1,
+    9,
+    9,
+    9,
+    8
+   ]
+  },
+  "from": "Malik_SpecialMove_ResilencePillar.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    7,
+    90
+   ],
+   [
+    10,
+    94
+   ],
+   [
+    3,
+    86
+   ],
+   [
+    9,
+    73
+   ],
+   [
+    19,
+    84
+   ],
+   [
+    14,
+    81
+   ],
+   [
+    5,
+    83
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    0,
+    84,
+    205
+   ],
+   [
+    -54,
+    0,
+    83,
+    217
+   ],
+   [
+    -63,
+    0,
+    69,
+    203
+   ],
+   [
+    -81,
+    -9,
+    101,
+    198
+   ],
+   [
+    -59,
+    0,
+    98,
+    189
+   ],
+   [
+    -59,
+    0,
+    92,
+    177
+   ],
+   [
+    -71,
+    0,
+    75,
+    174
+   ]
+  ]
+ },
+ "pillar-fx": {
+  "sprite": {
+   "image": "sheets/pillar-fx.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 308,
+   "frameH": 667,
+   "originX": 146,
+   "originY": 663,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Malik_SpecialMove_ResilencePillar_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "vow-strike-quick": {
+  "sprite": {
+   "image": "sheets/vow-strike-quick.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 374,
+   "frameH": 425,
+   "originX": 166,
+   "originY": 423,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    10,
+    10
+   ]
+  },
+  "from": "Malik_Vow_Strike_Quick_Normal_Full.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    3,
+    88
+   ],
+   [
+    4,
+    91
+   ],
+   [
+    2,
+    92
+   ],
+   [
+    10,
+    102
+   ],
+   [
+    6,
+    91
+   ],
+   [
+    6,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    1,
+    73,
+    186
+   ],
+   [
+    -58,
+    1,
+    74,
+    188
+   ],
+   [
+    -76,
+    1,
+    93,
+    186
+   ],
+   [
+    -82,
+    1,
+    102,
+    210
+   ],
+   [
+    -79,
+    1,
+    91,
+    188
+   ],
+   [
+    -69,
+    1,
+    84,
+    191
+   ]
+  ]
+ },
+ "vow-strike": {
+  "sprite": {
+   "image": "sheets/vow-strike.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 374,
+   "frameH": 425,
+   "originX": 166,
+   "originY": 423,
+   "scale": 0.5,
+   "holds": [
+    5,
+    4,
+    4,
+    3,
+    11,
+    11
+   ]
+  },
+  "from": "Malik_Vow_Strike_Quick_Normal_Full.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    3,
+    88
+   ],
+   [
+    4,
+    91
+   ],
+   [
+    2,
+    92
+   ],
+   [
+    10,
+    102
+   ],
+   [
+    6,
+    91
+   ],
+   [
+    6,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    1,
+    73,
+    186
+   ],
+   [
+    -58,
+    1,
+    74,
+    188
+   ],
+   [
+    -76,
+    1,
+    93,
+    186
+   ],
+   [
+    -82,
+    1,
+    102,
+    210
+   ],
+   [
+    -79,
+    1,
+    91,
+    188
+   ],
+   [
+    -69,
+    1,
+    84,
+    191
+   ]
+  ]
+ },
+ "vow-strike-full": {
+  "sprite": {
+   "image": "sheets/vow-strike-full.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 374,
+   "frameH": 425,
+   "originX": 166,
+   "originY": 423,
+   "scale": 0.5,
+   "holds": [
+    5,
+    5,
+    5,
+    4,
+    12,
+    12
+   ]
+  },
+  "from": "Malik_Vow_Strike_Quick_Normal_Full.png",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    3,
+    88
+   ],
+   [
+    4,
+    91
+   ],
+   [
+    2,
+    92
+   ],
+   [
+    10,
+    102
+   ],
+   [
+    6,
+    91
+   ],
+   [
+    6,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    1,
+    73,
+    186
+   ],
+   [
+    -58,
+    1,
+    74,
+    188
+   ],
+   [
+    -76,
+    1,
+    93,
+    186
+   ],
+   [
+    -82,
+    1,
+    102,
+    210
+   ],
+   [
+    -79,
+    1,
+    91,
+    188
+   ],
+   [
+    -69,
+    1,
+    84,
+    191
+   ]
+  ]
+ },
+ "vow-blast": {
+  "sprite": {
+   "image": "sheets/vow-blast.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 392,
+   "frameH": 385,
+   "originX": 192,
+   "originY": 192,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    3,
+    3,
+    3,
+    3
+   ],
+   "additive": true
+  },
+  "from": "Malik_Vow_Strike_Quick_Normal_Full_Effect.jpg",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "rite-j": {
+  "sprite": {
+   "image": "sheets/rite-j.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 324,
+   "frameH": 443,
+   "originX": 160,
+   "originY": 385,
+   "scale": 0.5,
+   "holds": [
+    5,
+    6,
+    4,
+    7,
+    6
+   ]
+  },
+  "from": "Malik_Air_Rite.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "lantern": [
+   [
+    -4,
+    90
+   ],
+   [
+    -3,
+    93
+   ],
+   [
+    -2,
+    92
+   ],
+   [
+    -2,
+    89
+   ],
+   [
+    -4,
+    88
+   ]
+  ],
+  "reach": [
+   [
+    -79,
+    -11,
+    71,
+    183
+   ],
+   [
+    -79,
+    -9,
+    80,
+    186
+   ],
+   [
+    -62,
+    -14,
+    55,
+    191
+   ],
+   [
+    -66,
+    -13,
+    54,
+    185
+   ],
+   [
+    -66,
+    -28,
+    53,
+    191
+   ]
+  ]
+ },
+ "clap": {
+  "sprite": {
+   "image": "sheets/clap.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 349,
+   "frameH": 385,
+   "originX": 174,
+   "originY": 192,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    2,
+    3,
+    3,
+    4
+   ],
+   "additive": true
+  },
+  "from": "Malik_Air_Rite_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "rite-4": {
+  "sprite": {
+   "image": "sheets/rite-4.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 393,
+   "frameH": 433,
+   "originX": 169,
+   "originY": 431,
+   "scale": 0.5,
+   "holds": [
+    3,
+    5,
+    6,
+    5,
+    5,
+    5,
+    4
+   ]
+  },
+  "from": "Malik_Back_Rite.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "lantern": [
+   [
+    8,
+    90
+   ],
+   [
+    3,
+    87
+   ],
+   [
+    5,
+    99
+   ],
+   [
+    10,
+    108
+   ],
+   [
+    14,
+    95
+   ],
+   [
+    9,
+    90
+   ],
+   [
+    8,
+    90
+   ]
+  ],
+  "reach": [
+   [
+    -65,
+    0,
+    80,
+    186
+   ],
+   [
+    -65,
+    0,
+    68,
+    183
+   ],
+   [
+    -62,
+    0,
+    77,
+    208
+   ],
+   [
+    -83,
+    0,
+    110,
+    214
+   ],
+   [
+    -65,
+    0,
+    101,
+    196
+   ],
+   [
+    -50,
+    0,
+    73,
+    185
+   ],
+   [
+    -59,
+    0,
+    80,
+    186
+   ]
+  ]
+ },
+ "ward": {
+  "sprite": {
+   "image": "sheets/ward.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 463,
+   "frameH": 526,
+   "originX": 232,
+   "originY": 262,
+   "scale": 0.5,
+   "holds": [
+    2,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4
+   ],
+   "additive": true
+  },
+  "from": "Malik_Back_Rite_Effect.PNG",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "install-idle": {
+  "sprite": {
+   "image": "sheets/install-idle.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 277,
+   "frameH": 574,
+   "originX": 119,
+   "originY": 572,
+   "scale": 0.5,
+   "holds": [
+    10,
+    10,
+    10,
+    10,
+    10,
+    10
+   ]
+  },
+  "from": "Malik_Install_Idle.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    3,
+    143
+   ],
+   [
+    3,
+    145
+   ],
+   [
+    5,
+    144
+   ],
+   [
+    5,
+    143
+   ],
+   [
+    4,
+    143
+   ],
+   [
+    1,
+    143
+   ]
+  ],
+  "reach": [
+   [
+    -58,
+    0,
+    69,
+    285
+   ],
+   [
+    -54,
+    0,
+    67,
+    285
+   ],
+   [
+    -53,
+    0,
+    67,
+    284
+   ],
+   [
+    -57,
+    0,
+    77,
+    283
+   ],
+   [
+    -55,
+    0,
+    66,
+    283
+   ],
+   [
+    -55,
+    0,
+    65,
+    280
+   ]
+  ]
+ },
+ "install-walk": {
+  "sprite": {
+   "image": "sheets/install-walk.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 331,
+   "frameH": 577,
+   "originX": 170,
+   "originY": 575,
+   "scale": 0.5,
+   "holds": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8
+   ]
+  },
+  "from": "Malik_Install_Forward_Walk.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    -1,
+    156
+   ],
+   [
+    0,
+    155
+   ],
+   [
+    0,
+    164
+   ],
+   [
+    0,
+    157
+   ],
+   [
+    -1,
+    156
+   ],
+   [
+    -2,
+    163
+   ]
+  ],
+  "reach": [
+   [
+    -83,
+    0,
+    77,
+    285
+   ],
+   [
+    -82,
+    0,
+    76,
+    285
+   ],
+   [
+    -83,
+    0,
+    75,
+    286
+   ],
+   [
+    -84,
+    0,
+    77,
+    286
+   ],
+   [
+    -82,
+    0,
+    75,
+    286
+   ],
+   [
+    -83,
+    0,
+    79,
+    286
+   ]
+  ]
+ },
+ "install-dash": {
+  "sprite": {
+   "image": "sheets/install-dash.png",
+   "columns": 4,
+   "rows": 1,
+   "count": 4,
+   "frameW": 391,
+   "frameH": 570,
+   "originX": 213,
+   "originY": 401,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Install_Forward_Dash.PNG",
+  "drawings": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "lantern": [
+   [
+    -10,
+    77
+   ],
+   [
+    -7,
+    82
+   ],
+   [
+    -6,
+    84
+   ],
+   [
+    -6,
+    84
+   ]
+  ],
+  "reach": [
+   [
+    -105,
+    -83,
+    87,
+    194
+   ],
+   [
+    -98,
+    -74,
+    87,
+    198
+   ],
+   [
+    -100,
+    -72,
+    87,
+    199
+   ],
+   [
+    -93,
+    -73,
+    79,
+    199
+   ]
+  ]
+ },
+ "install-dash-stop": {
+  "sprite": {
+   "image": "sheets/install-dash-stop.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 364,
+   "frameH": 574,
+   "originX": 182,
+   "originY": 572,
+   "scale": 0.5,
+   "holds": [
+    2,
+    1
+   ]
+  },
+  "from": "Malik_Install_Forward_Dash.PNG",
+  "drawings": [
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    1,
+    152
+   ],
+   [
+    -4,
+    157
+   ]
+  ],
+  "reach": [
+   [
+    -90,
+    1,
+    85,
+    285
+   ],
+   [
+    -87,
+    1,
+    89,
+    285
+   ]
+  ]
+ },
+ "install-jumpsquat": {
+  "sprite": {
+   "image": "sheets/install-jumpsquat.png",
+   "columns": 1,
+   "rows": 1,
+   "count": 1,
+   "frameW": 282,
+   "frameH": 530,
+   "originX": 137,
+   "originY": 528,
+   "scale": 0.5,
+   "holds": [
+    3
+   ]
+  },
+  "from": "Malik_Install_Jump.jpg",
+  "drawings": [
+   1
+  ],
+  "lantern": [
+   [
+    -2,
+    137
+   ]
+  ],
+  "reach": [
+   [
+    -67,
+    1,
+    70,
+    263
+   ]
+  ]
+ },
+ "install-jump": {
+  "sprite": {
+   "image": "sheets/install-jump.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 278,
+   "frameH": 583,
+   "originX": 135,
+   "originY": 466,
+   "scale": 0.5,
+   "holds": [
+    5,
+    9,
+    9,
+    9,
+    28
+   ]
+  },
+  "from": "Malik_Install_Jump.jpg",
+  "drawings": [
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    0,
+    95
+   ],
+   [
+    2,
+    97
+   ],
+   [
+    0,
+    91
+   ],
+   [
+    -1,
+    88
+   ],
+   [
+    2,
+    89
+   ]
+  ],
+  "reach": [
+   [
+    -66,
+    -56,
+    67,
+    229
+   ],
+   [
+    -62,
+    -52,
+    69,
+    232
+   ],
+   [
+    -62,
+    -45,
+    67,
+    216
+   ],
+   [
+    -66,
+    -43,
+    65,
+    203
+   ],
+   [
+    -64,
+    -40,
+    65,
+    207
+   ]
+  ]
+ },
+ "install-fall": {
+  "sprite": {
+   "image": "sheets/install-fall.png",
+   "columns": 2,
+   "rows": 1,
+   "count": 2,
+   "frameW": 273,
+   "frameH": 587,
+   "originX": 135,
+   "originY": 439,
+   "scale": 0.5,
+   "holds": [
+    8,
+    52
+   ]
+  },
+  "from": "Malik_Install_Jump.jpg",
+  "drawings": [
+   7,
+   8
+  ],
+  "lantern": [
+   [
+    2,
+    93
+   ],
+   [
+    1,
+    88
+   ]
+  ],
+  "reach": [
+   [
+    -66,
+    -58,
+    66,
+    218
+   ],
+   [
+    -66,
+    -72,
+    67,
+    218
+   ]
+  ]
+ },
+ "install-land": {
+  "sprite": {
+   "image": "sheets/install-land.png",
+   "columns": 1,
+   "rows": 1,
+   "count": 1,
+   "frameW": 278,
+   "frameH": 575,
+   "originX": 137,
+   "originY": 573,
+   "scale": 0.5,
+   "holds": [
+    3
+   ]
+  },
+  "from": "Malik_Install_Jump.jpg",
+  "drawings": [
+   9
+  ],
+  "lantern": [
+   [
+    -1,
+    150
+   ]
+  ],
+  "reach": [
+   [
+    -67,
+    1,
+    68,
+    285
+   ]
+  ]
+ },
+ "install-1": {
+  "sprite": {
+   "image": "sheets/install-1.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 346,
+   "frameH": 611,
+   "originX": 155,
+   "originY": 609,
+   "scale": 0.5,
+   "holds": [
+    3,
+    3,
+    3,
+    3,
+    4,
+    4
+   ]
+  },
+  "from": "Malik_Install_Transformation_Part1.jpg",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    1,
+    97
+   ],
+   [
+    0,
+    119
+   ],
+   [
+    1,
+    141
+   ],
+   [
+    -2,
+    161
+   ],
+   [
+    1,
+    141
+   ],
+   [
+    5,
+    152
+   ]
+  ],
+  "reach": [
+   [
+    -41,
+    0,
+    49,
+    196
+   ],
+   [
+    -59,
+    0,
+    74,
+    277
+   ],
+   [
+    -60,
+    0,
+    80,
+    279
+   ],
+   [
+    -76,
+    0,
+    94,
+    303
+   ],
+   [
+    -74,
+    0,
+    68,
+    283
+   ],
+   [
+    -68,
+    0,
+    77,
+    296
+   ]
+  ]
+ },
+ "install-2": {
+  "sprite": {
+   "image": "sheets/install-2.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 360,
+   "frameH": 617,
+   "originX": 173,
+   "originY": 615,
+   "scale": 0.5,
+   "holds": [
+    4,
+    4,
+    3,
+    3,
+    3,
+    3
+   ]
+  },
+  "from": "Malik_Install_Transformation_Part2.jpg",
+  "drawings": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    2,
+    146
+   ],
+   [
+    3,
+    141
+   ],
+   [
+    2,
+    148
+   ],
+   [
+    5,
+    143
+   ],
+   [
+    -1,
+    147
+   ],
+   [
+    -1,
+    147
+   ]
+  ],
+  "reach": [
+   [
+    -75,
+    1,
+    77,
+    297
+   ],
+   [
+    -82,
+    1,
+    82,
+    306
+   ],
+   [
+    -85,
+    1,
+    91,
+    306
+   ],
+   [
+    -63,
+    1,
+    83,
+    297
+   ],
+   [
+    -79,
+    1,
+    82,
+    285
+   ],
+   [
+    -76,
+    1,
+    82,
+    285
+   ]
+  ]
+ }
+}

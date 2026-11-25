@@ -1,0 +1,8 @@
+{
+  "notes": "The fight camera (drawing only; the rules never read this). groundLine: where the floor sits, as a share of the screen height from the top, at every zoom. zoom.near: how much the picture is enlarged while the players are close (1 = the whole 960 px wide view); zoom.far: at full distance. The camera stays at 'near' until the players are nearGap px apart, then widens steadily to 'far' at farGap px. sideMargin: px of room kept outside each player's centre line, whatever the numbers above say. zoom.ease: the share of the remaining change made each frame (smaller = slower, 1 = snaps). jump.headroom: px of room kept above the feet of the highest fighter; jump.topMargin: screen px kept clear at the top (the health bars); jump.zoomOut: a fighter high in the air widens the view before the camera lifts, so the one on the ground stays in the picture; jump.ease: how fast the camera rises and settles. wallMargin: px of view past the stage walls. render.native: draw at the real screen resolution instead of 960x540 stretched; render.maxScale caps it (2 = 1080p, 4 = 4K).",
+  "groundLine": 0.895,
+  "zoom": { "near": 1.5, "far": 1.0, "nearGap": 460, "farGap": 820, "sideMargin": 70, "ease": 0.12 },
+  "jump": { "headroom": 170, "topMargin": 40, "zoomOut": true, "ease": 0.25 },
+  "wallMargin": 20,
+  "render": { "native": true, "maxScale": 4 }
+}

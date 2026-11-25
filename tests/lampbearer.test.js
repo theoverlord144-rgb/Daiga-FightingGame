@@ -44,7 +44,7 @@ test('the old kit is gone from the live Avner, and kept whole in the archive', (
 });
 
 test('normals: startup, active and recovery are the spec\'s, and the drawings fill each move exactly', () => {
-  const want = { '5L': [5, 2, 9], '5M': [8, 3, 14], '5H': [14, 4, 22], backHeavy: [14, 5, 22], '5S': [11, 5, 22], '2L': [5, 2, 9], '2M': [9, 3, 15], '2H': [12, 4, 24], 'j.L': [5, 3, 10], 'j.M': [8, 5, 14], 'j.H': [12, 5, 18] };
+  const want = { '5L': [5, 2, 9], '5M': [8, 3, 14], '5H': [12, 4, 20], backHeavy: [12, 4, 20], '5S': [10, 4, 22], '2L': [5, 2, 9], '2M': [8, 3, 15], '2H': [12, 3, 24], lanternDrag: [16, 6, 24], waningHop: [22, 3, 16], 'j.L': [5, 3, 10], 'j.M': [7, 4, 14], 'j.H': [10, 4, 18] };
   for (const [id, [s, a, r]] of Object.entries(want)) {
     const m = RAW.moves.find((x) => x.id === id);
     assert.deepEqual([m.startup, m.active, m.recovery], [s, a, r], id);
@@ -55,155 +55,213 @@ test('normals: startup, active and recovery are the spec\'s, and the drawings fi
     assert.equal(first, s - 1, `${id}: first active frame`);
     assert.equal(st.frames.filter((f) => f.hit.length).length, a, `${id}: active frames`);
   }
-  assert.equal(RAW.moves.find((m) => m.id === 'j.S').startup, 14);
+  // j.S (owner, Nov 24): 12 / 4, then he rides it down; once per jump; its own 14-frame landing; a hit drops him straight down.
+  const crash = A.states['j.S'];
+  assert.deepEqual([crash.move.startup, crash.move.active], [12, 4]);
+  assert.equal(crash.frames.findIndex((f) => f.hit.length), 11);
+  assert.equal(crash.move.perJump, 'crash');
+  assert.equal(crash.landTo, 'crashLand');
+  assert.equal(crash.move.onHitState, 'crashFall');
+  assert.equal(A.states.crashFall.landTo, 'crashLand');
+  assert.equal(A.states.crashLand.duration, 14);
+  assert.equal(crash.move.airReaction, 'hardKD');
   for (const [id, guard] of [['2L', 'low'], ['2M', 'low'], ['2H', 'low'], ['j.L', 'high'], ['5H', 'mid']]) assert.equal(A.states[id].move.guard, guard, id);
   assert.equal(A.states['5S'].move.launchType, 'hard');
   assert.ok(A.states['2H'].move.knockdown);
-  // The Crescent Kick: he steps back in its startup. (Its reach is the owner's to tune in the box editor: not checked.)
+  // Crescent Withdraw (4H, owner Nov 24): a short hop back. Off the floor from frame 4 until he lands, a light pop-up on
+  // hit, a spin on counter hit, -8 on block.
+  const cw = A.states.backHeavy;
+  const low = (i) => Math.min(...cw.frames[i].hurt.map((b) => b[1]));
+  assert.ok(low(2) < 1000, 'on the floor for the first three frames');
+  for (let i = 3; i < 25; i++) assert.ok(low(i) >= 2000 && cw.frames[i].invThrow, `frame ${i + 1}: off the floor, cannot be thrown`);
+  assert.ok(low(25) < 1000 && !cw.frames[25].invThrow, 'landed');
+  assert.equal(cw.move.launchType, 'soft');
+  assert.equal(cw.move.counterReaction, 'spin');
+  assert.equal(cw.move.blockstun - (cw.move.active - 1) - cw.move.recovery, -8, '-8 on block');
   const g = setup(600);
   const x0 = g.players[0].x;
-  run(g, '4+H 5*12');
-  assert.ok(g.players[0].x < x0, 'stepped back');
+  run(g, '4+H 5*40');
+  const back = (x0 - g.players[0].x) / 100;
+  assert.ok(back >= 15 && back <= 30, `he moved back about a quarter of his width (${back} px)`);
 });
 
-test('Rising Moon: the moon rises 140 / 320 / 520 in front, first active on frame 16 / 20 / 24, after a warning', () => {
-  for (const [b, dist, frame] of [['L', 140, 16], ['M', 320, 20], ['H', 520, 24]]) {
-    const g = setup(dist);
+test('Rising Moon: released on frame 14 from the lantern (drawing 4); the orb flies near, mid or far by button', () => {
+  assert.deepEqual(RAW.moves.find((m) => m.id === 'risingMoonL').sprite.holds, [5, 4, 4, 4, 5, 8, 7, 6]);
+  const reach = (b) => { const p = A.projectiles['moonOrb' + b]; return (p.speed * p.lifetime) / 100; };
+  assert.ok(reach('L') < reach('M') && reach('M') < reach('H'), 'near, mid, far');
+  for (const b of ['L', 'M', 'H']) {
+    const g = setup(900);
     const x0 = g.players[0].x;
-    const cues = run(g, `2 3 6+${b} 5*70`);
+    const cues = run(g, `2 3 6+${b} 5*60`);
     const spawn = cues.find((c) => c.type === 'spawn');
-    assert.equal(spawn.name, 'risingMoon');
-    const hit = hitOf(cues, 'risingMoon');
-    assert.ok(hit, `${b}: the moon hits a fighter standing ${dist} px away`);
-    assert.equal(hit.at + 1, frame, `${b}: first active frame of the move`);
-    assert.ok(hit.at - spawn.at >= 3, `${b}: the warning shows for at least 3 frames (${hit.at - spawn.at})`);
-    assert.equal(hit.state, `risingMoon${b}`);
-    // It is an object in the game state, where the data says.
-    const g2 = setup(900);
-    run(g2, `2 3 6+${b} 5*${frame - 1}`);
-    assert.equal(g2.projectiles.length, 1);
-    assert.equal(g2.projectiles[0].x - g2.players[0].x, px(dist), `${b}: distance`);
-    assert.equal(g2.projectiles[0].y, 0, 'on the ground');
+    assert.equal(spawn.name, 'moonOrb' + b);
+    assert.equal(spawn.at + 1, 14, `${b}: released on frame 14`);
+    const st = A.states['risingMoon' + b];
+    assert.deepEqual([st.move.startup, st.move.active, st.move.recovery, st.duration], [14, 0, 30, 43]);
+    assert.equal(st.frames[13].sprite.index, 3, 'the release drawing comes up on frame 14');
+    assert.equal(st.frames[12].sprite.index, 2);
+    // It leaves the lantern: its place on that drawing.
+    assert.deepEqual(RAW.projectiles['moonOrb' + b].spawn, RAW.art.lantern.at['sheets/rising-moon.png'][3]);
     assert.equal(g.players[0].x, x0, 'he does not move');
   }
+  // Who reaches what: L only close, M to mid range, H far.
+  const lands = (b, gap) => !!hitOf(run(setup(gap), `2 3 6+${b} 5*90`), 'moonOrb' + b);
+  assert.deepEqual([lands('L', 150), lands('L', 300)], [true, false]);
+  assert.deepEqual([lands('M', 300), lands('M', 500)], [true, false]);
+  assert.ok(lands('H', 500));
 });
 
-test('Rising Moon: a soft launch; it hits crouching and airborne fighters; it can be blocked; one moon at a time', () => {
-  assert.equal(A.projectiles.risingMoon.move.launchType, 'soft');
-  let g = setup(140);
-  let cues = run(g, '2 3 6+L 5*40', '2*45');
-  assert.ok(hitOf(cues, 'risingMoon'), 'hits a crouching fighter');
-  g = setup(140);
-  cues = run(g, '5*12 2 3 6+L 5*40', '8 5*60'); // the opponent jumps straight up over the spot
-  assert.ok(hitOf(cues, 'risingMoon'), 'hits a fighter in the air above it');
-  g = setup(140);
-  cues = run(g, '2 3 6+L 5*40', '6*45'); // P2 holds away from Avner
+test('Rising Moon: a soft launch; it hits a crouching fighter; it can be blocked; one moon at a time', () => {
+  for (const b of ['L', 'M', 'H']) assert.equal(A.projectiles['moonOrb' + b].move.launchType, 'soft');
+  let g = setup(200);
+  let cues = run(g, '2 3 6+M 5*60', '2*70');
+  assert.ok(hitOf(cues, 'moonOrbM'), 'hits a crouching fighter');
+  g = setup(150);
+  cues = run(g, '2 3 6+L 5*60', '6*70'); // P2 holds away from Avner
   assert.ok(cues.some((c) => c.type === 'block'), 'blocked by holding back');
-  assert.ok(!hitOf(cues, 'risingMoon'));
+  assert.ok(!hitOf(cues, 'moonOrbL'));
   // The far moon is still out when he has recovered: a second one is refused until it is gone.
   g = setup(900);
-  cues = run(g, '2 3 6+H 5*34 2 3 6+L 5*6');
+  cues = run(g, '2 3 6+H 5*42 2 3 6+L 5*6');
   assert.equal(cues.filter((c) => c.type === 'spawn').length, 1);
   assert.equal(g.projectiles.length, 1, 'the far moon is still there after he recovered');
   assert.notEqual(g.players[0].state, 'risingMoonL', 'no second moon while one is out');
-  // The surge (the moon's last active drawing) is a bigger box.
-  const ph = A.projectiles.risingMoon.phases;
-  assert.equal(ph.length, 2);
-  assert.ok(ph[1].box[0][2] > ph[0].box[0][2] && ph[1].box[0][3] > ph[0].box[0][3]);
-  assert.equal(ph[0].from, 6);
-  assert.equal(ph[1].to, 15, 'live on the moon\'s drawings 3 to 6');
 });
 
-test('Rising Moon EX: one bar, under the opponent wherever they stand, the warning 4 frames longer', () => {
-  for (const gap of [200, 700, 1000]) {
+test('Rising Moon EX: one bar, two moons; the second spins them and always leaves a Moonmark; about 1,300 damage', () => {
+  for (const gap of [120, 250]) {
     const g = setup(gap);
     g.players[0].meter = 20000;
-    const cues = run(g, '2 3 6+LS 5*60');
-    assert.equal(g.players[0].meter < 20000, true);
-    const spawn = cues.find((c) => c.type === 'spawn');
-    assert.equal(spawn.name, 'risingMoonEx');
-    const hit = hitOf(cues, 'risingMoonEx');
-    assert.ok(hit, `hits from ${gap} px`);
-    assert.equal(hit.at - spawn.at, 10, 'warning 6 + 4 frames');
+    const hp = g.players[1].health;
+    const cues = run(g, '2 3 6+LS 5*120');
+    assert.ok(g.players[0].meter < 20000 && g.players[0].meter >= 10000, 'one bar spent (the hits give some back)');
+    assert.deepEqual(cues.filter((c) => c.type === 'spawn').map((c) => c.name), ['risingMoonEx', 'risingMoonEx2']);
+    assert.ok(hitOf(cues, 'risingMoonEx'), `the first moon hits from ${gap} px`);
+    const second = hitOf(cues, 'risingMoonEx2');
+    assert.ok(second, 'the second moon combos');
+    assert.equal(second.react, 'spin');
+    assert.equal(second.hits, 2);
+    assert.equal(g.players[0].vars.moonmark, 1, 'a Moonmark, with no moonlight anywhere');
+    const dmg = hp - g.players[1].health;
+    assert.ok(dmg >= 1250 && dmg <= 1350, `about 1,300 (${dmg})`);
+    // The mark makes R the Snap, zone or no zone.
+    run(g, '5+R 5*2');
+    assert.equal(g.players[0].state, 'moonSnap');
   }
-  const g = setup(700);
-  g.players[0].meter = 20000;
-  run(g, '2 3 6+LS 5*10');
-  assert.equal(g.projectiles[0].x, g.players[1].x, 'directly under the opponent');
+  // Drawn 1.3 times the size.
+  assert.equal(RAW.projectiles.risingMoonEx.sprite.scale / RAW.projectiles.moonOrbL.sprite.scale, 1.3);
 });
 
-test('Lunar Halo: startup 6 / 8 / 11, EX 5; a circle around him that hits behind too; launches; very unsafe on block', () => {
-  for (const [input, id, startup] of [['L', 'haloL', 6], ['M', 'haloM', 8], ['H', 'haloH', 11], ['LS', 'haloL_ex', 5]]) {
+test('Lunar Halo: 5 startup, 6 active, invincible frames 1-8; he rises with it and lands into his own landing; very unsafe on block', () => {
+  for (const [input, id] of [['L', 'haloL'], ['M', 'haloM'], ['H', 'haloH'], ['LS', 'haloL_ex']]) {
     const g = setup(70);
     g.players[0].meter = 20000;
     const cues = run(g, `6 2 3+${input} 5*60`);
     const hit = hitOf(cues, id);
     assert.ok(hit, `${id} hits`);
-    assert.equal(hit.at + 1, startup, `${id}: startup`);
+    assert.equal(hit.at + 1, 5, `${id}: startup`);
     assert.ok(g.players[1].combo || g.players[1].lastCombo, 'a combo started');
-    assert.equal(A.states[id].frames.filter((f) => f.hit.length).length, 10, `${id}: live on burst drawings 2 to 5`);
+    const st = A.states[id];
+    assert.equal(st.frames.filter((f) => f.hit.length).length, 6, `${id}: 6 active frames`);
+    assert.deepEqual([st.frames[3].sprite.index, st.frames[4].sprite.index, st.frames[7].sprite.index, st.frames[10].sprite.index], [1, 2, 3, 4], 'the two hit drawings cover the active frames');
+    for (let f = 0; f < 8; f++) assert.ok(st.frames[f].invStrike && st.frames[f].invThrow, `${id}: invincible on frame ${f + 1}`);
+    assert.ok(!st.frames[8].invStrike, `${id}: not on frame 9`);
     // The box reaches as far behind him as in front.
-    const boxes = A.states[id].frames[startup - 1].hit;
+    const boxes = st.frames[4].hit;
     const left = Math.min(...boxes.map((b) => b[0])), right = Math.max(...boxes.map((b) => b[0] + b[2]));
     assert.equal(left, -right, `${id}: the same both sides`);
   }
+  assert.deepEqual(RAW.moves.find((m) => m.id === 'haloL').sprite.holds.slice(0, 5), [2, 2, 3, 3, 6]);
+  // He leaves the ground on drawing 2, is lifted over drawings 2-4, falls on drawing 6 and lands into drawings 7-8.
+  const w = setup(900);
+  const p = w.players[0];
+  let top = 0, firstUp = -1, landed = -1, len = 0;
+  for (const raw of script('6 2 3+L 5*70')) {
+    step(w, [raw, 0], W);
+    if (p.state === 'haloL') { if (p.y > 0 && firstUp < 0) firstUp = p.frame; top = Math.max(top, p.y); }
+    if (p.state === 'haloLand' && landed < 0) landed = len;
+    if (p.state === 'haloL' || p.state === 'haloLand') len++;
+  }
+  assert.equal(firstUp, 2, 'off the ground on drawing 2');
+  assert.equal(top, px(88));
+  assert.equal(A.states.haloL.frames[10].sprite.index, 4, 'at the top on drawing 5');
+  assert.ok(landed > 16, 'he lands during drawing 6');
+  assert.deepEqual(RAW.states.haloLand.sprite.holds, [8, 6]);
+  assert.equal(len, 38, 'the whole move on a miss');
+  assert.equal(p.state, 'idle');
   // Bigger by version.
   const reach = (id) => Math.max(...A.states[id].frames.find((f) => f.hit.length).hit.map((b) => b[0] + b[2]));
   assert.ok(reach('haloL') < reach('haloM') && reach('haloM') < reach('haloH'));
   assert.equal(reach('haloH'), reach('haloL_ex'));
   assert.deepEqual([RAW.effects.haloBurstL.sprite.scale, RAW.effects.haloBurstM.sprite.scale, RAW.effects.haloBurstH.sprite.scale].map((s) => s / RAW.effects.haloBurstM.sprite.scale), [0.7, 1, 1.3]);
+  assert.deepEqual(RAW.effects.haloBurstM.holds, [2, 2, 3, 3, 3, 4, 4, 4]);
   // A cross-up: the opponent is behind him when it comes out, and is still hit.
   const g = setup(70);
   const cues = run(g, '6 2 3+M');
   g.players[1].x = g.players[0].x - px(70); // they cross over him as it starts
   cues.push(...run(g, '5*30'));
   assert.ok(hitOf(cues, 'haloM'), 'hits a fighter behind him');
-  // H: only his lower body can be hit while it starts. EX: nothing can hit him for 10 frames.
-  assert.ok(A.states.haloH.frames[3].hurt.every((b) => b[1] + b[3] <= 7000), 'H: upper body invincible in startup');
-  for (let f = 0; f < 10; f++) assert.ok(A.states.haloL_ex.frames[f].invStrike && A.states.haloL_ex.frames[f].invThrow, `EX frame ${f + 1}`);
-  assert.ok(!A.states.haloL_ex.frames[10].invStrike);
-  // Blocked: the attacker is stuck about 25 frames longer than the defender.
+  // Blocked (crouching): the attacker is stuck about 19 frames longer than the defender.
   const b = setup(70);
-  let freeA = -1, freeD = -1;
-  const a = script('6 2 3+M 5*90'), d = script('6*8 6*90');
-  for (let i = 0; i < 90; i++) {
+  let lastA = -1, lastD = -1;
+  const a = script('6 2 3+M 5*90'), d = script('3*100');
+  for (let i = 0; i < 100; i++) {
     step(b, [a[i] ?? 0, d[i] ?? 0], W);
-    if (i > 12 && freeA < 0 && b.players[0].state === 'idle') freeA = i;
-    if (i > 12 && freeD < 0 && !['blockStand', 'blockCrouch'].includes(b.players[1].state)) freeD = i;
+    if (b.players[0].state === 'haloM' || b.players[0].state === 'haloLand') lastA = i;
+    if (b.players[1].state === 'blockCrouch') lastD = i;
   }
-  assert.ok(freeA > 0 && freeD > 0);
-  assert.ok(freeD - freeA <= -22 && freeD - freeA >= -28, `on block: ${freeD - freeA}`);
+  assert.ok(lastA > 0 && lastD > 0, 'it was blocked');
+  assert.ok(lastD - lastA <= -15 && lastD - lastA >= -24, `on block: ${lastD - lastA}`);
 });
 
-test('Tide: a wave runs along the ground, farther by button; a touch drags the opponent in close, still in hitstun', () => {
-  const reach = (b) => { const p = A.projectiles[`tide${b}`]; return (p.spawn[0] + p.speed * p.lifetime) / 100; };
+test('Tide: the wave is released on frame 16 and hauled back on frame 25; a hooked opponent is pulled in close on the haul, still in hitstun', () => {
+  assert.deepEqual(RAW.moves.find((m) => m.id === 'tideL').sprite.holds, [5, 5, 5, 4, 5, 6, 7, 6]);
+  const reach = (b) => { const p = A.projectiles[`tideWave${b}`]; return (p.spawn[0] + p.speed * p.lifetime) / 100; };
   assert.ok(reach('L') < reach('M') && reach('M') < reach('H'));
   for (const [b, gap] of [['L', 200], ['M', 300], ['H', 420]]) {
+    const st = A.states['tide' + b];
+    assert.deepEqual([st.frames[15].sprite.index, st.frames[14].sprite.index, st.frames[24].sprite.index, st.frames[23].sprite.index], [3, 2, 5, 4], 'drawing 4 on frame 16, drawing 6 on frame 25');
+    assert.equal(st.duration, 43);
     const g = setup(gap);
-    const cues = run(g, '2 1 4+' + b);
-    for (let i = 0; i < 60 && !hitOf(cues, `tide${b}`); i++) cues.push(...run(g, '5'));
+    const cues = run(g, '2 1 4+' + b + ' 5*30');
     const spawn = cues.find((c) => c.type === 'spawn');
-    assert.equal(spawn.at, 6, 'the wave leaves his hand on body drawing 3');
-    assert.ok(hitOf(cues, `tide${b}`), `${b} reaches ${gap} px`);
+    assert.equal(spawn.name, 'tideWave' + b);
+    assert.equal(spawn.at + 1, 16, 'the wave leaves on drawing 4');
+    const touch = hitOf(cues, 'tideWave' + b);
+    assert.ok(touch, `${b} reaches ${gap} px`);
+    const gapAtTouch = g.players[1].x - g.players[0].x;
+    const haul = hitOf(cues, 'tide' + b);
+    assert.ok(haul, `${b}: the haul lands on the hooked opponent`);
+    assert.equal(haul.at + 1, 25, 'the pull starts on drawing 6');
+    assert.ok(haul.i > touch.i, 'the wave first, then the haul');
+    const end = cues.find((c) => c.type === 'projectileEnd');
+    assert.equal(end.i, haul.i, 'the wave is drawn back on the same frame');
+    assert.ok(gapAtTouch <= px(gap) + px(1), 'nobody was pushed away by the wave');
     run(g, '5*24');
     assert.equal(g.players[0].state, 'idle', 'he has recovered');
     assert.ok(g.players[1].x - g.players[0].x <= px(90), `${b}: dragged in close`);
     assert.ok(g.players[1].stun > 0 && g.players[1].combo, `${b}: still in hitstun for a follow-up`);
+    assert.equal(g.players[1].combo.hits, 2);
   }
   // Out of reach: nothing happens. L does not reach where H does.
   const far = setup(420);
-  assert.ok(!hitOf(run(far, '2 1 4+L 5*60'), 'tideL'));
+  const none = run(far, '2 1 4+L 5*60');
+  assert.ok(!hitOf(none, 'tideWaveL') && !hitOf(none, 'tideL'));
+  // Blocked: no hook, so the haul touches nothing.
+  const blocked = run(setup(200), '2 1 4+M 5*60', '6*70');
+  assert.ok(blocked.some((c) => c.type === 'block'));
+  assert.ok(!hitOf(blocked, 'tideM'), 'a blocked wave pulls nobody');
   // Whether a wave catches a jumping opponent is one switch in its data (`hitsAirborne`; the owner's to set per wave).
   for (const on of [false, true]) {
     const raw = loadJSON(FILE);
-    raw.projectiles.tideM.hitsAirborne = on;
-    raw.projectiles.tideM.hitbox = [-40, 0, 80, 220];
+    raw.projectiles.tideWaveM.hitsAirborne = on;
+    raw.projectiles.tideWaveM.hitbox = [-40, 0, 80, 220];
     const def = compileCharacter(raw, SYSTEM);
     const w = loadWorld(def, def);
     const g = createGame(w);
     g.players[0].x = -px(150);
     g.players[1].x = px(150);
-    const p1 = script('2 1 4+M 5*60'), p2 = script('8 5*90');
+    const p1 = script('2 1 4+M 5*60'), p2 = script('5*8 8 5*90');
     let caught = false, landed = false;
     for (let i = 0; i < p1.length; i++) {
       step(g, [p1[i], p2[i] ?? 0], w);
@@ -211,7 +269,22 @@ test('Tide: a wave runs along the ground, farther by button; a touch drags the o
     }
     assert.equal(caught, on, on ? 'switch on: caught in the air' : 'switch off: the wave passes under a jump');
   }
-  assert.equal(A.projectiles.tideEx.move.hitsAirborne, true, 'EX always catches airborne opponents');
+  assert.equal(A.projectiles.tideWaveEx.move.hitsAirborne, true, 'EX always catches airborne opponents');
+});
+
+test('Tide EX: one bar, a bigger wave; it pulls them in and spins them; about 1,200 damage', () => {
+  const g = setup(250);
+  g.players[0].meter = 20000;
+  const hp = g.players[1].health;
+  const cues = run(g, '2 1 4+MS 5*120');
+  assert.ok(g.players[0].meter < 20000 && g.players[0].meter >= 10000, 'one bar spent (the hits give some back)');
+  assert.ok(hitOf(cues, 'tideWaveEx'));
+  const haul = hitOf(cues, 'tideM_ex');
+  assert.ok(haul, 'the haul');
+  assert.equal(haul.react, 'spin');
+  const dmg = hp - g.players[1].health;
+  assert.ok(dmg >= 1150 && dmg <= 1250, `about 1,200 (${dmg})`);
+  assert.equal(RAW.projectiles.tideWaveEx.sprite.scale / RAW.projectiles.tideWaveL.sprite.scale, 1.3);
 });
 
 test('Moonlit: R places the crescent in front, 6R far, 2R over himself, j.R from the air; one at a time', () => {
@@ -227,13 +300,16 @@ test('Moonlit: R places the crescent in front, 6R far, 2R over himself, j.R from
   const cues = run(air, '8 5*12 5+R 5*14');
   assert.equal(cues.find((c) => c.type === 'spawn')?.name, 'crescent', 'j.R');
   assert.equal(air.projectiles[0].y, 0, 'the light is on the ground wherever he was');
-  assert.deepEqual(A.rite.moves, ['moonlit5', 'moonlit6', 'moonlit2', 'moonlitJ', 'moonSnap', 'moonRecall']);
+  assert.deepEqual(A.rite.moves, ['moonlit5', 'moonlit6', 'moonlit2', 'moonlitJ', 'moonSnap']);
+  // Cast on frame 9 on the ground (4, 4, then the cast drawing), on frame 5 in the air.
+  for (const id of ['moonlit5', 'moonlit6', 'moonlit2']) assert.deepEqual([A.states[id].move.startup, A.states[id].duration, RAW.moves.find((m) => m.id === id).timeline[0].at, A.states[id].frames[8].sprite.index], [9, 30, 8, 2], id);
+  assert.deepEqual([A.states.moonlitJ.move.startup, A.states.moonlitJ.duration, RAW.moves.find((m) => m.id === 'moonlitJ').timeline[0].at, A.states.moonlitJ.frames[4].sprite.index], [5, 16, 4, 1]);
   assert.equal(A.rite.gauge, null);
 });
 
 test('Moonlit: a hit on an opponent in the light marks them; only there; and they fall slower there', () => {
   // In the light.
-  let g = setup(150);
+  let g = setup(110); // close enough for the jab, and still inside the light placed 150 px ahead
   run(g, '5+R 5*40 5+L 5*12');
   assert.equal(g.players[0].vars.moonmark, 1, 'marked');
   // Outside it (the crescent is placed far away).
@@ -242,7 +318,7 @@ test('Moonlit: a hit on an opponent in the light marks them; only there; and the
   assert.ok(g.players[1].lastCombo || g.players[1].combo, 'the jab landed');
   assert.equal(g.players[0].vars.moonmark, 0, 'no mark outside the light');
   // A blocked hit does not mark.
-  g = setup(150);
+  g = setup(110); // close enough for the jab, and still inside the light placed 150 px ahead
   run(g, '5+R 5*40 5+L 5*12', '6*70');
   assert.equal(g.players[0].vars.moonmark, 0, 'blocked: no mark');
   // Gravity: the same jump, in and out of the light.
@@ -262,36 +338,33 @@ test('Moonlit: a hit on an opponent in the light marks them; only there; and the
   assert.equal(self(true), self(false));
 });
 
-test('Moonlit: R with a mark is the moonbeam (small damage, combo-able, uses the mark); R without one sends the crescent home', () => {
-  const g = setup(150);
-  run(g, '5+R 5*40 5+L 5*4');
+test('Moonlit Snap: R with a mark is the moonbeam (snap drawing on 9, the hit on 14 = the beam\'s third frame; small damage; uses the mark; once per combo)', () => {
+  const g = setup(110); // close enough for the jab, and still inside the light placed 150 px ahead
+  run(g, '5+R 5*40 5+H 5*13');
   const hp = g.players[1].health;
-  const cues = run(g, '5*8 5+R 5*14');
+  const cues = run(g, '5+R 5*36'); // pressed in 5H's hitstop: it comes out when the freeze ends
   const hit = hitOf(cues, 'moonSnap');
   assert.ok(hit, 'the beam hits');
   assert.equal(g.players[0].vars.moonmark, 0, 'the mark is used up');
   assert.ok(hp - g.players[1].health > 0 && hp - g.players[1].health <= 300, 'small damage');
-  assert.equal(g.players[1].combo.hits, 2, 'it combos from the jab');
+  assert.equal(g.players[1].combo.hits, 2, 'it combos from 5H');
+  assert.equal(hit.at + 1, 14, 'the hit lands on frame 14');
+  const beam = cues.find((c) => c.type === 'spawn' && c.name === 'moonbeam');
+  assert.equal(beam.at + 1, 9, 'the beam starts on the snap drawing');
+  assert.equal(A.states.moonSnap.frames[8].sprite.index, 2);
+  assert.deepEqual(RAW.projectiles.moonbeam.anim.release.slice(0, 2), [3, 2], 'two beam frames (5 game frames) before the hit');
+  assert.equal(A.states.moonSnap.move.perCombo, 1, 'once per combo');
   assert.ok(cues.some((c) => c.type === 'spawn' && c.name === 'moonbeam'));
   assert.ok(g.projectiles.some((p) => p.kind === 'crescent'), 'the crescent stays');
   // It strikes wherever they are.
-  const far = setup(150);
+  const far = setup(110); // close enough for the jab, and still inside the light placed 150 px ahead
   run(far, '5+R 5*40 5+L 5*30');
   far.players[1].x = far.players[0].x + px(800);
-  assert.ok(hitOf(run(far, '5+R 5*14'), 'moonSnap'), 'from across the screen');
-  // No mark: R recalls the crescent, and the cooldown starts.
-  run(g, '5*40 5+R 5*8');
-  assert.equal(g.projectiles.filter((p) => p.kind === 'crescent').length, 0, 'the crescent is gone');
-  assert.ok(g.players[0].vars.moonCooldown > 220, 'cooldown started');
-  // During the cooldown R does nothing; after 240 frames it works again.
-  const c2 = run(g, '5*20 5+R 5*30');
-  assert.ok(!c2.some((c) => c.type === 'spawn'), 'still cooling down');
-  const c3 = run(g, '5*200 5+R 5*12');
-  assert.ok(c3.some((c) => c.type === 'spawn' && c.name === 'crescent'), 'ready again after 240 frames');
+  assert.ok(hitOf(run(far, '5+R 5*18'), 'moonSnap'), 'from across the screen');
 });
 
 test('Moonlit: the crescent fades by itself, starts the cooldown and clears the mark', () => {
-  const g = setup(150);
+  const g = setup(110); // close enough for the jab, and still inside the light placed 150 px ahead
   run(g, '5+R 5*40 5+L 5*12');
   assert.equal(g.players[0].vars.moonmark, 1);
   const life = RAW.projectiles.crescent.lifetime;
@@ -300,6 +373,13 @@ test('Moonlit: the crescent fades by itself, starts the cooldown and clears the 
   assert.equal(g.players[0].vars.moonmark, 0);
   assert.ok(g.players[0].vars.moonCooldown > 0);
   assert.equal(RAW.projectiles.crescent.onEnd.setVar.moonCooldown, 240);
+  // During the cooldown R does nothing; after 240 frames it works again.
+  const c2 = run(g, '5*20 5+R 5*30');
+  assert.ok(!c2.some((c) => c.type === 'spawn'), 'still cooling down');
+  const c3 = run(g, '5*200 5+R 5*12');
+  assert.ok(c3.some((c) => c.type === 'spawn' && c.name === 'crescent'), 'ready again after 240 frames');
+  // The light: 3 drawings in, 4 looping while it lasts, 3 out.
+  assert.deepEqual(RAW.projectiles.crescent.anim, { release: [4, 4, 4], loop: [6, 6, 6, 6], impact: [4, 4, 4] });
 });
 
 test('supers: New Moon costs one bar; Full Moon needs all four and spends three', () => {
@@ -338,7 +418,7 @@ test('every sheet the file names is there; placeholders say so in their name', (
   for (const n of names) assert.ok(fs.existsSync(`data/characters/avner/${n}`), n);
   const waiting = [...names].filter((n) => n.includes('placeholder'));
   for (const slot of ['drawn', 'full-moon', 'lantern-phase']) assert.ok(waiting.some((n) => n.includes(`/${slot}-placeholder`)), `${slot} is marked as a placeholder`);
-  for (const real of ['throw-forward', 'throw-back', 'throw-tech', '2L', '2H', 'air-crescent-swing', 'air-crescent', 'air-crescent-burst', 'hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
+  for (const real of ['throw-forward', 'throw-back', 'throw-tech', '2L', '2H', 'lunar-halo-land', 'moonlit-5', 'moonlit-2', 'moonlit-j', 'moon-snap', 'moonmark', 'hit-stand', 'hit-crouch', 'hit-air', 'tumble', 'knockdown', 'wakeup', 'idle', 'crouch', '5L', '5H', 'rising-moon', 'moon', 'lunar-halo', 'halo-burst', 'tide', 'tide-wave', 'crescent', 'moonbeam', 'new-moon']) assert.ok(names.has(`sheets/${real}.png`), `${real} uses the owner's art`);
 });
 
 test('sync test: the whole kit, rewinding 8 frames every frame, never differs', () => {
@@ -360,7 +440,7 @@ test('two Avners fighting at random stay in sync too (moons, light, marks and be
 });
 
 test('Tide and Rising Moon cancel into Moonlit once the wave or moon is out, not before', () => {
-  for (const [motion, id, kind] of [['2 3 6+L', 'risingMoonL', 'risingMoon'], ['2 1 4+L', 'tideL', 'tideL']]) {
+  for (const [motion, id, kind] of [['2 3 6+L', 'risingMoonL', 'moonOrbL'], ['2 1 4+L', 'tideL', 'tideWaveL']]) {
     const spawnAt = RAW.moves.find((m) => m.id === id).timeline.find((e) => e.spawn).at;
     // Too early: R is ignored and the wave / moon still comes out.
     let g = setup(900);
@@ -382,20 +462,24 @@ test('Tide and Rising Moon cancel into Moonlit once the wave or moon is out, not
     }
   }
   // With a crescent out and a mark, the cancel is the Snap.
-  const g = setup(150);
+  const g = setup(110); // close enough for the jab, and still inside the light placed 150 px ahead
   run(g, '5+R 5*40 5+L 5*20');
   assert.equal(g.players[0].vars.moonmark, 1);
-  run(g, '2 3 6+L 5*10 5+R 5*2');
+  run(g, '2 3 6+L 5*15 5+R 5*2');
   assert.equal(g.players[0].state, 'moonSnap');
 });
 
-test('5H: the extra slash drawing sits on the frame the hit lands, so it is the one held through hitstop', () => {
+// (Redrawn Nov 25 as ten drawings, an overhead swing: the hit drawing is now the fifth, and its arc is a layer effect.)
+test('5H: the hit drawing (the fifth) comes up on the frame the hit lands, so it is the one held through hitstop', () => {
   const st = A.states['5H'];
   const first = st.frames.findIndex((f) => f.hit.length);
-  assert.equal(st.frames[first].sprite.index, 4, 'the new drawing (fifth on the sheet) on the first hitting frame');
-  assert.equal(st.frames[first - 1].sprite.index, 3, 'the first row\'s fourth drawing just before it');
-  assert.equal(st.frames.filter((f) => f.sprite.index === 4).length, 1, 'one frame only when the swing misses');
-  assert.equal(st.frames[first + 1].sprite.index, 5);
+  assert.equal(A.sheets['5H'].count, 10, 'ten drawings');
+  assert.equal(st.frames[first].sprite.index, 4, 'the fifth drawing on the first hitting frame');
+  assert.equal(st.frames[first - 1].sprite.index, 3, 'the fourth just before it');
+  assert.equal(st.frames.filter((f) => f.sprite.index === 4).length, st.move.active, 'it stays for the active frames');
+  assert.equal(st.frames.length, 35, 'the move is as long as it was');
+  assert.deepEqual(st.layers.map((l) => l.effect), ['pendulumArc'], 'its arc plays in step with the move, so it freezes in hitstop with him');
+  assert.equal(A.effects.pendulumArc.sprite.count, 12, 'seven drawings of arc between empty cells: three before, two after');
   const g = setup(120);
   const p = g.players[0];
   let held = 0, hit = false;
@@ -408,67 +492,95 @@ test('5H: the extra slash drawing sits on the frame the hit lands, so it is the 
   assert.ok(held >= st.move.hitstop, `held through the freeze (${held} frames, hitstop ${st.move.hitstop})`);
 });
 
-test('Air Crescent (j.236): a crescent dives from the lantern, steeper by button; it bursts on the floor; once per jump', () => {
-  const landing = {};
-  for (const b of ['L', 'M', 'H']) {
-    const g = setup(700);
-    const cues = run(g, `8 5*12 2 3 6+${b} 5*70`);
-    const born = cues.find((c) => c.type === 'spawn' && c.name === 'airCrescent' + b);
-    assert.ok(born, `${b}: the crescent comes out`);
-    const end = cues.find((c) => c.type === 'projectileEnd' && c.name === 'airCrescent' + b);
-    assert.equal(end.why, 'ground', `${b}: it ends on the floor`);
-    assert.equal(end.y, 0);
-    landing[b] = end.x - born.x;
-    assert.equal(g.players[0].state, 'idle', 'he has landed and recovered');
-  }
-  assert.ok(landing.L < landing.M && landing.M < landing.H, `L lands nearest, H farthest (${landing.L / 100}, ${landing.M / 100}, ${landing.H / 100})`);
-  for (const b of ['L', 'M', 'H']) assert.ok(A.effects[A.projectiles['airCrescent' + b].endFx.ground], 'the burst it plays on the floor exists');
-  // It only works in the air, and once per jump: a second motion in the same jump does nothing; after landing it works again.
+test('cut (owner, Nov 25): Air Crescent and Crescent Recall are gone, with everything only they used', () => {
+  const text = fs.readFileSync(FILE, 'utf8');
+  for (const gone of ['airCrescent', 'moonRecall', 'air-crescent', 'moon-recall', 'tidePull', 'Eclipse Drop', 'eclipseDrop', '"moonfall"', 'moonfallTrail', 'moonfallLand', 'moonfallRebound', 'sheets/moonfall']) assert.ok(!text.includes(gone), `${gone} is not in his file`);
+  // j.236 is no special any more: no projectile comes out.
   let g = setup(700);
-  assert.ok(!run(g, '2 3 6+L 5*30').some((c) => c.type === 'spawn' && c.name.startsWith('airCrescent')), 'on the ground 236L is Rising Moon');
-  g = setup(700);
-  const sj = run(g, '2 8 5*8 2 3 6+L 5*30 2 3 6+M 5*8'); // a super jump: he comes out of the swing still in the air
-  assert.equal(sj.filter((c) => c.type === 'spawn' && c.name.startsWith('airCrescent')).length, 1, 'one per jump');
-  run(g, '5*120');
+  assert.equal(run(g, '8 5*12 2 3 6+M 5*40').filter((c) => c.type === 'spawn').length, 0);
+  // R with the light out and no mark does nothing: the light stays, no cooldown starts.
+  g = setup(900);
+  run(g, '5+R 5*40');
+  const cues = run(g, '5+R 5*20');
   assert.equal(g.players[0].state, 'idle');
-  assert.ok(run(g, '8 5*12 2 3 6+M 5*20').some((c) => c.type === 'spawn' && c.name === 'airCrescentM'), 'after landing it is back');
-  // He keeps falling during the swing, and lands into his own short landing.
-  g = setup(700);
-  const p = g.players[0];
-  let sawLand = false, top = 0;
-  for (const raw of script('8 5*12 2 3 6+L 5*60')) { step(g, [raw, 0], W); top = Math.max(top, p.y); if (p.state === 'airCrescentLand') sawLand = true; }
-  assert.ok(sawLand, 'landing recovery');
-  assert.equal(A.states.airCrescentLand.duration, 6);
+  assert.equal(cues.filter((c) => c.type === 'spawn' || c.type === 'projectileEnd').length, 0);
+  assert.equal(g.projectiles.filter((p) => p.kind === 'crescent').length, 1, 'the light stays');
+  assert.equal(g.players[0].vars.moonCooldown, 0);
 });
 
-test('Air Crescent hits (mid, 600), costs a bar as EX (900, knockdown), and is a special', () => {
-  const g = setup(200);
-  const d = g.players[1];
-  const cues = run(g, '8 5*12 2 3 6+M 5*40');
-  const hit = cues.find((c) => c.type === 'hit');
-  assert.ok(hit, 'it hits a standing opponent');
-  assert.equal(hit.move, 'airCrescentM');
-  assert.equal(A.projectiles.airCrescentM.move.guard, 'mid');
-  assert.equal(A.projectiles.airCrescentM.move.damage, 600);
-  assert.equal(A.projectiles.airCrescentEx.move.damage, 900);
-  assert.ok(A.projectiles.airCrescentEx.move.knockdown);
-  assert.ok(d.health < A.stats.health);
-  assert.equal(A.commands.find((c) => c.move === 'airCrescentM').kind, 'special');
-  const h = setup(700);
-  h.players[0].meter = 10000;
-  const ex = run(h, '8 5*12 2 3 6+LS 5*20');
-  assert.ok(ex.some((c) => c.type === 'spawn' && c.name === 'airCrescentEx'), 'EX version');
-  assert.equal(h.players[0].meter, 0, 'one bar');
-});
-
-test('2H is a slide: he travels forward through the sweep and stops when it ends', () => {
+// (Owner, Nov 25: 2H is no longer a slide. It was one from Nov 23 to Nov 25.)
+test('2H sweeps in place: he does not travel forward, during the sweep or after it', () => {
   const g = setup(900);
   const p = g.players[0];
   const x0 = p.x;
   run(g, '2+H 2*20');
-  const moved = (p.x - x0) / 100;
-  assert.ok(moved >= 90 && moved <= 140, `slid ${moved} px`);
+  assert.equal(p.x, x0, 'no travel during the sweep');
   const x1 = p.x;
   run(g, '2*30');
   assert.equal(p.x, x1, 'no drift after the sweep');
+});
+
+test('moonlight changes what a hit does (move field inZone): Rising Moon spins there at a heavy juggle cost; j.H spins an airborne fighter there', () => {
+  const hits = (gap, s1, s2 = '') => { const g = setup(gap); return [run(g, s1, s2).filter((c) => c.type === 'hit' || c.type === 'counter'), g]; };
+  // Rising Moon: a soft launch outside the light, spin inside it.
+  let [h, g] = hits(200, '2 3 6+M 5*60');
+  assert.equal(h[0].move, 'moonOrbM');
+  assert.equal(h[0].react, 'normal');
+  assert.equal(g.players[1].combo?.juggle ?? g.players[1].lastCombo.juggle, W.combo?.softLaunchCost ?? 3, 'the usual soft launch cost');
+  [h, g] = hits(200, '5+R 5*40 2 3 6+M 5*30');
+  assert.equal(h[0].react, 'spin', 'in the light it spins');
+  assert.equal(g.players[1].combo.juggle, 4, 'and costs 4 of the juggle limit');
+  assert.equal(g.players[0].vars.moonmark, 1, 'the light still marks them');
+  for (const b of ['L', 'M', 'H']) assert.deepEqual(A.projectiles['moonOrb' + b].move.zoneHit, { hitReaction: 'spin', airReaction: null, juggleCost: 4 });
+  // j.H: only an airborne fighter in the light is spun.
+  [h] = hits(110, '5*14 8 5*14 5+H 5*40', '8 5*60');
+  assert.equal(h[0].react, 'normal', 'airborne, no light');
+  [h] = hits(110, '5+R 5*40 8 5*14 5+H 5*40', '5*27 8 5*60');
+  assert.equal(h[0].react, 'spin', 'airborne in the light');
+  [h] = hits(110, '5+R 5*40 8 5*22 5+H 5*40');
+  assert.equal(h[0].react, 'normal', 'standing in the light');
+  // The opponent's own light does nothing for them: only the attacker's zone counts.
+  const mirror = setup(110);
+  run(mirror, '5*60', '5+R 5*40'); // Player 2 places the light; it covers Player 1's side too
+  const own = run(mirror, '8 5*14 5+H 5*40', '8 5*60').filter((c) => c.type === 'hit' && c.p === 0);
+  assert.ok(own.length && own.every((c) => c.react === 'normal'), 'Player 1 hitting inside Player 2\'s light gets nothing from it');
+  // A wrong reaction name is refused when the file loads.
+  const bad = loadJSON(FILE);
+  bad.moves.find((m) => m.id === 'j.H').inZone = { airReaction: 'twirl' };
+  assert.throws(() => compileCharacter(bad, SYSTEM), /inZone/);
+});
+
+test('drawing-only settings for the specials: the Halo burst follows him and sits behind him; EX effects are 1.3x and gold', () => {
+  for (const k of ['haloBurstL', 'haloBurstM', 'haloBurstH', 'haloBurstEx']) assert.deepEqual([RAW.effects[k].follow, RAW.effects[k].behind], [true, true], k);
+  for (const s of [RAW.effects.haloBurstEx.sprite, RAW.projectiles.risingMoonEx.sprite, RAW.projectiles.risingMoonEx2.sprite, RAW.projectiles.tideWaveEx.sprite]) assert.match(s.tint, /^#[0-9a-f]{6}$/);
+  for (const s of [RAW.projectiles.moonOrbL.sprite, RAW.projectiles.tideWaveL.sprite, RAW.effects.haloBurstH.sprite]) assert.equal(s.tint, undefined);
+  assert.equal(+(RAW.effects.haloBurstEx.sprite.scale / RAW.effects.haloBurstH.sprite.scale).toFixed(2), 1.31);
+});
+
+test('none of his projectiles shares a name with a move (a hit is sized, shaken and given its effect by the name it carries)', () => {
+  // (Malik's Spirit Orb does share one, on purpose so far: its punch and its orb count as one move in a combo.)
+  const ids = new Set(RAW.moves.map((m) => m.id));
+  for (const name of Object.keys(RAW.projectiles)) assert.ok(!ids.has(name), `projectile "${name}" is also a move`);
+});
+
+// Owner, Nov 25: 5H is a step forward, and its arc reaches past the lantern, so 5M into 5H connects from as far as 5M touches.
+test('5H steps forward: 5M into 5H connects from the farthest range 5M reaches, on hit and on block', () => {
+  const run = (gap, chain, block) => {
+    const g = setup(gap);
+    const seen = [];
+    for (let f = 0; f < 90; f++) {
+      const mine = f === 0 ? 32 : chain && f > 8 && f % 2 === 0 && g.players[0].state === '5M' ? 64 : 0;
+      step(g, [mine, block && f >= 7 ? 2 : 0], W);
+      for (const c of g.cues) if (c.type === 'hit' || c.type === 'counter' || c.type === 'block') seen.push(`${c.type} ${c.move}`);
+    }
+    return { seen, moved: g.players[0].x + px(gap) / 2 };
+  };
+  let far = 0;
+  for (let gap = 60; gap < 400; gap += 2) if (run(gap, false, false).seen.length) far = gap;
+  assert.ok(far > 100, `5M reaches (${far})`);
+  const hit = run(far, true, false);
+  assert.deepEqual(hit.seen, ['hit 5M', 'hit 5H']);
+  assert.equal(hit.moved, px(66), 'he steps 66 px forward and stays there: 42 into the swing, 24 as the back foot comes up');
+  const blocked = run(far - 10, true, true);
+  assert.deepEqual(blocked.seen, ['block 5M', 'block 5H']);
 });
