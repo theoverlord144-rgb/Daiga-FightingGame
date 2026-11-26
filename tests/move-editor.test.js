@@ -371,3 +371,24 @@ test('projectile timeline: it warns when a haul comes before its wave has arrive
   assert.equal(firstTouch(early, 'tideM'), null, 'the haul found nobody');
   assert.match(flightWarning(flightOf(oldDef, 'tideM'), early), /tideWaveM reaches the dummy on frame \d+, not before the move's own hit \(frame 25\)/);
 });
+
+test("The preview of a move with its own hit shows that hit alone: the vacuum it leaves is taken out (War'Teun)", async () => {
+  const { leftOut } = await import('../src/editor/preview.js');
+  const raw = loadJSON("data/characters/warteun/warteun.toska.json");
+  const def = compileCharacter(raw, SYSTEM);
+  for (const id of ['displacementL', 'displacementM', 'displacementH', '5H']) {
+    assert.deepEqual(leftOut(def, id), ['vacuum'], `${id}: its vacuum is left out`);
+    const run = play(raw, id);
+    assert.equal(run.result, 'hit');
+    assert.deepEqual(run.touches.map((t) => t.by), [id], `${id}: the only touch is its own strike`);
+    assert.equal(run.damage, raw.moves.find((m) => m.id === id).damage, `${id}: the damage read is the strike's own`);
+  }
+  // Warp Step hits only with its vacuum, and the vacuum's own entry shows the burst: nothing is left out there.
+  assert.deepEqual(leftOut(def, 'warpStepL'), []);
+  assert.deepEqual(leftOut(def, 'proj:vacuum'), []);
+  assert.deepEqual(play(raw, 'warpStepL').touches.map((t) => t.by), ['vacuum']);
+  assert.deepEqual(play(raw, 'proj:vacuum').touches.map((t) => t.by), ['vacuum']);
+  // Malik releases no burst projectiles: his previews are untouched.
+  const malik = compileCharacter(loadJSON(MALIK), SYSTEM);
+  for (const name of Object.keys(malik.states)) assert.deepEqual(leftOut(malik, name), []);
+});

@@ -223,3 +223,10 @@ not cancel into it on hit (Avner's j.L and j.M do), so it is movement only and o
   The follow-up combo I scripted reaches 2,911 (29%) on L, 2,211 on M, and does not connect on H.
 
 `npm test`: 490 of 490. Baseline check: the same 34 old differences.
+
+## HIT SETTINGS preview shows the fork strike alone (Nov 26)
+
+On Displacement (and 5H, 6H, 4H, j.S) the looping preview used to let the vacuum burst hit the dummy after the
+strike, so damage, pushback, launch and advantage were the two hits mixed (1,252 / 1,300 shown for a 700 strike).
+The preview of a move with its own hit now takes its vacuum out before it pulls or bursts, and the bottom line says
+so. The burst is tuned on the `vacuum` entry. Editor only; the game is unchanged. `npm test`: 491 of 491.

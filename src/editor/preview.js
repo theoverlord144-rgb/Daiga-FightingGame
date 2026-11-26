@@ -38,6 +38,20 @@ export function hitOwner(def, entry) {
 }
 
 /**
+ * The burst projectiles (a vacuum: wait, pull, explode) that a move with a hit of its own leaves behind. The preview
+ * of such a move takes them out before they act, so what is seen and measured is the move's own hit alone; the
+ * burst is tuned on its own entry. [] for a projectile's entry or a move that only hits with its projectile.
+ */
+export function leftOut(def, entry) {
+  if (entry.startsWith('proj:') || hitOwner(def, entry) !== entry) return [];
+  const st = def.states[entry];
+  if (!st?.move || !st.frames.some((fr) => fr.hit.length || fr.throw.length)) return [];
+  const names = new Set();
+  for (const evs of st.onEnter || []) for (const e of evs || []) if (e.type === 'spawn' && def.projectiles[spawned(e)]?.burst) names.add(spawned(e));
+  return [...names];
+}
+
+/**
  * The timeline of a move that releases projectiles (null when it releases none). Frames are counted from 0 here.
  *   { state, frames, ownHit: [first, last] | null, remote, spawns: [{ at, name, lifetime, speed, start, under, live }] }
  * at = the move's frame it appears on; live = [[from, to]] the ages its hitbox is out; speed in px a frame;
@@ -108,7 +122,8 @@ export function createPreview({ def, dummyDef, makeWorld, entry, dummy = 'standi
   const world = makeWorld(def, dummyDef);
   const state = stateFor(def, entry);
   const air = !!state && def.states[state].stance === 'air';
-  const out = { world, state, game: null, stats: null, last: null, loops: 0, step: tick };
+  const skip = leftOut(def, entry);
+  const out = { world, state, game: null, stats: null, last: null, loops: 0, step: tick, leftOut: skip };
   let t, freeFor, x0, done;
 
   function reset() {
@@ -155,6 +170,8 @@ export function createPreview({ def, dummyDef, makeWorld, entry, dummy = 'standi
     }
     const dWas = d.x;
     step(g, [0, hold], world);
+    // A move with its own hit: the vacuum it leaves is shown waiting, then taken out before it pulls or bursts.
+    if (skip.length) g.projectiles = g.projectiles.filter((q) => !(q.owner === 0 && skip.includes(q.kind) && q.age >= q.fuse - 1));
     t++;
     s.now = t - WARM; // the move's frame just played, counted like stats.frame
     for (const q of g.cues) if (q.p === 0 && ['hit', 'counter', 'witness', 'block'].includes(q.type)) s.touches.push({ frame: s.now, by: q.move });

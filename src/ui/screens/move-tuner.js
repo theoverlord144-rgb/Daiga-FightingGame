@@ -6,7 +6,7 @@
 import { px } from '../../core/fixed.js';
 import { SYSTEM, BATTLE, COMBO } from '../boot.js';
 import { FIELDS, settingsTarget, applies, readSetting, writeSetting, resetSetting, nudgeSetting, showSetting, fieldOf } from '../../editor/move-model.js';
-import { createPreview, reachOf, hitOwner, flightOf, firstTouch, flightWarning, DUMMIES } from '../../editor/preview.js';
+import { createPreview, reachOf, hitOwner, flightOf, firstTouch, flightWarning, leftOut, DUMMIES } from '../../editor/preview.js';
 import { INK, DIM, GOLD } from './common.js';
 
 const RULES = { combo: COMBO, battle: BATTLE };
@@ -261,6 +261,8 @@ export function createTuner(env) {
       text('Pick a move or a projectile from the list on the left.', 190, TOP + 50, { color: DIM, size: 11 });
       return;
     }
+    const skipped = leftOut(env.def(), env.entry());
+    if (skipped.length) env.hint(`This preview shows this move's own hit alone: the ${skipped.join(', ')} it leaves is taken out before it bursts. Tune the burst on "${skipped[0]}" in the list.`, true);
     if (owner() !== env.entry()) env.hint(`This move hits with its projectile, so these are the settings of "${owner().slice(5)}" (the same ones as its own entry in the list).`, true);
     let col = 0;
     scrollMax = Math.max(0, ...GROUPS.map(([group]) => shown(t).filter((f) => f.group === group).length - FIT));
