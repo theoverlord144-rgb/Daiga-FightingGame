@@ -230,3 +230,23 @@ On Displacement (and 5H, 6H, 4H, j.S) the looping preview used to let the vacuum
 strike, so damage, pushback, launch and advantage were the two hits mixed (1,252 / 1,300 shown for a 700 strike).
 The preview of a move with its own hit now takes its vacuum out before it pulls or bursts, and the bottom line says
 so. The burst is tuned on the `vacuum` entry. Editor only; the game is unchanged. `npm test`: 491 of 491.
+
+## The editor's FX page (Nov 26)
+
+A fourth page in the box editor (the FX tab, or T). It works for every character.
+
+- **The list on the left** is the character's effect sheets: one-shot effects, projectiles, and a burst's fire and
+  smoke. War'Teun has 9, Malik 24, Avner 37.
+- **Settings:** Size, Rotation (degrees), Opacity (0 to 1) and Colour (ten swatches, or your own mix with Red /
+  Green / Blue). Click one, then use the arrows or − / +, or type a number and Enter. Backspace puts it back to
+  its default. Undo and Save work as on the other pages.
+- **The preview** loops the effect where it appears on the fighter. BACKDROP switches dark / grey / light so you
+  can judge opacity; FIGHTER hides him; the mouse wheel zooms.
+
+Limits, as agreed: settings are per effect (changing the warp pop changes it everywhere); colour multiplies the
+drawing, so painted effects like the fire get darker and muddier, and nothing gets brighter than painted. The
+preview shows the effect's own opacity; in a fight it also drops a little while the effect covers a fighter. Hit
+sparks and the other effects shared by every character are not in the list.
+
+Checked by clicking through the page in a headless browser (pictures taken; no errors) and by 4 new tests of the
+settings model. `npm test`: 495 of 495.

@@ -194,7 +194,7 @@ export function createFightRenderer(ctx, W, H) {
   }
 
   /** One frame of a sheet (effects, marks, chain pieces: no palette), centred on its origin at screen x, y. */
-  function drawSheetFrame(def, sheet, index, x, y, facing, angle = 0) {
+  function drawSheetFrame(def, sheet, index, x, y, facing, angle = (facing * (sheet.angle ?? 0) * Math.PI) / 180) { // sheet.angle: its own rotation, in degrees
     const op = fxOp; fxOp = null; // FXOPACITY
     const img = tinted(spriteImage(def ? def.id : null, sheet.image), sheet.tint);
     if (!img) return false;
@@ -207,6 +207,7 @@ export function createFightRenderer(ctx, W, H) {
     if (angle) ctx.rotate(angle);
     ctx.scale(facing * k, k);
     if (op !== null) ctx.globalAlpha *= opFor(op, sheet, x, y, facing, k, fw, fh); // FXOPACITY
+    if (sheet.opacity !== undefined) ctx.globalAlpha *= sheet.opacity; // the sheet's own (a burst projectile's sheet, which no effect rule touches)
     if (sheet.additive) ctx.globalCompositeOperation = 'lighter';
     ctx.drawImage(img, (index % cols) * fw, Math.floor(index / cols) * fh, fw, fh, -(sheet.originX ?? fw / 2), -(sheet.originY ?? fh / 2), fw, fh);
     ctx.restore();

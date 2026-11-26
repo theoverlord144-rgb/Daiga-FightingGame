@@ -370,3 +370,11 @@ hit, block and knockdown states). A character can override any of them under `st
 move in its version 1 export the same `id` (useful for sprites: a move with `"id": "idle"` gives idle its sheet).
 Stun states (hit, block) last as long as the stun: their art plays once through its `holds`, then the last drawing
 stays (a block: the pushed-back drawing, then the guard).
+
+## Sheet settings any effect sprite can carry (drawing only)
+
+On the `sprite` block of an `effects` entry, a projectile, or a burst layer: `"scale"` (size), `"angle"` (degrees,
+clockwise facing right, mirrored facing left), `"tint"` (`"#rrggbb"`: the drawing multiplied by that colour) and
+`"opacity"` (0 to 1, multiplied in on top of any effect-opacity rule; this is where a burst projectile's own sheet
+keeps it). A named effect's or projectile's opacity is normally `art.opacity["<name>"]`. The editor's FX page
+(`?mode=editor&page=fx`) edits all four.
