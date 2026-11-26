@@ -68,6 +68,8 @@ export const SHEETS = [
     { name: 'hit-air', frames: [5, 6], mode: 'air', holds: [5, 1] },
     { name: 'tumble', frames: [7, 8], mode: 'air', holds: [6, 6] },
   ] },
+  // Air tech (owner, Nov 26): 1 the recoil, 2 the tuck, 3 upside down, 4-5 upright and falling.
+  { ref: [4, 208], name: 'air-tech', bb: true, file: 'malik_air_tech.png', n: 5, mode: 'air', holds: [2, 2, 3, 2, 3] },
   { ref: [1, 190], name: 'crumple', bb: true, file: 'Malik_HitReaction_Crumple.PNG', n: 6, holds: [5, 5, 6, 8, 8, 1] },
   // ---- Normals. The hit lands on: 5L 3, 5M 3 and 4, 5H 4, 2L 4, 2M 4, 2H 5, 5S 4, 4H 4, 6M 3. ----
   // Redrawn by the owner the night of Nov 25 (2688 x 1520, several rows, a leaner build). Each ends in the same upright

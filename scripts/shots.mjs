@@ -383,6 +383,7 @@ try {
   for (const b of ['L', 'H']) scene('mfx-orb-' + b, 'malik', 'avner', 420, (s) => { qcf(s, b); wtFilm(s, 80, 2); });
   scene('mfx-rite-2', 'malik', 'avner', 300, (s) => { s.go('DR', '', 1); wtFilm(s, 70, 2); });
   scene('mfx-rite-j', 'malik', 'avner', 300, (s) => { s.go('U', '', 1); s.go('', '', 12); s.go('R', '', 1); wtFilm(s, 44, 2); });
+  scene('mfx-airtech', 'malik', 'avner', 300, (s) => { s.go('', '', 10); const p = s.game.players[0]; p.y = 16000; enterState(p, s.world.chars[0], 'airTech'); for (let k = 0; k < 16; k++) { s.go('', '', 1); s.shot('f' + String(k + 1).padStart(2, '0')); } });
   const dd = (s, b) => { s.go('D', '', 2); s.go('', '', 2); s.go('D' + b, '', 1); };
   for (const vs of ['avner', 'malik']) {
     scene('wt-stand-' + vs, 'warteun', vs, 240, (s) => { s.go('', '', 20); s.shot('idle'); s.go('F', '', 14); s.shot('walk'); s.go('D', '', 20); s.shot('crouch'); s.go('', '', 4); s.go('U', '', 1); s.go('', '', 14); s.shot('jump'); s.go('', '', 40); s.go('K', 'L', 6); s.shot('block'); });
