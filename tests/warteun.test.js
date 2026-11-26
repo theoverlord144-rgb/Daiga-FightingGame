@@ -468,3 +468,17 @@ test("War'Teun: rollback gives the same game with vacuums, Tune, Wiretap and Lis
   assert.ok(r.ok, `desync at frame ${r.failFrame}: ${r.diff}`);
   assert.ok(bursts > 20, `vacuums burst during the run (${bursts})`);
 });
+
+test('He has one air jump per airtime, and gets it back on landing', () => {
+  const g = setup(W, 1200);
+  const p = g.players[0];
+  const seen = [];
+  let last = '';
+  const run = (s) => { for (const r of script(s)) { step(g, [r, 0], W); if (p.state !== last) { seen.push(p.state); last = p.state; } } };
+  run('8 5*14 8 5*10 8 5*10 8 5*90');
+  assert.equal(seen.filter((s) => s === 'airJump').length, 1, 'three presses in the air give one air jump');
+  assert.equal(p.y, 0, 'he came down');
+  seen.length = 0;
+  run('8 5*14 8 5*90');
+  assert.equal(seen.filter((s) => s === 'airJump').length, 1, 'the air jump is back after landing');
+});

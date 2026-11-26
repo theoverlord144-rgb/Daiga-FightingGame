@@ -194,3 +194,9 @@ Hitbox and waiting sphere unchanged. `npm test`: 487 of 487.
 **Frame time is now just over budget in the worst case.** Six measurements: 9.1 to 9.4 ms average, but the worst
 5% of frames average 17.1 to 17.9 ms (budget 16.7), worst single frame about 20 ms. At half size it was 14.5. This
 is headless Chrome with no graphics card, three vacuums bursting at Resonance 3; the cost is the area of fire drawn.
+
+## Double jump (Nov 26)
+
+He has one air jump per airtime (`airJumps: 1`, the same as Avner), back on landing; tested. His air normals do
+not cancel into it on hit (Avner's j.L and j.M do), so it is movement only and opens no new combo routes yet.
+`npm test`: 488 of 488.
