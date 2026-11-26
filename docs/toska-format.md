@@ -385,7 +385,8 @@ keeps it). A named effect's or projectile's opacity is normally `art.opacity["<n
 ## Warp `above`, and a mark with a sheet (War'Teun, Nov 26)
 
 Timeline `warp` with `behind: true` takes `above: px`: he also arrives that far above the opponent's feet, wherever
-they are, with no speed (Wiretap Pursuit).
+they are, with no speed (Wiretap Pursuit). `aboveAir: px` is the height used instead while the opponent is off the
+ground (0 = level with them).
 
 A mechanic var's `mark` may be an object (drawing only; the core never reads it):
 `{ color, sprite, above, perHeight, intro: holds, loop: holds, fade: holds, live: { hold, gain }, flash: { sound, frames,

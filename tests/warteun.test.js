@@ -736,7 +736,8 @@ test('2R with a mark: the tell, the vanish, then he is behind and above the oppo
     assert.ok(safeInVanish, `${label}: untouchable through the vanish`);
     assert.ok(seen, `${label}: he warps`);
     assert.equal(seen.ax, seen.dx + px(warp.gap), `${label}: half a body behind them (they faced him)`);
-    assert.ok(Math.abs(seen.ay - (seen.dy + px(warp.above))) <= px(12), `${label}: a body height above where they are now (within their one frame of travel)`);
+    if (dy) assert.ok(Math.abs(seen.ay - seen.dy) <= px(12), `${label}: level with an airborne opponent (within their one frame of travel), not above them (owner, Nov 26)`);
+    else assert.equal(seen.ay, px(warp.above), `${label}: a body height above a grounded opponent`);
     if (dy) assert.ok(seen.dy > 0, 'the opponent was in the air when he arrived');
     assert.equal(seen.facing, -1, `${label}: facing them`);
     assert.equal(seen.mark, 0, `${label}: the mark is spent the moment he arrives`);
@@ -744,6 +745,7 @@ test('2R with a mark: the tell, the vanish, then he is behind and above the oppo
     assert.ok(vac && vac.x === x0, `${label}: a vacuum where he started`);
   }
   assert.equal(V.timeline.find((e) => e.spawn).spawn.fuse, 8);
+  assert.deepEqual([warp.above, warp.aboveAir], [190, 0]);
   // He can act 6 frames after reappearing, not before: a button mashed from before he arrives comes out then.
   for (const [btn, into] of [['L', 'j.L'], ['S', 'j.S']]) {
     const g = setup(WM, 500);

@@ -521,8 +521,9 @@ function normalizeEvent(e, stats, sheetName) {
     // warp: an instant move. { x, y } px (x forward), or behind: true (to the far side of the opponent, `gap` px past
     // them), behindIf: "<var>" (behind only while that var of the fighter's runs, else x / y), or swap: true (the two
     // fighters trade places). After behind / swap the fighter faces the opponent. above: px with behind = he also
-    // arrives that far above the opponent's feet, wherever they are (War'Teun's Wiretap Pursuit).
-    else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap, stop: px(v.stop ?? 0), face: !!v.face, above: v.above === undefined ? null : px(v.above) };
+    // arrives that far above the opponent's feet, wherever they are (War'Teun's Wiretap Pursuit); aboveAir: px = the
+    // height used instead while the opponent is off the ground (0 = level with them).
+    else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap, stop: px(v.stop ?? 0), face: !!v.face, above: v.above === undefined ? null : px(v.above), aboveAir: v.aboveAir === undefined ? null : px(v.aboveAir) };
     // detonate: { name, collapse }: the fighter's projectiles of that kind burst `collapse` frames from now.
     else if (k === 'detonate') out[k] = typeof v === 'string' ? { name: v, collapse: 0 } : { name: v.name, collapse: v.collapse | 0 };
     // catch: { to, hitstop }: while it lasts, a strike that would hit is caught instead: no damage, the fighter

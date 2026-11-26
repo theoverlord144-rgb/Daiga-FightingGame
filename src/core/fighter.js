@@ -335,7 +335,7 @@ export function fireOnEnter(game, p, def, world) {
         if (v.swap) { p.x = o.x; o.x = fx; }
         else if (behind) {
           p.x = o.x + (o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing) * v.gap;
-          if (v.above !== null) { p.y = o.y + v.above; p.vx = 0; p.vy = 0; }
+          if (v.above !== null) { p.y = o.y + (o.y > 0 && v.aboveAir !== null ? v.aboveAir : v.above); p.vx = 0; p.vy = 0; }
         }
         else {
           let to = p.x + p.facing * v.x;

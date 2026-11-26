@@ -328,3 +328,5 @@ closest a GIF gets to 60). Not looked at by me: the HUD icon and the mark's flas
 
 **Play-test:** is the tell readable at full speed; are M and H too easy to punish now; is 2R worth landing Wiretap
 for; is the mark clear without being in the way; does he land too close on top of the opponent after 2R.
+
+**2R against an airborne opponent (owner, after play-testing):** he now reappears behind them at their own height. Above (190 px) is only for an opponent on the ground.
