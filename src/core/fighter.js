@@ -721,9 +721,18 @@ function decide(game, p, opp, def, world) {
         return;
       }
     }
-    if (canJump && freshUp && p.airJumpsUsed < stats.airJumps) {
+    // Out of a hit's freeze, a jump cancel also takes an up pressed during the freeze (or on the hit frame itself):
+    // pressing jump as the hit lands is the natural timing, and those frames never reach this decision.
+    let upDir = freshUp ? dir : 0;
+    if (!upDir && !st.free && canJump && p.freezeAge > 0) {
+      for (let age = 1; age <= p.freezeAge + 2 && !upDir; age++) {
+        const d = relDirAt(inp, age, p.facing);
+        if (d >= 7 && relDirAt(inp, age + 1, p.facing) < 7) upDir = d;
+      }
+    }
+    if (canJump && upDir && p.airJumpsUsed < stats.airJumps) {
       p.airJumpsUsed++;
-      p.jumpDir = dir;
+      p.jumpDir = upDir;
       enterState(p, def, 'airJump');
     }
     return;

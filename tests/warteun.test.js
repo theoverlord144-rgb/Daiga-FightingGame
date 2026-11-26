@@ -482,3 +482,33 @@ test('He has one air jump per airtime, and gets it back on landing', () => {
   run('8 5*14 8 5*90');
   assert.equal(seen.filter((s) => s === 'airJump').length, 1, 'the air jump is back after landing');
 });
+
+test('Air jump cancel: an up pressed on the hit frame or anywhere in its freeze gives the double jump on the first frame after', () => {
+  const AVNER = loadChar('data/characters/avner/avner.toska.json');
+  const AVNER_FILE = loadJSON('data/characters/avner/avner.toska.json');
+  for (const [name, C, J, btn, wait] of [["War'Teun j.L", WT, FILE, 'L', 30], ["War'Teun j.M", WT, FILE, 'M', 30], ["War'Teun j.H", WT, FILE, 'H', 22], ['Avner j.L', AVNER, AVNER_FILE, 'L', 26], ['Avner j.M', AVNER, AVNER_FILE, 'M', 26]]) {
+    const world = loadWorld(C, C);
+    world.battle.maxGapUnits = 0;
+    const stop = J.moves.find((m) => m.id === 'j.' + btn).hitstop;
+    let hitFrame = -1; // found by the first run, so a later run can press on the hit frame itself (k = 0)
+    const tryPress = (k) => {
+      const g = createGame(world);
+      const a = g.players[0];
+      a.x = -px(40); g.players[1].x = px(40);
+      let f = 0, hitAt = -1, jumped = -1;
+      const go = (raw) => { step(g, [raw, 0], world); f++; if (hitAt < 0 && g.cues.some((c) => HIT.includes(c.type))) hitAt = f; if (jumped < 0 && a.state === 'airJump') jumped = f; };
+      go(RAW.UP);
+      for (let i = 0; i < wait; i++) go(0);
+      go(RAW[btn]);
+      for (let i = 0; i < 60; i++) go((hitAt >= 0 ? f + 1 - hitAt === k : k === 0 && f + 1 === hitFrame) ? RAW.UP : 0);
+      assert.ok(hitAt > 0, `${name}: it hit`);
+      hitFrame = hitAt;
+      return jumped < 0 ? null : jumped - hitAt;
+    };
+    tryPress(99);
+    for (let k = 0; k <= stop + 1; k++) assert.equal(tryPress(k), stop + 1, `${name}: up pressed ${k} frames after the hit jumps on the first frame after the freeze`);
+    assert.equal(tryPress(stop + 3), stop + 3, `${name}: a later press jumps when it is pressed`);
+  }
+  // Still one air jump: a second press after the cancel does nothing.
+  assert.equal(FILE.character.stats.airJumps, 1);
+});

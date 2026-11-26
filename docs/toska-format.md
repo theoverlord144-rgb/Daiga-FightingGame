@@ -96,7 +96,7 @@ Version 2 adds per move:
 | `groundBounce` | `{ y }`: the opponent bounces off the floor instead of being knocked down. |
 | `bounceLimit` | How many bounces of each kind this move allows per combo. |
 | `specialCancel`, `superCancel` | Normals can cancel into specials and supers on hit or block by default; `false` turns it off, `"hit"` means hit only. |
-| `jumpCancel` | `"hit"`, `"block"`, `true` (both) or `false` (default). |
+| `jumpCancel` | `"hit"`, `"block"`, `true` (both) or `false` (default). In the air it spends an air jump; an up pressed on the hit frame or during its hitstop comes out on the first frame after the freeze. |
 | `cancelFrom`, `cancelTo` | Override the gatling window (default: first active frame to the end of the move). |
 
 ### Meter, specials and supers (version 2, Phase 8)

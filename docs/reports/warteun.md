@@ -200,3 +200,14 @@ is headless Chrome with no graphics card, three vacuums bursting at Resonance 3;
 He has one air jump per airtime (`airJumps: 1`, the same as Avner), back on landing; tested. His air normals do
 not cancel into it on hit (Avner's j.L and j.M do), so it is movement only and opens no new combo routes yet.
 `npm test`: 488 of 488.
+
+## Air jump cancels (Nov 26)
+
+- His j.L, j.M and j.H cancel into the double jump on hit (you set this in the box editor).
+- **Rule fix, every character:** a jump pressed while the game is frozen on an air hit used to be thrown away;
+  only a press after the freeze counted. Now an up pressed on the hit frame or anywhere in the freeze gives the
+  double jump on the first frame after it. Tested frame by frame on his j.L, j.M, j.H and Avner's j.L, j.M.
+- Scripted routes through the double jump reach 3,439 (34%) at best; nothing over 50%. These are my scripted
+  attempts, not a proven maximum, and the numbers were moving while you tuned him in the editor.
+
+`npm test`: 489 of 489. Baseline check: the same 34 old differences.
