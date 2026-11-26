@@ -211,3 +211,15 @@ not cancel into it on hit (Avner's j.L and j.M do), so it is movement only and o
   attempts, not a proven maximum, and the numbers were moving while you tuned him in the editor.
 
 `npm test`: 489 of 489. Baseline check: the same 34 old differences.
+
+## Air teleports turn him; explosion timings by button (Nov 26)
+
+- **Turning:** Air Warp and both air dashes now turn him to face the opponent when they carry him past them (new
+  warp option `face`). Measured: after crossing over with Air Warp, j.L, j.M and j.H all hit.
+- **Timings:** Air Warp and Displacement vacuums now wait 10 / 30 / 60 frames on L / M / H, the same as Warp Step
+  (Air Warp was 20 on every button, Displacement 9).
+- **Displacement now differs by button.** L: the burst lands 17 frames after the strike (was 16) and still pulls
+  them back in: 1,252 alone. M and H: the burst comes too late to combo from the strike (700 alone); they are traps.
+  The follow-up combo I scripted reaches 2,911 (29%) on L, 2,211 on M, and does not connect on H.
+
+`npm test`: 490 of 490. Baseline check: the same 34 old differences.

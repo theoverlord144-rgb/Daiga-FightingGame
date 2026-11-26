@@ -401,23 +401,52 @@ test('Listen: a strike in the window is caught (he warps behind and a vacuum bur
   assert.equal(WT.states.listenM.duration - (win.to + 1), 20);
 });
 
-test('Displacement: he passes through to the other side and strikes on frame 18; the vacuum he left bursts 16 frames later, never together', () => {
-  const m = rawMove('displacementM');
-  assert.equal(m.startup, 18);
-  for (const hold of [0, RAW.RIGHT, RAW.LEFT]) {
+test("Displacement: he passes through to the other side and strikes on frame 18; its vacuum waits by button like Warp Step's (owner, Nov 26), never bursting with the strike", () => {
+  const stepFuses = ['L', 'M', 'H'].map((b) => rawMove(`warpStep${b}`).timeline.find((e) => e.spawn).spawn.fuse);
+  for (const [n, b] of ['L', 'M', 'H'].entries()) for (const hold of [0, RAW.RIGHT, RAW.LEFT]) {
+    const id = `displacement${b}`;
+    const m = rawMove(id);
+    assert.equal(m.startup, 18);
+    const sp = m.timeline.find((e) => e.spawn);
+    assert.equal(sp.spawn.fuse, stepFuses[n], `${id}: the same wait as Warp Step ${b}`);
+    assert.equal(rawMove(`airWarp${b}`).timeline.find((e) => e.spawn).spawn.fuse, stepFuses[n], `Air Warp ${b}: the same wait as Warp Step ${b}`);
     const g = setup(W, 160);
     const a = g.players[0], d = g.players[1];
-    const cues = play(g, W, 'displacementM', 60, (i) => (i < 40 ? hold : 0));
+    const cues = play(g, W, id, 130, (i) => (i < 110 ? hold : 0));
     assert.ok(a.x > d.x || cues.some((c) => c.type === 'warp' && c.x > d.x), 'he switched sides');
-    const strike = cues.find((c) => c.move === 'displacementM');
+    const strike = cues.find((c) => c.move === id);
     const burst = cues.find((c) => c.type === 'projBurst');
     assert.equal(strike.i, m.startup - 1, 'the strike touches on frame 18');
-    assert.equal(burst.i + B.delay - strike.i, 16, 'the burst lands 16 frames after it');
+    const after = sp.spawn.fuse + B.collapse + B.delay - (m.startup - 1 - sp.at);
+    assert.equal(burst.i + B.delay - strike.i, after, `${id}: the burst lands ${after} frames after the strike`);
     const touch = cues.find((c) => c.move === 'vacuum');
-    if (touch) assert.equal(touch.i - strike.i, 16);
-    const touches = cues.filter((c) => c.move === 'vacuum' || c.move === 'displacementM').map((c) => c.i);
+    if (touch) assert.equal(touch.i - strike.i, after);
+    const touches = cues.filter((c) => c.move === 'vacuum' || c.move === id).map((c) => c.i);
     assert.equal(new Set(touches).size, touches.length, 'the two never land on the same frame');
   }
+});
+
+test('An air teleport that carries him past the opponent turns him to face them', () => {
+  for (const [name, state, raw] of [['Air Warp', 'airWarpM', 0], ['air dash forward', 'airdashF', 0]]) {
+    const g = setup(W, 100);
+    const a = g.players[0], d = g.players[1];
+    a.y = px(150); d.y = 0;
+    assert.equal(a.facing, 1);
+    play(g, W, state, 12, () => raw);
+    assert.ok(a.x > d.x, `${name}: he is past them`);
+    assert.equal(a.facing, -1, `${name}: he turned around`);
+  }
+  // Not past them: he keeps his facing.
+  const far = setup(W, 600);
+  far.players[0].y = px(150);
+  play(far, W, 'airWarpM', 12);
+  assert.ok(far.players[0].x < far.players[1].x);
+  assert.equal(far.players[0].facing, 1);
+  // A back air dash away from them never turns him.
+  const h = setup(W, 100);
+  h.players[0].y = px(150);
+  play(h, W, 'airdashB', 12);
+  assert.equal(h.players[0].facing, 1);
   // Blocking the strike means holding the other way (he is behind now).
   const g = setup(W, 160);
   const cues = play(g, W, 'displacementM', 30, RAW.LEFT);

@@ -342,6 +342,8 @@ export function fireOnEnter(game, p, def, world) {
             if ((to - limit) * p.facing > 0) to = (limit - p.x) * p.facing > 0 ? limit : p.x;
           }
           p.x = to; p.y = Math.max(0, p.y + v.y);
+          // face: a step that ends on the other side of the opponent turns him to face them (nothing else turns a fighter in the air).
+          if (v.face && (o.x - fx) * (o.x - p.x) < 0) p.facing = o.x > p.x ? 1 : -1;
         }
         if (v.swap || behind) {
           p.facing = o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing;

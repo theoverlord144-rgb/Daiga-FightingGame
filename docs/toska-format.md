@@ -208,7 +208,8 @@ named effect pinned to the lantern point of each drawing, from that drawing on).
   opponent, `gap` px past, facing them. `"behindIf": "<var>"` beside `x` does that only while the fighter's var is
   above 0 (else the plain `x`). `"warp": { "swap": true }` trades places with the opponent. `"stop": px` beside a
   forward `x`: the step never carries the fighter through a grounded opponent in front; it ends that far short of
-  them (and does nothing if they are already nearer). Cue `warp`.
+  them (and does nothing if they are already nearer). `"face": true` beside `x`: if the step ends on the other
+  side of the opponent, the fighter turns to face them (for air steps: nothing else turns a fighter in the air). Cue `warp`.
 - `"detonate": "<projectile>"` or `{ "name", "collapse": frames }` (one frame): every burst projectile of that
   kind the fighter owns stops waiting and bursts after `collapse` frames (0 = now); ones within the projectile's
   `resonate.gap` of each other burst as one. Cue `detonate`.
