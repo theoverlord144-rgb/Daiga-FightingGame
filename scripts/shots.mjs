@@ -293,7 +293,7 @@ try {
     s.game.players[0].vars.install = 600; s.go('', '', 20); s.go(b, '', 1); s.go('', '', 1); s.shot('start'); s.go('', '', pre - 1); s.shot('strike'); s.go('', '', hold); s.shot('after');
   });
   // Malik's newer drawings, Nov 25 (node scripts/shots.mjs <folder> mk): each scene is filmed, a still every 2 frames.
-  const mk = (name, gap, frames, start) => scene('mk-' + name, 'malik', 'avner', gap, (s) => { s.go('', '', 6); start(s); film(s, frames, 'f'); });
+  const mk = (name, gap, frames, start) => scene('mk-' + name, 'malik', 'avner', gap, (s) => { if (process.env.SHOT_BOXES) s.opts = { boxes: true }; s.go('', '', 6); start(s); film(s, frames, 'f'); }); // SHOT_BOXES=1: with the boxes drawn
   mk('idle', 300, 24, () => {});
   mk('walk', 500, 24, (s) => s.go('F', '', 1));
   for (const [n, b, len, gap] of [['5L', 'L', 14, 70], ['5M', 'M', 24, 80], ['5H', 'H', 30, 90], ['2L', 'DL', 14, 70], ['2M', 'DM', 22, 90], ['2H', 'DH', 34, 100], ['5S', 'S', 36, 80], ['4H', 'KH', 36, 200], ['stomp', 'FM', 36, 100]]) mk(n, gap, len, (s) => s.go(b, '', 1));
@@ -333,13 +333,13 @@ try {
       s.go('', '', 16); s.shot('later');
     });
   }
-  // ----- Rite: the four Guardian Palms (6R and j.R also from far away, to see the whole hand) -----
+  // ----- Rite: Guardian Palm, Ancestor's Seal, Guardian's Wrath, Guardian's Judgment (j.R also from far away: it opens on the opponent) -----
   const hands = (s) => {
     s.until('', '', s.cue('spawn'), 30); s.shot('hand-1');
     for (const n of [2, 3, 4, 5, 6]) { s.go('', '', 3); s.shot('hand-' + n); }
   };
-  for (const [label, input, gap] of [['5R', 'R', 260], ['2R', 'DR', 260], ['6R', 'FR', 160], ['6R-far', 'FR', 520]]) {
-    scene(`rite-${label}`, 'malik', 'avner', gap, (s) => { s.go(input, '', 1); s.go('', '', 8); s.shot('windup'); hands(s); });
+  for (const [label, input, gap] of [['5R', 'R', 260], ['2R', 'DR', 260], ['4R', 'KR', 160]]) {
+    scene(`rite-${label}`, 'malik', 'avner', gap, (s) => { s.go(input, '', 1); s.go('', '', label === '4R' ? 3 : 8); s.shot('windup'); hands(s); });
   }
   for (const [label, gap] of [['jR', 170], ['jR-far', 520]]) {
     scene(`rite-${label}`, 'malik', 'avner', gap, (s) => { s.go('U', '', 1); s.go('', '', 16); s.go('R', '', 1); s.go('', '', 6); s.shot('windup'); hands(s); });

@@ -683,6 +683,85 @@ function setScale(spec, ms) {
   SCALE = (STAND * RES) / median(ms.map((m) => m.height));
 }
 
+// even: the owner's sheets are not drawn at one size from drawing to drawing (the action drawings of a move are often
+// bigger than the pose it ends in). A body's area changes little with the pose, so each drawing's area (sash left out:
+// it flaps) is compared with the table's target for its stance (EVEN.stand / crouch / air, sheet px, square root of
+// the area); smoothed over neighbours so a run of drawings moves together, and only what falls outside EVEN.band is
+// corrected, back to the band's edge (a lunge really does show more body than a stance).
+const isSash = (r, g, b) => r > 140 && g < 85 && b < 95 && r > 2.2 * g;
+function evenScales(spec, K, D, ms, k) {
+  const E = OTHER?.EVEN, T = E?.[spec.even];
+  if (!T) return ms.map(() => k);
+  const q = ms.map((m, i) => {
+    let n = 0;
+    for (let y = m.box.y0; y <= m.box.y1; y++) for (let x = m.box.x0; x <= m.box.x1; x++) {
+      const p = y * K.W + x;
+      if (K.a[p] > 0.5 && D.owner[D.label[p]] === i && !isSash(K.rgb[p * 3], K.rgb[p * 3 + 1], K.rgb[p * 3 + 2])) n++;
+    }
+    return (Math.sqrt(n) * k) / T;
+  });
+  return q.map((_, i) => {
+    const v = median([q[Math.max(0, i - 1)], q[i], q[Math.min(q.length - 1, i + 1)]]);
+    const c = Math.min(E.band[1], Math.max(E.band[0], v)) / v;
+    return k * Math.min(E.cap?.[1] ?? 9, Math.max(E.cap?.[0] ?? 0, c));
+  });
+}
+
+// tone: his colours drift from sheet to sheet (pants from maroon to purple, skin lighter or darker). Each class of
+// colour is measured over the sheet (a drawing that strays from its sheet is measured by itself) and multiplied to the
+// table's PALETTE. Classes blend into each other, so no hard edge appears. Outline, gi, wraps, gold and painted
+// light are left alone. pantsBand: [from, to] (shares of the cell's height): dark brown inside it is pants too, for a
+// sheet whose pants are painted so brown the colour rule reads them as hair.
+function tone(out, OW, cell, count, spec) {
+  const P = OTHER.PALETTE, NAMES = ['pants', 'skin', 'hair', 'sash'];
+  const band = spec.pantsBand ? [cell.h * spec.pantsBand[0], cell.h * spec.pantsBand[1]] : null;
+  const sm = (t) => { const v = Math.min(1, Math.max(0, t)); return v * v * (3 - 2 * v); };
+  // weights [pants, skin, hair, sash] of one pixel, or null when it is none of them
+  const weights = (r, g, b, y) => {
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    if (mx <= 24 || g > r || b > r) return null;
+    if (mx > 185 && mx - mn < 70) return null;
+    if (r > 190 && g > 150 && b < 130) return null;
+    if (isSash(r, g, b)) return [0, 0, 0, 1];
+    let wp = sm((b - g - 1) / 7);
+    if (band && y >= band[0] && y <= band[1] && mx <= 105) wp = 1;
+    const ws = sm((mx - 90) / 30);
+    return [wp, (1 - wp) * ws, (1 - wp) * (1 - ws), 0];
+  };
+  const sums = Array.from({ length: count + 1 }, () => NAMES.map(() => [0, 0, 0, 0])); // per drawing, then the sheet
+  for (let n = 0; n < count; n++) for (let y = 0; y < cell.h; y++) for (let x = 0; x < cell.w; x++) {
+    const p = (y * OW + n * cell.w + x) * 4;
+    if (out[p + 3] < 200) continue;
+    const w = weights(out[p], out[p + 1], out[p + 2], y);
+    if (!w) continue;
+    const c = w.indexOf(Math.max(...w));
+    if (w[c] < 0.75) continue; // only clear members set the measure
+    for (const a of [sums[n][c], sums[count][c]]) { a[0]++; a[1] += out[p]; a[2] += out[p + 1]; a[3] += out[p + 2]; }
+  }
+  const mean = (a) => (a[0] >= 300 ? [a[1] / a[0], a[2] / a[0], a[3] / a[0]] : null);
+  const sheet = sums[count].map(mean);
+  for (let n = 0; n < count; n++) {
+    const gain = NAMES.map((name, c) => {
+      let m = sheet[c];
+      const own = mean(sums[n][c]);
+      if (own && m && own.some((v, ch) => Math.abs(v - m[ch]) > 0.06 * Math.max(m[ch], 40))) m = own;
+      m ??= own;
+      return m ? P[name].map((t, ch) => Math.min(1.7, Math.max(0.65, t / m[ch]))) : [1, 1, 1];
+    });
+    for (let y = 0; y < cell.h; y++) for (let x = 0; x < cell.w; x++) {
+      const p = (y * OW + n * cell.w + x) * 4;
+      if (out[p + 3] === 0) continue;
+      const w = weights(out[p], out[p + 1], out[p + 2], y);
+      if (!w) continue;
+      for (let ch = 0; ch < 3; ch++) {
+        let g = 0;
+        for (let c = 0; c < 4; c++) g += w[c] * gain[c][ch];
+        out[p + ch] = Math.min(255, Math.round(out[p + ch] * g));
+      }
+    }
+  }
+}
+
 function processBody(spec, manifest) {
   const K = keyBody(readSheet(DIR + spec.file));
   if (spec.crop) for (let y = 0; y < K.H; y++) for (let x = 0; x < K.W; x++) if (x < spec.crop[0] || y < spec.crop[1] || x > spec.crop[2] || y > spec.crop[3]) K.a[y * K.W + x] = 0;
@@ -698,8 +777,9 @@ function processBody(spec, manifest) {
   const ms = D.boxes.map((_, i) => measureBody(K, D, i));
   if (spec.scaleRef) setScale(spec, ms);
   const k = (spec.ref ? (spec.ref[1] * RES) / ms[spec.ref[0] - 1].height : bodyScale(ms, spec.bb) ?? SCALE) * (spec.fix ?? 1);
+  const ks = evenScales(spec, K, D, ms, k); // one scale per drawing: k, corrected where the drawing was made too big or too small (even)
   if (ANALYZE) {
-    console.log(`${(spec.name ?? spec.file).padEnd(14)} ${K.kind.padEnd(11)} scale ${k.toFixed(3)}  heights ${ms.map((m) => m.height).join(' ')}  lantern ${ms.map((m) => m.lantern).join(' ')}`);
+    console.log(`${(spec.name ?? spec.file).padEnd(14)} ${K.kind.padEnd(11)} scale ${k.toFixed(3)}  heights ${ms.map((m) => m.height).join(' ')}  lantern ${ms.map((m) => m.lantern).join(' ')}${spec.even ? '  even ' + ks.map((v) => (v / k).toFixed(2)).join(' ') : ''}`);
     return;
   }
   // The ground line of each row: drawings whose lowest point is close to it stand exactly on it; the rest are in the air.
@@ -713,29 +793,30 @@ function processBody(spec, manifest) {
       const m = ms[i];
       if (mode === 'air') return { ax: m.core[0], ay: m.core[1] };
       // air: [drawings]: he has left the ground there and the game lifts him, so the drawing hangs from his body.
-      if (part.air?.includes(i + 1)) return { ax: anchor === 'upper' ? m.upper : m.core[0], ay: m.core[1] + (AIR_CENTRE * RES) / k };
+      if (part.air?.includes(i + 1)) return { ax: anchor === 'upper' ? m.upper : m.core[0], ay: m.core[1] + (AIR_CENTRE * RES) / ks[i] };
       // lineFrom: only its drawings in this drawing's own row count (a sheet of two rows has two ground lines).
       const sameRow = (part.lineFrom ?? []).filter((f) => Math.abs(rowOf[f - 1] - rowOf[i]) < 700);
       const mates = part.lineFrom ? (sameRow.length ? sameRow : part.lineFrom).map((f) => ms[f - 1].bottom) : ms.filter((_, j) => Math.abs(rowOf[j] - rowOf[i]) < 300).map((o) => o.bottom);
       const line = median(mates);
       const ay = Math.abs(m.bottom - line) <= 16 ? m.bottom + 1 : line + 1;
       // shift: [game px per drawing]: moves a drawing forward (+) or back from where its anchor put it, for a move whose feet must stay planted.
-      const sh = ((part.shift ?? spec.shift)?.[i] ?? 0) * RES / k;
+      const sh = ((part.shift ?? spec.shift)?.[i] ?? 0) * RES / ks[i];
       return { ax: (anchor === 'rear' ? m.feet[0] + 60 : anchor === 'upper' ? m.upper : m.core[0]) - sh, ay };
     });
     // One cell that holds every drawing with the anchor in the same place.
     let left = 0, right = 0, up = 0, down = 0;
     idx.forEach((i, n) => {
       const b = ms[i].box, p = pts[n];
-      left = Math.max(left, (p.ax - b.x0) * k); right = Math.max(right, (b.x1 + 1 - p.ax) * k);
-      up = Math.max(up, (p.ay - b.y0) * k); down = Math.max(down, (b.y1 + 1 - p.ay) * k);
+      left = Math.max(left, (p.ax - b.x0) * ks[i]); right = Math.max(right, (b.x1 + 1 - p.ax) * ks[i]);
+      up = Math.max(up, (p.ay - b.y0) * ks[i]); down = Math.max(down, (b.y1 + 1 - p.ay) * ks[i]);
     });
     if (part.mirror) left = right = Math.max(left, right); // mirrored drawings turn about the anchor: keep it in the middle
     const originX = Math.ceil(left) + 2, originY = Math.ceil(up) + 2;
     const cell = { w: originX + Math.ceil(right) + 2, h: originY + Math.ceil(down) + 2 };
     const OW = cell.w * idx.length, OH = cell.h;
     const out = new Uint8Array(OW * OH * 4);
-    idx.forEach((i, n) => blit(K, D, i, out, OW, OH, { x: n * cell.w, y: 0, w: cell.w, h: cell.h }, pts[n].ax, pts[n].ay, originX, originY, k));
+    idx.forEach((i, n) => blit(K, D, i, out, OW, OH, { x: n * cell.w, y: 0, w: cell.w, h: cell.h }, pts[n].ax, pts[n].ay, originX, originY, ks[i]));
+    if (spec.tone && OTHER?.PALETTE) tone(out, OW, cell, idx.length, spec);
     // mirror: [drawings of this part, counted from 1] stored flipped left to right (a throw that turns him round: the
     // engine flips his facing when it lands, so the drawings made before the turn are stored already flipped).
     for (const m of part.mirror ?? []) {
@@ -747,12 +828,12 @@ function processBody(spec, manifest) {
     }
     // In the game the origin is the fighter's position: the ground under him, or (air) AIR_CENTRE below his centre.
     const oy = mode === 'air' ? originY + AIR_CENTRE * RES : originY;
-    const lantern = idx.map((i, n) => (ms[i].lanternAt ? [Math.round(((ms[i].lanternAt[0] - pts[n].ax) * k) / RES), Math.round(((pts[n].ay - ms[i].lanternAt[1]) * k) / RES) + (mode === 'air' ? AIR_CENTRE : 0)] : null));
+    const lantern = idx.map((i, n) => (ms[i].lanternAt ? [Math.round(((ms[i].lanternAt[0] - pts[n].ax) * ks[i]) / RES), Math.round(((pts[n].ay - ms[i].lanternAt[1]) * ks[i]) / RES) + (mode === 'air' ? AIR_CENTRE : 0)] : null));
     for (let n = 0; n < lantern.length; n++) if (!lantern[n]) lantern[n] = lantern[n - 1] ?? lantern.find((p) => p) ?? [0, 60];
     for (const m of part.mirror ?? []) lantern[m - 1] = [-lantern[m - 1][0], lantern[m - 1][1]];
     // Where each drawing reaches, in game px from the fighter's position (x forward, y up): [x0, y0, x1, y1].
     const up0 = mode === 'air' ? AIR_CENTRE : 0;
-    const reach = idx.map((i, n) => { const b = ms[i].box, p = pts[n]; return [Math.round(((b.x0 - p.ax) * k) / RES), Math.round(((p.ay - b.y1) * k) / RES) + up0, Math.round(((b.x1 - p.ax) * k) / RES), Math.round(((p.ay - b.y0) * k) / RES) + up0]; });
+    const reach = idx.map((i, n) => { const b = ms[i].box, p = pts[n]; const kk = ks[i]; return [Math.round(((b.x0 - p.ax) * kk) / RES), Math.round(((p.ay - b.y1) * kk) / RES) + up0, Math.round(((b.x1 - p.ax) * kk) / RES), Math.round(((p.ay - b.y0) * kk) / RES) + up0]; });
     finish(part.name, out, OW, OH, idx.length, cell, { x: originX, y: originY }, { originX, originY: oy }, part.holds, false, manifest, { lantern, reach, from: spec.file, drawings: part.frames });
   }
 }

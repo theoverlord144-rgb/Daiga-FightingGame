@@ -157,15 +157,15 @@ test('timing: shortening takes frames from the drawings without dropping any, an
   assert.ok(m.sprite.holds.every((h) => h >= 1), 'every drawing still shows');
   assert.equal(m.sprite.holds.reduce((a, b) => a + b, 0), compile(raw).states['5H'].frames.length);
   assert.ok(compile(raw).states['5H'].frames.length < total);
-  // 3 active + 1 recovery leaves room for a startup of 4 at the least: seven drawings need seven frames.
+  // 3 active + 1 recovery leaves room for a startup of 5 at the least: eight drawings need eight frames.
   const held = clone(m);
-  assert.throws(() => writeSetting(raw, t, 'startup', 0, RULES), /Too short for its 7 drawings/);
+  assert.throws(() => writeSetting(raw, t, 'startup', 0, RULES), /Too short for its 8 drawings/);
   assert.deepEqual(m, held, 'a refused change leaves the move untouched');
-  writeSetting(raw, t, 'startup', 4, RULES);
-  assert.equal(compile(raw).states['5H'].frames.length, 7);
-  assert.deepEqual(m.sprite.holds, [1, 1, 1, 1, 1, 1, 1]);
+  writeSetting(raw, t, 'startup', 5, RULES);
+  assert.equal(compile(raw).states['5H'].frames.length, 8);
+  assert.deepEqual(m.sprite.holds, [1, 1, 1, 1, 1, 1, 1, 1]);
   assert.throws(() => resetSetting(raw, t, 'startup'), /UNDO/);
-  assert.equal(readSetting(raw, t, 'startup', RULES).value, 4);
+  assert.equal(readSetting(raw, t, 'startup', RULES).value, 5);
   // Not for projectiles, EX versions, or moves shared by every character.
   assert.throws(() => writeSetting(raw, settingsTarget(raw, SYSTEM, 'proj:palm5'), 'startup', 5, RULES), /not a setting/);
   const v = settingsTarget(raw, SYSTEM, 'vow_strike');

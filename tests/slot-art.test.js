@@ -56,9 +56,9 @@ test("Malik: every drawn attack's drawings fill the move exactly", () => {
 test('Malik: the universal systems use his own drawings, timed to the rules', () => {
   const c = loadChar(FILES.malik);
   const real = ['vow_start', 'vow_hold', 'vow_absorb', 'vow_strike_quick', 'vow_strike', 'vow_strike_full', 'absolve', 'absolve_air',
-    'absolve_recovery', 'repel', 'draw', 'crumple', 'rite_5', 'rite_2', 'rite_6', 'rite_j'];
+    'absolve_recovery', 'repel', 'draw', 'crumple', 'rite_5', 'rite_2', 'rite_4', 'rite_j'];
   for (const name of real) assert.ok(c.sheets[name] && !c.sheets[name].image.includes('placeholder'), `${name} has its own art`);
-  for (const name of ['palm5', 'palm2', 'palm6', 'palmJ']) assert.ok(!c.projectiles[name].sprite.image.includes('placeholder'), `${name} has its own art`);
+  for (const name of ['palm5', 'palm2', 'ward', 'palmJ']) assert.ok(!c.projectiles[name].sprite.image.includes('placeholder'), `${name} has its own art`);
   // Still waiting for a drawing (stand-ins): being pulled in by a Draw, and the baited Absolve falling.
   for (const name of ['drawn', 'absolve_recovery_air']) assert.ok(c.sheets[name].image.includes('placeholder'), name);
 
@@ -79,7 +79,7 @@ test('Malik: the universal systems use his own drawings, timed to the rules', ()
     assert.equal(st.frames[first].sprite.index, drawing, `${name}: drawing ${drawing + 1} shows on the first hitting frame`);
   }
   // Each Rite move shows the thrust on the frame the hand appears.
-  for (const name of ['rite_5', 'rite_2', 'rite_6', 'rite_j']) {
+  for (const name of ['rite_5', 'rite_2', 'rite_4', 'rite_j']) {
     const st = c.states[name];
     const at = st.onEnter.findIndex((evs) => (evs || []).some((e) => e.type === 'spawn'));
     assert.ok(at > 0, `${name} spawns its hand`);
