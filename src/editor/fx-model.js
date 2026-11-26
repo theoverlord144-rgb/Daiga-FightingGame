@@ -5,6 +5,8 @@
 //   size      sprite.scale      (1 = the sheet's own pixels)
 //   rotation  sprite.angle      degrees, clockwise when facing right (mirrored when facing left)
 //   colour    sprite.tint       "#rrggbb": the drawing multiplied by that colour; absent = as painted
+//   move      sprite.offset     [forward, up] px: the drawing moved off the place the game puts it. The drawing only:
+//                               a projectile's hitbox and where it spawns do not move.
 //   opacity   an effect or a projectile: art.opacity[<name>] (or the entry's own "opacity" when it has one), else
 //             the system's class default; a burst projectile's own sheet: sprite.opacity; a burst layer (fire,
 //             smoke): the layer's "opacity".
@@ -42,6 +44,8 @@ export const spriteOf = (raw, entry) => holder(raw, entry).sprite;
 export const FX_FIELDS = [
   { key: 'scale', label: 'Size', min: 0.05, max: 6, step: 0.05, big: 0.25, digits: 3, help: 'How big the sheet is drawn. 1 = its own pixels; most sheets are cut at double size and drawn at 0.5.' },
   { key: 'angle', label: 'Rotation', unit: '°', min: -180, max: 180, step: 5, big: 15, digits: 0, help: 'Degrees, clockwise when he faces right (it mirrors when he faces left). 0 = as painted.' },
+  { key: 'offset.x', label: 'Move X', unit: ' px', min: -600, max: 600, step: 1, big: 10, digits: 0, axis: 0, help: 'Moves the drawing forward (+) or back (−), the way the character faces. The drawing only: a hitbox does not move.' },
+  { key: 'offset.y', label: 'Move Y', unit: ' px', min: -600, max: 600, step: 1, big: 10, digits: 0, axis: 1, help: 'Moves the drawing up (+) or down (−). The drawing only: a hitbox does not move.' },
   { key: 'opacity', label: 'Opacity', min: 0, max: 1, step: 0.05, big: 0.2, digits: 2, help: '1 = solid, 0 = invisible. In the game it also drops a little while the effect covers a fighter.' },
   { key: 'tint', label: 'Colour', type: 'colour', help: 'The drawing multiplied by a colour. White and light effects take it cleanly; a painted one gets darker. NONE = as painted.' },
   { key: 'tint.r', label: 'Red', min: 0, max: 255, step: 5, big: 25, digits: 0, colour: 0, help: 'The red part of the colour (255 = leave the red as painted).' },
@@ -67,6 +71,7 @@ export function readFx(raw, entry, key, classes = {}) {
   const h = holder(raw, entry), s = h.sprite;
   if (key === 'scale') return { value: s.scale ?? 1, own: s.scale !== undefined };
   if (key === 'angle') return { value: s.angle ?? 0, own: s.angle !== undefined };
+  if (key.startsWith('offset.')) return { value: s.offset?.[fxField(key).axis] ?? 0, own: s.offset !== undefined };
   if (key === 'tint') return { value: s.tint ?? null, own: s.tint !== undefined };
   if (key.startsWith('tint.')) return { value: rgbOf(s.tint)[fxField(key).colour], own: s.tint !== undefined };
   if (key === 'opacity') {
@@ -103,6 +108,12 @@ export function writeFx(raw, entry, key, value) {
   }
   if (key === 'scale') { s.scale = v; return; }
   if (key === 'angle') { if (v === 0) delete s.angle; else s.angle = v; return; }
+  if (key.startsWith('offset.')) {
+    const at = [s.offset?.[0] ?? 0, s.offset?.[1] ?? 0];
+    at[f.axis] = v;
+    if (at[0] === 0 && at[1] === 0) delete s.offset; else s.offset = at;
+    return;
+  }
   // opacity
   if (entry.kind === 'layer') h.opacity = v;
   else if (entry.kind === 'burst') { if (v === 1) delete s.opacity; else s.opacity = v; }
@@ -119,6 +130,7 @@ export function resetFx(raw, entry, key) {
   const h = holder(raw, entry), s = h.sprite;
   if (key === 'scale') throw new Error('Size has no default: every sheet says how big it is drawn.');
   if (key === 'angle') { delete s.angle; return; }
+  if (key.startsWith('offset.')) { writeFx(raw, entry, key, 0); return; }
   if (key === 'tint' || key.startsWith('tint.')) { delete s.tint; return; }
   if (key === 'opacity') {
     if (entry.kind === 'layer') delete h.opacity;

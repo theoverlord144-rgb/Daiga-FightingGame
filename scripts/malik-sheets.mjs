@@ -117,8 +117,8 @@ export const SHEETS = [
   // The orbs: 1-2 forming, 3-6 flying (looped), 7-9 bursting.
   { name: 'orb', file: 'Malik_SpecialMove_Light_EnergySphere_Effect.PNG', n: 9, mode: 'fx', anchor: 'centre', size: 100, holds: [3, 3, 3, 3, 3, 3, 3, 4, 5] },
   { name: 'orb-M', file: 'Malik_SpecialMove_Medium_EnergySphere_Effect.PNG', n: 9, mode: 'fx', anchor: 'centre', size: 125, holds: [3, 3, 3, 3, 3, 3, 3, 4, 5] },
-  // The heavy orb is painted (dark blue), a transparent cut-out now: cut on an even grid, about its middle.
-  { ref: [3, 120], name: 'orb-H', bb: true, file: 'Malik_SpecialMove_Heavy_EnergySphere_Effect.png', n: 9, grid: true, mode: 'air', holds: [3, 3, 3, 3, 3, 3, 3, 4, 5] },
+  // The heavy orb is light on black like the others since Nov 26 (it was a painted dark-blue cut-out).
+  { name: 'orb-H', file: 'Malik_SpecialMove_Heavy_EnergySphere_Effect.png', n: 9, mode: 'fx', anchor: 'centre', size: 150, holds: [3, 3, 3, 3, 3, 3, 3, 4, 5] },
   // Lariat, redrawn the night of Nov 25 (nine drawings now): 1 the charge, 2 the start, 3-4 the run, 5 the arm cocked,
   // 6 the swing, 7-8 recovering, 9 upright. Its effect is six streaks, one to a row, each placed by its head (the right end).
   { ref: [9, TALL], name: 'lariat', bb: true, even: 'stand', tone: true, file: 'Malik_SpecialMove_Lariat.PNG', n: 9, rows: 3, perRow: [4, 4, 1], anchor: 'upper', holds: [4, 2, 3, 2, 2, 4, 9, 8, 7] },
@@ -141,12 +141,14 @@ export const SHEETS = [
   { ref: [3, 110], name: 'palm-5', bb: true, file: 'Malik_Rite_Neutral_Effect.png', n: 7, grid: true, mode: 'air', holds: [2, 2, 3, 3, 3, 3, 4] },
   { ref: [5, AIRREF.jL[1]], name: 'rite-j', bb: true, even: 'air', tone: true, file: 'Malik_Rite_Air.png', n: 5, mode: 'air', holds: [5, 6, 4, 7, 6] },
   { name: 'clap', file: 'Malik_Rite_Air_Effect.png', n: 7, mode: 'fx', anchor: 'centre', size: 190, cuts: [[305, 625, 1005, 1373, 1838, 2292]], holds: [3, 3, 3, 2, 3, 3, 4] },
+  // The burst under the opponent (owner's new art, Nov 26): 1-2 a ring, 3-5 the orb, 6 the burst, 7-8 shards. The clap at his hands stays the sheet above.
+  { name: 'air-burst', file: 'Malik_Air_Rite_Effect.PNG', n: 8, mode: 'fx', anchor: 'centre', size: 190, holds: [2, 2, 2, 2, 3, 3, 4, 5] },
   { ref: [7, TALL], name: 'rite-4', bb: true, even: 'stand', tone: true, file: 'Malik_Rite_Back.png', n: 7, anchor: 'upper', holds: [3, 5, 6, 5, 5, 5, 4] },
   { name: 'ward', file: 'Malik_Back_Rite_Effect.PNG', n: 7, mode: 'fx', anchor: 'centre', size: 260, cuts: [[313, 582, 931, 1445, 1913, 2330]], holds: [2, 3, 3, 3, 3, 3, 4] },
   // 2R ("Rite Down"): 2 the wind-up, 3 the hand slams the ground. Its effect is an orb rolling along the floor: 1-2 forming,
   // 3-4 rolling (looped), 5-7 the burst.
   { ref: [5, CROUCH], name: 'rite-2', bb: true, even: 'crouch', tone: true, file: 'Malik_Rite_Down.png', n: 5, anchor: 'upper', holds: [5, 8, 9, 7, 7] },
-  { name: 'palm-2', file: 'Malik_Rite_Down_Effect.png', n: 7, mode: 'fx', anchor: 'ground', size: 110, holds: [2, 2, 3, 3, 3, 3, 4] },
+  { name: 'palm-2', file: 'Malik_Rite_Down_Effect.png', n: 9, mode: 'fx', anchor: 'ground', size: 120, holds: [2, 2, 3, 3, 3, 3, 3, 3, 4] }, // redrawn Nov 26: 1-2 forming, 3-6 the orb (looped), 7-9 the burst
   // ---- Spirit Install: the guardian is drawn with him in these. The drawings stand close: cut on a grid. ----
   { ref: [1, 285], name: 'install-idle', bb: true, file: 'Malik_Install_Idle.PNG', n: 6, grid: true, anchor: 'upper', holds: [10, 10, 10, 10, 10, 10] },
   { ref: [1, 285], name: 'install-walk', bb: true, file: 'Malik_Install_Forward_Walk.PNG', n: 6, grid: true, anchor: 'upper', holds: [8, 8, 8, 8, 8, 8] },

@@ -125,3 +125,53 @@ test('An effect that carries its own opacity is edited in place', () => {
   assert.equal(raw.effects.pillar.opacity, 0.3);
   assert.equal(raw.art.opacity.pillar, loadJSON(PATH('malik')).art.opacity.pillar, 'the name rule is left alone');
 });
+
+test('Move X / Move Y: the drawing moves, written as sprite.offset; the rules do not change', () => {
+  for (const id of ['avner', 'malik', 'warteun']) {
+    const raw = loadJSON(PATH(id));
+    const before = JSON.stringify(compileCharacter(clone(raw), SYSTEM).states);
+    for (const e of fxEntries(raw)) {
+      const s = spriteOf(raw, e);
+      assert.deepEqual([readFx(raw, e, 'offset.x', CLASSES), readFx(raw, e, 'offset.y', CLASSES)], [{ value: s.offset?.[0] ?? 0, own: s.offset !== undefined }, { value: s.offset?.[1] ?? 0, own: s.offset !== undefined }]);
+    }
+    const e = fxEntries(raw).find((x) => x.kind === 'projectile') ?? fxEntries(raw)[0];
+    const s = spriteOf(raw, e);
+    delete s.offset;
+    const spawn = JSON.stringify(raw.projectiles?.[e.name]?.spawn), hitbox = JSON.stringify(raw.projectiles?.[e.name]?.hitbox);
+    nudgeFx(raw, e, 'offset.x', 1, false, CLASSES);
+    assert.deepEqual(s.offset, [1, 0]);
+    nudgeFx(raw, e, 'offset.y', -1, true, CLASSES);
+    assert.deepEqual(s.offset, [1, -10], 'Shift: ten at a time');
+    writeFx(raw, e, 'offset.x', -25.4);
+    assert.deepEqual(s.offset, [-25, -10], 'whole pixels');
+    assert.equal(showFx('offset.x', -25), '-25 px');
+    assert.equal(JSON.stringify(raw.projectiles?.[e.name]?.spawn), spawn, `${id}: where it spawns is untouched`);
+    assert.equal(JSON.stringify(raw.projectiles?.[e.name]?.hitbox), hitbox, `${id}: its hitbox is untouched`);
+    const def = compileCharacter(clone(raw), SYSTEM);
+    assert.equal(JSON.stringify(def.states), before, `${id}: the compiled moves are the same`);
+    if (e.kind === 'projectile') assert.deepEqual(def.projectiles[e.name].sprite.offset, [-25, -10], `${id}: the game's drawing reads it`);
+    resetFx(raw, e, 'offset.x');
+    assert.deepEqual(s.offset, [0, -10]);
+    resetFx(raw, e, 'offset.y');
+    assert.equal(s.offset, undefined, 'back at its place: nothing left in the file');
+  }
+  assert.match(fs.readFileSync('src/render/fight-renderer.js', 'utf8'), /sheet\.offset\[0\]/, 'the renderer applies it');
+});
+
+test('Malik\'s redrawn effects (Nov 26): every sheet his file names matches the cut, and each animation stays inside its sheet', () => {
+  const raw = loadJSON(PATH('malik'));
+  const manifest = loadJSON('data/characters/malik/sheets/manifest.json');
+  for (const [name, key, drawings] of [['spiritOrb', 'orb', 9], ['spiritOrbH', 'orb-H', 9], ['palm2', 'palm-2', 9], ['palmJ', 'air-burst', 8]]) {
+    const p = raw.projectiles[name], m = manifest[key].sprite;
+    assert.equal(p.sprite.image, `sheets/${key}.png`, name);
+    assert.ok(fs.existsSync(`data/characters/malik/sheets/${key}.png`), key);
+    for (const f of ['columns', 'count', 'frameW', 'frameH', 'originX']) assert.equal(p.sprite[f], m[f], `${name} ${f}`);
+    assert.equal(p.sprite.count, drawings, `${name}: ${drawings} drawings`);
+    assert.equal(p.sprite.additive, true, `${name}: drawn as light`);
+    assert.equal(p.anim.release.length + p.anim.loop.length + p.anim.impact.length, drawings, `${name}: every drawing is used once`);
+  }
+  // The air Rite's burst shows on the frames it can hit: its forming drawings last exactly until the hit starts.
+  const J = raw.projectiles.palmJ;
+  assert.equal(J.anim.release.reduce((a, b) => a + b, 0), J.phases[0][0]);
+  assert.equal(raw.effects.riteClap.sprite.image, 'sheets/clap.png', 'the clap at his hands keeps its sheet');
+});

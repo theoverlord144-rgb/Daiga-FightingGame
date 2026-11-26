@@ -3480,10 +3480,10 @@
    "columns": 9,
    "rows": 1,
    "count": 9,
-   "frameW": 210,
-   "frameH": 208,
-   "originX": 106,
-   "originY": 104,
+   "frameW": 203,
+   "frameH": 206,
+   "originX": 101,
+   "originY": 102,
    "scale": 0.5,
    "holds": [
     3,
@@ -3538,10 +3538,10 @@
    "columns": 9,
    "rows": 1,
    "count": 9,
-   "frameW": 265,
-   "frameH": 276,
-   "originX": 135,
-   "originY": 332,
+   "frameW": 307,
+   "frameH": 300,
+   "originX": 152,
+   "originY": 149,
    "scale": 0.5,
    "holds": [
     3,
@@ -3553,114 +3553,13 @@
     3,
     4,
     5
-   ]
+   ],
+   "additive": true
   },
   "from": "Malik_SpecialMove_Heavy_EnergySphere_Effect.png",
-  "drawings": [
-   1,
-   2,
-   3,
-   4,
-   5,
-   6,
-   7,
-   8,
-   9
-  ],
-  "lantern": [
-   [
-    0,
-    93
-   ],
-   [
-    0,
-    89
-   ],
-   [
-    0,
-    89
-   ],
-   [
-    -1,
-    91
-   ],
-   [
-    -1,
-    89
-   ],
-   [
-    0,
-    87
-   ],
-   [
-    0,
-    92
-   ],
-   [
-    -4,
-    94
-   ],
-   [
-    -1,
-    102
-   ]
-  ],
-  "reach": [
-   [
-    -59,
-    35,
-    59,
-    156
-   ],
-   [
-    -58,
-    33,
-    56,
-    155
-   ],
-   [
-    -59,
-    33,
-    58,
-    153
-   ],
-   [
-    -63,
-    33,
-    56,
-    153
-   ],
-   [
-    -62,
-    32,
-    57,
-    152
-   ],
-   [
-    -61,
-    30,
-    57,
-    150
-   ],
-   [
-    -62,
-    37,
-    58,
-    164
-   ],
-   [
-    -66,
-    31,
-    63,
-    158
-   ],
-   [
-    -58,
-    44,
-    60,
-    165
-   ]
-  ]
+  "drawings": null,
+  "lantern": null,
+  "reach": null
  },
  "lariat": {
   "sprite": {
@@ -5533,17 +5432,19 @@
  "palm-2": {
   "sprite": {
    "image": "sheets/palm-2.png",
-   "columns": 7,
+   "columns": 9,
    "rows": 1,
-   "count": 7,
-   "frameW": 239,
-   "frameH": 229,
-   "originX": 122,
-   "originY": 225,
+   "count": 9,
+   "frameW": 229,
+   "frameH": 248,
+   "originX": 115,
+   "originY": 244,
    "scale": 0.5,
    "holds": [
     2,
     2,
+    3,
+    3,
     3,
     3,
     3,
@@ -5553,6 +5454,34 @@
    "additive": true
   },
   "from": "Malik_Rite_Down_Effect.png",
+  "drawings": null,
+  "lantern": null,
+  "reach": null
+ },
+ "air-burst": {
+  "sprite": {
+   "image": "sheets/air-burst.png",
+   "columns": 8,
+   "rows": 1,
+   "count": 8,
+   "frameW": 372,
+   "frameH": 385,
+   "originX": 185,
+   "originY": 192,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    4,
+    5
+   ],
+   "additive": true
+  },
+  "from": "Malik_Air_Rite_Effect.PNG",
   "drawings": null,
   "lantern": null,
   "reach": null

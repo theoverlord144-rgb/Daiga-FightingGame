@@ -8,7 +8,7 @@ import { fxEntries, spriteOf, FX_FIELDS, fxField, SWATCHES, readFx, writeFx, res
 import { INK, DIM, GOLD } from './common.js';
 
 const CLASSES = FX.opacity?.classes ?? {};
-const ROW_H = 16;
+const ROW_H = 14;
 const TOP = 386;
 const LIST_ROW = 15;
 const LIST_TOP = 56;

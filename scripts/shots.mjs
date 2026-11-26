@@ -379,6 +379,10 @@ try {
   });
   // ----- War'Teun (node scripts/shots.mjs <folder> wt): each special filmed (a still every 2 or 3 frames) -----
   const wtFilm = (s, frames, every = 2, p2 = '') => { every = Number(process.env.WT_EVERY) || every; for (let i = 0; i < frames; i += every) { s.shot('f' + String(i + 1).padStart(2, '0')); s.go('', p2, every); } };
+  // Malik's redrawn effects (Nov 26): the light and heavy orb, the Down Rite orb, the air Rite's burst.
+  for (const b of ['L', 'H']) scene('mfx-orb-' + b, 'malik', 'avner', 420, (s) => { qcf(s, b); wtFilm(s, 80, 2); });
+  scene('mfx-rite-2', 'malik', 'avner', 300, (s) => { s.go('DR', '', 1); wtFilm(s, 70, 2); });
+  scene('mfx-rite-j', 'malik', 'avner', 300, (s) => { s.go('U', '', 1); s.go('', '', 12); s.go('R', '', 1); wtFilm(s, 44, 2); });
   const dd = (s, b) => { s.go('D', '', 2); s.go('', '', 2); s.go('D' + b, '', 1); };
   for (const vs of ['avner', 'malik']) {
     scene('wt-stand-' + vs, 'warteun', vs, 240, (s) => { s.go('', '', 20); s.shot('idle'); s.go('F', '', 14); s.shot('walk'); s.go('D', '', 20); s.shot('crouch'); s.go('', '', 4); s.go('U', '', 1); s.go('', '', 14); s.shot('jump'); s.go('', '', 40); s.go('K', 'L', 6); s.shot('block'); });

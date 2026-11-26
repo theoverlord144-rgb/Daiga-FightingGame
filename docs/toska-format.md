@@ -376,7 +376,8 @@ stays (a block: the pushed-back drawing, then the guard).
 
 ## Sheet settings any effect sprite can carry (drawing only)
 
-On the `sprite` block of an `effects` entry, a projectile, or a burst layer: `"scale"` (size), `"angle"` (degrees,
+On the `sprite` block of an `effects` entry, a projectile, or a burst layer: `"offset": [forward, up]` (px; the drawing
+moved off its place, mirrored with facing; never the hitbox), `"scale"` (size), `"angle"` (degrees,
 clockwise facing right, mirrored facing left), `"tint"` (`"#rrggbb"`: the drawing multiplied by that colour) and
 `"opacity"` (0 to 1, multiplied in on top of any effect-opacity rule; this is where a burst projectile's own sheet
 keeps it). A named effect's or projectile's opacity is normally `art.opacity["<name>"]`. The editor's FX page

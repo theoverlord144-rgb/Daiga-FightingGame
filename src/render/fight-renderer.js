@@ -260,6 +260,7 @@ export function createFightRenderer(ctx, W, H) {
   /** One frame of a sheet (effects, marks, chain pieces: no palette), centred on its origin at screen x, y. */
   function drawSheetFrame(def, sheet, index, x, y, facing, angle = (facing * (sheet.angle ?? 0) * Math.PI) / 180) { // sheet.angle: its own rotation, in degrees
     const op = fxOp; fxOp = null; // FXOPACITY
+    if (sheet.offset) { x += facing * sheet.offset[0]; y -= sheet.offset[1]; } // sheet.offset: [forward, up] px, the drawing moved off its place (the editor's FX page)
     const img = tinted(spriteImage(def ? def.id : null, sheet.image), sheet.tint);
     if (!img) return false;
     const cols = sheet.columns ?? 1;
