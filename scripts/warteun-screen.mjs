@@ -88,9 +88,11 @@ const PAGE = async () => {
       const a = game.players[0];
       a.vars.wiretap = 360; a.vars.resonance = 18; a.meter = 40000; game.players[1].health = 10000;
       // Keep three vacuums waiting (the scripted warps add more; the rule of three trims them).
-      for (const q of game.projectiles) if (q.kind === 'vacuum' && q.age < q.fuse && f % 250 > 60) { q.fuse = q.age + 30; q.boom = q.fuse + 12; }
+      for (const q of game.projectiles) if (q.kind === 'vacuum' && q.age < q.fuse && f % 250 > 60) { q.fuse = q.age + 120; q.boom = q.fuse + 12; }
       const t0 = performance.now();
-      step(game, [loop[f % loop.length], 0], world);
+      let raw = loop[f % loop.length];
+      if (a.facing < 0) raw = (raw & ~3) | ((raw & 1) << 1) | ((raw & 2) >> 1); // the script is written facing right
+      step(game, [raw, 0], world);
       renderer.notice(game, world);
       const t1 = performance.now();
       renderer.draw(game, world, { stage, marks: true, palettes: [0, 0] });

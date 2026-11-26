@@ -334,7 +334,15 @@ export function fireOnEnter(game, p, def, world) {
         const behind = v.behind || (!!v.behindIf && (p.vars[v.behindIf] | 0) > 0);
         if (v.swap) { p.x = o.x; o.x = fx; }
         else if (behind) p.x = o.x + (o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing) * v.gap;
-        else { p.x += p.facing * v.x; p.y = Math.max(0, p.y + v.y); }
+        else {
+          let to = p.x + p.facing * v.x;
+          // stop: a forward step never carries him through a grounded opponent; it ends that far in front of them.
+          if (v.stop > 0 && v.x > 0 && o.y <= 0 && (o.x - p.x) * p.facing > 0) {
+            const limit = o.x - p.facing * v.stop;
+            if ((to - limit) * p.facing > 0) to = (limit - p.x) * p.facing > 0 ? limit : p.x;
+          }
+          p.x = to; p.y = Math.max(0, p.y + v.y);
+        }
         if (v.swap || behind) {
           p.facing = o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing;
           if (v.swap && world.chars[o.id].states[o.state].free) o.facing = -p.facing;
@@ -348,7 +356,7 @@ export function fireOnEnter(game, p, def, world) {
         // var gives them now. Those close together burst as one, bigger.
         const d = def.projectiles[v.name];
         const B = d.burst;
-        const list = game.projectiles.filter((q) => q.owner === p.id && q.kind === v.name && !q.end && !q.hit && q.age < q.boom + B.active);
+        const list = game.projectiles.filter((q) => q.owner === p.id && q.kind === v.name && !q.end && !q.hit && q.age < q.boom + B.delay + B.active);
         const lv = B.scale ? Math.trunc((p.vars[B.scale.var] | 0) / B.scale.per) : 0;
         const done = new Set();
         for (const q of list) {

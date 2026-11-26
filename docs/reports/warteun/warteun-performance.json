@@ -1,22 +1,22 @@
 {
  "frames": 900,
  "mostVacuums": 3,
- "framesWithThreeOrMore": 37,
+ "framesWithThreeOrMore": 128,
  "ms": {
   "total": {
-   "average": 8.716,
-   "worst5pct": 16.849,
-   "max": 27.1
+   "average": 9.372,
+   "worst5pct": 15.924,
+   "max": 18.1
   },
   "step": {
-   "average": 0.024,
-   "worst5pct": 0.107,
+   "average": 0.03,
+   "worst5pct": 0.104,
    "max": 0.2
   },
   "draw": {
-   "average": 8.692,
-   "worst5pct": 16.816,
-   "max": 27
+   "average": 9.342,
+   "worst5pct": 15.9,
+   "max": 18.1
   }
  },
  "budgetMs": 16.667,

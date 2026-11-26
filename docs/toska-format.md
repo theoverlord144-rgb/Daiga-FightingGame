@@ -206,7 +206,9 @@ named effect pinned to the lantern point of each drawing, from that drawing on).
 - `"warp": { "x": px, "y": px }` (one frame): the fighter is somewhere else at once, that far forward (negative =
   back) and up (never below the floor). `"warp": { "behind": true, "gap": px }` puts them on the far side of the
   opponent, `gap` px past, facing them. `"behindIf": "<var>"` beside `x` does that only while the fighter's var is
-  above 0 (else the plain `x`). `"warp": { "swap": true }` trades places with the opponent. Cue `warp`.
+  above 0 (else the plain `x`). `"warp": { "swap": true }` trades places with the opponent. `"stop": px` beside a
+  forward `x`: the step never carries the fighter through a grounded opponent in front; it ends that far short of
+  them (and does nothing if they are already nearer). Cue `warp`.
 - `"detonate": "<projectile>"` or `{ "name", "collapse": frames }` (one frame): every burst projectile of that
   kind the fighter owns stops waiting and bursts after `collapse` frames (0 = now); ones within the projectile's
   `resonate.gap` of each other burst as one. Cue `detonate`.
@@ -259,18 +261,22 @@ owner when it ends, however it ends), `ownerOnHit` (a state the owner switches t
 made it), `hitsAirborne`, `pull`.
 
 **A burst projectile** (War'Teun's vacuum) waits, pulls, then bursts once:
-`"burst": { "fuse": frames, "collapse": frames, "active": frames, "linger": frames, "limit": n, "pull": { "range",
+`"burst": { "fuse": frames, "collapse": frames, "delay": frames, "active": frames, "linger": frames, "limit": n, "pull": { "range",
 "reachY", "bodyY", "speed", "markVar", "markRangePct" }, "scale": { "var", "per", "sizePct", "damagePct" },
 "resonate": { "gap", "pct" } }`. It waits `fuse` frames, then for `collapse` frames an opponent within `range` px
 (and `reachY` up or down, measured from `bodyY` above their feet) slides `speed` px a frame toward its centre (not
-while thrown or lying down); then its hitbox is live for `active` frames and it stays `linger` more to be drawn.
+while thrown or lying down); then the burst begins (cue `projBurst`), its hitbox comes out `delay` frames later for
+`active` frames, and it stays `linger` more to be drawn.
 More than `limit` of them waiting: the oldest starts its collapse at once. `scale`: at the burst, each `per` of the
 owner's var makes the box `sizePct` bigger and the damage `damagePct` higher. `resonate`: when a `detonate` finds
 several within `gap` px they become one burst at their middle, `pct` percent of the size and damage. While the
 owner's `markVar` is above 0 the pull range is `markRangePct` percent. A burst is blocked holding either way, knocks
 away from its own centre and never clashes. Cue `projBurst { name, x, y, lv, size, joined }`. Drawing only:
-`"burstArt": { "dark": sprite, "darkFrames": n, "start": holds, "fuseLoop": holds, "collapse": [drawings spread over
-the collapse], "burst": holds, "ring": { "from": level, "set": "<shockwave set>" } }`.
+`"burstArt": { "start": holds, "fuseLoop": holds, "collapse": [drawings spread over the collapse], "burst": holds (the
+sheet's remaining drawings, on top), "fire": { sprite, holds, opacity }, "smoke": { sprite, holds, opacity, delay,
+rise } (under the fire, drifting up), "shake": { at, px, perLevel }, "ring": { "from": level, "set": "<shockwave
+set>" } }`. All of it is drawn with normal blending and enlarged by the burst's size; the projectile's own sheet is
+always solid (no effect-opacity rule touches it).
 
 ## Making a sprite sheet
 

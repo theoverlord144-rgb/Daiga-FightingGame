@@ -38,8 +38,8 @@ function play(g, world, state, frames, p2 = 0) {
   return cues;
 }
 
-test("War'Teun: every move's drawings add up to its frame data, and the frame data is the brief's", () => {
-  const brief = { '5L': [5, 2, 9], '5M': [7, 3, 14], '5H': [13, 4, 18], '5S': [11, 4, 22], '6M': [20, 3, 16], '4H': [16, 3, 20], '6H': [15, 3, 24], '2L': [5, 2, 9], '2H': [12, 3, 24],
+test("War'Teun: every move's drawings add up to its frame data, and the frame data is the brief's (5H and 6H slowed by the owner, Nov 26)", () => {
+  const brief = { '5L': [5, 2, 9], '5M': [7, 3, 14], '5H': [16, 4, 18], '5S': [11, 4, 22], '6M': [20, 3, 16], '4H': [16, 3, 20], '6H': [20, 3, 24], '2L': [5, 2, 9], '2H': [12, 3, 24],
     'j.L': [5, 3, 10], 'j.M': [7, 4, 14], 'j.H': [10, 4, 18] };
   for (const [id, [s, a, r]] of Object.entries(brief)) {
     const m = rawMove(id);
@@ -82,6 +82,10 @@ test('Vacuum: a warp leaves one where he stood, on the warp frame; it waits its 
   assert.equal(seen[0], dx0 - px(B.pull.speed), 'the first collapse frame pulls');
   assert.equal(burstAt, B.collapse, `the burst comes ${B.collapse} frames after the fuse ends`);
   assert.ok(Math.abs(seen[B.collapse - 1] - x0) < Math.abs(dx0 - x0), 'they ended nearer its centre');
+  // The hit lands on the fire's second drawing: `delay` frames after the burst begins.
+  assert.equal(B.delay, 1);
+  assert.ok(!g.cues.some((c) => c.move === 'vacuum'), 'not on the first frame of the burst');
+  for (let i = 0; i < B.delay; i++) step(g, [0, 0], W);
   assert.ok(g.cues.some((c) => HIT.includes(c.type) && c.move === 'vacuum'), 'and the burst hit them');
   assert.ok(d.health < WT.stats.health);
 });
@@ -139,6 +143,37 @@ test('Vacuum: his dashes and air dash leave none; his warping normals, j.S and t
   assert.ok(dists[0] < dists[1] && dists[1] < dists[2]);
 });
 
+test('5H and 6H step forward but never through the opponent: they stop in front', () => {
+  for (const id of ['5H', '6H']) {
+    const w = rawMove(id).timeline.find((e) => e.warp);
+    assert.ok(w.warp.stop > 0, id);
+    // Far away: the full step.
+    const far = setup(W, 800);
+    const x0 = far.players[0].x;
+    play(far, W, id, w.at + 1);
+    assert.equal(far.players[0].x, x0 + px(w.warp.x), `${id}: the whole step when nobody is in the way`);
+    // Closer than the step: he stops `stop` px in front of them, on his own side.
+    for (const gap of [w.warp.x + w.warp.stop - 30, w.warp.x, w.warp.stop + 20]) {
+      const g = setup(W, gap);
+      const a = g.players[0], d = g.players[1];
+      play(g, W, id, w.at + 1);
+      assert.equal(d.x - a.x, px(w.warp.stop), `${id} from ${gap} px: stops in front`);
+    }
+    // Already nearer than that: he does not move at all (never backward, never through).
+    const g = setup(W, w.warp.stop - 10);
+    const a = g.players[0], d = g.players[1];
+    const before = d.x - a.x;
+    play(g, W, id, w.at + 1);
+    assert.ok(a.x < d.x && d.x - a.x >= before, `${id} up close: still in front`);
+    // Facing left, the same.
+    const m = setup(W, 100);
+    [m.players[0].x, m.players[1].x] = [m.players[1].x, m.players[0].x];
+    m.players[0].facing = -1; m.players[1].facing = 1;
+    play(m, W, id, w.at + 1);
+    assert.equal(m.players[0].x - m.players[1].x, px(w.warp.stop), `${id} facing left`);
+  }
+});
+
 test('Vacuum: at most three wait at once; a fourth makes the oldest start its collapse', () => {
   const g = setup(W, 1600);
   const a = g.players[0];
@@ -184,9 +219,9 @@ test('Tune: every vacuum bursts on the strike; two close together burst as one, 
   b.x = px(-100);
   g2.players[1].x = px(-670);
   b.vars.resonance = 12;
-  const hit = play(g2, W, 'tune', strike + 1).find((c) => HIT.includes(c.type) && c.move === 'vacuum');
+  const hit = play(g2, W, 'tune', strike + 1 + B.delay).find((c) => HIT.includes(c.type) && c.move === 'vacuum');
   assert.ok(hit, 'the joined burst hit');
-  const plain = (() => { const g3 = setup(W, 1600); g3.players[0].x = px(-700); play(g3, W, 'warpStepH', at + 1); g3.players[0].x = px(-100); g3.players[1].x = px(-670); return play(g3, W, 'tune', strike + 1).find((c) => c.move === 'vacuum').damage; })();
+  const plain = (() => { const g3 = setup(W, 1600); g3.players[0].x = px(-700); play(g3, W, 'warpStepH', at + 1); g3.players[0].x = px(-100); g3.players[1].x = px(-670); return play(g3, W, 'tune', strike + 1 + B.delay).find((c) => c.move === 'vacuum').damage; })();
   assert.ok(hit.damage > plain * 2, `level 2 and joined (${hit.damage}) does far more than a plain burst (${plain})`);
   // No vacuums: only the animation, and Resonance is still spent.
   const g4 = setup(W, 600);
@@ -295,7 +330,7 @@ test('Listen: a strike in the window is caught (he warps behind and a vacuum bur
   assert.ok(a.x > d.x, 'he is behind the attacker');
   const hit = cues.find((c) => HIT.includes(c.type) && c.move === 'vacuum');
   assert.ok(hit, 'the vacuum burst on the attacker');
-  assert.ok(hit.i - cues.find((c) => c.type === 'catch').i <= 2, 'at once');
+  assert.ok(hit.i - cues.find((c) => c.type === 'catch').i <= 2 + B.delay, 'at once');
   assert.ok(d.health < MALIK.stats.health);
   // Before the window (frames 1-3) the strike just hits him.
   const g1 = setup(WM, 110);
@@ -339,7 +374,9 @@ test('Displacement: he passes through to the other side and strikes on frame 18;
     const strike = cues.find((c) => c.move === 'displacementM');
     const burst = cues.find((c) => c.type === 'projBurst');
     assert.equal(strike.i, m.startup - 1, 'the strike touches on frame 18');
-    assert.equal(burst.i - strike.i, 16, 'the burst is 16 frames after it');
+    assert.equal(burst.i + B.delay - strike.i, 16, 'the burst lands 16 frames after it');
+    const touch = cues.find((c) => c.move === 'vacuum');
+    if (touch) assert.equal(touch.i - strike.i, 16);
     const touches = cues.filter((c) => c.move === 'vacuum' || c.move === 'displacementM').map((c) => c.i);
     assert.equal(new Set(touches).size, touches.length, 'the two never land on the same frame');
   }
@@ -370,7 +407,7 @@ test('Swap: one bar; the two trade places and the opponent is left in a vacuum t
   assert.ok(at >= 0, 'it came out');
   assert.equal(spent, 10000, 'it cost one bar');
   const hit = c2.find((c) => HIT.includes(c.type) && c.move === 'vacuum');
-  assert.ok(hit && hit.i === at, 'the vacuum bursts on them the same frame');
+  assert.ok(hit && hit.i === at + B.delay, 'the vacuum bursts on them at once');
 });
 
 test("War'Teun: rollback gives the same game with vacuums, Tune, Wiretap and Listen in play", () => {

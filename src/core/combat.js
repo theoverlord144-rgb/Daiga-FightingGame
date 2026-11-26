@@ -599,7 +599,7 @@ export function resolveProjectiles(game, world) {
     }
     game.cues.push({ type: 'projBurst', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, lv: pr.lv, size: pr.size, joined: pr.joined | 0 });
   }
-  const boxOf = (pr, def) => (def.burst ? (pr.hit || pr.age < pr.boom || pr.age >= pr.boom + def.burst.active ? null : scaledBox(def.hitbox, pr.size)) : def.noHit || pr.hit ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
+  const boxOf = (pr, def) => (def.burst ? (pr.hit || pr.age < pr.boom + def.burst.delay || pr.age >= pr.boom + def.burst.delay + def.burst.active ? null : scaledBox(def.hitbox, pr.size)) : def.noHit || pr.hit ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
   list.forEach((pr, i) => { if (pr.end) gone[i] = 'recall'; });
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
@@ -637,7 +637,7 @@ export function resolveProjectiles(game, world) {
       }
       if (def.persist && pr.age >= def.lifetime) gone[i] = 'edge';
     } else if (def.endsOnGround && pr.y <= 0) { pr.y = 0; gone[i] = 'ground'; }
-    else if (def.burst) { if (pr.age >= pr.boom + def.burst.active + def.burst.linger) gone[i] = 'edge'; }
+    else if (def.burst) { if (pr.age >= pr.boom + def.burst.delay + def.burst.active + def.burst.linger) gone[i] = 'edge'; }
     else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
   });
   list.forEach((pr, i) => {

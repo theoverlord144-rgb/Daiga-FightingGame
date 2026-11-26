@@ -135,3 +135,37 @@ Avner and Malik retunes of Nov 25, not from this work. The baseline wants re-rec
 - Your 41 raw sheets (`data/characters/War'Teun/`, 140 MB) are not committed. Avner's and Malik's raw art is in the
   repository, so say the word and I add them.
 - Boxes are placed by eye from the drawings. They want a pass in the box editor.
+
+## Changes after the first play-test (Nov 26, same day)
+
+You asked for these; all are in.
+
+- **His size during attacks.** Your action drawings were bigger than the upright pose each sheet ends in (that pose
+  sets the sheet's size). I measured his head in every drawing and gave the ones that were off their own size
+  factor: 5H (drawings 1 to 7 at 86%), 5S, 6M, 4H (drawings 1 and 2 at 84%), 6H, j.S and Warp Step. The other
+  sheets measured consistent and are untouched. Boxes and frame data did not move.
+- **Forward dash:** 180 px (was 320), and slower: he reappears on frame 12 (was 9), 26 frames in all (was 20),
+  can attack out of it from frame 16 (was 12).
+- **Warp Step:** 200 / 300 / 400 px (was 320 / 480 / 640).
+- **5H and 6H never pass through the opponent:** the step stops 60 px in front of a grounded opponent. A new
+  general rule (`stop` on a warp), tested from far, close, point-blank and facing left.
+- **5H and 6H slower:** startup 16 (was 13) and 20 (was 15); the extra frames are on the wind-up drawings.
+- **New vacuum, fire and smoke.** All three drawn as normal pictures on one centre: smoke under, fire, the ruby ring
+  on top; all three grow with Resonance and with resonating. The vacuum is fully solid: none of the see-through
+  rules touch it. Fire is at 0.95 and smoke at 0.85, as your note says. The hit now lands on fire frame 2 (one frame
+  after the burst begins); Displacement's still lands exactly 16 frames after the strike. Screen shake on that
+  frame, harder per Resonance level; the white ring stays at Resonance 2 and up.
+
+Things to know:
+
+- **Your note's file names are not the files in the folder.** I used `Warteun_SpecialMove_WarpStep_Effect` (vacuum),
+  `_Effect2` (fire) and `_Effect3` (smoke), by looking at them.
+- **The smoke sheet is on white paper, not see-through.** I took the white out; its edges are a little hard. A
+  clean export would look better.
+- **The collapse** is still 12 frames, so its two drawings are held 6, 6 (your note says 4, 4).
+- **At Resonance 3 with resonating vacuums the fire fills most of the screen** (2.4 times size). That is your
+  numbers multiplied out; see `docs/reports/warteun/malik-5-tune-burst-later.png`.
+
+Measured again: best meterless combo 3,399 (34%), Displacement into a full combo 3,927 (39%), nothing over 50%.
+Frame time with three vacuums, the mark and the new effects: 9.4 ms average, 15.9 ms worst 5% (inside the 16.7
+budget; the earlier 16.8 was the old light-blended burst), worst single frame 18.1 ms. `npm test`: 485 of 485.

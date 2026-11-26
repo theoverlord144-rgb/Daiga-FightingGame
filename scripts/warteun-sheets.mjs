@@ -13,6 +13,9 @@ const S = 190; // standing
 const C = 126; // his deep squat
 const G = { bb: true };
 const D = { bb: true, grid: true }; // sheets with dissolving drawings: cut on the grid
+// scales: [..] on a sheet = a hand-given size factor per drawing. The owner's drawings are not all one size inside a
+// sheet (the action drawings are often bigger than the upright pose the sheet ends in, which sets its size); the
+// factors come from measuring his head in each drawing and were checked by eye.
 export const SHEETS = [
   { ...G, name: 'idle', scaleRef: true, stand: S, file: `${R}Idle.png`, n: 12, rows: 3, anchor: 'upper', holds: [10, 8, 7, 7, 4, 12, 7, 7, 7, 8, 10, 8] },
   { ...G, ref: [1, S], name: 'walk', file: `${R}Forward_Walk.png`, n: 10, rows: 3, perRow: [4, 4, 2], anchor: 'upper', holds: [7, 7, 6, 6, 6, 7, 7, 6, 6, 6] },
@@ -60,11 +63,11 @@ export const SHEETS = [
   // ---- Normals: the owner's holds; the hit drawing is 5L 3, 5M 4, 5H 5, 5S 4, 6M 5, 4H 5, 6H 5, 2L 3, 2M 3, 2H 4. ----
   { ...G, ref: [6, S], name: '5L', file: `${R}Light.png`, n: 6, rows: 2, perRow: [4, 2], anchor: 'upper', holds: [2, 2, 2, 2, 3, 4] },
   { ...G, ref: [7, S], name: '5M', file: `${R}Medium.png`, n: 7, rows: 2, perRow: [4, 3], anchor: 'upper', holds: [2, 2, 2, 3, 7, 4, 3] },
-  { ...D, ref: [8, S], name: '5H', file: `${R}Heavy.png`, n: 8, rows: 4, anchor: 'upper', holds: [4, 2, 3, 3, 4, 5, 6, 7] },
-  { ...G, ref: [8, S], name: '5S', file: `${R}SLauncher.png`, n: 8, rows: 2, anchor: 'upper', holds: [4, 3, 3, 4, 5, 6, 5, 6] },
-  { ...G, ref: [8, S], name: '6M', file: `${R}ForwardMedium.png`, n: 8, rows: 2, anchor: 'upper', holds: [5, 5, 5, 4, 3, 5, 5, 6] },
-  { ...G, ref: [8, S], name: '4H', file: `${R}BackHeavy.png`, n: 8, rows: 2, anchor: 'upper', holds: [4, 3, 5, 3, 3, 6, 7, 7] },
-  { ...G, ref: [8, S], name: '6H', file: `${R}ForwardHeavy.png`, n: 8, rows: 2, anchor: 'upper', holds: [4, 3, 4, 3, 3, 6, 9, 9] },
+  { ...D, ref: [8, S], name: '5H', file: `${R}Heavy.png`, n: 8, rows: 4, anchor: 'upper', scales: [0.87,0.86,0.86,0.86,0.86,0.86,0.86,1], holds: [4, 2, 3, 3, 4, 5, 6, 7] },
+  { ...G, ref: [8, S], name: '5S', file: `${R}SLauncher.png`, n: 8, rows: 2, anchor: 'upper', scales: [0.92,0.87,0.87,0.9,0.9,0.95,1,1], holds: [4, 3, 3, 4, 5, 6, 5, 6] },
+  { ...G, ref: [8, S], name: '6M', file: `${R}ForwardMedium.png`, n: 8, rows: 2, anchor: 'upper', scales: [0.94,0.94,0.94,0.94,0.94,1,1,1], holds: [5, 5, 5, 4, 3, 5, 5, 6] },
+  { ...G, ref: [8, S], name: '4H', file: `${R}BackHeavy.png`, n: 8, rows: 2, anchor: 'upper', scales: [0.84,0.84,1,1,1,1,1,1], holds: [4, 3, 5, 3, 3, 6, 7, 7] },
+  { ...G, ref: [8, S], name: '6H', file: `${R}ForwardHeavy.png`, n: 8, rows: 2, anchor: 'upper', scales: [0.94,0.94,1,1,0.88,0.88,1,1], holds: [4, 3, 4, 3, 3, 6, 9, 9] },
   { ...G, ref: [6, C], name: '2L', file: `${R}Crouch_Light.png`, n: 6, rows: 2, perRow: [4, 2], anchor: 'upper', holds: [2, 2, 2, 2, 3, 4] },
   { ...G, ref: [6, C], name: '2M', file: `${R}Crouch_Medium.png`, n: 6, rows: 2, perRow: [4, 2], anchor: 'upper', holds: [4, 4, 4, 6, 5, 5] },
   { ...G, ref: [7, C], name: '2H', file: `${R}Crouch_Heavy.png`, n: 7, rows: 2, perRow: [4, 3], anchor: 'upper', holds: [4, 4, 3, 3, 8, 8, 8] },
@@ -72,12 +75,12 @@ export const SHEETS = [
   { ...G, name: 'jM', file: `${R}Air_Medium.png`, n: 6, rows: 2, perRow: [4, 2], mode: 'air', holds: [3, 3, 4, 4, 4, 6] },
   { ...G, name: 'jH', file: `${R}Air_Heavy.png`, n: 8, rows: 2, mode: 'air', holds: [3, 3, 3, 4, 4, 5, 5, 4] },
   // j.S: 1-4 in the air (3 the warp, 4 the hit), 5 the dive held to the floor, 6-7 the landing.
-  { ...D, ref: [7, S], file: `${R}Air_S.png`, n: 7, rows: 2, perRow: [4, 3], parts: [
+  { ...D, ref: [7, S], file: `${R}Air_S.png`, n: 7, rows: 2, perRow: [4, 3], scales: [1, 1, 1, 0.88, 1, 1, 1], parts: [
     { name: 'jS', frames: [1, 2, 3, 4, 5], mode: 'air', holds: [4, 4, 3, 4, 30] },
     { name: 'jS-land', frames: [6, 7], anchor: 'upper', lineFrom: [6, 7], holds: [8, 6] },
   ] },
   // ---- Specials ----
-  { ...D, ref: [9, S], name: 'warp-step', file: `${R}SpecialMove_WarpStep.png`, n: 9, rows: 3, perRow: [4, 4, 1], anchor: 'upper', holds: [4, 3, 2, 3, 2, 4, 6, 6, 6] },
+  { ...D, ref: [9, S], name: 'warp-step', file: `${R}SpecialMove_WarpStep.png`, n: 9, rows: 3, perRow: [4, 4, 1], anchor: 'upper', scales: [0.86,0.86,0.86,0.86,0.88,0.88,0.89,1,1], holds: [4, 3, 2, 3, 2, 4, 6, 6, 6] },
   { ...D, ref: [8, S], name: 'displacement', file: `${R}SpecialMove_Displacement.png`, n: 8, rows: 2, anchor: 'upper', holds: [4, 4, 6, 3, 3, 6, 6, 6] },
   // Listen: 1 raising the fork, 2-3 listening, 4-5 the whiff, 6-8 triggered (the warp).
   { ...D, ref: [5, S], file: `${R}SpecialMove_Listen.png`, n: 8, rows: 2, parts: [
@@ -87,10 +90,7 @@ export const SHEETS = [
   { ...G, ref: [6, S], name: 'wiretap', file: `${R}SpecialMove_Wiretap.png`, n: 6, rows: 2, perRow: [4, 2], anchor: 'upper', holds: [5, 4, 4, 3, 6, 8] },
   { ...G, ref: [6, S], name: 'tune', file: `${R}Rite_Tune.png`, n: 6, rows: 2, perRow: [4, 2], anchor: 'upper', holds: [9, 5, 3, 12, 6, 6] },
   // ---- Effects (light) ----
-  // The vacuum: 1-3 the dark sphere, 4-5 the collapse, 6-9 the burst.
-  { name: 'vacuum', file: `${R}SpecialMove_WarpStep_Effect.png`, n: 9, mode: 'fx', anchor: 'centre', size: 260, cuts: [[246, 480, 735, 990, 1245, 1575, 1965, 2325]], holds: [2, 6, 6, 6, 6, 2, 3, 4, 4] },
-  // The same strip cut as a painted drawing (its own see-through edge kept), for the dark sphere of drawings 1-3.
-  { ...G, ref: [3, 62], name: 'vacuum-dark', file: `${R}SpecialMove_WarpStep_Effect.png`, n: 9, cuts: [[246, 480, 735, 990, 1245, 1575, 1965, 2325]], mode: 'air', holds: [2, 6, 6, 6, 6, 2, 3, 4, 4] },
+  // The vacuum, its fire and its smoke are painted pictures: node scripts/warteun-fx.mjs cuts them.
   { name: 'ripple', file: `${R}Crouch_Medium_Effect.png`, n: 8, mode: 'fx', anchor: 'ground', size: 110, holds: [2, 2, 3, 3, 3, 3, 4, 4] },
   { name: 'note', file: `${R}NoteEffect.png`, n: 6, mode: 'fx', anchor: 'centre', size: 120, holds: [2, 3, 4, 4, 4, 4] },
   { name: 'chord', file: `${R}SLauncher_Effect.png`, n: 8, mode: 'fx', anchor: 'ground', size: 330, holds: [1, 2, 3, 3, 3, 4, 4, 4] },

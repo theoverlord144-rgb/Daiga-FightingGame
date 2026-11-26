@@ -264,7 +264,7 @@ function compileProjectiles(src, meter) {
       //   (detonated together within `gap` of each other, they burst as one, pct of the size and damage).
       // Its hit knocks away from its centre and is blocked holding either way. A spawn may give its own fuse / collapse.
       burst: p.burst ? {
-        fuse: p.burst.fuse ?? 0, collapse: p.burst.collapse ?? 0, active: Math.max(1, p.burst.active ?? 1), linger: p.burst.linger ?? 0, limit: p.burst.limit ?? 0,
+        fuse: p.burst.fuse ?? 0, collapse: p.burst.collapse ?? 0, delay: Math.max(0, p.burst.delay ?? 0), active: Math.max(1, p.burst.active ?? 1), linger: p.burst.linger ?? 0, limit: p.burst.limit ?? 0,
         pull: p.burst.pull ? { range: px(p.burst.pull.range ?? 0), reachY: px(p.burst.pull.reachY ?? 9999), bodyY: px(p.burst.pull.bodyY ?? 0), speed: px(p.burst.pull.speed ?? 0), markVar: p.burst.pull.markVar ?? null, markRangePct: Math.round((p.burst.pull.markRangePct ?? 100) * 100) } : null,
         scale: p.burst.scale ? { var: p.burst.scale.var, per: Math.max(1, p.burst.scale.per ?? 1), sizePct: Math.round((p.burst.scale.sizePct ?? 0) * 100), damagePct: Math.round((p.burst.scale.damagePct ?? 0) * 100) } : null,
         resonate: p.burst.resonate ? { gap: px(p.burst.resonate.gap ?? 0), pct: Math.round((p.burst.resonate.pct ?? 100) * 100) } : null,
@@ -512,7 +512,7 @@ function normalizeEvent(e, stats, sheetName) {
     // warp: an instant move. { x, y } px (x forward), or behind: true (to the far side of the opponent, `gap` px past
     // them), behindIf: "<var>" (behind only while that var of the fighter's runs, else x / y), or swap: true (the two
     // fighters trade places). After behind / swap the fighter faces the opponent.
-    else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap };
+    else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap, stop: px(v.stop ?? 0) };
     // detonate: { name, collapse }: the fighter's projectiles of that kind burst `collapse` frames from now.
     else if (k === 'detonate') out[k] = typeof v === 'string' ? { name: v, collapse: 0 } : { name: v.name, collapse: v.collapse | 0 };
     // catch: { to, hitstop }: while it lasts, a strike that would hit is caught instead: no damage, the fighter

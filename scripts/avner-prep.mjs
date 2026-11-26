@@ -777,7 +777,9 @@ function processBody(spec, manifest) {
   const ms = D.boxes.map((_, i) => measureBody(K, D, i));
   if (spec.scaleRef) setScale(spec, ms);
   const k = (spec.ref ? (spec.ref[1] * RES) / ms[spec.ref[0] - 1].height : bodyScale(ms, spec.bb) ?? SCALE) * (spec.fix ?? 1);
-  const ks = evenScales(spec, K, D, ms, k); // one scale per drawing: k, corrected where the drawing was made too big or too small (even)
+  // one scale per drawing: k, corrected where the drawing was made too big or too small (even), then by the table's
+  // own hand-given factor per drawing of the sheet (scales: [..], 1 = leave)
+  const ks = evenScales(spec, K, D, ms, k).map((v, i) => v * (spec.scales?.[i] ?? 1));
   if (ANALYZE) {
     console.log(`${(spec.name ?? spec.file).padEnd(14)} ${K.kind.padEnd(11)} scale ${k.toFixed(3)}  heights ${ms.map((m) => m.height).join(' ')}  lantern ${ms.map((m) => m.lantern).join(' ')}${spec.even ? '  even ' + ks.map((v) => (v / k).toFixed(2)).join(' ') : ''}`);
     return;

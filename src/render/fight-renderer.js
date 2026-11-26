@@ -673,23 +673,40 @@ export function createFightRenderer(ctx, W, H) {
   }
 
   /**
-   * A burst projectile (War'Teun's vacuum), drawn by the phase the game says it is in. `burstArt` in its data:
-   * `start` holds then `fuseLoop` while it waits, `collapse` drawings spread over the collapse, `burst` holds from
-   * the burst on, enlarged by the burst's own size (Resonance, resonating). The first `darkFrames` drawings come
-   * from the `dark` sheet (normal blending: a dark sphere); the rest from the sprite (light).
+   * A burst projectile (War'Teun's vacuum), drawn by the phase the game says it is in. All of it is painted
+   * pictures with normal blending. `burstArt` in its data: `start` holds then `fuseLoop` while it waits, `collapse`
+   * drawings spread over the collapse; from the burst on, three layers on one centre, all enlarged by the burst's
+   * own size (Resonance, resonating): `smoke` (under; starts `delay` frames in, drifts up `rise` px a frame), `fire`,
+   * and the sheet's remaining drawings by the `burst` holds (the ring, on top). `opacity` on fire and smoke is a plain
+   * see-through share; the vacuum's own drawings are always solid (none of the effect-opacity rules apply to it).
    */
   function drawBurst(pr, d, def) {
     const A = d.burstArt;
     const sum = (h) => h.reduce((a, b) => a + b, 0);
-    let index, k = 1;
-    if (pr.age < pr.fuse) index = pr.age < sum(A.start) ? heldFrame(A.start, pr.age, false)[0] : A.start.length + heldFrame(A.fuseLoop, pr.age - sum(A.start), true)[0];
-    else if (pr.age < pr.boom) index = A.start.length + A.fuseLoop.length + Math.min(A.collapse.length - 1, Math.floor(((pr.age - pr.fuse) * A.collapse.length) / (pr.boom - pr.fuse)));
-    else { index = A.start.length + A.fuseLoop.length + A.collapse.length + heldFrame(A.burst, pr.age - pr.boom, false)[0]; k = (pr.size ?? 10000) / 10000; }
-    const base = A.dark && index < (A.darkFrames ?? 0) ? A.dark : d.sprite;
-    const sheet = k === 1 ? base : { ...base, scale: (base.scale ?? 1) * k };
-    const [x, y] = toScreen(pr.x, pr.y);
-    fxOp = opOf(d, def, pr.kind, 'projectile'); // FXOPACITY
-    drawSheetFrame(def, sheet, Math.min(base.count - 1, index), x, y, pr.facing);
+    const before = A.start.length + A.fuseLoop.length;
+    if (pr.age < pr.boom) {
+      const index = pr.age >= pr.fuse ? before + Math.min(A.collapse.length - 1, Math.floor(((pr.age - pr.fuse) * A.collapse.length) / (pr.boom - pr.fuse)))
+        : pr.age < sum(A.start) ? heldFrame(A.start, pr.age, false)[0] : A.start.length + heldFrame(A.fuseLoop, pr.age - sum(A.start), true)[0];
+      const [x, y] = toScreen(pr.x, pr.y);
+      drawSheetFrame(def, d.sprite, Math.min(d.sprite.count - 1, index), x, y, pr.facing);
+      return;
+    }
+    const t = pr.age - pr.boom, k = (pr.size ?? 10000) / 10000;
+    const sized = (sp) => (k === 1 ? sp : { ...sp, scale: (sp.scale ?? 1) * k });
+    const layer = (L, age, lift = 0) => {
+      if (!L || age < 0) return;
+      const [index, over] = heldFrame(L.holds, age, false);
+      if (over) return;
+      const [x, y] = toScreen(pr.x, pr.y + lift * UNIT);
+      ctx.save();
+      ctx.globalAlpha *= L.opacity ?? 1;
+      drawSheetFrame(def, sized(L.sprite), index, x, y, pr.facing);
+      ctx.restore();
+    };
+    layer(A.smoke, t - (A.smoke?.delay ?? 0), (A.smoke?.rise ?? 0) * Math.max(0, t - (A.smoke?.delay ?? 0)) * k);
+    layer(A.fire, t);
+    const [ring, done] = heldFrame(A.burst, t, false);
+    if (!done) { const [x, y] = toScreen(pr.x, pr.y); drawSheetFrame(def, sized(d.sprite), Math.min(d.sprite.count - 1, before + A.collapse.length + ring), x, y, pr.facing); }
   }
 
   /** Live projectiles (game state) and the ones that just ended (their impact frames, where they vanished). */
@@ -744,6 +761,7 @@ export function createFightRenderer(ctx, W, H) {
   let collected = -1;
   // Impact feel (drawing only): the screen jolt and the brightened fighter. data/system/effects.json "impact".
   const shake = { amp: 0, left: 0 };
+  const burstShakes = []; // jolts waiting for their frame of a burst projectile's burst (burstArt.shake)
   const hitFlash = [0, 0];
   const jolt = (amp) => { if (amp > 0 && amp >= (shake.left > 0 ? shake.amp : 0)) { shake.amp = amp; shake.left = FX.impact.shake.frames; } };
   // FXOPACITY BEGIN (drawing only; data/system/effects.json "opacity": every effect is drawn a little see-through)
@@ -1122,6 +1140,7 @@ export function createFightRenderer(ctx, W, H) {
     for (const T of pfx) if (T.flash > 0) T.flash--;
     blockAge(game, world); // BLOCKFX
     shockAge(game); // SHOCKWAVE
+    for (let i = burstShakes.length - 1; i >= 0; i--) if (--burstShakes[i].left <= 0) { jolt(burstShakes[i].amp); burstShakes.splice(i, 1); }
     for (const c of game.cues) {
       shockCue(c, game, world); // SHOCKWAVE
       if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') groundFxHit(c, world); // GROUNDFX
@@ -1141,6 +1160,8 @@ export function createFightRenderer(ctx, W, H) {
       if (c.type === 'projBurst') { // a burst strong enough (burstArt.ring: { from, set }) brings a shockwave ring
         const ring = world.chars[c.p]?.projectiles[c.name]?.burstArt?.ring;
         if (ring && c.lv >= ring.from) shockStart(ring.set, c.x, c.y, -1); // SHOCKWAVE
+        const sh = world.chars[c.p]?.projectiles[c.name]?.burstArt?.shake; // the screen jolts `at` frames into the burst, harder per level
+        if (sh) burstShakes.push({ left: sh.at ?? 0, amp: (sh.px ?? 0) + (sh.perLevel ?? 0) * Math.max(0, c.lv) });
       }
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
