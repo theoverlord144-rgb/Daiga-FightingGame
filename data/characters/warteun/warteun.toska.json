@@ -6,8 +6,8 @@
     "id": "warteun",
     "name": "War'Teun",
     "stats": {
-      "walkForward": 4.5,
-      "walkBack": 3.6,
+      "walkForward": 5,
+      "walkBack": 4,
       "gravity": 0.72,
       "jumpUp": 15.2,
       "jumpForward": 4.5,
@@ -463,8 +463,8 @@
           "count": 9,
           "frameW": 581,
           "frameH": 296,
-          "originX": 133,
-          "originY": 338,
+          "originX": 132,
+          "originY": 152,
           "scale": 0.5,
           "holds": [
             2,
@@ -496,7 +496,7 @@
           4,
           4
         ],
-        "ring": 2
+        "ring": { "from": 2, "set": "default" }
       }
     },
     "ripple": {

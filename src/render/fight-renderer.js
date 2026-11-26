@@ -672,12 +672,33 @@ export function createFightRenderer(ctx, W, H) {
     drawSheetFrame(e.def, e.sheet.sprite, e.sheet.holds ? heldFrame(e.sheet.holds, e.age, false)[0] : Math.min(e.sheet.sprite.count - 1, Math.floor(e.age / (e.sheet.hold ?? 3))), sx, sy, e.facing ?? 1);
   }
 
+  /**
+   * A burst projectile (War'Teun's vacuum), drawn by the phase the game says it is in. `burstArt` in its data:
+   * `start` holds then `fuseLoop` while it waits, `collapse` drawings spread over the collapse, `burst` holds from
+   * the burst on, enlarged by the burst's own size (Resonance, resonating). The first `darkFrames` drawings come
+   * from the `dark` sheet (normal blending: a dark sphere); the rest from the sprite (light).
+   */
+  function drawBurst(pr, d, def) {
+    const A = d.burstArt;
+    const sum = (h) => h.reduce((a, b) => a + b, 0);
+    let index, k = 1;
+    if (pr.age < pr.fuse) index = pr.age < sum(A.start) ? heldFrame(A.start, pr.age, false)[0] : A.start.length + heldFrame(A.fuseLoop, pr.age - sum(A.start), true)[0];
+    else if (pr.age < pr.boom) index = A.start.length + A.fuseLoop.length + Math.min(A.collapse.length - 1, Math.floor(((pr.age - pr.fuse) * A.collapse.length) / (pr.boom - pr.fuse)));
+    else { index = A.start.length + A.fuseLoop.length + A.collapse.length + heldFrame(A.burst, pr.age - pr.boom, false)[0]; k = (pr.size ?? 10000) / 10000; }
+    const base = A.dark && index < (A.darkFrames ?? 0) ? A.dark : d.sprite;
+    const sheet = k === 1 ? base : { ...base, scale: (base.scale ?? 1) * k };
+    const [x, y] = toScreen(pr.x, pr.y);
+    fxOp = opOf(d, def, pr.kind, 'projectile'); // FXOPACITY
+    drawSheetFrame(def, sheet, Math.min(base.count - 1, index), x, y, pr.facing);
+  }
+
   /** Live projectiles (game state) and the ones that just ended (their impact frames, where they vanished). */
   function drawProjectiles(game, world) {
     for (const pr of game.projectiles) {
       const def = world.chars[pr.owner];
       const d = def.projectiles[pr.kind];
       if (!d?.sprite) continue;
+      if (d.burst && d.burstArt) { drawBurst(pr, d, def); continue; }
       const rel = d.anim?.release ?? [], loop = d.anim?.loop ?? [1];
       const relLen = rel.reduce((a, b) => a + b, 0);
       const index = Math.min(d.sprite.count - 1, pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0]);
@@ -1117,6 +1138,10 @@ export function createFightRenderer(ctx, W, H) {
       if (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') polishHit(c, game, world);
       slotCue(c, game, world);
       if (c.type === 'repel') blockRepel(c, game); // BLOCKFX
+      if (c.type === 'projBurst') { // a burst strong enough (burstArt.ring: { from, set }) brings a shockwave ring
+        const ring = world.chars[c.p]?.projectiles[c.name]?.burstArt?.ring;
+        if (ring && c.lv >= ring.from) shockStart(ring.set, c.x, c.y, -1); // SHOCKWAVE
+      }
       const named = c.type === 'fx' && world.chars[c.p]?.effects?.[c.name];
       if (named) {
         const at = named.at ?? [0, 0];

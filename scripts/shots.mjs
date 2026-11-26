@@ -377,5 +377,35 @@ try {
     if (!s.until('', '', (g) => g.flash > 0, 30)) return console.log('super: no flash');
     s.shot('flash-1'); s.go('', '', 4); s.shot('flash-2'); s.go('', '', 5); s.shot('flash-3'); s.go('', '', 8); s.shot('flash-4');
   });
+  // ----- War'Teun (node scripts/shots.mjs <folder> wt): each special filmed (a still every 2 or 3 frames) -----
+  const wtFilm = (s, frames, every = 2, p2 = '') => { every = Number(process.env.WT_EVERY) || every; for (let i = 0; i < frames; i += every) { s.shot('f' + String(i + 1).padStart(2, '0')); s.go('', p2, every); } };
+  const dd = (s, b) => { s.go('D', '', 2); s.go('', '', 2); s.go('D' + b, '', 1); };
+  for (const vs of ['avner', 'malik']) {
+    scene('wt-stand-' + vs, 'warteun', vs, 240, (s) => { s.go('', '', 20); s.shot('idle'); s.go('F', '', 14); s.shot('walk'); s.go('D', '', 20); s.shot('crouch'); s.go('', '', 4); s.go('U', '', 1); s.go('', '', 14); s.shot('jump'); s.go('', '', 40); s.go('K', 'L', 6); s.shot('block'); });
+  }
+  scene('wt-normals', 'warteun', 'malik', 150, (s) => {
+    for (const [dir, b] of [['', 'L'], ['', 'M'], ['', 'H'], ['', 'S'], ['F', 'M'], ['K', 'H'], ['F', 'H'], ['D', 'L'], ['D', 'M'], ['D', 'H']]) {
+      s.game.players[0].x = -7500; s.game.players[1].x = 7500; s.game.players[1].health = 10000; s.go('', '', 50);
+      s.go(dir + b, '', 1);
+      if (s.until(dir, '', (g) => g.cues.some((q) => q.type === 'hit' || q.type === 'counter'), 40)) s.shot((dir || 'N') + b + '-hit'); else s.shot((dir || 'N') + b + '-nohit');
+      s.go('', '', 60);
+    }
+  });
+  scene('wt-warpstep', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); qcf(s, 'L'); wtFilm(s, 60, 3); });
+  scene('wt-warpstep-marked', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); s.game.players[0].vars.wiretap = 300; qcf(s, 'H'); wtFilm(s, 44, 4); });
+  scene('wt-displacement', 'warteun', 'malik', 160, (s) => { s.go('', '', 10); qcb(s, 'M'); wtFilm(s, 52, 3); });
+  scene('wt-listen', 'warteun', 'malik', 110, (s) => { s.go('', '', 10); dp(s, 'M'); s.go('', '', 4); s.go('', 'L', 1); wtFilm(s, 30, 2); });
+  scene('wt-listen-whiff', 'warteun', 'malik', 300, (s) => { s.go('', '', 10); dp(s, 'M'); wtFilm(s, 44, 4); });
+  scene('wt-wiretap', 'warteun', 'malik', 120, (s) => { s.go('', '', 10); dd(s, 'M'); wtFilm(s, 40, 4); s.go('', '', 30); s.shot('marked'); });
+  scene('wt-tune', 'warteun', 'malik', 520, (s) => {
+    s.go('', '', 10); s.game.players[0].vars.resonance = 18;
+    qcf(s, 'H'); s.go('', '', 40); s.game.players[0].x = -30000; qcf(s, 'H'); s.go('', '', 40); s.game.players[0].x = -5000; s.game.players[1].x = -24000; s.go('', '', 2);
+    s.shot('before'); s.go('R', '', 1); wtFilm(s, 30, 2);
+  });
+  scene('wt-swap', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); qcf(s, 'S'); wtFilm(s, 34, 2); });
+  scene('wt-air', 'warteun', 'malik', 300, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 16); s.go('S', '', 1); wtFilm(s, 40, 3); });
+  scene('wt-airwarp', 'warteun', 'malik', 500, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 14); qcb(s, 'M'); wtFilm(s, 50, 3); });
+  scene('wt-dash', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); s.go('F', '', 1); s.go('', '', 1); s.go('F', '', 1); wtFilm(s, 22, 2); s.go('', '', 10); s.go('K', '', 1); s.go('', '', 1); s.go('K', '', 1); wtFilm(s, 22, 2); });
+  scene('wt-2M', 'warteun', 'malik', 320, (s) => { s.go('', '', 10); s.go('DM', '', 1); wtFilm(s, 50, 3); });
 } catch (e) { console.log('ERROR', e.stack.split('\n').slice(0, 8).join('\n')); }
 await server.close();

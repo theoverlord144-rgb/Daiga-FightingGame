@@ -1,0 +1,24 @@
+{
+ "frames": 900,
+ "mostVacuums": 3,
+ "framesWithThreeOrMore": 37,
+ "ms": {
+  "total": {
+   "average": 8.716,
+   "worst5pct": 16.849,
+   "max": 27.1
+  },
+  "step": {
+   "average": 0.024,
+   "worst5pct": 0.107,
+   "max": 0.2
+  },
+  "draw": {
+   "average": 8.692,
+   "worst5pct": 16.816,
+   "max": 27
+  }
+ },
+ "budgetMs": 16.667,
+ "note": "headless Chrome on this machine, 960x540 canvas, real renderer + stage + HUD + training overlay; War'Teun against Malik with the Wiretap mark on, Resonance 3 and vacuums kept on screen. Fastest of three passes per frame."
+}

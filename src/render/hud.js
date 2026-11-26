@@ -196,6 +196,42 @@ export function createHud(ctx, W, image = () => null) {
     ctx.fillText('RITE', left ? start + g.charges * 18 : W - start - g.charges * 18, y + 4);
   }
 
+  /** Mechanic vars shown as pips (`display: "pips"`, `per` = what one pip holds): bars beside the Devotion name plate,
+   *  the one in progress part-filled. War'Teun's Resonance. */
+  function varPips(p, def, H) {
+    const D = FX.devotion;
+    const left = p.id === 0;
+    const mid = D.margin + (D.frame.w * D.scale) / 2;
+    let start = mid + (D.plate.w * D.plate.scale) / 2 + 14 + (def.rite?.gauge ? def.rite.gauge.charges * 18 + 44 : 0);
+    const y = H - D.bottom + D.plate.gap + (D.plate.h * D.plate.scale) / 2;
+    for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
+      if (v.display !== 'pips' || !v.show) continue;
+      const per = v.per || 1, count = Math.ceil(v.max / per), n = p.vars[k] | 0;
+      const BW = 16, BH = 9, GAP = 4;
+      for (let i = 0; i < count; i++) {
+        const x = left ? start + i * (BW + GAP) : W - start - i * (BW + GAP) - BW;
+        const share = Math.max(0, Math.min(1, (n - i * per) / per));
+        ctx.fillStyle = '#1c1826';
+        ctx.fillRect(x, y - BH / 2, BW, BH);
+        if (share > 0) {
+          ctx.fillStyle = share >= 1 ? '#e8b6ff' : '#8a5fb0';
+          const w = Math.round(BW * share);
+          ctx.fillRect(left ? x : x + BW - w, y - BH / 2, w, BH);
+        }
+        ctx.strokeStyle = '#0b0910';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y - BH / 2, BW, BH);
+      }
+      const end = start + count * (BW + GAP) + 2;
+      ctx.font = `700 10px ${FONT}`;
+      ctx.fillStyle = '#e8b6ff';
+      ctx.textAlign = left ? 'left' : 'right';
+      const label = v.label.toUpperCase();
+      ctx.fillText(label, left ? end : W - end, y + 4);
+      start = end + ctx.measureText(label).width + 12;
+    }
+  }
+
   /** The Absolve icon (by the health bar), the Devotion meter (bottom corners), the Rite gauge, the mechanic. */
   function resources(p, def, world, H, game) {
     const left = p.id === 0;
@@ -225,12 +261,13 @@ export function createHud(ctx, W, image = () => null) {
     }
     const top = devotion(p, def, world, H, game.frame);
     riteGauge(p, def, H);
+    varPips(p, def, H);
     // The mechanic: its gauge as a percentage, its counters as pips.
     const mech = def.mechanic;
     let line = '';
     if (mech?.gauge) line += `${mech.gauge.label ?? mech.name} ${Math.floor((100 * p.gauge) / mech.gauge.max)}%  `;
     for (const [k, v] of Object.entries(mech?.vars || {})) {
-      if (!v.show) continue;
+      if (!v.show || v.display === 'pips') continue;
       const n = p.vars[k];
       if (v.display === 'timer') line += n > 0 ? `${v.label} ${(n / 60).toFixed(1)}s  ` : '';
       else line += v.max <= 6 ? `${v.label} ${'●'.repeat(n)}${'○'.repeat(Math.max(0, v.max - n))}  ` : `${v.label} ${n}  `;

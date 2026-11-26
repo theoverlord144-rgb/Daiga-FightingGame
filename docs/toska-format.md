@@ -141,7 +141,9 @@ for light), and `"art": { "idle": "installIdle" }` draws one state with another 
 Moves use them through `cost`, `requires`, `onHit`/`onBlock`/`onWhiff` and the `addVar`/`setVar`/`gauge`
 timeline events. **Modifiers** apply while their `when` holds; `damagePct` multiplies the damage dealt. A move or
 event naming a var that isn't declared is an error when the file loads. The HUD shows the gauge and every var with
-`show` (default true).
+`show` (default true). A var's `"drain": { "after": frames, "by": n }` takes `by` off it each time `after` frames
+pass without the var going up (War'Teun's Resonance). `"display": "pips"` with `"per": n` shows it as bars of `n`
+beside the Devotion meter.
 
 ### `palettes` (top level, version 2): colour swaps
 
@@ -200,6 +202,19 @@ projectile name: the move only starts while one is out), `hitsAirborne: false` (
 the air), `noZoneMark: true` (this hit never adds a zone's mark), `pinFx: { effect, fromSprite }` (drawing only: a
 named effect pinned to the lantern point of each drawing, from that drawing on).
 
+**Warps, catches and bursts (War'Teun, Nov 26).** Three more timeline events, usable by any character:
+- `"warp": { "x": px, "y": px }` (one frame): the fighter is somewhere else at once, that far forward (negative =
+  back) and up (never below the floor). `"warp": { "behind": true, "gap": px }` puts them on the far side of the
+  opponent, `gap` px past, facing them. `"behindIf": "<var>"` beside `x` does that only while the fighter's var is
+  above 0 (else the plain `x`). `"warp": { "swap": true }` trades places with the opponent. Cue `warp`.
+- `"detonate": "<projectile>"` or `{ "name", "collapse": frames }` (one frame): every burst projectile of that
+  kind the fighter owns stops waiting and bursts after `collapse` frames (0 = now); ones within the projectile's
+  `resonate.gap` of each other burst as one. Cue `detonate`.
+- `"catch": { "to": "<state>", "hitstop": frames }` with `from` / `to` (lasting): a strike that touches the
+  fighter in those frames does nothing to them and sends them to that state (a counter stance). Throws,
+  projectiles, supers and `pierce` moves are not caught. Cue `catch`.
+A `spawn` may carry `fuse` and `collapse` to override a burst projectile's own.
+
 ## `art` (top level): a character's own drawing rules
 
 Drawing only; the rules never read it. `byVy: { states, pick: [{ above, index }] }` picks an air drawing by vertical
@@ -242,6 +257,20 @@ a beam that is only seen), `zone: { box, gravityPct, markVar }` (an opponent ins
 gravity; a hit the owner lands on them there adds 1 to the owner's var), `onEnd: { setVar: { name: n } }` (set on the
 owner when it ends, however it ends), `ownerOnHit` (a state the owner switches to on hit, if still in the move that
 made it), `hitsAirborne`, `pull`.
+
+**A burst projectile** (War'Teun's vacuum) waits, pulls, then bursts once:
+`"burst": { "fuse": frames, "collapse": frames, "active": frames, "linger": frames, "limit": n, "pull": { "range",
+"reachY", "bodyY", "speed", "markVar", "markRangePct" }, "scale": { "var", "per", "sizePct", "damagePct" },
+"resonate": { "gap", "pct" } }`. It waits `fuse` frames, then for `collapse` frames an opponent within `range` px
+(and `reachY` up or down, measured from `bodyY` above their feet) slides `speed` px a frame toward its centre (not
+while thrown or lying down); then its hitbox is live for `active` frames and it stays `linger` more to be drawn.
+More than `limit` of them waiting: the oldest starts its collapse at once. `scale`: at the burst, each `per` of the
+owner's var makes the box `sizePct` bigger and the damage `damagePct` higher. `resonate`: when a `detonate` finds
+several within `gap` px they become one burst at their middle, `pct` percent of the size and damage. While the
+owner's `markVar` is above 0 the pull range is `markRangePct` percent. A burst is blocked holding either way, knocks
+away from its own centre and never clashes. Cue `projBurst { name, x, y, lv, size, joined }`. Drawing only:
+`"burstArt": { "dark": sprite, "darkFrames": n, "start": holds, "fuseLoop": holds, "collapse": [drawings spread over
+the collapse], "burst": holds, "ring": { "from": level, "set": "<shockwave set>" } }`.
 
 ## Making a sprite sheet
 

@@ -274,6 +274,7 @@ function compileProjectiles(src, meter) {
       move: compileMoveData(p, { kind: 'special', meter }),
       sprite: p.sprite ?? null, // drawing only
       anim: p.anim ?? null,
+      burstArt: p.burstArt ?? null, // drawing only: which drawings a burst projectile shows in each phase
     };
   }
   return out;
