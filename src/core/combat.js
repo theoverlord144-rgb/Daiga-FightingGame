@@ -226,6 +226,11 @@ function resolveStrike(game, world, a, d, rect, snap) {
   if (absorbs(ddef, snap[d.id].state, move)) {
     out.kind = 'absorb';
     out.block = null;
+  } else if (fd.catch && move.kind !== 'super' && !move.pierce) {
+    out.kind = 'catch'; // a counter stance: the strike is caught
+    out.block = null;
+    out.to = fd.catch.to;
+    out.freeze = fd.catch.hitstop;
   } else if (!block && fd.armor > d.armorUsed) {
     out.kind = 'armor';
   } else if (block) {
@@ -331,6 +336,16 @@ function applyStrike(game, world, r) {
       gainDevotion(game, d, ddef, pct(pct(perPercent(owed, maxHp, M.gain.hurtPerPct), share), ddef.devotion.take), 'vow');
     }
     cue(game, 'absorb', a, rect, { move: r.moveId, damage: owed, debt: d.debt });
+    return;
+  }
+
+  if (r.kind === 'catch') {
+    // Caught by a counter stance: no damage, no stun. The attacker freezes; the defender goes to the stance's answer.
+    a.contact = CONTACT.BLOCK;
+    a.hitstop = r.freeze;
+    d.hitstop = 0;
+    enterState(d, ddef, r.to);
+    cue(game, 'catch', a, rect, { move: r.moveId, by: d.id });
     return;
   }
 
@@ -542,7 +557,24 @@ export function moveProjectiles(game, world) {
     pr.x += pd.speed * pr.facing;
     pr.y += pd.speedY;
     pr.age++;
+    // A burst projectile's collapse: an opponent close to it slides toward its centre (a pull, not a hit).
+    const P = pd.burst?.pull;
+    if (!P || pr.end || pr.hit || pr.age < pr.fuse || pr.age >= pr.boom) continue;
+    const d = game.players[1 - pr.owner];
+    const dst = world.chars[d.id].states[d.state];
+    if (dst.throwVictim || d.state === 'throwHold' || dst.floor) continue;
+    const marked = P.markVar && (game.players[pr.owner].vars[P.markVar] | 0) > 0;
+    const range = marked ? pct(P.range, P.markRangePct) : P.range;
+    const dx = pr.x - d.x, dy = pr.y - (d.y + P.bodyY);
+    if ((dx < 0 ? -dx : dx) > range || (dy < 0 ? -dy : dy) > P.reachY) continue;
+    d.x += dx > 0 ? Math.min(P.speed, dx) : Math.max(-P.speed, dx);
   }
+}
+
+/** A burst projectile's box, scaled about its own centre by the burst's size (percent out of 10000). */
+function scaledBox(list, size) {
+  if (size === 10000) return list;
+  return list.map(([x, y, w, h]) => { const W = pct(w, size), H = pct(h, size); return [x - Math.trunc((W - w) / 2), y - Math.trunc((H - h) / 2), W, H]; });
 }
 
 /**
@@ -555,12 +587,25 @@ export function resolveProjectiles(game, world) {
   const gone = new Array(list.length).fill('');
   const pdef = (pr) => world.chars[pr.owner].projectiles[pr.kind];
   // The box a projectile has out right now: none for a marker, or outside its phases, or once a staying one has hit.
-  const boxOf = (pr, def) => (def.noHit || pr.hit ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
+  // Burst projectiles reaching their burst now: the owner's var sets the size and damage (unless a detonation did).
+  for (const pr of list) {
+    const B = pdef(pr).burst;
+    if (!B || pr.end || pr.age < pr.boom || pr.age > pr.boom) continue;
+    if (pr.lv < 0) {
+      const lv = B.scale ? Math.trunc((game.players[pr.owner].vars[B.scale.var] | 0) / B.scale.per) : 0;
+      pr.lv = lv;
+      pr.size = 10000 + lv * (B.scale ? B.scale.sizePct : 0);
+      pr.dmg = 10000 + lv * (B.scale ? B.scale.damagePct : 0);
+    }
+    game.cues.push({ type: 'projBurst', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, lv: pr.lv, size: pr.size, joined: pr.joined | 0 });
+  }
+  const boxOf = (pr, def) => (def.burst ? (pr.hit || pr.age < pr.boom || pr.age >= pr.boom + def.burst.active ? null : scaledBox(def.hitbox, pr.size)) : def.noHit || pr.hit ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
   list.forEach((pr, i) => { if (pr.end) gone[i] = 'recall'; });
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
       if (gone[i] || gone[j] || list[i].owner === list[j].owner) continue;
-      const bi = pdef(list[i]).persist ? null : boxOf(list[i], pdef(list[i])), bj = pdef(list[j]).persist ? null : boxOf(list[j], pdef(list[j]));
+      const solid = (q) => (pdef(q).persist || pdef(q).burst ? null : boxOf(q, pdef(q)));
+      const bi = solid(list[i]), bj = solid(list[j]);
       if (bi && bj && contact(list[i], bi, list[j], bj)) gone[i] = gone[j] = 'clash';
     }
   }
@@ -575,13 +620,15 @@ export function resolveProjectiles(game, world) {
     const box = boxOf(pr, def);
     const rect = !box || fd.invStrike || floorBlocks(world, def.move, d) || (!def.move.hitsAirborne && isAirborne(ddef, d)) ? null : contact(pr, box, d, fd.hurt);
     if (rect) {
-      const move = def.move;
-      const away = pr.facing; // it pushes the way it flies, and is blocked by holding away from where it came from
-      const block = blockKind(d, ddef, { x: d.x - away }, move, world);
+      const move = def.burst && pr.dmg !== 10000 ? { ...def.move, damage: pct(def.move.damage, pr.dmg) } : def.move;
+      // It pushes the way it flies, and is blocked by holding away from where it came from. A burst knocks away
+      // from its centre and is blocked holding either way.
+      const away = def.burst ? (d.x > pr.x ? 1 : d.x < pr.x ? -1 : pr.facing) : pr.facing;
+      const block = blockKind(d, ddef, { x: d.x - away }, move, world) || (def.burst ? blockKind(d, ddef, { x: d.x + away }, move, world) : null);
       const kind = absorbs(ddef, d.state, move) ? 'absorb' : !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
       const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
       applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: true, kind, stagger, proj: pr });
-      if (def.persist) pr.hit = 1;
+      if (def.persist || def.burst) pr.hit = 1;
       else gone[i] = kind === 'block' || kind === 'absorb' ? 'block' : 'hit';
       // A catch: the owner, still in the move that made it, goes to a follow-up state.
       if (def.ownerOnHit && kind !== 'block' && kind !== 'absorb' && kind !== 'armor' && a.state === pr.from) {
@@ -590,6 +637,7 @@ export function resolveProjectiles(game, world) {
       }
       if (def.persist && pr.age >= def.lifetime) gone[i] = 'edge';
     } else if (def.endsOnGround && pr.y <= 0) { pr.y = 0; gone[i] = 'ground'; }
+    else if (def.burst) { if (pr.age >= pr.boom + def.burst.active + def.burst.linger) gone[i] = 'edge'; }
     else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
   });
   list.forEach((pr, i) => {

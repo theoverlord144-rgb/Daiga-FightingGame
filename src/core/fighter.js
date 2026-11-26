@@ -139,6 +139,7 @@ export function createFighter(def, side, x) {
     burst: 0, // burst gauge (set from burst.json when the game is created)
     gauge: def.mechanic?.gauge ? def.mechanic.gauge.start : 0, // the character mechanic's gauge
     vars: Object.fromEntries(Object.entries(def.mechanic?.vars || {}).map(([k, v]) => [k, v.start])), // its counters
+    varIdle: {}, // for vars that drain: frames since each last went up
   };
 }
 
@@ -155,6 +156,17 @@ export function applyResources(p, def, r) {
   for (const [k, n] of Object.entries(r.vars || {})) {
     const v = def.mechanic.vars[k];
     if (v) p.vars[k] = clampTo(p.vars[k] + n, v.min, v.max);
+    if (v && v.drain && n > 0) p.varIdle[k] = 0;
+  }
+}
+
+/** Vars that drain: after `after` frames without going up, the var drops by `by` (and again every `after` frames). */
+export function tickDrains(p, def) {
+  for (const [k, v] of Object.entries(def.mechanic.vars)) {
+    if (!v.drain) continue;
+    if (p.vars[k] <= v.min) { p.varIdle[k] = 0; continue; }
+    const idle = (p.varIdle[k] | 0) + 1;
+    if (idle >= v.drain.after) { p.vars[k] = clampTo(p.vars[k] - v.drain.by, v.min, v.max); p.varIdle[k] = 0; } else p.varIdle[k] = idle;
   }
 }
 
@@ -227,7 +239,7 @@ export function enterState(p, def, name) {
 }
 
 /** Fire the one-shot events of the fighter's current frame. */
-export function fireOnEnter(game, p, def) {
+export function fireOnEnter(game, p, def, world) {
   const st = def.states[p.state];
   const shots = st.onEnter[p.frame < st.onEnter.length ? p.frame : st.onEnter.length - 1];
   if (!shots || !shots.length) return;
@@ -292,8 +304,81 @@ export function fireOnEnter(game, p, def) {
         const pr = { owner: p.id, kind: name, x, y: (d.fromGround ? 0 : p.y) + (v.y ?? d.spawn[1]), facing: p.facing, age: 0 };
         if (d.persist) pr.hit = 0; // 1 once it has hit: it stays, and hits no more
         if (d.ownerOnHit) pr.from = p.state; // the move that made it
+        if (d.burst) {
+          // A burst projectile (a vacuum): fuse = the age its collapse starts, boom = the age it bursts.
+          // lv / size / dmg are set when it bursts (from the owner's var then), or by a detonation.
+          const B = d.burst;
+          if (B.limit > 0) {
+            // One more than the limit: the oldest one still waiting collapses now.
+            const waiting = game.projectiles.filter((q) => q.owner === p.id && q.kind === name && !q.end && q.age < q.boom);
+            if (waiting.length >= B.limit) {
+              const old = waiting.find((q) => q.age < q.fuse) || waiting[0];
+              if (old.age < old.fuse) { old.boom = old.age + (old.boom - old.fuse); old.fuse = old.age; }
+            }
+          }
+          pr.fuse = v.fuse ?? B.fuse;
+          pr.boom = pr.fuse + (v.collapse ?? B.collapse);
+          pr.lv = -1;
+          pr.size = 10000;
+          pr.dmg = 10000;
+          pr.hit = 0;
+        }
         game.projectiles.push(pr);
         game.cues.push({ p: p.id, type: 'spawn', name, x: p.x, y: p.y, facing: p.facing });
+        break;
+      }
+      case 'warp': {
+        // An instant move: a step, to the far side of the opponent, or trading places with them.
+        const o = game.players[1 - p.id];
+        const fx = p.x, fy = p.y;
+        const behind = v.behind || (!!v.behindIf && (p.vars[v.behindIf] | 0) > 0);
+        if (v.swap) { p.x = o.x; o.x = fx; }
+        else if (behind) p.x = o.x + (o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing) * v.gap;
+        else { p.x += p.facing * v.x; p.y = Math.max(0, p.y + v.y); }
+        if (v.swap || behind) {
+          p.facing = o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing;
+          if (v.swap && world.chars[o.id].states[o.state].free) o.facing = -p.facing;
+          p.slide = 0; p.slideLeft = 0;
+        }
+        game.cues.push({ p: p.id, type: 'warp', fromX: fx, fromY: fy, x: p.x, y: p.y, facing: p.facing });
+        break;
+      }
+      case 'detonate': {
+        // The fighter's burst projectiles of this kind burst v.collapse frames from now, at the strength the owner's
+        // var gives them now. Those close together burst as one, bigger.
+        const d = def.projectiles[v.name];
+        const B = d.burst;
+        const list = game.projectiles.filter((q) => q.owner === p.id && q.kind === v.name && !q.end && !q.hit && q.age < q.boom + B.active);
+        const lv = B.scale ? Math.trunc((p.vars[B.scale.var] | 0) / B.scale.per) : 0;
+        const done = new Set();
+        for (const q of list) {
+          if (done.has(q)) continue;
+          // Everything joined to q through neighbours within the gap.
+          const group = [q];
+          done.add(q);
+          if (B.resonate) {
+            for (let i = 0; i < group.length; i++) {
+              for (const r of list) {
+                if (done.has(r)) continue;
+                const dx = r.x - group[i].x, dy = r.y - group[i].y;
+                if ((dx < 0 ? -dx : dx) <= B.resonate.gap && (dy < 0 ? -dy : dy) <= B.resonate.gap) { group.push(r); done.add(r); }
+              }
+            }
+          }
+          const many = group.length > 1;
+          if (many) {
+            q.x = Math.trunc(group.reduce((s, r) => s + r.x, 0) / group.length);
+            q.y = Math.trunc(group.reduce((s, r) => s + r.y, 0) / group.length);
+            for (const r of group) if (r !== q) r.end = 1;
+          }
+          q.lv = lv;
+          q.size = pct(10000 + lv * (B.scale ? B.scale.sizePct : 0), many ? B.resonate.pct : 10000);
+          q.dmg = pct(10000 + lv * (B.scale ? B.scale.damagePct : 0), many ? B.resonate.pct : 10000);
+          q.fuse = q.age;
+          q.boom = q.age + v.collapse;
+          q.joined = many ? group.length : 0;
+        }
+        game.cues.push({ p: p.id, type: 'detonate', name: v.name, count: list.length, x: p.x, y: p.y });
         break;
       }
       case 'endProjectile':
@@ -740,7 +825,7 @@ export function advanceAndDecide(game, p, opp, def, world, hooks) {
 
 /** Stage B: one-shot events, physics, pushback slide. */
 export function move(game, p, def, world) {
-  fireOnEnter(game, p, def);
+  fireOnEnter(game, p, def, world);
   const st = def.states[p.state];
   const fr = st.frames[p.frame < st.frames.length ? p.frame : st.frames.length - 1];
   p.x += p.vx;
@@ -810,7 +895,7 @@ export function land(game, p, def, world) {
     p.airUsed = [];
     p.slideV = p.slideT = 0;
     enterState(p, def, st.landTo === 'knockdown' ? fallState(p, world) : st.landTo);
-    fireOnEnter(game, p, def);
+    fireOnEnter(game, p, def, world);
   } else if (st.stance !== 'air' && p.y !== 0) {
     p.y = 0;
   }

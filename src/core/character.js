@@ -109,8 +109,8 @@ function ref(v, stats, kind) {
   return kind === 'frames' ? Math.round(v) : px(v);
 }
 
-const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile'];
+const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity', 'catch'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile', 'warp', 'detonate'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
@@ -255,6 +255,20 @@ function compileProjectiles(src, meter) {
       onEnd: p.onEnd?.setVar ?? null, // { var: n }: set on its owner when it ends, however it ends
       ownerOnHit: p.ownerOnHit ?? null, // on hit, an owner still in the move that made it switches to this state
       endsOnGround: !!p.endsOnGround, // it ends when it reaches the floor (a diving projectile)
+      // burst: a projectile that waits, pulls, then bursts once (a vacuum). All numbers in px / frames / percent:
+      //   fuse (frames before the collapse), collapse (frames of pull before the burst), active (frames the burst's
+      //   box is out), linger (frames it stays after, for its drawing), limit (most of them out; one more makes the
+      //   oldest collapse now), pull { range, reachY, speed, markVar, markRangePct } (an opponent this near slides
+      //   toward it during the collapse; wider while the owner's markVar runs), scale { var, per, sizePct, damagePct }
+      //   (each `per` of the owner's var makes the burst that much bigger and stronger), resonate { gap, pct }
+      //   (detonated together within `gap` of each other, they burst as one, pct of the size and damage).
+      // Its hit knocks away from its centre and is blocked holding either way. A spawn may give its own fuse / collapse.
+      burst: p.burst ? {
+        fuse: p.burst.fuse ?? 0, collapse: p.burst.collapse ?? 0, active: Math.max(1, p.burst.active ?? 1), linger: p.burst.linger ?? 0, limit: p.burst.limit ?? 0,
+        pull: p.burst.pull ? { range: px(p.burst.pull.range ?? 0), reachY: px(p.burst.pull.reachY ?? 9999), bodyY: px(p.burst.pull.bodyY ?? 0), speed: px(p.burst.pull.speed ?? 0), markVar: p.burst.pull.markVar ?? null, markRangePct: Math.round((p.burst.pull.markRangePct ?? 100) * 100) } : null,
+        scale: p.burst.scale ? { var: p.burst.scale.var, per: Math.max(1, p.burst.scale.per ?? 1), sizePct: Math.round((p.burst.scale.sizePct ?? 0) * 100), damagePct: Math.round((p.burst.scale.damagePct ?? 0) * 100) } : null,
+        resonate: p.burst.resonate ? { gap: px(p.burst.resonate.gap ?? 0), pct: Math.round((p.burst.resonate.pct ?? 100) * 100) } : null,
+      } : null,
       endFx: p.endFx ?? null, // drawing only: { why: effect name } played where it ended (why = hit, block, ground, edge...)
       lifetime: p.lifetime ?? 600,
       move: compileMoveData(p, { kind: 'special', meter }),
@@ -280,7 +294,10 @@ function compileMechanic(src) {
   const vars = {};
   for (const [k, v] of Object.entries(src.vars || {})) {
     vars[k] = { start: v.start ?? 0, min: v.min ?? 0, max: v.max ?? 99, perFrame: v.perFrame ?? 0, label: v.label ?? k, show: v.show ?? true,
-      display: v.display ?? 'count', // HUD only: 'count', or 'timer' (frames shown as a draining bar)
+      display: v.display ?? 'count', // HUD only: 'count', 'timer' (frames shown as a draining bar) or 'pips' (levels of `per`)
+      per: v.per ?? 1, // HUD only, for 'pips': how much of the var is one level
+      // drain: { after, by }: after that many frames without the var going up, it drops by that much (and again each time).
+      drain: v.drain ? { after: Math.max(1, v.drain.after | 0), by: v.drain.by | 0 } : null,
       mark: v.mark ?? null, // drawing only: a colour; while the var is above 0 the opponent glows with it (a brand)
       // Drawing only, while the var is above 0 (an install): `aura` = [{ effect, behind }], named effects looping on the
       // fighter; `art` = { state: otherState }, that state is drawn with the other state's drawings.
@@ -384,7 +401,7 @@ function compileState(name, src, stats, extra = {}) {
   sets.forEach((s, i) => (s.order = i));
   sets.sort((a, b) => a.at - b.at || a.order - b.order);
 
-  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: 0, gravity: stance === 'air' };
+  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: 0, gravity: stance === 'air', catch: null };
   const frames = [];
   const onEnter = [];
   const reverts = []; // { at, fields }
@@ -424,6 +441,7 @@ function compileState(name, src, stats, extra = {}) {
       armor: cur.armor | 0,
       counter: cur.counter === true ? 1 : cur.counter | 0,
       gravity: !!cur.gravity,
+      catch: cur.catch || null,
     });
     onEnter.push(shots);
   }
@@ -489,7 +507,16 @@ function normalizeEvent(e, stats, sheetName) {
     }
     else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
     // spawn: a projectile name, or { name, x, y, under: "opponent" } to put this one somewhere else than its own spawn point.
-    else if (k === 'spawn' && typeof v === 'object') out[k] = { name: v.name, x: v.x === undefined ? null : px(v.x), y: v.y === undefined ? null : px(v.y), under: v.under ?? null };
+    else if (k === 'spawn' && typeof v === 'object') out[k] = { name: v.name, x: v.x === undefined ? null : px(v.x), y: v.y === undefined ? null : px(v.y), under: v.under ?? null, fuse: v.fuse ?? null, collapse: v.collapse ?? null };
+    // warp: an instant move. { x, y } px (x forward), or behind: true (to the far side of the opponent, `gap` px past
+    // them), behindIf: "<var>" (behind only while that var of the fighter's runs, else x / y), or swap: true (the two
+    // fighters trade places). After behind / swap the fighter faces the opponent.
+    else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap };
+    // detonate: { name, collapse }: the fighter's projectiles of that kind burst `collapse` frames from now.
+    else if (k === 'detonate') out[k] = typeof v === 'string' ? { name: v, collapse: 0 } : { name: v.name, collapse: v.collapse | 0 };
+    // catch: { to, hitstop }: while it lasts, a strike that would hit is caught instead: no damage, the fighter
+    // switches to state `to`, the attacker freezes for `hitstop`. Throws, projectiles and supers are not caught.
+    else if (k === 'catch') out[k] = v ? { to: v.to, hitstop: v.hitstop | 0 } : null;
     else out[k] = v;
   }
   return out;
@@ -598,6 +625,8 @@ export function compileCharacter(file, system) {
         if (s.type === 'gauge' && !mechanic.gauge) throw new Error(`${ch.id}: ${st.name} changes the gauge, but the mechanic has none`);
         if (s.type === 'spawn' && !projectiles[s.value?.name ?? s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value?.name ?? s.value}`);
         if (s.type === 'endProjectile' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} ends unknown projectile ${s.value}`);
+        if (s.type === 'detonate' && !projectiles[s.value.name]?.burst) throw new Error(`${ch.id}: ${st.name} detonates ${s.value.name}, which is not a burst projectile`);
+        if (s.type === 'warp' && s.value.behindIf && !mechanic.vars[s.value.behindIf]) throw new Error(`${ch.id}: ${st.name} warps by unknown var ${s.value.behindIf}`);
       }
     }
     for (const to of [st.next, st.timeout ? st.timeoutTo : null, st.onBack, st.move?.onHitState, st.move?.onBlockState, ...st.nextIf.map((b) => b.to)]) {

@@ -767,7 +767,7 @@ function processBody(spec, manifest) {
   if (spec.crop) for (let y = 0; y < K.H; y++) for (let x = 0; x < K.W; x++) if (x < spec.crop[0] || y < spec.crop[1] || x > spec.crop[2] || y > spec.crop[3]) K.a[y * K.W + x] = 0;
   const mask = new Uint8Array(K.W * K.H);
   for (let i = 0; i < mask.length; i++) mask[i] = K.a[i] > 0.5 ? 1 : 0;
-  const D = spec.grid ? gridDrawings(K, spec.n, spec.rows ?? 1, spec.cuts) : drawings(K.W, K.H, mask, spec.n, spec.rows ?? 1); // grid: drawings packed so tight they touch
+  const D = spec.grid ? gridDrawings(K, spec.n, spec.rows ?? 1, spec.cuts, spec.perRow) : drawings(K.W, K.H, mask, spec.n, spec.rows ?? 1); // grid: drawings packed so tight they touch
   // join: [[keep, loose]]: a shape drawn apart from its body (a slash arc) that was counted as a drawing of its own.
   for (const [keep, loose] of spec.join ?? []) {
     for (let i = 0; i < D.owner.length; i++) if (D.owner[i] === loose - 1) D.owner[i] = keep - 1;
