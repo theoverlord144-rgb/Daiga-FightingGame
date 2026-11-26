@@ -114,7 +114,7 @@ try {
       cue: (type) => (g) => g.cues.some((q) => q.type === type),
       shot(label) {
         c.clear();
-        renderer.draw(game, world, { hud: false, zoom: false, palettes: [0, 0] });
+        renderer.draw(game, world, { hud: false, zoom: false, palettes: [0, 0], ...(this.opts ?? {}) });
         const file = path.join(OUT, `${name}-${String(++n).padStart(2, '0')}-${label}.png`);
         fs.writeFileSync(file, encodePng({ width: W, height: H, data: Buffer.from(c.px) }));
         console.log(`${file}  [P1 ${game.players[0].state} ${game.players[0].frame}, P2 ${game.players[1].state} ${game.players[1].frame}]`);
@@ -404,6 +404,8 @@ try {
   });
   scene('wt-swap', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); qcf(s, 'S'); wtFilm(s, 34, 2); });
   scene('wt-air', 'warteun', 'malik', 300, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 16); s.go('S', '', 1); wtFilm(s, 40, 3); });
+  // Silent Drop hitting: the fork planted on the strike, the burst inside the freeze, the slide (boxes drawn).
+  scene('wt-drop', 'warteun', 'malik', 130, (s) => { s.opts = { boxes: true }; s.go('', '', 10); s.go('U', '', 1); s.go('', '', 16); s.go('S', '', 1); wtFilm(s, 80, 2); });
   scene('wt-airwarp', 'warteun', 'malik', 500, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 14); qcb(s, 'M'); wtFilm(s, 50, 3); });
   scene('wt-dash', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); s.go('F', '', 1); s.go('', '', 1); s.go('F', '', 1); wtFilm(s, 22, 2); s.go('', '', 10); s.go('K', '', 1); s.go('', '', 1); s.go('K', '', 1); wtFilm(s, 22, 2); });
   scene('wt-2M', 'warteun', 'malik', 320, (s) => { s.go('', '', 10); s.go('DM', '', 1); wtFilm(s, 50, 3); });

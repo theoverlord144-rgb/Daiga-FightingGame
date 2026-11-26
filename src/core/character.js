@@ -147,6 +147,13 @@ function compileMoveData(m, ctx = {}) {
   // a zone of the attacker's (a projectile with `zone`: Avner's moonlight). Anything left out stays the move's own.
   const zsrc = m.inZone ?? null;
   for (const r of [zsrc?.hitReaction, zsrc?.airReaction]) if (r != null && !HIT_REACTIONS.includes(r)) throw new Error(`inZone reactions must be one of ${HIT_REACTIONS.join(', ')} (got ${JSON.stringify(r)})`);
+  // whileVar: { var, hitReaction, airReaction, juggleCost, slideEnds, launch: "none", airHit }: what the hit does
+  // instead while that var of the attacker's is above 0 (War'Teun's explosion after Silent Drop landed). It wins over
+  // inZone. launch "none" = the move's launch is left out; airHit = the speed an airborne fighter is sent at.
+  const vsrc = m.whileVar ?? null;
+  if (vsrc && typeof vsrc.var !== 'string') throw new Error('whileVar needs "var": the name of a var of the mechanic');
+  for (const r of [vsrc?.hitReaction, vsrc?.airReaction]) if (r != null && !HIT_REACTIONS.includes(r)) throw new Error(`whileVar reactions must be one of ${HIT_REACTIONS.join(', ')} (got ${JSON.stringify(r)})`);
+  for (const e of [m.slideEnds, vsrc?.slideEnds]) if (e != null && e !== 'hardKD' && e !== 'softKD') throw new Error(`slideEnds must be "hardKD" or "softKD" (got ${JSON.stringify(e)})`);
   // spin and tumble are air states: a move that names one and no launch pops a grounded fighter up (a soft launch).
   const launchType = typeof lsrc === 'string' ? lsrc : lsrc ? lsrc.type ?? (m.launcher ? 'hard' : 'soft') : hitReaction === 'spin' || hitReaction === 'tumble' ? 'soft' : null;
   if (launchType && launchType !== 'hard' && launchType !== 'soft') throw new Error(`launch must be "hard", "soft" or { type, x, y } (got ${JSON.stringify(lsrc)})`);
@@ -180,6 +187,8 @@ function compileMoveData(m, ctx = {}) {
     launch: launchVel, // its own launch speeds; null with a launchType = the system's (combo.json)
     juggleCost: m.juggleCost ?? null, // null = the default in combo.json
     zoneHit: zsrc ? { hitReaction: zsrc.hitReaction ?? null, airReaction: zsrc.airReaction ?? null, juggleCost: zsrc.juggleCost ?? null } : null, // inside the attacker's zone
+    varHit: vsrc ? { var: vsrc.var, hitReaction: vsrc.hitReaction ?? null, airReaction: vsrc.airReaction ?? null, juggleCost: vsrc.juggleCost ?? null, slideEnds: vsrc.slideEnds ?? null, noLaunch: vsrc.launch === 'none', airHit: vsrc.airHit ? { x: px(vsrc.airHit.x ?? 0), y: px(vsrc.airHit.y ?? 0) } : null } : null, // while the attacker's var runs
+    slideEnds: m.slideEnds ?? null, // the knockdown its slide ends in: "hardKD" | "softKD" (null = the system's, combo.json)
     airHit: m.airHit ? { x: px(m.airHit.x ?? 0), y: px(m.airHit.y ?? 0) } : null,
     throwSwap: !!m.throwSwap,
     throwDistance: px(m.throwDistance ?? 70),
@@ -635,6 +644,8 @@ export function compileCharacter(file, system) {
     }
     for (const b of st.nextIf) checkVars(ch.id, st.name, mechanic, [b.when]);
   }
+  for (const p of Object.values(projectiles)) if (p.move.varHit && !mechanic.vars[p.move.varHit.var]) throw new Error(`${ch.id}: projectile ${p.name} reads var "${p.move.varHit.var}", which the mechanic doesn't declare`);
+  for (const st of Object.values(states)) if (st.move?.varHit && !mechanic.vars[st.move.varHit.var]) throw new Error(`${ch.id}: move ${st.name} reads var "${st.move.varHit.var}", which the mechanic doesn't declare`);
   for (const p of Object.values(projectiles)) if (p.ownerOnHit && !states[p.ownerOnHit]) throw new Error(`${ch.id}: projectile ${p.name} sends its owner to unknown state ${p.ownerOnHit}`);
   for (const st of Object.values(states)) {
     for (const c of st.cancels) {

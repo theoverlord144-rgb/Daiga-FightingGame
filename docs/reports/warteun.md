@@ -250,3 +250,32 @@ sparks and the other effects shared by every character are not in the list.
 
 Checked by clicking through the page in a headless browser (pictures taken; no errors) and by 4 new tests of the
 settings model. `npm test`: 495 of 495.
+
+## Silent Drop (air S): hitbox, lock and slide (owner, Nov 26)
+
+**What he asked for:** a better hitbox on air S, the hit holding the opponent for the explosion it leaves, and that
+explosion knocking them into a slide that can be hit off the ground, only when S itself hit.
+
+**What it did before (measured):** the fork was left where he started the drop, about 100 px behind and 230 to 280 px
+above the opponent, so its explosion never touched anyone the drop had hit. The hitbox sat in front of him where
+nothing is drawn.
+
+**What changed**
+- Hitbox: under him, around the fork and his legs (110 wide, 150 tall, from 40 px below his feet).
+- The fork is planted where he arrives, not where he left: the one exception to "the fork stays where he stood".
+  Its fuse is 2 frames, so it bursts 13 frames after the earliest hit, inside the hit's own 14-frame freeze.
+- Air S lost its slam and ground bounce; the explosion does the knockdown now.
+- A hit arms a hidden 20-frame timer. While it runs, his explosion slides the opponent along the ground and the slide
+  ends in the hard knockdown. Blocked or whiffed, the explosion is the ordinary one.
+- Two new general rules, both data: `whileVar` (a hit reacts differently while a timer of the attacker's runs) and
+  `slideEnds` (a move chooses the knockdown its slide ends in).
+
+**Measured after:** standing close, standing at the edge of its reach, airborne beside him and airborne below him:
+both hits land, 13 frames apart; the opponent skids and lies in the hard knockdown for 40 frames; he is free about 36
+frames before the slide ends. 2M's ripple picks them up (a three-hit combo in the test). Blocked: the explosion lands
+on the blocker 13 frames later and is blocked too.
+
+**To know:** only the ripple can hit off the ground for him. One slide per combo and the juggle limit still apply.
+A blocked air S is stronger than before. Picture: `warteun/sheet-drop.png` (boxes drawn).
+
+**Tool fix:** `shots.mjs` never passed a scene's `opts` to the renderer, so "boxes drawn" scenes had none. It does now.

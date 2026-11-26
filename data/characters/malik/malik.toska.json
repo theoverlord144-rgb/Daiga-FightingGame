@@ -78,7 +78,7 @@
       "anim": { "release": [3, 3], "loop": [3, 3, 3, 3], "impact": [3, 4, 5] } }
   },
   "art": {
-    "opacity": {"pillar": 0.8, "guardian": 1, "guardianL": 1, "guardianM": 1, "guardianH": 1, "installFlames": 0.55, "installMotesFront": 0.55, "installMotesBack": 0.55, "spiritHand": 1, "axeArc": 0.6, "stompWave": 0.8, "lariatTrailL": 0.6, "lariatTrailM": 0.6, "lariatTrailH": 0.6, "lariatTrailEx": 0.6, "vowBlast": 0.8, "palm5":0.85, "palm2":0.85, "palmJ": 0.85, "riteClap": 0.85, "ward": 0.8, "spiritOrb": 0.85, "spiritOrbM": 0.85, "spiritOrbH": 0.85},
+    "opacity": {"pillar": 0.8, "guardian": 1, "guardianL": 1, "guardianM": 1, "guardianH": 1, "installFlames": 0.55, "installMotesFront": 0.55, "installMotesBack": 0.55, "spiritHand": 1, "axeArc": 0.6, "stompWave": 0.8, "lariatTrailL": 0.6, "lariatTrailM": 0.6, "lariatTrailH": 0.6, "lariatTrailEx": 0.6, "vowBlast": 0.8, "palm5":0.85, "palm2":0.85, "palmJ": 0.85, "riteClap": 0.85, "ward": 0.8, "spiritOrb": 0.85, "spiritOrbM": 1, "spiritOrbH": 0.85},
     "shockwave": { "5H": "default", "2H": "default", "backHeavy": "default", "j.H": "default", "spirit5H": "default", "spiritOrbH": "default", "pillarH": "default", "lariatH": "default", "lariatL_ex": "default", "lariatM_ex": "default", "lariatH_ex": "default", "6H": "big", "4H": "big" },
     "motion": { "lariatL": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
       "lariatM": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
@@ -98,7 +98,7 @@
     "installFlames": { "hold": 5, "at": [0, 112], "sprite": { "image": "sheets/install-flames.png", "columns": 6, "rows": 1, "count": 6, "frameW": 392, "frameH": 684, "originX": 196, "originY": 342, "scale": 0.5, "additive": true } },
     "installMotesFront": { "hold": 4, "at": [0, 88], "sprite": { "image": "sheets/install-motes-front.png", "columns": 8, "rows": 1, "count": 8, "frameW": 364, "frameH": 284, "originX": 182, "originY": 142, "scale": 0.5, "additive": true } },
     "installMotesBack": { "hold": 4, "at": [0, 108], "sprite": { "image": "sheets/install-motes-back.png", "columns": 8, "rows": 1, "count": 8, "frameW": 364, "frameH": 156, "originX": 182, "originY": 78, "scale": 0.5, "additive": true } },
-    "spiritHand": { "hold": 3, "at": [83, 70], "sprite": {"image": "sheets/jH-hand.png", "columns": 7, "rows": 1, "count": 7, "frameW": 328, "frameH": 357, "originX": 164, "originY": 178, "scale": 0.5} },
+    "spiritHand": { "hold": 3, "at": [83, 70], "sprite": {"image": "sheets/jH-hand.png", "columns": 7, "rows": 1, "count": 7, "frameW": 328, "frameH": 357, "originX": 164, "originY": 178, "scale": 0.5, "angle": -25} },
     "axeArc": { "holds": [2, 2, 2, 2, 3, 3, 3], "at": [45, 70], "follow": true, "sprite": {"image": "sheets/jS-arc.png", "columns": 7, "rows": 1, "count": 7, "frameW": 312, "frameH": 252, "originX": 158, "originY": 126, "scale": 0.5, "additive": true} },
     "riteClap": { "holds": [3, 3, 2, 2, 3, 3, 4], "at": [22, 118], "follow": true, "sprite": {"image": "sheets/clap.png", "columns": 7, "rows": 1, "count": 7, "frameW": 381, "frameH": 391, "originX": 190, "originY": 194, "scale": 0.5, "additive": true} },
     "stompWave": { "holds": [2, 2, 2, 2, 3, 3, 3], "at": [70, 0], "sprite": {"image": "sheets/stomp-wave.png", "columns": 7, "rows": 1, "count": 7, "frameW": 312, "frameH": 303, "originX": 154, "originY": 297, "scale": 0.5, "additive": true} },

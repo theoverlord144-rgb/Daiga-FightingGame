@@ -7,7 +7,8 @@ import { enterState } from '../src/core/fighter.js';
 import { RAW } from '../src/core/input.js';
 import { px } from '../src/core/fixed.js';
 import { runSyncTest } from '../src/net/sync-test.js';
-import { loadWorld, loadChar, loadJSON, script, lcg } from './helpers.js';
+import { loadWorld, loadChar, loadJSON, script, lcg, SYSTEM } from './helpers.js';
+import { compileCharacter } from '../src/core/character.js';
 
 const FILE = loadJSON('data/characters/warteun/warteun.toska.json');
 const WT = loadChar('data/characters/warteun/warteun.toska.json');
@@ -540,4 +541,85 @@ test('Air jump cancel: an up pressed on the hit frame or anywhere in its freeze 
   }
   // Still one air jump: a second press after the cancel does nothing.
   assert.equal(FILE.character.stats.airJumps, 1);
+});
+
+// Silent Drop (j.S), owner Nov 26: the fork is planted where he strikes, the hit holds the opponent for its burst,
+// and that burst knocks them into a slide that ends in the hard knockdown (an OTG can pick them up).
+function drop(gap, ay, dy, p2 = 0, frames = 60) {
+  const g = setup(WM, gap);
+  const a = g.players[0], d = g.players[1];
+  a.y = px(ay);
+  enterState(a, WT, 'fall');
+  if (dy) { d.y = px(dy); enterState(d, MALIK, 'fall'); }
+  return { g, a, d, cues: play(g, WM, 'j.S', frames, p2) };
+}
+
+test('Silent Drop: its hitbox is under him, around the fork, and its fork is planted where he strikes', () => {
+  const [x, y, w, h] = rawMove('j.S').hitboxes[0];
+  assert.ok(x < 0 && x + w > 0, 'it covers both sides of his feet');
+  assert.ok(y < 0 && y + h > 60, 'from below his feet up over his legs');
+  const tl = rawMove('j.S').timeline;
+  assert.ok(tl.findIndex((e) => e.warp) < tl.findIndex((e) => e.spawn), 'the warp is listed first, so the fork appears where he arrives');
+  const { g } = drop(1000, 300, 0, 0, tl.find((e) => e.spawn).at + 1);
+  assert.equal(vacs(g).length, 1);
+  assert.equal(vacs(g)[0].x, -px(500) + px(tl.find((e) => e.warp).warp.x), 'where the warp put him, not where he left');
+});
+
+test('Silent Drop hits: the opponent is still frozen by the hit when the burst comes, and it knocks them into a slide and a hard knockdown', () => {
+  for (const [label, gap, ay, dy] of [['standing, close', 150, 200, 0], ['standing, at the edge of its reach', 190, 200, 0], ['in the air beside him', 150, 260, 180], ['in the air below him', 120, 300, 150]]) {
+    const { g, d, cues } = drop(gap, ay, dy, 0, 30);
+    const hit = cues.find((c) => HIT.includes(c.type) && c.move === 'j.S');
+    const boom = cues.find((c) => HIT.includes(c.type) && c.move === 'vacuum');
+    assert.ok(hit, `${label}: j.S hits`);
+    assert.ok(boom, `${label}: so does its burst`);
+    assert.ok(boom.i - hit.i < rawMove('j.S').hitstop, `${label}: the burst lands inside the hit's own freeze`);
+    assert.equal(boom.react, 'slide', label);
+    assert.equal(d.kd, 1, `${label}: the slide will end in the hard knockdown`);
+    let slid = false;
+    for (let i = 0; i < 90 && d.state !== 'knockdown'; i++) { step(g, [0, 0], WM); slid = slid || d.state === 'slide'; }
+    assert.ok(slid, `${label}: they skid along the ground`);
+    assert.equal(d.state, 'knockdown', `${label}: and end lying in the hard knockdown`);
+  }
+});
+
+test("Silent Drop: after the slide, 2M's ripple picks the opponent up off the ground", () => {
+  const { g, a, d } = drop(150, 200, 0, 0, 30);
+  const before = d.health;
+  for (let i = 0; i < 90 && d.state !== 'knockdown'; i++) step(g, [0, 0], WM);
+  assert.equal(d.state, 'knockdown');
+  assert.equal(a.state, 'idle', 'he is free long before the slide ends');
+  const cues = [];
+  for (const r of script('2+M 2*50')) { step(g, [r, 0], WM); cues.push(...g.cues.map((c) => ({ ...c }))); }
+  const otg = cues.find((c) => HIT.includes(c.type) && c.move === 'ripple');
+  assert.ok(otg && otg.otg, 'the ripple hits them lying down');
+  assert.ok(d.health < before);
+  assert.equal(d.combo.hits, 3, 'one combo: the drop, the burst, the ripple');
+});
+
+test('Silent Drop blocked or whiffed: the burst is an ordinary one (no slide)', () => {
+  const blocked = drop(150, 200, 0, RAW.RIGHT, 30); // standing guard: it is an overhead
+  assert.ok(blocked.cues.some((c) => c.type === 'block' && c.move === 'j.S'));
+  assert.ok(blocked.cues.some((c) => c.type === 'block' && c.move === 'vacuum'), 'the burst lands on the blocker and is blocked too');
+  assert.equal(blocked.d.health, MALIK.stats.health);
+  assert.equal(blocked.a.vars.silentDrop, 0, 'a blocked drop does not arm the slide');
+  // A whiff, and the opponent then walks into the burst: launched as any vacuum launches, not slid.
+  const g = setup(WM, 600);
+  const a = g.players[0], d = g.players[1];
+  a.y = px(300);
+  enterState(a, WT, 'fall');
+  const m = rawMove('j.S');
+  play(g, WM, 'j.S', m.startup + m.active + 1); // its own hitbox is gone before they arrive
+  assert.equal(vacs(g).length, 1);
+  d.x = vacs(g)[0].x; d.y = vacs(g)[0].y - px(90); enterState(d, MALIK, 'fall');
+  const cues = play(g, WM, null, 20);
+  const boom = cues.find((c) => HIT.includes(c.type) && c.move === 'vacuum');
+  assert.ok(boom, 'the burst hits them');
+  assert.notEqual(boom.react, 'slide');
+});
+
+test('whileVar and slideEnds are checked when a character loads', () => {
+  const bad = (edit) => { const f = JSON.parse(JSON.stringify(FILE)); edit(f); return () => compileCharacter(f, SYSTEM); };
+  assert.throws(bad((f) => { f.projectiles.vacuum.whileVar.var = 'nope'; }), /nope/);
+  assert.throws(bad((f) => { f.projectiles.vacuum.whileVar.hitReaction = 'fly'; }), /whileVar reactions/);
+  assert.throws(bad((f) => { f.projectiles.vacuum.whileVar.slideEnds = 'up'; }), /slideEnds/);
 });

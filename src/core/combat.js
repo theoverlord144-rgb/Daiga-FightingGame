@@ -398,7 +398,8 @@ function applyStrike(game, world, r) {
     lit = true;
     if (z.markVar && !move.noZoneMark) applyResources(a, world.chars[a.id], { vars: { [z.markVar]: 1 } });
   }
-  const zoneHit = lit ? move.zoneHit : null;
+  // A reaction of the move's own for a special case: while a var of the attacker's runs (first), or in their zone.
+  const zoneHit = (move.varHit && (a.vars[move.varHit.var] | 0) > 0 ? move.varHit : null) ?? (lit ? move.zoneHit : null);
   const witness = starts && !plain && (r.kind === 'witness' || !!r.witness);
   const counter = starts && !plain && r.kind === 'counter' && !witness;
   const ch = witness ? world.sys.witness : world.sys.counter; // read only when one of the two is true
@@ -472,7 +473,7 @@ function applyStrike(game, world, r) {
   if ((react === 'crumple' || react === 'slide') && combo[react] >= H[react].perCombo) react = 'normal';
   const whirlOf = (x) => x === 'spin' || x === 'tumble';
   // spin and tumble are air states: on a grounded fighter they are a soft launch, even if the move names no launch.
-  const launchType = floored ? null : move.launchType ?? (whirlOf(react) && !airborne ? 'soft' : null);
+  const launchType = floored || zoneHit?.noLaunch ? null : move.launchType ?? (whirlOf(react) && !airborne ? 'soft' : null);
   const skid = react === 'slide' && !airborne; // a grounded fighter starts skidding at once
   const hard = launchType === 'hard' && combo.hard < C.hardLaunchLimit;
   const soft = !!launchType && !hard;
@@ -502,12 +503,12 @@ function applyStrike(game, world, r) {
   if (!out && move.groundBounce && combo.gb < limit) d.gbY = move.groundBounce.y;
 
   // The knockdown this hit asks for when the fighter reaches the ground (0 = the system's rule).
-  d.kd = react === 'hardKD' ? 1 : react === 'softKD' ? 2 : react === 'slide' ? (R.endsHard ? 1 : 2) : 0;
+  d.kd = react === 'hardKD' ? 1 : react === 'softKD' ? 2 : react === 'slide' ? ((zoneHit?.slideEnds ?? move.slideEnds ?? (R.endsHard ? 'hardKD' : 'softKD')) === 'hardKD' ? 1 : 2) : 0;
   d.slideV = d.slideT = 0;
   if (inAir) {
     const v = (floored ? H.otg.lift : null)
       || (launches ? (hard || launchType === 'soft' ? move.launch : null) ?? (!hard && whirl ? R.launch : null) ?? (hard ? C.hardLaunchUnits : C.softLaunchUnits) : null)
-      || (out ? null : move.airHit ?? (whirl ? R.launch : react === 'slide' ? R.slam : null)) || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
+      || (out ? null : zoneHit?.airHit ?? move.airHit ?? (whirl ? R.launch : react === 'slide' ? R.slam : null)) || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
     enterState(d, ddef, react === 'spin' ? 'hitSpin' : react === 'tumble' ? 'hitTumble' : 'hitAir');
     if (react === 'slide') { d.slideV = away * R.speed; d.slideT = skidFor; combo.slide++; } // slammed down: the skid starts on landing
     d.vx = v.x * away; // x is authored as "away from the attacker"
