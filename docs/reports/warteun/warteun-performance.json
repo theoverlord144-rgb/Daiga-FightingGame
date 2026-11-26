@@ -4,19 +4,19 @@
  "framesWithThreeOrMore": 128,
  "ms": {
   "total": {
-   "average": 9.059,
-   "worst5pct": 14.524,
-   "max": 19.6
+   "average": 9.088,
+   "worst5pct": 17.227,
+   "max": 19.5
   },
   "step": {
-   "average": 0.028,
+   "average": 0.02,
    "worst5pct": 0.107,
-   "max": 0.3
+   "max": 0.2
   },
   "draw": {
-   "average": 9.031,
-   "worst5pct": 14.489,
-   "max": 19.6
+   "average": 9.068,
+   "worst5pct": 17.2,
+   "max": 19.5
   }
  },
  "budgetMs": 16.667,

@@ -352,13 +352,13 @@
         95
       ],
       "hitbox": [
-        -75,
-        -75,
-        150,
-        150
+        -85,
+        -87,
+        170,
+        167
       ],
       "damage": 600,
-      "hitstun": 20,
+      "hitstun": 35,
       "untech": 28,
       "blockstun": 14,
       "hitstop": 8,
@@ -366,7 +366,7 @@
       "pushbackBlock": 60,
       "guard": "mid",
       "airHit": {
-        "x": 5,
+        "x": 8,
         "y": 9
       },
       "burst": {
@@ -484,8 +484,8 @@
         "ring": {
           "from": 2,
           "set": "default"
-        }, "scale": 0.5
-      }
+        }, "scale": 0.675
+      }, "launch": { "type": "hard", "x": 4, "y": 14 }
     },
     "ripple": {
       "speed": 8,

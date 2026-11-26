@@ -185,3 +185,12 @@ budget; the earlier 16.8 was the old light-blended burst), worst single frame 18
   hitbox sits under the arc. A test checks it travels (320 px) and hits low.
 
 `npm test`: 487 of 487. Frame time: 9.1 ms average, 14.5 ms worst 5%, worst single frame 19.6 ms.
+
+## Explosion size raised (Nov 26)
+
+Fire, smoke and ruby ring now drawn at 0.675 (35% bigger than the half size; about two thirds of the original).
+Hitbox and waiting sphere unchanged. `npm test`: 487 of 487.
+
+**Frame time is now just over budget in the worst case.** Six measurements: 9.1 to 9.4 ms average, but the worst
+5% of frames average 17.1 to 17.9 ms (budget 16.7), worst single frame about 20 ms. At half size it was 14.5. This
+is headless Chrome with no graphics card, three vacuums bursting at Resonance 3; the cost is the area of fire drawn.
