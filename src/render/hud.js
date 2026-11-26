@@ -5,6 +5,7 @@
 // the pop-up words still on screen).
 import FX from '../../data/system/effects.json';
 import CAMERA from '../../data/system/camera.json';
+import { markLive } from './mark-live.js';
 
 const FONT = 'system-ui, sans-serif';
 
@@ -230,6 +231,35 @@ export function createHud(ctx, W, image = () => null) {
       ctx.fillText(label, left ? end : W - end, y + 4);
       start = end + ctx.measureText(label).width + 12;
     }
+    return start;
+  }
+
+  /** A mark with a `live` rule (War'Teun's Wiretap): a small icon after the pips, a tuning fork in a ring. Dark with
+   *  no mark, dim while the mark is on the opponent, lit while the move that spends it can come out (markLive). */
+  function markIcons(p, def, H, start) {
+    const D = FX.devotion;
+    const left = p.id === 0;
+    const y = H - D.bottom + D.plate.gap + (D.plate.h * D.plate.scale) / 2;
+    for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
+      if (!v.mark?.live) continue;
+      const on = (p.vars[k] | 0) > 0, live = markLive(p, def, k);
+      const cx = left ? start + 9 : W - start - 9;
+      const color = v.mark.color ?? '#d01c3c';
+      ctx.save();
+      ctx.globalAlpha = live ? 1 : on ? 0.55 : 0.22;
+      if (live) { ctx.shadowColor = color; ctx.shadowBlur = 8; }
+      ctx.fillStyle = '#12060a';
+      ctx.strokeStyle = live ? '#ff6a7c' : color;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, y, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); // the fork: two tines, a bend, a stem
+      ctx.moveTo(cx - 2.5, y - 5); ctx.lineTo(cx - 2.5, y - 0.5); ctx.quadraticCurveTo(cx, y + 2, cx + 2.5, y - 0.5); ctx.lineTo(cx + 2.5, y - 5);
+      ctx.moveTo(cx, y + 1); ctx.lineTo(cx, y + 5.5);
+      ctx.stroke();
+      ctx.restore();
+      start += 26;
+    }
   }
 
   /** The Absolve icon (by the health bar), the Devotion meter (bottom corners), the Rite gauge, the mechanic. */
@@ -261,7 +291,7 @@ export function createHud(ctx, W, image = () => null) {
     }
     const top = devotion(p, def, world, H, game.frame);
     riteGauge(p, def, H);
-    varPips(p, def, H);
+    markIcons(p, def, H, varPips(p, def, H));
     // The mechanic: its gauge as a percentage, its counters as pips.
     const mech = def.mechanic;
     let line = '';

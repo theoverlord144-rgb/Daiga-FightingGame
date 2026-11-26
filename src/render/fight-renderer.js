@@ -10,6 +10,7 @@ import { paletteSheet, placeholderColors } from './palette.js';
 import FX from '../../data/system/effects.json';
 import { POLISH } from './polish.js';
 import { FXO } from './fx-opacity.js'; // FXOPACITY
+import { markLive, markFrame } from './mark-live.js'; // MARK
 import CAMERA from '../../data/system/camera.json';
 
 // Game-ready sheets only (data/characters/<id>/sheets/): raw art dropped elsewhere in a character's folder is not
@@ -136,9 +137,72 @@ export function createFightRenderer(ctx, W, H) {
    * Marks the opponent carries (a mechanic var with a `mark` colour, e.g. Avner's brand): a ring of light at the
    * waist and a glow, pulsing, fading out over the last second.
    */
-  function drawOpponentMarks(p, opp, oppDef, frame) {
+  // MARK BEGIN (drawing only): a mark with a sheet and intro / loop / fade holds floats above the marked fighter's
+  // head, upright, sized by their height; it shatters when it is spent early. Tracked once per game frame.
+  const markT = {}; // "<marked fighter>:<var>" → { since, prev, flash, top, shatter }
+  function markTrack(game, world) {
+    for (const p of game.players) {
+      const opp = game.players[1 - p.id], oppDef = world.chars[opp.id];
+      for (const [k, v] of Object.entries(oppDef.mechanic?.vars || {})) {
+        const m = v.mark;
+        if (!m || !m.loop) continue;
+        const T = (markT[`${p.id}:${k}`] ??= { since: 0, prev: 0, flash: 0, top: null, shatter: null });
+        const n = opp.vars[k] | 0;
+        // The top of their body now (lying down it is low), eased so the mark glides instead of jumping.
+        const fr = frameOf(world.chars[p.id], p.state, p.frame);
+        let top = 0;
+        for (const b of fr.hurt?.length ? fr.hurt : fr.push ? [fr.push] : []) top = Math.max(top, b[1] + b[3]);
+        if (!top) top = standTop(world.chars[p.id]);
+        T.top = T.top === null || n <= 0 && !T.shatter ? top : T.top + (top - T.top) * 0.3;
+        if (n > 0) { T.since = T.prev > 0 ? T.since + 1 : 0; T.shatter = null; }
+        else if (T.prev > (m.fade ?? []).reduce((a, b) => a + b, 0) + 1 && m.shatter) T.shatter = { age: 0 }; // spent, not run out
+        if (T.flash > 0) T.flash--;
+        if (m.flash && n > 0 && game.cues.some((c) => c.type === 'sound' && c.name === m.flash.sound && c.p === opp.id)) T.flash = m.flash.frames;
+        if (T.shatter) {
+          const S = m.shatter, total = S.holds.reduce((a, b) => a + b, 0);
+          const ringAt = S.ring ? S.holds.slice(0, S.ring.frame - 1).reduce((a, b) => a + b, 0) : -1;
+          if (T.shatter.age === ringAt) { const [mx, my] = markAt(p, world.chars[p.id], m, T); shockStart(S.ring.set, mx, my, -1, S.ring.scale ?? 1); } // SHOCKWAVE
+          if (++T.shatter.age > total) T.shatter = null;
+        }
+        T.prev = n;
+      }
+    }
+  }
+  /** Where a mark's centre is (game units) and how big it is drawn for this fighter. */
+  const standTop = (d) => { const b = d.stats.standHurt?.[0]; return b ? b[1] + b[3] : 180 * UNIT; }; // units
+  const markSize = (pDef, m) => (m.perHeight ? standTop(pDef) / UNIT / m.perHeight : 1);
+  function markAt(p, pDef, m, T) { return [p.x, p.y + (T.top ?? 0) + (m.above ?? 0) * UNIT * markSize(pDef, m)]; }
+  function drawMark(p, pDef, opp, oppDef, k, m) {
+    const T = markT[`${p.id}:${k}`];
+    if (!T) return;
+    const n = opp.vars[k] | 0, size = markSize(pDef, m);
+    const [ux, uy] = markAt(p, pDef, m, T);
+    const [x, y] = toScreen(ux, uy);
+    const sized = (s) => (size === 1 ? s : { ...s, scale: (s.scale ?? 1) * size });
+    if (n > 0) {
+      const live = markLive(opp, oppDef, k);
+      const index = markFrame(m, T.since, n, live);
+      fxOp = opOf(m, oppDef, `mark:${k}`, 'mark'); // FXOPACITY
+      drawSheetFrame(oppDef, sized(m.sprite), index, x, y, 1, 0); // never mirrored, never turned
+      const extra = T.flash > 0 ? (m.flash.gain ?? 1.5) - 1 : live ? (m.live.gain ?? 1) - 1 : 0;
+      if (extra > 0) { // brighter: the same drawing once more, as light
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, extra);
+        ctx.globalCompositeOperation = 'lighter';
+        drawSheetFrame(oppDef, sized(m.sprite), index, x, y, 1, 0);
+        ctx.restore();
+      }
+    } else if (T.shatter) {
+      const S = m.shatter;
+      fxOp = opOf(m, oppDef, `mark:${k}`, 'mark'); // FXOPACITY
+      drawSheetFrame(oppDef, sized(S.sprite), heldFrame(S.holds, Math.max(0, T.shatter.age - 1), false)[0], x, y, 1, 0);
+    }
+  }
+  // MARK END
+  function drawOpponentMarks(p, opp, oppDef, frame, pDef) {
     for (const [k, v] of Object.entries(oppDef.mechanic?.vars || {})) {
       const n = opp.vars[k];
+      if (v.mark?.loop) { drawMark(p, pDef, opp, oppDef, k, v.mark); continue; } // MARK
       if (!v.mark || !(n > 0)) continue;
       const m = typeof v.mark === 'string' ? { color: v.mark } : v.mark;
       const [x, y] = toScreen(p.x, p.y + (m.at ?? 90) * UNIT);
@@ -899,10 +963,10 @@ export function createFightRenderer(ctx, W, H) {
   const rings = [];
   let pulse = null; // the brief whole-screen brightening of the biggest set
   let warp = null, wctx = null; // a copy of the finished fight picture, to bend
-  function shockStart(name, x, y, frozenWith) {
+  function shockStart(name, x, y, frozenWith, size = 1) {
     const set = SW?.sets?.[name];
     if (!set || SW.on === false) return;
-    const k = set.scale ?? 1;
+    const k = (set.scale ?? 1) * size;
     for (const r of set.rings) {
       if (rings.length >= (SW.max ?? 8)) rings.shift();
       rings.push({ x, y, who: frozenWith, age: (r.startAt ?? 0) - (r.delay ?? 0), life: r.life, radius: r.radius * SW.charHeight * k, thick: [r.thick[0] * k, r.thick[1] * k], strength: r.strength * k });
@@ -1141,6 +1205,7 @@ export function createFightRenderer(ctx, W, H) {
     for (const T of pfx) if (T.flash > 0) T.flash--;
     blockAge(game, world); // BLOCKFX
     shockAge(game); // SHOCKWAVE
+    markTrack(game, world); // MARK
     for (let i = burstShakes.length - 1; i >= 0; i--) if (--burstShakes[i].left <= 0) { jolt(burstShakes[i].amp); burstShakes.splice(i, 1); }
     for (const c of game.cues) {
       shockCue(c, game, world); // SHOCKWAVE
@@ -1477,7 +1542,7 @@ export function createFightRenderer(ctx, W, H) {
         blockDraw(p); // BLOCKFX
         drawChain(p, def, game.players[1 - p.id]);
         ctx.globalAlpha = 1;
-        drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame);
+        drawOpponentMarks(p, game.players[1 - p.id], world.chars[1 - p.id], game.frame, def);
         if (opts.boxes) drawBoxes(p, fr);
         if (opts.labels) {
           const [lx, ly] = toScreen(p.x, p.y + 18500 + p.id * 1600);

@@ -57,6 +57,7 @@ gravity, jump, landing, standing/crouching/air hurtboxes and pushboxes. A value 
 | `airReaction` | The reaction when the defender is already in the air (default: the same as `hitReaction`). A jumping slam: `airReaction: "hardKD"`. |
 | `inZone` | `{ hitReaction, airReaction, juggleCost }`: what the hit does instead while the fighter it lands on is standing in a zone of the attacker's (a projectile with `zone`, like Avner's moonlight). Anything left out stays the move's own. Works on moves and projectiles. A counter-hit reaction still comes first. |
 | `counterReaction` | The reaction when the hit is a counter hit or a Witness counter (default: the usual one). |
+| `chase` | A state's name: when this move is cancelled into from a move that HIT, that state starts instead (War'Teun's 236 M / H skip their tell in a combo; cancelled from a blocked move the move itself plays). |
 | `slideEnds` | `"hardKD"` or `"softKD"`: the knockdown this move's slide ends in (default: the system's, `hitStates.slide.endsIn`). A hard one can be picked up by an `otg` move. |
 | `whileVar` | `{ var, hitReaction, airReaction, juggleCost, slideEnds, launch: "none", airHit: { x, y } }`: what the hit does instead while that var of the attacker's is above 0 (a short hidden timer another move sets with `onHit.vars`). Anything left out stays the move's own; `launch: "none"` leaves the move's launch out; it wins over `inZone`. Works on projectiles too (War'Teun's vacuum after Silent Drop hit). |
 | `otg` | `true` = it can hit a defender lying in a hard knockdown: a share of its damage, a small lift into air hitstun, once per combo (`hitStates.otg`). After the OTG every later knockdown in that combo is the soft one. |
@@ -380,3 +381,19 @@ clockwise facing right, mirrored facing left), `"tint"` (`"#rrggbb"`: the drawin
 `"opacity"` (0 to 1, multiplied in on top of any effect-opacity rule; this is where a burst projectile's own sheet
 keeps it). A named effect's or projectile's opacity is normally `art.opacity["<name>"]`. The editor's FX page
 (`?mode=editor&page=fx`) edits all four.
+
+## Warp `above`, and a mark with a sheet (War'Teun, Nov 26)
+
+Timeline `warp` with `behind: true` takes `above: px`: he also arrives that far above the opponent's feet, wherever
+they are, with no speed (Wiretap Pursuit).
+
+A mechanic var's `mark` may be an object (drawing only; the core never reads it):
+`{ color, sprite, above, perHeight, intro: holds, loop: holds, fade: holds, live: { hold, gain }, flash: { sound, frames,
+gain }, shatter: { sprite, holds, ring: { frame, set, scale } } }`. With `loop` it floats `above` px over the top of the
+marked fighter's body (their hurtboxes now, eased), upright and never mirrored, sized by their standing height over
+`perHeight`. The sheet's drawings are the intro, then the loop, then the fade, in that order; the fade plays over the
+var's last frames. `live`: while the fighter who placed it could spend it now (on the ground, not stunned;
+`src/render/mark-live.js`) the loop runs at `hold` frames a drawing and is drawn `gain` times as bright, and the HUD
+icon lights up. `flash`: a timeline `sound` cue of that name from the marker brightens it for `frames`. `shatter`:
+played in its place when the var drops to 0 before its fade (spent, not run out), with a shockwave ring of `set` at
+`scale` on drawing `frame`. Its opacity is `art.opacity["mark:<var>"]`.

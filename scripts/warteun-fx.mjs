@@ -75,6 +75,19 @@ function floorStrip(name, img, regions, points, holds, scale) {
   fs.writeFileSync(`${OUT}${name}.png`, encodePng({ width: W * n, height: H, data }));
   return { image: `sheets/${name}.png`, columns: n, rows: 1, count: n, frameW: W, frameH: H, originX: left, originY: up, scale, holds };
 }
+/** Fade a strip's cells out toward a circle about each cell's origin (a painted glow would otherwise end in a square). */
+function round(name, sprite, from) {
+  const img = decodePng(fs.readFileSync(`${OUT}${name}.png`));
+  const R1 = Math.min(sprite.originX, sprite.originY) - 1, R0 = R1 * from;
+  for (let y = 0; y < img.height; y++) for (let x = 0; x < img.width; x++) {
+    const r = Math.hypot((x % sprite.frameW) - sprite.originX, y - sprite.originY);
+    if (r <= R0) continue;
+    const p = (y * img.width + x) * 4 + 3;
+    img.data[p] = r >= R1 ? 0 : Math.round(img.data[p] * (R1 - r) / (R1 - R0));
+  }
+  fs.writeFileSync(`${OUT}${name}.png`, encodePng(img));
+  return sprite;
+}
 const grid = (img, cols, rows) => Array.from({ length: cols * rows }, (_, i) => { const w = img.width / cols, h = img.height / rows, c = i % cols, r = Math.floor(i / cols); return [Math.round(c * w), Math.round(r * h), Math.round((c + 1) * w), Math.round((r + 1) * h)]; });
 const mid = (b) => [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
 
@@ -124,6 +137,28 @@ const sprites = {};
   const dx = first.reduce((a, b, i) => a + (b[0] - cells[i][0]) / 4, 0); // the tap point sits the same way into every cell
   const floorY = Math.max(...first.map((b) => b[3]));
   sprites.ripple = { ...strip('ripple', img, cells, cells.map((r) => [r[0] + dx + 6, floorY - 3]), [2, 2, 3, 3, 3, 3, 4, 4], 0.667, true), additive: true };
+}
+// The Wiretap mark (see-through, normal blending): 5 x 2. Every drawing shares the centre of its circle, which sits
+// the same way into every cell (measured on the three full rings of the top row).
+{
+  const img = load('Warteun_SpecialMove_Wiretap_Mark.png');
+  const cells = grid(img, 5, 2);
+  const offOf = (list) => list.reduce((a, i) => { const c = mid(boxIn(img, cells[i], 200)); return [a[0] + (c[0] - cells[i][0]) / list.length, a[1] + (c[1] - cells[i][1]) / list.length]; }, [0, 0]);
+  const top = offOf([2, 3, 4]), bottom = offOf([5, 6, 7]); // each row sits its own way into its cells
+  const centres = cells.map((r, i) => { const o = i < 5 ? top : bottom; return [r[0] + o[0], r[1] + o[1]]; });
+  const R = 204;
+  sprites['wiretap-mark'] = round('wiretap-mark', strip('wiretap-mark', img, centres.map(([cx, cy]) => [Math.round(cx - R), Math.round(cy - R), Math.round(cx + R), Math.round(cy + R)]), centres, [3, 3, 3, 8, 8, 8, 8, 4, 4, 4], 0.27), 0.86);
+}
+// The mark shattering: seven drawings in a row, not on an even grid: the first circle's centre is measured and the
+// rest follow at the drawn spacing.
+{
+  const img = load('Warteun_SpecialMove_Wiretap_Mark_Used.png');
+  const all = boxIn(img, [0, 0, img.width, img.height], 200);
+  const cy = (all[1] + all[3]) / 2;
+  const step = 379.5 * SHRINK, x0 = 228 * SHRINK, half = 189 * SHRINK;
+  const centres = Array.from({ length: 7 }, (_, i) => [x0 + i * step, cy]);
+  sprites['wiretap-shatter'] = strip('wiretap-shatter', img, centres.map(([cx]) => [Math.round(cx - half), 0, Math.round(cx + half), img.height]), centres, [2, 2, 1, 2, 3, 4, 4], 0.27);
+  round('wiretap-shatter', sprites['wiretap-shatter'], 0.8);
 }
 const MF = OUT + 'manifest.json';
 const manifest = JSON.parse(fs.readFileSync(MF, 'utf8'));

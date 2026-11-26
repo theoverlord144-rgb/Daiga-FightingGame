@@ -89,6 +89,13 @@ export const SHEETS = [
   ] },
   { ...G, ref: [6, S], name: 'wiretap', file: `${R}SpecialMove_Wiretap.png`, n: 6, rows: 2, perRow: [4, 2], anchor: 'upper', holds: [5, 4, 4, 3, 6, 8] },
   { ...G, ref: [6, S], name: 'tune', file: `${R}Rite_Tune.png`, n: 6, rows: 2, perRow: [4, 2], anchor: 'upper', holds: [9, 5, 3, 12, 6, 6] },
+  // The warp tells (owner, Nov 26): two rows of six. Top: stand, raise, spin, catch, point forward, point held (the
+  // tell before 236 M / H: drawings 2-6, the point is the fourth shown). Bottom: stand, raise, spin, catch, point up,
+  // point held (the tell before 2R; the brief lists three spin drawings, one is drawn, so it is held longer).
+  { ...G, ref: [1, S], file: `${R}SpecialMove_WiretapPursuit.png`, n: 12, rows: 2, parts: [
+    { name: 'warp-tell', frames: [2, 3, 4, 5, 6], anchor: 'upper', lineFrom: [1, 2, 3, 4, 5, 6], holds: [2, 2, 2, 2, 2] },
+    { name: 'pursuit-tell', frames: [7, 8, 9, 10, 11, 12], anchor: 'upper', lineFrom: [7, 8, 9, 10, 11, 12], holds: [2, 2, 4, 1, 2, 3] },
+  ] },
   // ---- Effects (light) ----
   // The vacuum, its fire and its smoke are painted pictures: node scripts/warteun-fx.mjs cuts them.
   { name: 'ripple', file: `${R}Crouch_Medium_Effect.png`, n: 8, mode: 'fx', anchor: 'ground', size: 110, holds: [2, 2, 3, 3, 3, 3, 4, 4] },

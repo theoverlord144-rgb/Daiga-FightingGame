@@ -279,3 +279,52 @@ on the blocker 13 frames later and is blocked too.
 A blocked air S is stronger than before. Picture: `warteun/sheet-drop.png` (boxes drawn).
 
 **Tool fix:** `shots.mjs` never passed a scene's `opts` to the renderer, so "boxes drawn" scenes had none. It does now.
+
+## Warp tell, Wiretap Pursuit (2R) and the Wiretap mark (owner's brief, Nov 26; branch `warteun-pursuit`)
+
+**Built**
+- Displacement (all three) puts the 6-second mark on the opponent when it hits. Not on block.
+- 236 M and H play the point-forward tell first, then the unchanged Warp Step. 236 L is untouched. He is fully
+  hittable during the tell. The note ring and a sound cue come on the point (the fourth drawing).
+- A Warp Step cancelled from a move that hit skips the tell. Cancelled from a blocked move, the tell plays.
+- 2R, Wiretap Pursuit: nothing at all without a mark (no Tune, nothing spent). With one: tell, vanish, then he is
+  behind and above the opponent wherever they are, facing them, falling. The mark shatters as he arrives.
+- The mark floats above the opponent's head, upright, sized to their height, with its intro, loop and fade. It runs
+  faster and brighter while 2R can come out, flashes on a tell, and shatters with a half-size ring.
+- A Wiretap icon after the Resonance pips: dark with no mark, dim while marked, lit while 2R can come out.
+
+**New frame data**
+
+| Move | Tell | Vanishes / warps on frame | Whole move | Before |
+| --- | --- | --- | --- | --- |
+| 236 L | none | 13 | 36 | same |
+| 236 M | 10 | 23 | 46 | 13 / 36 |
+| 236 H | 16 | 29 | 52 | 13 / 36 |
+| 2R | 14 | vanishes on 15, reappears on 20, acts from 26 | until he lands | new |
+
+Distances (200 / 300 / 400) and vacuum fuses (10 / 30 / 60) are unchanged; 2R's vacuum has fuse 8.
+
+**Art**
+- Both tells are in `Warteun_SpecialMove_WiretapPursuit.png`, six drawings a row (the brief says 5 and 7).
+  Point forward uses drawings 2-6. Point up has one spin drawing, not three: it is held 4 frames so the tell is
+  still 14 (holds 2, 2, 4, 1, 2, 3). **Missing art: two spin drawings for the point-up tell.**
+- The mark and shatter sheets are see-through, so they are drawn with normal blending. Their painted glow ended in a
+  square at the cell edge; the cutter fades it to a circle.
+
+**Decisions**
+- "2R is available" = the mark is up and he is on the ground and not stunned. The mark is always usable otherwise,
+  so without this the slower pulse would never show.
+- The fade plays over the mark's last 12 frames, ending as the timer does.
+- After arriving he can only use air normals, air S and air specials until he lands (no block, double jump or air
+  dash), from frame 6. That is the brief's list, read strictly.
+- The engine has no sound. The tell raises a sound cue and nothing plays it (owner: leave sound for now).
+
+**Side effect to know:** a marked opponent is pulled by vacuums from twice as far (an existing Wiretap rule). Since
+Displacement now marks on hit, its own vacuum drags the opponent back in more often than before.
+
+**Checks:** 510 of 510 tests, build, drawing check. Previews in `data/characters/warteun/previews/game/`:
+`warp-tell-LMH.gif`, `pursuit.gif`, `pursuit-jump.gif`, `mark.gif`, `tell-marked.gif` (50 pictures a second, the
+closest a GIF gets to 60). Not looked at by me: the HUD icon and the mark's flash on a real screen.
+
+**Play-test:** is the tell readable at full speed; are M and H too easy to punish now; is 2R worth landing Wiretap
+for; is the mark clear without being in the way; does he land too close on top of the opponent after 2R.

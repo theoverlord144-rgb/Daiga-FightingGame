@@ -4328,5 +4328,230 @@
    ]
   },
   "from": "scripts/warteun-fx.mjs"
+ },
+ "wiretap-mark": {
+  "sprite": {
+   "image": "sheets/wiretap-mark.png",
+   "columns": 10,
+   "rows": 1,
+   "count": 10,
+   "frameW": 374,
+   "frameH": 352,
+   "originX": 187,
+   "originY": 176,
+   "scale": 0.27,
+   "holds": [
+    3,
+    3,
+    3,
+    8,
+    8,
+    8,
+    8,
+    4,
+    4,
+    4
+   ]
+  },
+  "from": "scripts/warteun-fx.mjs"
+ },
+ "wiretap-shatter": {
+  "sprite": {
+   "image": "sheets/wiretap-shatter.png",
+   "columns": 7,
+   "rows": 1,
+   "count": 7,
+   "frameW": 288,
+   "frameH": 326,
+   "originX": 144,
+   "originY": 163,
+   "scale": 0.27,
+   "holds": [
+    2,
+    2,
+    1,
+    2,
+    3,
+    4,
+    4
+   ]
+  },
+  "from": "scripts/warteun-fx.mjs"
+ },
+ "warp-tell": {
+  "sprite": {
+   "image": "sheets/warp-tell.png",
+   "columns": 5,
+   "rows": 1,
+   "count": 5,
+   "frameW": 254,
+   "frameH": 384,
+   "originX": 87,
+   "originY": 382,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    2,
+    2,
+    2
+   ]
+  },
+  "from": "../War'Teun/Warteun_SpecialMove_WiretapPursuit.png",
+  "drawings": [
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lantern": [
+   [
+    -2,
+    93
+   ],
+   [
+    -6,
+    97
+   ],
+   [
+    -3,
+    96
+   ],
+   [
+    -6,
+    93
+   ],
+   [
+    -9,
+    95
+   ]
+  ],
+  "reach": [
+   [
+    -30,
+    0,
+    45,
+    190
+   ],
+   [
+    -38,
+    0,
+    52,
+    190
+   ],
+   [
+    -32,
+    0,
+    35,
+    190
+   ],
+   [
+    -36,
+    0,
+    72,
+    190
+   ],
+   [
+    -42,
+    0,
+    82,
+    189
+   ]
+  ]
+ },
+ "pursuit-tell": {
+  "sprite": {
+   "image": "sheets/pursuit-tell.png",
+   "columns": 6,
+   "rows": 1,
+   "count": 6,
+   "frameW": 210,
+   "frameH": 409,
+   "originX": 77,
+   "originY": 407,
+   "scale": 0.5,
+   "holds": [
+    2,
+    2,
+    4,
+    1,
+    2,
+    3
+   ]
+  },
+  "from": "../War'Teun/Warteun_SpecialMove_WiretapPursuit.png",
+  "drawings": [
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ],
+  "lantern": [
+   [
+    -1,
+    90
+   ],
+   [
+    -1,
+    94
+   ],
+   [
+    -6,
+    97
+   ],
+   [
+    -1,
+    95
+   ],
+   [
+    -5,
+    97
+   ],
+   [
+    -5,
+    97
+   ]
+  ],
+  "reach": [
+   [
+    -36,
+    0,
+    32,
+    191
+   ],
+   [
+    -29,
+    0,
+    45,
+    191
+   ],
+   [
+    -37,
+    0,
+    53,
+    191
+   ],
+   [
+    -29,
+    0,
+    31,
+    191
+   ],
+   [
+    -35,
+    0,
+    65,
+    202
+   ],
+   [
+    -36,
+    0,
+    65,
+    202
+   ]
+  ]
  }
 }

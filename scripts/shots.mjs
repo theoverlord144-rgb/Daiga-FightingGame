@@ -406,6 +406,12 @@ try {
   scene('wt-air', 'warteun', 'malik', 300, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 16); s.go('S', '', 1); wtFilm(s, 40, 3); });
   // Silent Drop hitting: the fork planted on the strike, the burst inside the freeze, the slide (boxes drawn).
   scene('wt-drop', 'warteun', 'malik', 130, (s) => { s.opts = { boxes: true }; s.go('', '', 10); s.go('U', '', 1); s.go('', '', 16); s.go('S', '', 1); wtFilm(s, 80, 2); });
+  // The warp tell, Wiretap Pursuit and the mark (owner, Nov 26).
+  for (const b of ['L', 'M', 'H']) scene('wt-tell-' + b, 'warteun', 'malik', 600, (s) => { s.go('', '', 10); qcf(s, b); wtFilm(s, 60, 2); });
+  scene('wt-tell-marked', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); s.game.players[0].vars.wiretap = 300; s.go('', '', 20); qcf(s, 'H'); wtFilm(s, 24, 1); });
+  scene('wt-pursuit', 'warteun', 'malik', 500, (s) => { s.go('', '', 10); s.game.players[0].vars.wiretap = 300; s.go('', '', 20); s.go('D', '', 2); s.go('DR', '', 1); wtFilm(s, 60, 2); });
+  scene('wt-pursuit-jump', 'warteun', 'malik', 500, (s) => { s.go('', '', 10); s.game.players[0].vars.wiretap = 300; s.go('', '', 12); s.go('D', '', 2); s.go('DR', '', 1); s.go('', 'U', 1); wtFilm(s, 60, 2); });
+  scene('wt-mark', 'warteun', 'malik', 300, (s) => { s.go('', '', 10); s.game.players[0].vars.wiretap = 60; wtFilm(s, 70, 3); });
   scene('wt-airwarp', 'warteun', 'malik', 500, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 14); qcb(s, 'M'); wtFilm(s, 50, 3); });
   scene('wt-dash', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); s.go('F', '', 1); s.go('', '', 1); s.go('F', '', 1); wtFilm(s, 22, 2); s.go('', '', 10); s.go('K', '', 1); s.go('', '', 1); s.go('K', '', 1); wtFilm(s, 22, 2); });
   scene('wt-2M', 'warteun', 'malik', 320, (s) => { s.go('', '', 10); s.go('DM', '', 1); wtFilm(s, 50, 3); });

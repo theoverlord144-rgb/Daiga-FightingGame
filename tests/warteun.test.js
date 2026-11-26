@@ -413,8 +413,10 @@ test("Displacement: he passes through to the other side and strikes on frame 18;
     assert.equal(rawMove(`airWarp${b}`).timeline.find((e) => e.spawn).spawn.fuse, stepFuses[n], `Air Warp ${b}: the same wait as Warp Step ${b}`);
     const g = setup(W, 160);
     const a = g.players[0], d = g.players[1];
+    const dx0 = d.x;
     const cues = play(g, W, id, 130, (i) => (i < 110 ? hold : 0));
-    assert.ok(a.x > d.x || cues.some((c) => c.type === 'warp' && c.x > d.x), 'he switched sides');
+    // (Where the opponent stood when he warped: a hit now marks them, and a marked opponent is dragged by the vacuum.)
+    assert.ok(cues.some((c) => c.type === 'warp' && c.x > dx0), 'he switched sides');
     const strike = cues.find((c) => c.move === id);
     const burst = cues.find((c) => c.type === 'projBurst');
     assert.equal(strike.i, m.startup - 1, 'the strike touches on frame 18');
@@ -622,4 +624,148 @@ test('whileVar and slideEnds are checked when a character loads', () => {
   assert.throws(bad((f) => { f.projectiles.vacuum.whileVar.var = 'nope'; }), /nope/);
   assert.throws(bad((f) => { f.projectiles.vacuum.whileVar.hitReaction = 'fly'; }), /whileVar reactions/);
   assert.throws(bad((f) => { f.projectiles.vacuum.whileVar.slideEnds = 'up'; }), /slideEnds/);
+});
+
+// ---- The warp tell, Wiretap Pursuit (2R) and the mark (owner's brief, Nov 26) ----
+/** Run a script of real inputs for P1; returns the states he was in, frame by frame, and the cues. */
+function run(g, world, str, p2 = 0) {
+  const states = [], cues = [];
+  script(str).forEach((r, i) => { step(g, [r, typeof p2 === 'function' ? p2(i, g) : p2], world); states.push(g.players[0].state); for (const c of g.cues) cues.push({ ...c, i }); });
+  return { states, cues };
+}
+const count = (list, s) => list.filter((x) => x === s).length;
+
+test('Warp tell: 236 L has none; 236 M and H play it for 10 and 16 frames, then the unchanged Warp Step', () => {
+  const holds = (id) => rawMove(id).sprite.holds.reduce((a, b) => a + b, 0);
+  assert.equal(holds('warpTellM'), 10);
+  assert.equal(holds('warpTellH'), 16);
+  assert.equal(holds('pursuit'), 14);
+  assert.deepEqual(rawMove('warpTellM').sprite.holds, [2, 2, 2, 2, 2]);
+  assert.deepEqual(rawMove('warpTellH').sprite.holds, [2, 2, 2, 2, 8]);
+  const L = run(setup(W, 1200), W, '2 3 6+L 5*50');
+  assert.ok(!L.states.some((s) => s.startsWith('warpTell')), 'L: no tell');
+  const first = (r, s) => r.states.indexOf(s);
+  const warpAt = (r) => r.cues.find((c) => c.type === 'warp').i;
+  for (const [b, len] of [['M', 10], ['H', 16]]) {
+    const g = setup(W, 1200);
+    const x0 = g.players[0].x;
+    const r = run(g, W, `2 3 6+${b} 5*130`);
+    assert.equal(count(r.states, `warpTell${b}`), len, `${b}: the tell lasts ${len} frames`);
+    assert.equal(first(r, `warpStep${b}`), first(r, `warpTell${b}`) + len, `${b}: then Warp Step`);
+    assert.equal(warpAt(r) - first(r, `warpTell${b}`), warpAt(L) - first(L, 'warpStepL') + len, `${b}: its warp comes ${len} frames later than L's`);
+    const warp = r.cues.find((c) => c.type === 'warp');
+    assert.equal(warp.x - x0, px(rawMove(`warpStep${b}`).timeline.find((e) => e.warp).warp.x), `${b}: same distance`);
+    const point = r.cues.find((c) => c.type === 'sound' && c.name === 'warpTell');
+    assert.ok(point && r.cues.some((c) => c.type === 'fx' && c.name === 'noteTell' && c.i === point.i), `${b}: the note ring and the sound cue on the point`);
+    assert.equal(point.i - first(r, `warpTell${b}`), 6, `${b}: the point is the fourth drawing`);
+    assert.equal(r.cues.filter((c) => c.type === 'projBurst').length, 1, `${b}: one vacuum, as before`);
+  }
+});
+
+test('Warp tell: he can be hit during it (no invincibility, no armor)', () => {
+  for (const b of ['M', 'H']) {
+    const g = setup(WM, 110);
+    const a = g.players[0];
+    const r = run(g, WM, `2 3 6+${b} 5*20`, (i) => (i === 2 ? RAW.L : 0)); // Malik jabs as the tell starts
+    assert.ok(r.states.includes(`warpTell${b}`));
+    assert.ok(a.health < WT.stats.health, `${b}: hit out of the tell`);
+    assert.ok(!r.states.includes(`warpStep${b}`), `${b}: the warp never came`);
+  }
+});
+
+test('Chase warps skip the tell: cancelled from a normal that hit, 236 M goes straight to Warp Step; from a blocked one the tell plays', () => {
+  const hit = run(setup(WM, 110), WM, '5+M 5*8 2 3 6+M 5*30');
+  assert.ok(hit.cues.some((c) => HIT.includes(c.type) && c.move === '5M'));
+  assert.ok(hit.states.includes('warpStepM'));
+  assert.ok(!hit.states.includes('warpTellM'), 'no tell in a combo');
+  const blocked = run(setup(WM, 110), WM, '5+M 5*8 2 3 6+M 5*30', RAW.RIGHT);
+  assert.ok(blocked.cues.some((c) => c.type === 'block' && c.move === '5M'));
+  assert.equal(count(blocked.states, 'warpTellM'), 10, 'blocked: the tell plays in full');
+});
+
+test('Displacement marks the opponent when it hits, not when it is blocked', () => {
+  for (const b of ['L', 'M', 'H']) {
+    const g = setup(WM, 160);
+    const cues = play(g, WM, `displacement${b}`, 30);
+    assert.ok(cues.some((c) => HIT.includes(c.type) && c.move === `displacement${b}`), b);
+    assert.ok(g.players[0].vars.wiretap > 300, `${b}: marked`);
+  }
+  const g = setup(WM, 160);
+  const cues = play(g, WM, 'displacementL', 30, (i, gg) => (gg.players[0].x > gg.players[1].x ? RAW.LEFT : RAW.RIGHT));
+  assert.ok(cues.some((c) => c.type === 'block' && c.move === 'displacementL'));
+  assert.equal(g.players[0].vars.wiretap, 0, 'blocked: no mark');
+});
+
+test('2R without a mark does nothing: no move, no Tune, nothing spent', () => {
+  const g = setup(WM, 400);
+  const a = g.players[0];
+  a.vars.resonance = 6;
+  play(g, WM, 'warpStepH', 20); // a vacuum waiting, which Tune would set off
+  for (let i = 0; i < 30; i++) step(g, [0, 0], WM);
+  const before = { meter: a.meter, res: a.vars.resonance, vac: vacs(g).length };
+  assert.equal(before.vac, 1);
+  const r = run(g, WM, '2*3 2+R 2*10');
+  assert.ok(r.states.every((s) => s === 'crouch' || s === 'idle'), `he only crouches (${[...new Set(r.states)]})`);
+  assert.deepEqual({ meter: a.meter, res: a.vars.resonance, vac: vacs(g).length }, before);
+});
+
+test('2R with a mark: the tell, the vanish, then he is behind and above the opponent wherever they are, acts 6 frames later, and the mark is gone', () => {
+  const V = FILE.states.pursuitVanish, A = FILE.states.pursuitArrive;
+  const warp = V.timeline.find((e) => e.warp).warp;
+  for (const [label, dy] of [['standing', 0], ['jumping', 150]]) {
+    const g = setup(WM, 500);
+    const a = g.players[0], d = g.players[1];
+    a.vars.wiretap = 300;
+    const x0 = a.x;
+    if (dy) { d.y = px(dy); enterState(d, MALIK, 'jump'); d.vy = 900; }
+    const states = [], cues = [];
+    let seen = null, safeInVanish = true, openInTell = false;
+    script('2*2 2+R 5*60').forEach((r, i) => {
+      step(g, [r, 0], WM);
+      states.push(a.state);
+      for (const c of g.cues) cues.push({ ...c, i });
+      const st = WT.states[a.state];
+      const fr = st.frames[Math.min(a.frame, st.frames.length - 1)];
+      if (a.state === 'pursuitVanish' && !(fr.invStrike && fr.invThrow)) safeInVanish = false;
+      if (a.state === 'pursuit' && !fr.invStrike && !fr.invThrow && !fr.armor) openInTell = true;
+      if (!seen && g.cues.some((c) => c.type === 'warp')) seen = { ax: a.x, ay: a.y, dx: d.x, dy: d.y, facing: a.facing, mark: a.vars.wiretap };
+    });
+    assert.equal(count(states, 'pursuit'), 14, `${label}: a 14-frame tell`);
+    assert.ok(openInTell, `${label}: he can be hit during the tell`);
+    assert.equal(count(states, 'pursuitVanish'), V.duration, `${label}: the vanish`);
+    assert.ok(safeInVanish, `${label}: untouchable through the vanish`);
+    assert.ok(seen, `${label}: he warps`);
+    assert.equal(seen.ax, seen.dx + px(warp.gap), `${label}: half a body behind them (they faced him)`);
+    assert.ok(Math.abs(seen.ay - (seen.dy + px(warp.above))) <= px(12), `${label}: a body height above where they are now (within their one frame of travel)`);
+    if (dy) assert.ok(seen.dy > 0, 'the opponent was in the air when he arrived');
+    assert.equal(seen.facing, -1, `${label}: facing them`);
+    assert.equal(seen.mark, 0, `${label}: the mark is spent the moment he arrives`);
+    const vac = cues.find((c) => c.type === 'projBurst');
+    assert.ok(vac && vac.x === x0, `${label}: a vacuum where he started`);
+  }
+  assert.equal(V.timeline.find((e) => e.spawn).spawn.fuse, 8);
+  // He can act 6 frames after reappearing, not before: a button mashed from before he arrives comes out then.
+  for (const [btn, into] of [['L', 'j.L'], ['S', 'j.S']]) {
+    const g = setup(WM, 500);
+    const a = g.players[0];
+    a.vars.wiretap = 300;
+    const states = [];
+    let arrived = -1; // the frame he reappears on (the warp)
+    script('2*2 2+R 5*19').concat(Array.from({ length: 30 }, (_, i) => (i % 2 ? RAW[btn] : 0))).forEach((r, i) => { step(g, [r, 0], WM); states.push(a.state); if (arrived < 0 && g.cues.some((c) => c.type === 'warp')) arrived = i; });
+    const acted = states.indexOf(into);
+    assert.ok(arrived > 0 && acted > 0, `${into} comes out (${[...new Set(states)]})`);
+    assert.ok(acted - arrived >= 6 && acted - arrived <= 7, `${into} comes out ${acted - arrived} frames after he reappears (6, or 7 by the mash's rhythm)`);
+  }
+  // Air Warp too.
+  const g = setup(WM, 500);
+  g.players[0].vars.wiretap = 300;
+  const r = run(g, WM, '2*2 2+R 5*26 2 3 6+M 5*10'); // he faces left now, so this is 214
+  assert.ok(r.states.includes('airWarpM'), `Air Warp out of the arrival (${[...new Set(r.states)]})`);
+  // Once per mark: a second 2R does nothing.
+  const g2 = setup(WM, 500);
+  g2.players[0].vars.wiretap = 300;
+  run(g2, WM, '2*2 2+R 5*80');
+  assert.equal(g2.players[0].state, 'idle');
+  const again = run(g2, WM, '2*2 2+R 5*20');
+  assert.ok(!again.states.includes('pursuit'));
 });

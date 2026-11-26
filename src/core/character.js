@@ -520,8 +520,9 @@ function normalizeEvent(e, stats, sheetName) {
     else if (k === 'spawn' && typeof v === 'object') out[k] = { name: v.name, x: v.x === undefined ? null : px(v.x), y: v.y === undefined ? null : px(v.y), under: v.under ?? null, fuse: v.fuse ?? null, collapse: v.collapse ?? null };
     // warp: an instant move. { x, y } px (x forward), or behind: true (to the far side of the opponent, `gap` px past
     // them), behindIf: "<var>" (behind only while that var of the fighter's runs, else x / y), or swap: true (the two
-    // fighters trade places). After behind / swap the fighter faces the opponent.
-    else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap, stop: px(v.stop ?? 0), face: !!v.face };
+    // fighters trade places). After behind / swap the fighter faces the opponent. above: px with behind = he also
+    // arrives that far above the opponent's feet, wherever they are (War'Teun's Wiretap Pursuit).
+    else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap, stop: px(v.stop ?? 0), face: !!v.face, above: v.above === undefined ? null : px(v.above) };
     // detonate: { name, collapse }: the fighter's projectiles of that kind burst `collapse` frames from now.
     else if (k === 'detonate') out[k] = typeof v === 'string' ? { name: v, collapse: 0 } : { name: v.name, collapse: v.collapse | 0 };
     // catch: { to, hitstop }: while it lasts, a strike that would hit is caught instead: no damage, the fighter
@@ -618,6 +619,7 @@ export function compileCharacter(file, system) {
         buttons: parsed.buttons,
         negativeEdge: !!m.negativeEdge,
         neutral: m.neutral !== false, // false: only reachable from a cancel window that names it (chains, follow-ups)
+        chase: m.chase ?? null, // cancelled into from a move that HIT, this state starts instead (a warp skips its tell)
         cost: move.cost,
         requires: move.requires,
         perCombo: move.perCombo,
@@ -646,6 +648,7 @@ export function compileCharacter(file, system) {
   }
   for (const p of Object.values(projectiles)) if (p.move.varHit && !mechanic.vars[p.move.varHit.var]) throw new Error(`${ch.id}: projectile ${p.name} reads var "${p.move.varHit.var}", which the mechanic doesn't declare`);
   for (const st of Object.values(states)) if (st.move?.varHit && !mechanic.vars[st.move.varHit.var]) throw new Error(`${ch.id}: move ${st.name} reads var "${st.move.varHit.var}", which the mechanic doesn't declare`);
+  for (const c of commands) if (c.chase && !states[c.chase]) throw new Error(`${ch.id}: move ${c.move} chases into unknown state ${c.chase}`);
   for (const p of Object.values(projectiles)) if (p.ownerOnHit && !states[p.ownerOnHit]) throw new Error(`${ch.id}: projectile ${p.name} sends its owner to unknown state ${p.ownerOnHit}`);
   for (const st of Object.values(states)) {
     for (const c of st.cancels) {

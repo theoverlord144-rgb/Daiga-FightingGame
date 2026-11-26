@@ -333,7 +333,10 @@ export function fireOnEnter(game, p, def, world) {
         const fx = p.x, fy = p.y;
         const behind = v.behind || (!!v.behindIf && (p.vars[v.behindIf] | 0) > 0);
         if (v.swap) { p.x = o.x; o.x = fx; }
-        else if (behind) p.x = o.x + (o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing) * v.gap;
+        else if (behind) {
+          p.x = o.x + (o.x > p.x ? 1 : o.x < p.x ? -1 : p.facing) * v.gap;
+          if (v.above !== null) { p.y = o.y + v.above; p.vx = 0; p.vy = 0; }
+        }
         else {
           let to = p.x + p.facing * v.x;
           // stop: a forward step never carries him through a grounded opponent; it ends that far in front of them.
@@ -552,7 +555,7 @@ function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link =
   const keepLink = link ? 0 : p.link;
   for (const [b, f] of Object.entries(pick.presses)) p.consumed[BTN_INDEX[b]] = f;
   if (pick.cmd.perJump && !p.airUsed.includes(pick.cmd.perJump)) p.airUsed.push(pick.cmd.perJump);
-  enterState(p, def, pick.cmd.move);
+  enterState(p, def, pick.to ?? pick.cmd.move);
   p.link = keepLink;
   if (timing) {
     // Perfect Link: the hit of this move adds nothing to the combo's scaling, a little Devotion, and an event for
@@ -574,7 +577,7 @@ function startCommand(game, p, def, world, pick, viaCancel = p.viaCancel, link =
   // Vow is free from neutral; cancelling a normal into it costs Devotion.
   if (pick.cmd.move === 'vow_start' && p.viaCancel) p.meter = Math.max(0, p.meter - world.sys.vow.cancelCost);
   // Doing a special move builds a little Devotion (not its EX version, which costs a bar).
-  const mv = def.states[pick.cmd.move].move;
+  const mv = def.states[pick.to ?? pick.cmd.move].move;
   p.spGain = mv.kind === 'special' && !mv.ex ? gainDevotion(game, p, def, def.devotion.special, 'special', true) : 0;
 }
 
@@ -694,6 +697,8 @@ function decide(game, p, opp, def, world) {
     : (cmd) => (cmd.kind === 'vow' ? vowOk : false) || (!(st.kind === 'normal' && usedUp(p, cmd, world)) && windows.some((w) => w.into.has(cmd.move) || (cmd.base && w.into.has(cmd.base)) || (cmd.neutral && w.into.has(`#${cmd.kind}`))));
   const pick = pickCommand(game, p, def, world, allowed);
   if (pick) {
+    // A chase: cancelled into from a move that hit, a move with `chase` starts that state instead (no tell).
+    if (!st.free && p.contact === CONTACT.HIT && pick.cmd.chase) pick.to = pick.cmd.chase;
     startCommand(game, p, def, world, pick, !st.free, !st.free);
     return;
   }
