@@ -272,7 +272,7 @@ owner's var makes the box `sizePct` bigger and the damage `damagePct` higher. `r
 several within `gap` px they become one burst at their middle, `pct` percent of the size and damage. While the
 owner's `markVar` is above 0 the pull range is `markRangePct` percent. A burst is blocked holding either way, knocks
 away from its own centre and never clashes. Cue `projBurst { name, x, y, lv, size, joined }`. Drawing only:
-`"burstArt": { "start": holds, "fuseLoop": holds, "collapse": [drawings spread over the collapse], "burst": holds (the
+`"burstArt": { "scale": the burst layers' own size (drawing only, the hitbox is not touched), "start": holds, "fuseLoop": holds, "collapse": [drawings spread over the collapse], "burst": holds (the
 sheet's remaining drawings, on top), "fire": { sprite, holds, opacity }, "smoke": { sprite, holds, opacity, delay,
 rise } (under the fire, drifting up), "shake": { at, px, perLevel }, "ring": { "from": level, "set": "<shockwave
 set>" } }`. All of it is drawn with normal blending and enlarged by the burst's size; the projectile's own sheet is

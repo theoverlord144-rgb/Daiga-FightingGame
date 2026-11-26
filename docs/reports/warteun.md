@@ -169,3 +169,19 @@ Things to know:
 Measured again: best meterless combo 3,399 (34%), Displacement into a full combo 3,927 (39%), nothing over 50%.
 Frame time with three vacuums, the mark and the new effects: 9.4 ms average, 15.9 ms worst 5% (inside the 16.7
 budget; the earlier 16.8 was the old light-blended burst), worst single frame 18.1 ms. `npm test`: 485 of 485.
+
+## Second round of play-test changes (Nov 26)
+
+- **Dashes: my bug, fixed.** The dashes were meant to be pure teleports, but the engine's ordinary dash run was
+  still going underneath, so a real double tap carried him 601 px forward and 438 back (the "180 px" above was
+  only the teleport part). The run is switched off. Measured with real inputs he now covers exactly Avner's
+  distance: 197 px forward, 186 px back, standing still before and after. A test compares him to Avner with real
+  double taps, so it cannot hide again. Air dashes measured clean (240 forward, 200 back, no drift); untouched.
+- **Explosions at half size.** Fire, smoke and the ruby ring are drawn at 50% (one number, `burstArt.scale`). They
+  still grow with Resonance and resonating. The waiting sphere and the hitbox are unchanged, so at Resonance 0 the
+  fire is a little smaller than the area that hits.
+- **2M's ripple: two faults of mine, fixed.** Its picture was pinned at his feet while the hit travelled away
+  unseen, and drawings 4 to 8 were cut into pieces. It is recut on its even grid and drawn on the moving hit; the
+  hitbox sits under the arc. A test checks it travels (320 px) and hits low.
+
+`npm test`: 487 of 487. Frame time: 9.1 ms average, 14.5 ms worst 5%, worst single frame 19.6 ms.

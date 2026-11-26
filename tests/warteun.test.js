@@ -109,10 +109,6 @@ test('Vacuum: the burst is a mid that is blocked holding either way; out of rang
 
 test('Vacuum: his dashes and air dash leave none; his warping normals, j.S and the special warps each leave one', () => {
   for (const s of ['dashF', 'backdash']) { const g = setup(W, 1000); play(g, W, s, 25); assert.equal(vacs(g).length, 0, s); }
-  const g0 = setup(W, 1000);
-  const x0 = g0.players[0].x;
-  play(g0, W, 'dashF', 25);
-  assert.equal(g0.players[0].x, x0 + px(FILE.states.dashF.timeline.find((e) => e.warp).warp.x), 'the dash is a teleport of that distance');
   for (const s of ['airdashF', 'airdashB']) {
     const g = setup(W, 1000);
     g.players[0].y = px(200);
@@ -141,6 +137,48 @@ test('Vacuum: his dashes and air dash leave none; his warping normals, j.S and t
   const dists = ['L', 'M', 'H'].map((b) => rawMove(`warpStep${b}`).timeline.find((e) => e.warp).warp.x);
   assert.ok(fuses[0] < fuses[1] && fuses[1] < fuses[2]);
   assert.ok(dists[0] < dists[1] && dists[1] < dists[2]);
+});
+
+test("His ground dashes, done with real double taps, cover exactly Avner's distance and he does not slide", () => {
+  const AVNER = loadChar('data/characters/avner/avner.toska.json');
+  const WA = loadWorld(AVNER, AVNER);
+  WA.battle.maxGapUnits = 0;
+  for (const [name, taps, state] of [['forward', '6 5 6 5*70', 'dashF'], ['back', '4 5 4 5*70', 'backdash']]) {
+    const travel = (world) => {
+      const g = setup(world, 1200);
+      const p = g.players[0];
+      const x0 = p.x;
+      const xs = [];
+      let dashed = false;
+      for (const r of script(taps)) { step(g, [r, 0], world); dashed = dashed || p.state === state; if (p.state === state) xs.push(p.x); }
+      assert.ok(dashed, `${name}: the dash came out`);
+      return { total: p.x - x0, xs };
+    };
+    const his = travel(W), avners = travel(WA);
+    assert.equal(his.total, avners.total, `${name} dash: the same distance as Avner's`);
+    // A teleport: during the dash he stands in one place, then in another. Never anything in between.
+    assert.equal(new Set(his.xs).size, 2, `${name} dash: he does not slide`);
+  }
+});
+
+test("2M's ripple travels along the floor and its picture travels with it", () => {
+  const R = FILE.projectiles.ripple;
+  assert.ok(!R.sprite.ground && !R.sprite.rooted, 'drawn on the moving hit, not pinned where it began');
+  const g = setup(W, 1200);
+  const seen = [];
+  for (const r of script('2+M 2*60')) { step(g, [r, 0], W); const q = g.projectiles.find((x) => x.kind === 'ripple'); if (q) seen.push(q.x); }
+  assert.ok(seen.length > 30);
+  const went = (seen[seen.length - 1] - seen[0]) / 100;
+  assert.ok(went > 280 && went < 360, `it runs about a third of the screen (${went} px)`);
+  // It hits low, where its picture is.
+  const h = setup(W, 300);
+  const cues = [];
+  for (const r of script('2+M 2*50')) { step(h, [r, 0], W); cues.push(...h.cues.map((c) => ({ ...c }))); }
+  assert.ok(cues.some((c) => HIT.includes(c.type) && c.move === 'ripple'), 'it reaches a standing opponent 300 px away');
+  const b = setup(W, 150); // nearer: holding back walks them away from it
+  const blocked = [];
+  for (const r of script('2+M 2*50')) { step(b, [r, RAW.RIGHT], W); blocked.push(...b.cues.map((c) => c.type)); }
+  assert.ok(blocked.some((t) => HIT.includes(t)) && !blocked.includes('block'), 'standing guard does not stop it: it is a low');
 });
 
 test('5H and 6H step forward but never through the opponent: they stop in front', () => {

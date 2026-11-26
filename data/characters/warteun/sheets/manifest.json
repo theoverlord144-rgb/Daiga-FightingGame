@@ -4172,11 +4172,11 @@
    "columns": 8,
    "rows": 1,
    "count": 8,
-   "frameW": 227,
-   "frameH": 110,
-   "originX": 112,
-   "originY": 106,
-   "scale": 0.5,
+   "frameW": 241,
+   "frameH": 135,
+   "originX": 14,
+   "originY": 127,
+   "scale": 0.667,
    "holds": [
     2,
     2,
@@ -4189,10 +4189,7 @@
    ],
    "additive": true
   },
-  "from": "../War'Teun/Warteun_Crouch_Medium_Effect.png",
-  "drawings": null,
-  "lantern": null,
-  "reach": null
+  "from": "scripts/warteun-fx.mjs"
  },
  "note": {
   "sprite": {

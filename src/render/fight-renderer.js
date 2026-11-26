@@ -691,7 +691,7 @@ export function createFightRenderer(ctx, W, H) {
       drawSheetFrame(def, d.sprite, Math.min(d.sprite.count - 1, index), x, y, pr.facing);
       return;
     }
-    const t = pr.age - pr.boom, k = (pr.size ?? 10000) / 10000;
+    const t = pr.age - pr.boom, k = ((pr.size ?? 10000) / 10000) * (A.scale ?? 1); // burstArt.scale: the burst layers' own size
     const sized = (sp) => (k === 1 ? sp : { ...sp, scale: (sp.scale ?? 1) * k });
     const layer = (L, age, lift = 0) => {
       if (!L || age < 0) return;

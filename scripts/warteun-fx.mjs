@@ -36,11 +36,12 @@ function boxIn(img, [x0, y0, x1, y1], min = 24) {
   return c < a ? null : [a, b, c + 1, d + 1];
 }
 /** Lay drawings into one strip: every cell the same size, each drawing's centre at the cell's origin. */
-function strip(name, img, regions, centres, holds) {
+function strip(name, img, regions, centres, holds, scale = SCALE, floor = false) {
   let hw = 0, hh = 0;
   const boxes = regions.map((r) => boxIn(img, r));
   boxes.forEach((b, i) => { if (!b) return; const [cx, cy] = centres[i]; hw = Math.max(hw, cx - b[0], b[2] - cx); hh = Math.max(hh, cy - b[1], b[3] - cy); });
   hw = Math.ceil(hw) + 2; hh = Math.ceil(hh) + 2;
+  if (floor) return floorStrip(name, img, regions, centres, holds, scale);
   const W = hw * 2, H = hh * 2, n = regions.length;
   const data = Buffer.alloc(W * n * H * 4);
   regions.forEach((r, i) => {
@@ -53,7 +54,26 @@ function strip(name, img, regions, centres, holds) {
     }
   });
   fs.writeFileSync(`${OUT}${name}.png`, encodePng({ width: W * n, height: H, data }));
-  return { image: `sheets/${name}.png`, columns: n, rows: 1, count: n, frameW: W, frameH: H, originX: hw, originY: hh, scale: SCALE, holds };
+  return { image: `sheets/${name}.png`, columns: n, rows: 1, count: n, frameW: W, frameH: H, originX: hw, originY: hh, scale, holds };
+}
+/** The same for drawings that stand on a floor and reach forward: the given point is the cell's bottom-left origin. */
+function floorStrip(name, img, regions, points, holds, scale) {
+  let left = 0, right = 0, up = 0, down = 0;
+  regions.forEach((r, i) => { const b = boxIn(img, r); if (!b) return; const [px, py] = points[i]; left = Math.max(left, px - b[0]); right = Math.max(right, b[2] - px); up = Math.max(up, py - b[1]); down = Math.max(down, b[3] - py); });
+  left = Math.ceil(left) + 2; right = Math.ceil(right) + 2; up = Math.ceil(up) + 2; down = Math.ceil(down) + 2;
+  const W = left + right, H = up + down, n = regions.length;
+  const data = Buffer.alloc(W * n * H * 4);
+  regions.forEach((r, i) => {
+    const [px, py] = points[i].map(Math.round);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const sx = px - left + x, sy = py - up + y;
+      if (sx < r[0] || sx >= r[2] || sy < r[1] || sy >= r[3]) continue;
+      const s = (sy * img.width + sx) * 4, d = (y * W * n + i * W + x) * 4;
+      data[d] = img.data[s]; data[d + 1] = img.data[s + 1]; data[d + 2] = img.data[s + 2]; data[d + 3] = img.data[s + 3];
+    }
+  });
+  fs.writeFileSync(`${OUT}${name}.png`, encodePng({ width: W * n, height: H, data }));
+  return { image: `sheets/${name}.png`, columns: n, rows: 1, count: n, frameW: W, frameH: H, originX: left, originY: up, scale, holds };
 }
 const grid = (img, cols, rows) => Array.from({ length: cols * rows }, (_, i) => { const w = img.width / cols, h = img.height / rows, c = i % cols, r = Math.floor(i / cols); return [Math.round(c * w), Math.round(r * h), Math.round((c + 1) * w), Math.round((r + 1) * h)]; });
 const mid = (b) => [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
@@ -93,6 +113,17 @@ const sprites = {};
   const cy = mid(boxIn(img, cells[3]))[1];
   const centres = cells.map((r) => [mid(boxIn(img, r))[0], cy]);
   sprites['blast-smoke'] = strip('blast-smoke', img, cells, centres, [2, 2, 3, 3, 4, 4, 5, 5]);
+}
+// 2M's floor ripple (light, so the game draws it additive): eight drawings on an even grid. Each grows from the point
+// where the fork taps the floor, at the left end of the drawing; that point is the origin. (avner-prep's shape
+// finding split the thin arcs of drawings 4-8 into pieces.)
+{
+  const img = load('Warteun_Crouch_Medium_Effect.png');
+  const cells = grid(img, 8, 1);
+  const first = cells.slice(0, 4).map((r) => boxIn(img, r, 60));
+  const dx = first.reduce((a, b, i) => a + (b[0] - cells[i][0]) / 4, 0); // the tap point sits the same way into every cell
+  const floorY = Math.max(...first.map((b) => b[3]));
+  sprites.ripple = { ...strip('ripple', img, cells, cells.map((r) => [r[0] + dx + 6, floorY - 3]), [2, 2, 3, 3, 3, 3, 4, 4], 0.667, true), additive: true };
 }
 const MF = OUT + 'manifest.json';
 const manifest = JSON.parse(fs.readFileSync(MF, 'utf8'));
