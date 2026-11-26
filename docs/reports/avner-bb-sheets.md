@@ -250,3 +250,7 @@ block, +22 on hit with them at 85 px; Lunar Halo -19 on block.
 - 2H still slides forward under a drawing that looks planted.
 - After a Moonfall hit he lands on top of the opponent.
 - Crouch with 5 drawings: is the loop right, or is a sixth drawing coming?
+
+## Nov 25, late: Tide hauls later (owner)
+
+The owner slowed the waves (11 / 13 / 16 px a frame, 16 / 18 / 22 frames of travel), so on frame 25 the M and H waves had not arrived and nothing was pulled. His call: keep the waves, move the haul. It now lands on the frame each wave ends its travel: 32 / 34 / 38 (L / M / H); the moves last 50 / 52 / 56 frames; holds `5,5,5,8,8,6,7,6` / `5,5,5,9,9,6,7,6` / `5,5,5,11,11,6,7,6` (release still drawing 4 on frame 16, haul still drawing 6). EX has its own `startup: 25` and sprite in its `ex` block, unchanged. This replaces "pull on frame 25" above for the three normal strengths.

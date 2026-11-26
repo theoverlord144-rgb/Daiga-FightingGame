@@ -129,7 +129,7 @@ function seal(g) {
   let born = null;
   for (let i = 0; i < 40 && !born; i++) {
     const before = d.x;
-    step(g, [i === 0 ? RAW.DOWN | RAW.R : 0, i === 5 ? RAW.UP | RAW.RIGHT : 0], WM);
+    step(g, [i === 8 ? RAW.DOWN | RAW.R : 0, i === 0 ? RAW.UP | RAW.RIGHT : 0], WM); // (they are near the top of a back jump as it rises: the orb reaches up to about 140 px)
     const m = mine(g).find((q) => q.kind === 'palm2' && !q.end);
     if (m && !mine(g).some((q) => q.end)) born = { x: m.x, y: m.y, under: [before, d.x], malik: a.x };
   }
@@ -151,9 +151,12 @@ test("Malik 2R, Ancestor's Seal: the orb always rises under the opponent, wherev
   const g = setup(WM, 400);
   const a = g.players[0], d = g.players[1];
   const born = seal(g);
+  const clear = () => { d.x = born.x + px(300); }; // (P2 is put down away from it by hand: they would land on it)
+  clear();
   let alive = 1;
   for (let i = 0; i < 260; i++) {
-    step(g, [0, d.y > 0 || Math.abs(d.x - born.x) < px(200) ? RAW.RIGHT : 0], WM); // P2 lands and walks clear of it
+    step(g, [0, 0], WM);
+    if (d.y > 0) clear();
     const m = mine(g);
     if (!m.length) continue;
     assert.deepEqual({ x: m[0].x, y: m[0].y }, { x: born.x, y: born.y }, 'it does not follow them afterwards');
@@ -163,16 +166,21 @@ test("Malik 2R, Ancestor's Seal: the orb always rises under the opponent, wherev
   assert.equal(d.health, MALIK.stats.health, '(nobody was hit)');
   // A second one removes the first.
   a.rite = 3;
-  seal(g);
-  const first = mine(g)[0].x;
-  for (let i = 0; i < 60; i++) step(g, [0, d.y > 0 || i < 30 ? RAW.LEFT : 0], WM);
+  const first = seal(g);
+  const aside = () => { d.x = first.x - px(250); };
+  aside();
+  for (let i = 0; i < 50; i++) { step(g, [0, 0], WM); if (d.y > 0) aside(); }
   assert.equal(mine(g).length, 1, 'the first is still out');
   a.rite = 3;
-  let two = false;
-  for (let i = 0; i < 40; i++) { step(g, [i === 0 ? RAW.DOWN | RAW.R : 0, i === 5 ? RAW.UP | RAW.RIGHT : 0], WM); two ||= mine(g).filter((q) => !q.end).length > 1; }
+  let two = false, second = null;
+  for (let i = 0; i < 40; i++) {
+    step(g, [i === 8 ? RAW.DOWN | RAW.R : 0, i === 0 ? RAW.UP | RAW.RIGHT : 0], WM);
+    const live = mine(g).filter((q) => !q.end);
+    two ||= live.length > 1;
+    if (live.length && live[0].x !== first.x) second ??= live[0].x;
+  }
   assert.equal(two, false, 'never two at once');
-  assert.equal(mine(g).length, 1);
-  assert.notEqual(mine(g)[0].x, first, 'the new one, under where they are now');
+  assert.ok(second !== null, 'the new one rose, under where they are now');
 });
 
 test('Malik 2R: the orb is a low: a crouching block stops it, a standing block does not; whoever walks back into it later is hit', () => {
@@ -187,12 +195,12 @@ test('Malik 2R: the orb is a low: a crouching block stops it, a standing block d
   const born = seal(g);
   let got = null;
   for (let i = 0; i < 150 && !got; i++) {
-    step(g, [0, d.y > 0 ? 0 : RAW.LEFT], WM); // they land behind it and walk forward, into it
+    if (i === 0) d.x = born.x + px(250); // (put down behind it by hand)
+    step(g, [0, d.y > 0 ? 0 : RAW.LEFT], WM); // then they walk forward, into it
     got = g.cues.find((c) => [...HIT, 'block'].includes(c.type))?.type ?? null;
   }
   assert.equal(got, 'hit');
   assert.equal(mine(g).length, 0, 'and the orb is spent');
-  void born;
 });
 
 /** Malik jumps and claps; P2 does p2 (a script) from the frame of the R press. Returns what happened. */

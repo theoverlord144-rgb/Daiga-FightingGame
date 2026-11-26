@@ -258,7 +258,9 @@ test('Vigil M: the crescent spawns on frame 16, flies 9 px a frame at chest heig
   assert.deepEqual(deserializeState(serializeState(g)).projectiles, g.projectiles, 'plain data: saves and loads');
   const d = C.projectiles.vigilCrescent;
   const [, , w, h] = d.hitbox[0];
-  assert.ok(h >= px(160) && w <= px(30), 'a tall thin hitbox, about his height');
+  // (The owner widened it in his tuning of Nov 22: it was 24 px wide, 180 tall.)
+  assert.ok(h >= px(160), 'a tall hitbox, about his height');
+  assert.deepEqual([w, h], [px(102), px(190)], 'as the owner tuned it');
   assert.equal(d.move.guard, 'mid');
   until(g, (s) => s.players[0].state === 'vigilStance');
 });
@@ -422,17 +424,18 @@ test('Flare: with no Brand it fizzles: nothing happens to the opponent and Avner
 
 // ---------- The Back Heavy ----------
 
-test('Back Heavy (4H): reach and hitbox length doubled, everything else as it was', () => {
+test('Back Heavy (4H): reach doubled, the hitbox as the owner drew it in the box editor (297 px long), everything else as it was', () => {
   const m = C.states.backHeavy.move;
   assert.deepEqual([m.startup, m.active, m.recovery, m.damage, m.selfPushback], [11, 3, 22, 850, px(22)]);
   assert.equal(m.reach, px(200));
   const box = C.states.backHeavy.frames[m.startup - 1].hit[0];
-  assert.equal(box[2], px(180), 'hitbox length, in data');
-  assert.equal(box[0] + box[2], px(200));
+  // (It was 180 long, ending 200 px out, when the reach was doubled; the owner has since redrawn the box.)
+  assert.equal(box[2], px(297), 'hitbox length, in data');
+  assert.equal(box[0] + box[2], px(317));
   const g = placed(190 + 30); // P2's body starts 30 px in front of its centre
   run(g, '4+H 5*13');
   assert.equal(g.players[1].state, 'hitStand', 'hits at twice the old distance');
-  const out = placed(240 + 30);
+  const out = placed(420 + 30);
   run(out, '4+H 5*13');
   assert.equal(out.players[1].state, 'idle');
 });

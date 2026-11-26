@@ -284,3 +284,90 @@ test('"Hits airborne" is yes unless the file says no, and the switch writes only
   writeSetting(raw, jab, 'knockdown', false, RULES);
   assert.ok(!('knockdown' in raw.moves.find((m) => m.id === '5L')));
 });
+
+// ---------- "Appears": in front of him / under the opponent (the owner, Nov 25 2026) ----------
+
+test('"Appears": a projectile is switched between in front of him and under the opponent, in the moves that release it', () => {
+  const text = fs.readFileSync(new URL(`../${MALIK}`, import.meta.url), 'utf8');
+  const base = JSON.parse(text);
+  const raw = clone(base);
+  const spawnOf = (id) => raw.moves.find((m) => m.id === id).timeline.find((e) => e.spawn !== undefined).spawn;
+  // As tuned now: the palm starts in front of him, the seal and the judgment under the opponent.
+  const palm = settingsTarget(raw, SYSTEM, 'proj:palm5');
+  assert.ok(applies(FIELDS.find((f) => f.key === 'place'), palm));
+  assert.ok(!applies(FIELDS.find((f) => f.key === 'place'), settingsTarget(raw, SYSTEM, '5L')), 'a setting of projectiles only');
+  assert.deepEqual(readSetting(raw, palm, 'place', RULES), { value: 'front', own: false, off: false });
+  assert.equal(readSetting(raw, settingsTarget(raw, SYSTEM, 'proj:palm2'), 'place', RULES).value, 'opponent');
+  assert.equal(showSetting('place', 'opponent'), 'at opponent');
+  // Under the opponent: from across the screen the palm now comes out on them.
+  assert.equal(play(raw, 'proj:palm5', 'standing', 700).result, 'whiff', 'out of its reach from 700 px');
+  nudgeSetting(raw, palm, 'place', 1, false, RULES);
+  assert.deepEqual(spawnOf('rite_5'), { name: 'palm5', under: 'opponent' });
+  assert.deepEqual(readSetting(raw, palm, 'place', RULES), { value: 'opponent', own: true, off: false });
+  assert.equal(play(raw, 'proj:palm5', 'standing', 700).result, 'hit');
+  // Saving it changes that one line of the file.
+  const out = editJSON(text, diffOps(base, raw));
+  assert.deepEqual(JSON.parse(out), raw);
+  assert.equal(out.split('\n').filter((line) => !text.split('\n').includes(line)).length, 1);
+  // And back, by the switch or by "back to default": written the plain way again.
+  resetSetting(raw, palm, 'place');
+  assert.equal(spawnOf('rite_5'), 'palm5');
+  assert.deepEqual(raw, base, 'exactly as it was');
+  // A spawn that carries its own distance keeps it.
+  const av = loadJSON('data/characters/avner/avner.toska.json');
+  const cres = settingsTarget(av, SYSTEM, 'proj:crescent');
+  const before = clone(av.moves.find((m) => m.id === 'moonlit5').timeline);
+  writeSetting(av, cres, 'place', 'opponent', RULES);
+  assert.deepEqual(av.moves.find((m) => m.id === 'moonlit5').timeline.find((e) => e.spawn).spawn, { name: 'crescent', x: 150, under: 'opponent' });
+  writeSetting(av, cres, 'place', 'front', RULES);
+  assert.deepEqual(av.moves.find((m) => m.id === 'moonlit5').timeline, before);
+  compileCharacter(av, SYSTEM);
+});
+
+// ---------- The projectile timeline ----------
+
+test('projectile timeline: when each projectile appears, when it can hit, and the frame it reached the dummy', async () => {
+  const { flightOf, firstTouch, flightWarning } = await import('../src/editor/preview.js');
+  const raw = loadJSON(MALIK);
+  const def = compileCharacter(raw, SYSTEM);
+  assert.equal(flightOf(def, '5L'), null, 'a move that releases nothing has none');
+  // Judgment: opens under the opponent on the clap, its box out 11 frames later.
+  const j = flightOf(def, 'rite_j');
+  assert.equal(j.state, 'rite_j');
+  assert.equal(j.spawns.length, 1);
+  const P = raw.projectiles.palmJ;
+  assert.deepEqual(j.spawns[0], { at: 11, name: 'palmJ', lifetime: P.lifetime, speed: 0, under: true, start: null, live: [[P.phases[0][0], Math.min(P.phases[0][1], P.lifetime - 1)]] });
+  assert.deepEqual(flightOf(def, 'proj:palmJ'), j, 'the same from the projectile\'s own entry');
+  // The orb: appears in front of him and flies.
+  const o = flightOf(def, 'spiritOrb');
+  const O = raw.projectiles.spiritOrb;
+  assert.deepEqual([o.spawns[0].start, o.spawns[0].speed, o.spawns[0].under], [O.spawn[0], O.speed, false]);
+  assert.deepEqual(o.spawns[0].live, [[0, O.lifetime - 1]]);
+  assert.ok(o.ownHit && o.ownHit[0] === raw.moves.find((m) => m.id === 'spiritOrb').startup - 1, 'the move\'s own hitting frames are marked too');
+  // The loop records every touch: the palm strike, then the orb.
+  const run = play(raw, 'spiritOrb', 'standing', 60);
+  assert.equal(firstTouch(run, 'spiritOrb'), run.frame);
+  assert.ok(firstTouch(run, 'proj:none') === null);
+  const far = play(raw, 'spiritOrb', 'standing', 400);
+  assert.ok(firstTouch(far, 'spiritOrb') > o.spawns[0].at + 1, 'from far away only the orb arrives, later');
+});
+
+test('projectile timeline: it warns when a haul comes before its wave has arrived (Avner\'s Tide)', async () => {
+  const { flightOf, firstTouch, flightWarning } = await import('../src/editor/preview.js');
+  const raw = loadJSON('data/characters/avner/avner.toska.json');
+  const def = compileCharacter(raw, SYSTEM);
+  const f = flightOf(def, 'tideM');
+  assert.equal(f.remote, true);
+  const run = measure({ def, dummyDef: def, makeWorld, entry: 'tideM', distance: 300 });
+  assert.ok(firstTouch(run, 'tideWaveM') < firstTouch(run, 'tideM'), 'the wave, then the haul');
+  assert.equal(flightWarning(f, run), null);
+  // The haul on frame 25 again, as it was: the wave is still on its way at 300 px.
+  const old = clone(raw);
+  const m = old.moves.find((x) => x.id === 'tideM');
+  writeSetting(old, settingsTarget(old, SYSTEM, 'tideM'), 'startup', 25, RULES);
+  assert.equal(m.startup, 25);
+  const oldDef = compileCharacter(old, SYSTEM);
+  const early = measure({ def: oldDef, dummyDef: oldDef, makeWorld, entry: 'tideM', distance: 300 });
+  assert.equal(firstTouch(early, 'tideM'), null, 'the haul found nobody');
+  assert.match(flightWarning(flightOf(oldDef, 'tideM'), early), /tideWaveM reaches the dummy on frame \d+, not before the move's own hit \(frame 25\)/);
+});

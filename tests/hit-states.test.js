@@ -364,7 +364,7 @@ test('the editor offers the reaction, the air and counter reactions and OTG, and
   assert.throws(() => writeSetting(raw, t, 'hitReaction', 'stagger', rules), /must be one of/);
 });
 
-test('the cast: launchers tumble, the jumping S slams into a hard knockdown, 2L picks up off the floor, a counter-hit heavy crumples', () => {
+test('the cast: launchers tumble, the jumping S slams into a hard knockdown, 2L picks up off the floor, a counter-hit heavy crumples (Malik)', () => {
   for (const id of ['avner', 'malik']) {
     const c = compileCharacter(loadJSON(`data/characters/${id}/${id}.toska.json`), SYSTEM);
     assert.equal(c.states['5S'].move.hitReaction, 'tumble', `${id} 5S`);
@@ -372,7 +372,8 @@ test('the cast: launchers tumble, the jumping S slams into a hard knockdown, 2L 
     assert.equal(c.states['j.S'].move.airReaction, 'hardKD', `${id} j.S`);
     assert.equal(c.states['j.S'].move.hitReaction, 'normal', `${id} j.S on a standing fighter is plain hitstun`);
     assert.equal(c.states['2L'].move.otg, true, `${id} 2L`);
-    assert.equal(c.states['5H'].move.counterReaction, 'crumple', `${id} 5H`);
+    // (Avner's redrawn 5H of Nov 25 is set to an ordinary reaction on counter hit in his file: the owner's setting.)
+    assert.equal(c.states['5H'].move.counterReaction, id === 'malik' ? 'crumple' : 'normal', `${id} 5H`);
     for (const s of ['hitSpin', 'hitTumble', 'slide', 'knockdownSoft']) assert.ok(c.sheets[s], `${id} has drawings for ${s}`);
   }
 });

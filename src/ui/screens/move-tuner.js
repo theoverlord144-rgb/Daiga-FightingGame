@@ -6,7 +6,7 @@
 import { px } from '../../core/fixed.js';
 import { SYSTEM, BATTLE, COMBO } from '../boot.js';
 import { FIELDS, settingsTarget, applies, readSetting, writeSetting, resetSetting, nudgeSetting, showSetting, fieldOf } from '../../editor/move-model.js';
-import { createPreview, reachOf, hitOwner, DUMMIES } from '../../editor/preview.js';
+import { createPreview, reachOf, hitOwner, flightOf, firstTouch, flightWarning, DUMMIES } from '../../editor/preview.js';
 import { INK, DIM, GOLD } from './common.js';
 
 const RULES = { combo: COMBO, battle: BATTLE };
@@ -156,6 +156,69 @@ export function createTuner(env) {
     text(`${which === 'launch' ? 'launch' : 'air hit'}: forward ${vx}, up ${vy}  (drag the arrow)`, Math.min(tx + 14, STAGE.x + STAGE.w - 230), Math.max(STAGE.y + 110, ty - 8), { color: hot ? '#ffffff' : GOLD, size: 11, weight: 700 });
   }
 
+  /**
+   * The projectile timeline: the move's frames as a bar, and under it each projectile it releases from the frame it
+   * appears: how long it lasts, when its hitbox is out (gold), and the frame it reached the dummy (white mark).
+   */
+  function drawFlight(top) {
+    let f = null;
+    try { f = pv?.state ? flightOf(env.def(), env.entry()) : null; } catch { f = null; }
+    if (!f) return;
+    const s = pv.stats.touches.length ? pv.stats : pv.last ?? pv.stats;
+    const rows = f.spawns.slice(0, 3);
+    const span = Math.max(f.frames, ...rows.map((sp) => sp.at + sp.lifetime));
+    const X = STAGE.x + 118, k = Math.min(5, 340 / span), BAR = 8, GAP = 15;
+    const warn = flightWarning(f, s);
+    const height = 30 + (rows.length + 1) * GAP + rows.length * 13 + (warn ? 14 : 0);
+    ctx.fillStyle = '#0d0b12cc';
+    ctx.fillRect(STAGE.x + 4, top, 118 + 340 + 14, height);
+    const at = (frame) => X + frame * k;
+    const label = (str, y, color = DIM) => text(str.length > 17 ? str.slice(0, 16) + '…' : str, STAGE.x + 10, y + BAR, { color, size: 10, weight: 600 });
+    let y = top + 6;
+    // every 10 frames
+    for (let n = 0; n <= span; n += span > 120 ? 30 : 10) {
+      ctx.fillStyle = '#ffffff14';
+      ctx.fillRect(at(n), y, 1, (rows.length + 1) * GAP - 4);
+      text(String(n), at(n) - 3, y + (rows.length + 1) * GAP + 6, { color: '#8a819b', size: 9 });
+    }
+    // the move
+    label(f.state, y, INK);
+    ctx.fillStyle = '#6b6480';
+    ctx.fillRect(at(0), y, f.frames * k, BAR);
+    if (f.ownHit) {
+      ctx.fillStyle = '#4a4560';
+      ctx.fillRect(at(f.ownHit[1] + 1), y, (f.frames - f.ownHit[1] - 1) * k, BAR);
+      ctx.fillStyle = '#ff5b5b';
+      ctx.fillRect(at(f.ownHit[0]), y, Math.max(2, (f.ownHit[1] - f.ownHit[0] + 1) * k), BAR);
+    }
+    const mark = (frame, yy) => { ctx.fillStyle = '#ffffff'; ctx.fillRect(at(frame) + k / 2 - 1, yy - 3, 2, BAR + 6); };
+    const own = firstTouch(s, f.state);
+    if (own !== null) mark(own, y);
+    // each projectile
+    rows.forEach((sp) => {
+      y += GAP;
+      label(sp.name, y);
+      ctx.fillStyle = '#3a3350';
+      ctx.fillRect(at(sp.at), y, sp.lifetime * k, BAR);
+      ctx.fillStyle = GOLD;
+      for (const [from, to] of sp.live) ctx.fillRect(at(sp.at + from), y + 1, Math.max(2, (to - from + 1) * k), BAR - 2);
+      const hit = firstTouch(s, sp.name);
+      if (hit !== null) mark(hit, y);
+    });
+    // where the loop is now
+    const now = pv.stats.now;
+    if (now >= 0 && now < span) { ctx.fillStyle = '#7fd4ff'; ctx.fillRect(at(now) + k / 2, top + 4, 1, (rows.length + 1) * GAP - 2); }
+    y += GAP + 24;
+    rows.forEach((sp) => {
+      const live = sp.live.length ? `can hit on frames ${sp.live.map(([a, b]) => `${sp.at + a + 1}–${sp.at + b + 1}`).join(', ')}` : 'has no hitbox';
+      const hit = firstTouch(s, sp.name);
+      const where = sp.under ? 'under the opponent' : `${sp.start} px in front${sp.speed ? `, ${sp.speed} px a frame` : ''}`;
+      text(`${sp.name}: appears on frame ${sp.at + 1}, ${where} · ${live}${hit !== null ? ` · reached the dummy on frame ${hit + 1}` : ''}`, STAGE.x + 10, y, { color: INK, size: 10 });
+      y += 13;
+    });
+    if (warn) text(warn, STAGE.x + 10, y + 1, { color: '#ffb86b', size: 10, weight: 700 });
+  }
+
   function drawStrip(c) {
     const title = c.name.startsWith('proj:') ? c.name.slice(5) : c.name;
     text(title, STAGE.x + 6, 20, { size: 15, weight: 800 });
@@ -186,6 +249,7 @@ export function createTuner(env) {
       ctx.fillRect(STAGE.x + 4, STAGE.y + 31 + i * 16, w, 16);
       text(line, STAGE.x + 10, STAGE.y + 43 + i * 16, { color: i ? DIM : INK, size: 11, weight: 600 });
     });
+    drawFlight(STAGE.y + 35 + lines.length * 16);
   }
 
   function drawPanel() {

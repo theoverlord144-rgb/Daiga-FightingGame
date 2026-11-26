@@ -94,3 +94,9 @@ hand's settings. If 13 / 24 was you, set it again on that page. If it wasn't, te
 - The preview hits, blocks and whiffs as it should; more pushback, hitstun, launch or air-hit numbers change what
   it measures in the right direction.
 - Recoil pushes the attacker back on hit, on block and when launching, and not on a whiff.
+
+## Nov 25: "Appears" and the projectile timeline (owner approved)
+
+- **Appears** (FLIGHT column of a projectile): *in front of him* or *under the opponent*. It rewrites the spawn line of every move that releases that projectile, so it is the same edit as writing `{ name, under: "opponent" }` by hand. A spawn with its own distance keeps it. Back to default = in front of him.
+- **Projectile timeline** (top left of the fight, for any move that releases a projectile): the move as a bar (its own hitting frames red), each projectile from the frame it appears (gold = its hitbox is out), a white mark on the frame it reached the dummy, a blue line where the loop is now. Under it, the same in words. For a move whose own hit only lands on someone its projectile has caught (Tide), an orange line says so when the projectile does not arrive on an earlier frame.
+- Display and file editing only: nothing under `src/core` changed. Tests: three new ones in `tests/move-editor.test.js`. The strip itself was not checked on screen by the AI: no script pictures the editor.

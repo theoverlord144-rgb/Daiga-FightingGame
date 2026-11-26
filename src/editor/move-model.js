@@ -48,6 +48,7 @@ export const FIELDS = [
   { key: 'lifetime', group: 'flight', label: 'Lasts', unit: 'f', min: 1, max: 600, fallback: 600, only: 'projectile', help: 'Frames before it vanishes on its own.' },
   { key: 'spawn.0', group: 'flight', label: 'Starts forward', unit: 'px', min: -400, max: 600, step: 2, big: 10, only: 'projectile' },
   { key: 'spawn.1', group: 'flight', label: 'Starts up', unit: 'px', min: -400, max: 600, step: 2, big: 10, only: 'projectile', help: 'Height above the fighter (or above the floor, for one that erupts from the ground).' },
+  { key: 'place', group: 'flight', label: 'Appears', type: 'choice', choices: ['front', 'opponent'], names: { front: 'in front', opponent: 'at opponent' }, only: 'projectile', help: 'Where it comes out. In front of him: "Starts forward" px from the fighter. Under the opponent: wherever the opponent stands on that frame, at any distance. Written into every move that releases it.' },
 ];
 export const fieldOf = (key) => FIELDS.find((f) => f.key === key);
 
@@ -61,7 +62,7 @@ export const fieldOf = (key) => FIELDS.find((f) => f.key === key);
 export function settingsTarget(raw, system, name) {
   if (name.startsWith(PROJ)) {
     const p = raw.projectiles?.[name.slice(PROJ.length)];
-    return p ? { kind: 'projectile', write: p, layers: [p] } : { kind: 'none', write: null, layers: [], why: 'No such projectile.' };
+    return p ? { kind: 'projectile', write: p, layers: [p], name: name.slice(PROJ.length) } : { kind: 'none', write: null, layers: [], why: 'No such projectile.' };
   }
   const uni = universalContent(system);
   if (uni.states[name]) return { kind: 'none', write: null, layers: [], why: 'This is a state, not an attack: it has no hit settings.' };
@@ -79,6 +80,16 @@ export function settingsTarget(raw, system, name) {
 export const applies = (field, target) => target.kind !== 'none' && (!field.only || (field.only === 'projectile') === (target.kind === 'projectile'));
 
 const find = (layers, key) => layers.find((l) => l && key in l);
+
+/** Every timeline event in the file (moves and their EX versions) that releases this projectile. */
+function spawnEvents(raw, name) {
+  const out = [];
+  for (const m of raw.moves || []) for (const list of [m.timeline, m.ex && typeof m.ex === 'object' ? m.ex.timeline : null]) {
+    for (const e of list || []) if (e.spawn !== undefined && (typeof e.spawn === 'string' ? e.spawn : e.spawn?.name) === name) out.push(e);
+  }
+  return out;
+}
+const underOpponent = (e) => typeof e.spawn === 'object' && e.spawn.under === 'opponent';
 
 /** The launch as written, resolved the way the game does: { type: 'none' | 'soft' | 'hard', own: {x, y} | null }. */
 function launchOf(layers) {
@@ -113,6 +124,12 @@ export function readSetting(raw, target, key, rules) {
   if (key.startsWith('spawn.')) {
     const at = find(layers, 'spawn');
     return { value: at?.spawn?.[Number(key.slice(6))] ?? 0, own: !!at };
+  }
+  if (key === 'place') {
+    // Where it appears is written in the moves that release it, not in the projectile.
+    const evs = spawnEvents(raw, target.name);
+    const under = evs.length > 0 && evs.every(underOpponent);
+    return { value: under ? 'opponent' : 'front', own: under, off: !evs.length };
   }
   const at = find(layers, key);
   if (at && at[key] !== null && at[key] !== undefined) return { value: field.type === 'bool' ? !!at[key] : at[key], own: at === write };
@@ -228,6 +245,19 @@ export function writeSetting(raw, target, key, value, rules) {
     w.spawn = now;
     return;
   }
+  if (key === 'place') {
+    if (!field.choices.includes(value)) throw new Error(`${field.label} must be one of ${field.choices.join(', ')}`);
+    const evs = spawnEvents(raw, target.name);
+    if (!evs.length) throw new Error('No move in this file releases this projectile.');
+    for (const e of evs) {
+      if (value === 'opponent') e.spawn = typeof e.spawn === 'string' ? { name: e.spawn, under: 'opponent' } : { ...e.spawn, under: 'opponent' };
+      else if (typeof e.spawn === 'object') {
+        const { under, ...rest } = e.spawn; // eslint-disable-line no-unused-vars
+        e.spawn = Object.keys(rest).length === 1 ? rest.name : rest; // only the name left: the plain way to write it
+      }
+    }
+    return;
+  }
   if (field.type === 'bool') {
     const below = target.layers.slice(1).some((x) => x && x[key] !== undefined && x[key] !== null);
     if (!!value !== !!field.fallback || below) w[key] = !!value; else delete w[key]; // the usual value is not written
@@ -254,6 +284,7 @@ export function resetSetting(raw, target, key) {
   }
   if (key.startsWith('airHit.')) { delete w.airHit; return; }
   if (key.startsWith('spawn.')) { const now = clone(w.spawn ?? [0, 0]); now[Number(key.slice(6))] = 0; w.spawn = now; return; }
+  if (key === 'place') { if (spawnEvents(raw, target.name).length) writeSetting(raw, target, key, 'front'); return; }
   delete w[key];
 }
 

@@ -214,16 +214,20 @@ test('Lunar Halo: 5 startup, 6 active, invincible frames 1-8; he rises with it a
   assert.ok(lastD - lastA <= -15 && lastD - lastA >= -24, `on block: ${lastD - lastA}`);
 });
 
-test('Tide: the wave is released on frame 16 and hauled back on frame 25; a hooked opponent is pulled in close on the haul, still in hitstun', () => {
-  assert.deepEqual(RAW.moves.find((m) => m.id === 'tideL').sprite.holds, [5, 5, 5, 4, 5, 6, 7, 6]);
+test('Tide: the wave is released on frame 16 and hauled back when its travel ends (frame 32 / 34 / 38); a hooked opponent is pulled in close on the haul, still in hitstun', () => {
+  // (The owner, Nov 25 2026: his slower waves stay, and the haul waits for them. It was frame 25 for all three.)
+  const HAUL = { L: 32, M: 34, H: 38 };
+  assert.deepEqual(RAW.moves.find((m) => m.id === 'tideL').sprite.holds, [5, 5, 5, 8, 8, 6, 7, 6]);
+  for (const b of 'LMH') assert.equal(HAUL[b], 16 + A.projectiles['tideWave' + b].lifetime, b + ': the haul comes as the wave has run its length');
   const reach = (b) => { const p = A.projectiles[`tideWave${b}`]; return (p.spawn[0] + p.speed * p.lifetime) / 100; };
   assert.ok(reach('L') < reach('M') && reach('M') < reach('H'));
   for (const [b, gap] of [['L', 200], ['M', 300], ['H', 420]]) {
     const st = A.states['tide' + b];
-    assert.deepEqual([st.frames[15].sprite.index, st.frames[14].sprite.index, st.frames[24].sprite.index, st.frames[23].sprite.index], [3, 2, 5, 4], 'drawing 4 on frame 16, drawing 6 on frame 25');
-    assert.equal(st.duration, 43);
+    const h = HAUL[b] - 1;
+    assert.deepEqual([st.frames[15].sprite.index, st.frames[14].sprite.index, st.frames[h].sprite.index, st.frames[h - 1].sprite.index], [3, 2, 5, 4], 'drawing 4 on frame 16, drawing 6 on the haul');
+    assert.equal(st.duration, HAUL[b] + 18);
     const g = setup(gap);
-    const cues = run(g, '2 1 4+' + b + ' 5*30');
+    const cues = run(g, '2 1 4+' + b + ' 5*' + (HAUL[b] + 5));
     const spawn = cues.find((c) => c.type === 'spawn');
     assert.equal(spawn.name, 'tideWave' + b);
     assert.equal(spawn.at + 1, 16, 'the wave leaves on drawing 4');
@@ -232,7 +236,7 @@ test('Tide: the wave is released on frame 16 and hauled back on frame 25; a hook
     const gapAtTouch = g.players[1].x - g.players[0].x;
     const haul = hitOf(cues, 'tide' + b);
     assert.ok(haul, `${b}: the haul lands on the hooked opponent`);
-    assert.equal(haul.at + 1, 25, 'the pull starts on drawing 6');
+    assert.equal(haul.at + 1, HAUL[b], 'the pull starts on drawing 6');
     assert.ok(haul.i > touch.i, 'the wave first, then the haul');
     const end = cues.find((c) => c.type === 'projectileEnd');
     assert.equal(end.i, haul.i, 'the wave is drawn back on the same frame');

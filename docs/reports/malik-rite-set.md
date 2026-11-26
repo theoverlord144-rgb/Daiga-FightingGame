@@ -50,7 +50,7 @@ invincible, that would be the pair to worry about.
 
 ## Open
 
-- Two tests of the box editor's preview fail (`tests/move-editor.test.js`: "preview: a projectile entry..." and
+- (Fixed later the same night with the owner's yes: `spawned` in `src/editor/preview.js`.) Two tests of the box editor's preview failed (`tests/move-editor.test.js`: "preview: a projectile entry..." and
   "hit settings: ..."): `src/editor/preview.js` reads a spawn as a plain name and j.R's is now
   `{ name, under }`. Until that is fixed the editor does not show Judgment's hit settings under j.R.
 - A cost of 2 charges for 4R needs a rule in `src/core` (a move spends exactly one today). Longer recovery is data.

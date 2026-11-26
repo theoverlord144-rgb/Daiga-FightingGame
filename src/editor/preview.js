@@ -12,12 +12,15 @@ const LIMIT = 420; // a loop never runs longer than this
 const AIR_HEIGHT = 110; // where an air move starts, and where an "in the air" dummy hangs
 export const DUMMIES = ['standing', 'crouching', 'in the air', 'blocking'];
 
+/** A spawn event's projectile name: the event's value is the name, or { name, x, y, under } (placed elsewhere). */
+const spawned = (e) => (typeof e.value === 'string' ? e.value : e.value?.name);
+
 /** The state that does `entry`: the move itself, or for "proj:<name>" the move that releases that projectile. */
 export function stateFor(def, entry) {
   if (!entry.startsWith('proj:')) return def.states[entry] ? entry : null;
   const id = entry.slice(5);
   for (const [name, st] of Object.entries(def.states)) {
-    if ((st.onEnter || []).some((evs) => (evs || []).some((e) => e.type === 'spawn' && e.value === id))) return name;
+    if ((st.onEnter || []).some((evs) => (evs || []).some((e) => e.type === 'spawn' && spawned(e) === id))) return name;
   }
   return null;
 }
@@ -30,8 +33,57 @@ export function stateFor(def, entry) {
 export function hitOwner(def, entry) {
   const st = def.states[entry];
   if (!st?.move || st.move.remote || st.frames.some((fr) => fr.hit.length || fr.throw.length)) return entry;
-  for (const evs of st.onEnter || []) for (const e of evs || []) if (e.type === 'spawn') return `proj:${e.value}`;
+  for (const evs of st.onEnter || []) for (const e of evs || []) if (e.type === 'spawn') return `proj:${spawned(e)}`;
   return entry;
+}
+
+/**
+ * The timeline of a move that releases projectiles (null when it releases none). Frames are counted from 0 here.
+ *   { state, frames, ownHit: [first, last] | null, remote, spawns: [{ at, name, lifetime, speed, start, under, live }] }
+ * at = the move's frame it appears on; live = [[from, to]] the ages its hitbox is out; speed in px a frame;
+ * start = px in front of the fighter (null when it appears under the opponent).
+ */
+export function flightOf(def, entry) {
+  const state = stateFor(def, entry);
+  const st = state ? def.states[state] : null;
+  if (!st) return null;
+  const hits = st.frames.map((fr, i) => (fr.hit.length ? i : -1)).filter((i) => i >= 0);
+  const spawns = [];
+  (st.onEnter || []).forEach((evs, at) => {
+    for (const e of evs || []) {
+      if (e.type !== 'spawn') continue;
+      const name = spawned(e);
+      const d = def.projectiles[name];
+      if (!d) continue;
+      const placed = typeof e.value === 'object' && e.value ? e.value : {};
+      const under = placed.under === 'opponent';
+      const last = d.lifetime - 1;
+      spawns.push({
+        at, name, lifetime: d.lifetime, speed: (d.speed ?? 0) / UNIT, under,
+        start: under ? null : Math.round((placed.x ?? d.spawn[0]) / UNIT),
+        live: d.noHit ? [] : d.phases ? d.phases.map((ph) => [ph.from, Math.min(ph.to, last)]) : [[0, last]],
+      });
+    }
+  });
+  if (!spawns.length) return null;
+  return { state, frames: st.frames.length, ownHit: hits.length ? [hits[0], hits.at(-1)] : null, remote: !!st.move?.remote, spawns };
+}
+
+/** The first frame (counted from 0, like stats.frame and flightOf) that `by` touched the dummy in a loop's stats. */
+export const firstTouch = (stats, by) => stats?.touches?.find((q) => q.by === by)?.frame ?? null;
+
+/**
+ * What is wrong with the timing, in words, or null. A move whose own hit only lands on an opponent its projectile
+ * has caught (a haul): the projectile has to arrive on an earlier frame (the fighter's hit is resolved first).
+ */
+export function flightWarning(flight, stats) {
+  if (!flight?.remote || !flight.ownHit || !stats) return null;
+  const own = flight.ownHit[1];
+  for (const sp of flight.spawns) {
+    const arrive = firstTouch(stats, sp.name);
+    if (arrive !== null && arrive >= own) return `${sp.name} reaches the dummy on frame ${arrive + 1}, not before the move's own hit (frame ${own + 1}): from here that hit finds nobody.`;
+  }
+  return null;
 }
 
 /** A sensible distance (px between the fighters) for a move: close enough that its first hitbox reaches. */
@@ -71,7 +123,7 @@ export function createPreview({ def, dummyDef, makeWorld, entry, dummy = 'standi
     freeFor = 0;
     done = false;
     x0 = [a.x, d.x];
-    out.stats = { result: 'whiff', frame: -1, pushed: 0, recoiled: 0, peak: 0, landed: null, attackerFree: -1, dummyFree: -1, advantage: null, launched: false, damage: 0 };
+    out.stats = { result: 'whiff', frame: -1, pushed: 0, recoiled: 0, peak: 0, landed: null, attackerFree: -1, dummyFree: -1, advantage: null, launched: false, damage: 0, touches: [], now: 0 };
   }
   const free = (i) => !!world.chars[i].states[out.game.players[i].state].free && out.game.players[i].y === 0;
 
@@ -104,6 +156,8 @@ export function createPreview({ def, dummyDef, makeWorld, entry, dummy = 'standi
     const dWas = d.x;
     step(g, [0, hold], world);
     t++;
+    s.now = t - WARM; // the move's frame just played, counted like stats.frame
+    for (const q of g.cues) if (q.p === 0 && ['hit', 'counter', 'witness', 'block'].includes(q.type)) s.touches.push({ frame: s.now, by: q.move });
     if (untouched) {
       const c = g.cues.find((q) => q.p === 0 && ['hit', 'counter', 'witness', 'block', 'absorb', 'armor'].includes(q.type));
       if (c) {
