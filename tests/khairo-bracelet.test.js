@@ -91,7 +91,8 @@ test('No hit while it rises or hangs; it hits on the way down, and its shockwave
     for (let n = 0; n <= hang; n++) assert.equal(under.ages[n].hit, false, `${b}: nothing at age ${n}`);
     assert.ok(under.ages.slice(hang + 1, landed + 1).some((r) => r.hit), `${b}: the drop hits`);
     // Standing beside the landing spot, out of the ring's way: only the shockwave reaches, on the landing frame.
-    const beside = thrown(b, { gap: ahead + 60 });
+    // (70 px beside it: Malik's chest box reaches 45 px in front of him since the owner's Nov 26 hurtbox, 4 more than before.)
+    const beside = thrown(b, { gap: ahead + 70 });
     for (let n = 0; n < landed; n++) assert.equal(beside.ages[n].hit, false, `${b}: the ring misses at age ${n}`);
     assert.equal(beside.ages[landed].hit, true, `${b}: the shockwave on landing`);
     // Its boxes are its phases: none before the drop, the wide low one for exactly 3 frames from the landing.

@@ -106,8 +106,10 @@ test('Rising Moon: released on frame 14 from the lantern (drawing 4); the orb fl
   }
   // Who reaches what: L only close, M to mid range, H far.
   const lands = (b, gap) => !!hitOf(run(setup(gap), `2 3 6+${b} 5*90`), 'moonOrb' + b);
-  assert.deepEqual([lands('L', 150), lands('L', 300)], [true, false]);
-  assert.deepEqual([lands('M', 300), lands('M', 500)], [true, false]);
+  // (The misses are measured from 400 and 600, not 300 and 500: since Nov 26 his standing hurtbox has the owner's box for the
+  // lantern arm, which reaches 126 px in front of him, 88 more than his body did.)
+  assert.deepEqual([lands('L', 150), lands('L', 400)], [true, false]);
+  assert.deepEqual([lands('M', 300), lands('M', 600)], [true, false]);
   assert.ok(lands('H', 500));
 });
 

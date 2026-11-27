@@ -96,7 +96,7 @@ test('The brief\'s route: 2L > 2M > 5H > 5S > super jump > j.M > j.H > j.S come 
   const W = loadWorld(KH, MALIK);
   const g = createGame(W);
   const a = g.players[0], d = g.players[1];
-  a.x = -px(60); d.x = px(60);
+  a.x = -px(50); d.x = px(50); // 100 apart (was 120): the owner moved the front of Malik's standing hurtbox back on Nov 26
   const mash = (tok, n) => Array.from({ length: n }, () => `${tok} ${tok[0]}`).join(' ');
   const seq = `5*5 2+L 2*3 ${mash('2+M', 6)} ${mash('5+H', 8)} ${mash('5+S', 6)} 5*24 8*16 ${mash('5+M', 4)} ${mash('5+H', 6)} ${mash('5+S', 10)} 5*90`;
   const order = [];

@@ -522,7 +522,9 @@ test('Avner: the rebound move (j.2H, his air down sheet) is a diving overhead; o
   const old = play(260, [RAW.DOWN, RAW.DOWN | RAW.LEFT, RAW.LEFT | RAW.M]);
   assert.ok(old.seen.includes('j.M') && !old.seen.includes('j.2H'), 'j.214M does nothing special');
   // A hit: the rebound, then free in the air.
-  const hit = play(260, RAW.DOWN | RAW.H);
+  // (270, not 260: the owner's Nov 26 hurtbox for Malik has a chest box that reaches 4 px further forward, and from 260 the kick now
+  // lands on its very first active frame, one frame before the first trail is called.)
+  const hit = play(270, RAW.DOWN | RAW.H);
   assert.ok(hit.cues.includes('hit:j.2H'));
   assert.ok(hit.cues.includes('fx:j2HTrail'), 'the trail was called for');
   assert.deepEqual(from(hit, 'j.2H', 3), ['j.2H', 'j2HRebound', 'fall']);
@@ -665,7 +667,9 @@ test('Avner: Moon Phase Assault (j.236 + L, M or H) is a three-part air rekka: h
   assert.equal(count(early, 'hit:waxingL'), 1, 'cancelled after the first hit');
   // On block the parts chain as well; only Part 1's own three hits if he stops.
   const guard = (i) => (i > 32 ? RAW.RIGHT : 0);
-  const blocked = play({ again: late, p2: guard });
+  // (gap 90, not the default 120, for the two blocked runs: Malik's standing hurtbox was moved back by the owner on Nov 26, and
+  // from 120 the pushback of the first blocked hits now carries him out of reach of the rest.)
+  const blocked = play({ again: late, p2: guard, gap: 90 });
   assert.deepEqual([count(blocked, 'block:waxingL'), count(blocked, 'block:halfMoonL'), count(blocked, 'block:halfMoonEndL'), count(blocked, 'block:fullPhaseL')], [3, 3, 1, 1], 'the whole thing on block');
   // Not on whiff; not after the window (Part 1's active frames) has closed; and only once per jump.
   const whiff = play({ gap: 600, again: (st, n, fr) => st.startsWith('waxing') && fr >= 9 });
@@ -689,7 +693,7 @@ test('Avner: Moon Phase Assault (j.236 + L, M or H) is a three-part air rekka: h
   assert.ok(ex.g.players[0].meter < bar, 'it cost meter');
   assert.ok(ex.ys.moonSmash, 'the smash came out');
   // Blocked, it stops after Part 1; whiffed too; and with no meter the plain version comes out.
-  const exBlocked = play({ first: RAW.L | RAW.S, meter: bar, p2: guard });
+  const exBlocked = play({ first: RAW.L | RAW.S, meter: bar, p2: guard, gap: 90 });
   assert.equal(count(exBlocked, 'block:waxingL_ex'), 3);
   assert.deepEqual(exBlocked.seen.slice(exBlocked.seen.indexOf('waxingL_ex'), exBlocked.seen.indexOf('waxingL_ex') + 2), ['waxingL_ex', 'fall']);
   const exWhiff = play({ gap: 600, first: RAW.L | RAW.S, meter: bar });
