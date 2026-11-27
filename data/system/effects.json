@@ -71,14 +71,14 @@
       "landB": { "opacity": 0.7, "sprite": { "image": "land-b.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 170, "originX": 192, "originY": 170, "scale": 0.32 }, "hold": 3, "fade": true },
       "airDashBurst": { "opacity": 0.8, "sprite": { "image": "airdash-burst.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 417, "originX": 211, "originY": 206, "scale": 0.4 }, "hold": 3, "additive": true },
       "airDashTrail": { "opacity": 0.85, "sprite": { "image": "airdash-trail.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 210, "originX": 384, "originY": 98, "scale": 0.4 }, "hold": 3, "alpha": 0.7, "additive": true },
-      "airDashPuff": { "opacity": 0.7, "sprite": { "image": "airdash-puff.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 252, "originX": 150, "originY": 127, "scale": 0.4 }, "hold": 3, "additive": true }
+      "airDashPuff": { "opacity": 0.7, "sprite": { "image": "airdash-puff.png", "columns": 4, "rows": 1, "count": 4, "frameW": 384, "frameH": 252, "originX": 150, "originY": 127, "scale": 0.4 }, "hold": 3, "additive": true }, "smokeLand": { "opacity": 0.6, "sprite": { "image": "smoke-land.png", "columns": 10, "rows": 1, "count": 10, "frameW": 320, "frameH": 120, "originX": 160, "originY": 100, "scale": 0.8 }, "hold": 2 }, "smokeDash": { "opacity": 0.6, "sprite": { "image": "smoke-dash.png", "columns": 10, "rows": 1, "count": 10, "frameW": 300, "frameH": 120, "originX": 250, "originY": 100, "scale": 0.8 }, "hold": 2 }
     },
     "enter": {
-      "dashF": { "play": "dashDustF", "at": "feet" },
-      "backdash": { "play": "dashDustB", "at": "feet" },
+      "dashF": { "play": "dashDustF", "at": "feet", "also": "smokeDash" },
+      "backdash": { "play": "dashDustB", "at": "feet", "also": { "play": "smokeDash", "back": true } },
       "airdashF": { "play": "airDashBurst", "at": "body", "trail": "airDashTrail" },
       "airdashB": { "play": "airDashBurst", "at": "body", "trail": "airDashTrail", "back": true },
-      "land": { "byDrift": [ "landF", "landN", "landB" ], "at": "feet" },
+      "land": { "byDrift": [ "landF", "landN", "landB" ], "at": "feet", "also": "smokeLand" },
       "knockdown": { "play": "landN", "at": "feet" },
       "knockdownSoft": { "play": "landN", "at": "feet" },
       "slide": { "play": "dashDustB", "at": "feet" },
@@ -89,6 +89,12 @@
       "airdashF": { "play": "airDashPuff", "at": "body" },
       "airdashB": { "play": "airDashPuff", "at": "body", "back": true }
     }
+  },
+  "health": {
+    "notes": "The health bar's frame (drawing only; owner's art data/UI/Game_Healthbar.png, cropped to data/effects/health-frame.png). Numbers are in the frame image's pixels: window = the six corners of the empty space the bar fills (left tip, top left, top right, right tip, bottom right, bottom left). scale = size on the 960-wide screen, top = the frame's top edge from the top of the screen, gap = from the middle of the screen to the bar's inner tip, below = from the bar's lower edge down to the name. Remove this block and the plain bar is drawn as before.",
+    "frame": { "image": "health-frame.png", "w": 1020, "h": 216 },
+    "window": [[80, 117], [107, 84], [915, 84], [940, 117], [919, 145], [101, 145]],
+    "scale": 0.395, "top": 4, "gap": 62, "below": 34
   },
   "devotion": {
     "notes": "The Devotion meter (the super meter's look; drawing only). Pieces in data/effects/, cut from data/UniversalEffects/Game_DevotionMeter*.png. Numbers are in the frame image's pixels; the HUD draws it at 'scale', 'margin' from the screen edge and 'bottom' above the screen bottom, mirrored for Player 2. 'windows' are the bar slots [x, y, w, h], one per bar; the last one ends in a point ('tip': straight until the first x, pointed at the second). A full bar uses fillFull / glowFull. 'glowBox' places a glow around its slot, in slot widths and heights. The glow pulses between pulse.min and 1 every pulse.period frames.",

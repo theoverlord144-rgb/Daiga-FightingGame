@@ -16,19 +16,35 @@ export function createHud(ctx, W, image = () => null) {
   const popups = []; // { p, text, color, frame }: words shown for a moment (visual only)
   const POPUP_LIFE = 50;
   const POPUP = { perfect: ['PERFECT', '#ffffff'], counter: ['COUNTER', '#ff9a4a'], witness: ['WITNESS', '#c9a2ff'] };
-  const BAR_W = 360;
-  const BAR_Y = 22;
-  const BAR_H = 18;
+  // The bar's place and size. With a drawn frame (effects.json `health`) they come from the frame's window: the bar
+  // fills that window, clipped to its six corners, and the frame is drawn over it.
+  const HB = FX.health ?? null;
+  const HBX = HB ? HB.window.map((c) => c[0]) : null, HBY = HB ? HB.window.map((c) => c[1]) : null;
+  const HB0 = HB ? [Math.min(...HBX), Math.min(...HBY)] : null; // the window's left and top, in the frame's pixels
+  const BAR_W = HB ? Math.round((Math.max(...HBX) - HB0[0]) * HB.scale) : 360;
+  const BAR_H = HB ? Math.round((Math.max(...HBY) - HB0[1]) * HB.scale) : 18;
+  const BAR_Y = HB ? HB.top + Math.round(HB0[1] * HB.scale) : 22;
+  const BAR_GAP = HB ? HB.gap : 44;
+  const UNDER = HB ? HB.below - 5 : 13; // from the bar's lower edge to the row of round markers; the name is 5 lower
 
   function healthBar(p, def, game) {
     const left = p.id === 0;
     const max = def.stats.health;
-    const x = left ? W / 2 - 44 - BAR_W : W / 2 + 44;
+    const x = left ? W / 2 - BAR_GAP - BAR_W : W / 2 + BAR_GAP;
     // Trail: holds while the player is being comboed, then drains toward the real health.
     if (trail[p.id] === null || trail[p.id] < p.health) trail[p.id] = p.health;
     else if (!p.combo) trail[p.id] = Math.max(p.health, trail[p.id] - Math.ceil(max / 220));
-    ctx.fillStyle = '#0b0910';
-    ctx.fillRect(x - 3, BAR_Y - 3, BAR_W + 6, BAR_H + 6);
+    ctx.save();
+    if (HB) {
+      ctx.beginPath();
+      HB.window.forEach(([vx, vy], i) => ctx[i ? 'lineTo' : 'moveTo'](x + (vx - HB0[0]) * HB.scale, BAR_Y + (vy - HB0[1]) * HB.scale));
+      ctx.closePath();
+      ctx.clip();
+      ctx.beginPath();
+    } else {
+      ctx.fillStyle = '#0b0910';
+      ctx.fillRect(x - 3, BAR_Y - 3, BAR_W + 6, BAR_H + 6);
+    }
     ctx.fillStyle = '#2a2535';
     ctx.fillRect(x, BAR_Y, BAR_W, BAR_H);
     const fill = (v) => Math.round((BAR_W * v) / max);
@@ -51,11 +67,14 @@ export function createHud(ctx, W, image = () => null) {
       ctx.fillStyle = '#7a0f22';
       for (let sx = dx + 3; sx < dx + dw; sx += 6) ctx.fillRect(sx, BAR_Y, 2, BAR_H);
     }
+    ctx.restore();
+    const frame = HB ? image(HB.frame.image) : null;
+    if (frame) ctx.drawImage(frame, x - HB0[0] * HB.scale, BAR_Y - HB0[1] * HB.scale, HB.frame.w * HB.scale, HB.frame.h * HB.scale);
     // Name.
     ctx.font = `700 15px ${FONT}`;
     ctx.fillStyle = '#f2ecdf';
     ctx.textAlign = left ? 'left' : 'right';
-    ctx.fillText(def.name.toUpperCase(), left ? x : x + BAR_W, BAR_Y + BAR_H + 18);
+    ctx.fillText(def.name.toUpperCase(), left ? x : x + BAR_W, BAR_Y + BAR_H + UNDER + 5);
     return x;
   }
 
@@ -66,7 +85,7 @@ export function createHud(ctx, W, image = () => null) {
     const n = world.match.roundsToWin;
     for (let i = 0; i < n; i++) {
       const cx = left ? x + BAR_W - 8 - i * 18 : x + 8 + i * 18;
-      const cy = BAR_Y + BAR_H + 13;
+      const cy = BAR_Y + BAR_H + UNDER;
       ctx.beginPath();
       ctx.arc(cx, cy, 6, 0, Math.PI * 2);
       ctx.fillStyle = i < m.wins[p.id] ? '#ffd36b' : '#2a2535';
@@ -293,7 +312,7 @@ export function createHud(ctx, W, image = () => null) {
       // A diamond: bright while Absolve is still unused this round, hollow once it is spent; dimmer while there
       // is not enough Devotion to pay for it.
       const cx = left ? W / 2 - 44 - 132 : W / 2 + 44 + 132;
-      const cy = BAR_Y + BAR_H + 13;
+      const cy = BAR_Y + BAR_H + UNDER;
       const ready = p.burst >= B.gaugeMax;
       const canPay = p.meter >= (world.sys?.absolve.cost ?? 0);
       ctx.save();

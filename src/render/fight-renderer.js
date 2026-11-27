@@ -770,6 +770,8 @@ export function createFightRenderer(ctx, W, H) {
       drawSheetFrame(def, sized(L.sprite), index, x, y, pr.facing);
       ctx.restore();
     };
+    layer(A.haze, t); // an optional soft smoke behind all of it (painted, not light)
+    layer(A.glow, t); // an optional back glow, behind everything else of the burst (its sprite says `additive` to be drawn as light)
     layer(A.smoke, t - (A.smoke?.delay ?? 0), (A.smoke?.rise ?? 0) * Math.max(0, t - (A.smoke?.delay ?? 0)) * k);
     layer(A.fire, t);
     const [ring, done] = heldFrame(A.burst, t, false);
@@ -1280,6 +1282,11 @@ export function createFightRenderer(ctx, W, H) {
     if (rule.byDrift) { const d = Math.abs(dx) > M.driftMax * UNIT ? 0 : Math.sign(dx) * p.facing; name = rule.byDrift[d > 0 ? 0 : d < 0 ? 2 : 1]; }
     const s = M.sheets[name];
     if (s) effects.push({ motion: s, x: p.x, y: rule.at === 'body' ? y : 0, facing, age: 0, life: s.sprite.count * s.hold });
+    // `also`: more sheets played with the rule, listed first so they sit under its own (a name, { play, back }, or a list).
+    for (const a of [].concat(rule.also ?? [])) {
+      const extra = M.sheets[typeof a === 'string' ? a : a.play];
+      if (extra) effects.splice(s ? effects.length - 1 : effects.length, 0, { motion: extra, x: p.x, y: rule.at === 'body' ? y : 0, facing: a.back ? -facing : facing, age: 0, life: extra.sprite.count * extra.hold });
+    }
     const t = M.sheets[rule.trail];
     if (t) effects.push({ motion: t, follow: p.id, state: p.state, dy: y - p.y, x: p.x, y, facing, age: 0, life: 1 });
   }
