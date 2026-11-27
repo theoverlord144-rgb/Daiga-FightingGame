@@ -213,14 +213,14 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
   const c = loadChar('data/characters/malik/malik.toska.json');
   assert.equal(c.id, 'malik');
   assert.equal(c.name, 'Malik');
-  // (Redrawn the night of Nov 25: the idle is twelve drawings, each walk eight; the lengths are as before.)
-  for (const [name, n, count] of [['idle', 60, 12], ['walkF', 48, 8], ['walkB', 48, 8]]) {
+  // (The redesign, Nov 26: the idle is eight drawings, each walk eight; the lengths are as before.)
+  for (const [name, n, count] of [['idle', 60, 8], ['walkF', 48, 8], ['walkB', 48, 8]]) {
     assert.equal(c.states[name].duration, n, name);
     assert.ok(c.states[name].frames.every((f) => f.sprite && f.sprite.sheet === name), `${name}: every frame is drawn`);
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], Array.from({ length: count }, (_, i) => i), `${name}: all ${count} drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_4', 'rite_5', 'rite_j', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'stomp', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_4', 'rite_5', 'rite_j', 'spearH', 'spearL', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'stomp', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -237,8 +237,8 @@ test('Malik: Standing Light comes out on frame 4, is drawn with the arm out whil
   assert.ok(st.frames.every((f) => f.sprite && f.sprite.sheet === '5L'));
   const active = st.frames.map((f, i) => (f.hit.length ? i : -1)).filter((i) => i >= 0);
   assert.deepEqual(active, [3, 4]);
-  for (const i of active) assert.equal(st.frames[i].sprite.index, 2, 'hits on drawing 3');
-  assert.equal(st.frames.at(-1).sprite.index, 5, 'ends standing upright (six drawings, redrawn the night of Nov 25)');
+  for (const i of active) assert.equal(st.frames[i].sprite.index, 3, 'hits on drawing 4 (the spirit fist at full reach; the redesign, Nov 26)');
+  assert.equal(st.frames.at(-1).sprite.index, 7, 'ends in his stance (eight drawings)');
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
   game.players[0].x = -px(35);
@@ -249,18 +249,18 @@ test('Malik: Standing Light comes out on frame 4, is drawn with the arm out whil
   assert.equal(game.players[1].state, 'hitStand');
 });
 
-// (Redrawn the night of Nov 25: 5M's sheet is five of the nine drawn, the two punches on 2 and 3 of it; 5H is eight, all used.)
-test('Malik: Standing Medium hits twice, on drawings 2 and 3; Standing Heavy hits on drawing 5 of its eight', () => {
+// (The redesign, Nov 26: 5M is eight drawings, its two hits on 3 and 4 (the spirit fist going out, then at full reach); 5H is eight, all used.)
+test('Malik: Standing Medium hits twice, on drawings 3 and 4; Standing Heavy hits on drawing 4 of its eight', () => {
   const c = loadChar('data/characters/malik/malik.toska.json');
   const m = c.states['5M'];
   const hits = m.frames.map((f, i) => (f.hit.length ? [i, f.hitId, f.sprite.index] : null)).filter(Boolean);
   assert.deepEqual([...new Set(hits.map((h) => h[1]))].length, 2, 'two separate hits');
-  assert.deepEqual([...new Set(hits.filter((h) => h[1] === hits[0][1]).map((h) => h[2]))], [1], 'first hit on drawing 2');
-  assert.deepEqual([...new Set(hits.filter((h) => h[1] !== hits[0][1]).map((h) => h[2]))], [2], 'second hit on drawing 3');
+  assert.deepEqual([...new Set(hits.filter((h) => h[1] === hits[0][1]).map((h) => h[2]))], [2], 'first hit on drawing 3');
+  assert.deepEqual([...new Set(hits.filter((h) => h[1] !== hits[0][1]).map((h) => h[2]))], [3], 'second hit on drawing 4');
   const h = c.states['5H'];
   assert.equal(c.sheets['5H'].count, 8, 'eight drawn, all used');
   assert.equal(new Set(h.frames.map((f) => f.sprite.index)).size, 8);
-  assert.deepEqual([...new Set(h.frames.filter((f) => f.hit.length).map((f) => f.sprite.index))], [4], 'hits on drawing 5');
+  assert.deepEqual([...new Set(h.frames.filter((f) => f.hit.length).map((f) => f.sprite.index))], [3], 'hits on drawing 4');
   assert.deepEqual(h.frames.map((f, i) => (f.hit.length ? i : -1)).filter((i) => i >= 0), [8, 9, 10]);
 
   // In a match: both hits of 5M connect as one two-hit combo; 5L chains into 5M into 5H.
@@ -280,8 +280,8 @@ test('Malik: Standing Medium hits twice, on drawings 2 and 3; Standing Heavy hit
 test('Malik: every attack hits on the drawing its sheet shows the strike on, and every sheet exists', () => {
   const c = loadChar('data/characters/malik/malik.toska.json');
   // move -> the drawing (counted from 1) its hit lands on
-  // (The crouching and air attacks were redrawn the night of Nov 25: the sweep now lands on its drawing 4, the air knee on 3.)
-  const want = { '2L': 3, '2M': 4, '2H': 4, 'j.L': 3, 'j.M': 3, 'j.H': 3, backHeavy: 4, spiritOrb: 4, stomp: 3 };
+  // (The redesign, Nov 26: every redrawn attack lands on its drawing 4, the spirit limb at full reach. 2L and the stomp keep their earlier sheets.)
+  const want = { '2L': 3, '2M': 4, '2H': 4, 'j.L': 4, 'j.M': 4, 'j.H': 4, backHeavy: 4, spiritOrb: 4, stomp: 3 };
   for (const [move, drawing] of Object.entries(want)) {
     const st = c.states[move];
     const hits = st.frames.filter((fr) => fr.hit.length);
@@ -291,11 +291,8 @@ test('Malik: every attack hits on the drawing its sheet shows the strike on, and
   }
   for (const sheet of Object.values(c.sheets)) assert.ok(fs.existsSync('data/characters/malik/' + sheet.image), sheet.image);
   for (const name of ['crouch', 'jumpSquat', 'jump', 'fall', 'land']) assert.ok(c.states[name].frames.every((fr) => fr.sprite), name + ' has art');
-  // Air Heavy: the spirit hand's drawing 4 (of 7) is on screen on the frame the hit comes out.
-  const jh = c.states['j.H'];
-  assert.deepEqual(jh.layers, [{ effect: 'spiritHand' }]);
-  const first = jh.move.startup - 1;
-  assert.equal(Math.floor((first * c.effects.spiritHand.sprite.count) / jh.duration) + 1, 4);
+  // Air Heavy: the spirit fists are painted into his drawings now, so no separate hand is laid over him.
+  assert.ok(!c.states['j.H'].layers?.length, 'no layered effect');
 });
 
 test('Malik: Spirit Orb (236L) hits with the spin, then the orb leaves his hand and hits from range', () => {
@@ -333,7 +330,7 @@ test('Malik: Standing Heavy chains into Back Heavy on hit', () => {
 
 test('Malik: every dash has its own art, covering the whole state', () => {
   const c = loadChar('data/characters/malik/malik.toska.json');
-  const drawings = { dashF: 5, dashStop: 2, backdash: 4, backdashStop: 2, airdashF: 4, airdashB: 4, airdashEnd: 1 }; // redrawn the night of Nov 25: one drawing after an air dash now
+  const drawings = { dashF: 6, dashStop: 2, backdash: 5, backdashStop: 3, airdashF: 5, airdashB: 6, airdashEnd: 3 }; // the redesign, Nov 26
   for (const [name, count] of Object.entries(drawings)) {
     const st = c.states[name];
     assert.ok(st.frames.every((fr) => fr.sprite), name + ' has art on every frame');
@@ -436,7 +433,7 @@ test('Malik: Resilience Pillar (623 + L / M / H): heavier is slower and hits har
   assert.ok(air, 'launched');
 });
 
-test('Malik: Spirit Orb M and H start slower and throw a slower orb; H slides back first', () => {
+test('Malik: Spirit Orb M and H start slower; M is a spout that stands where it rises, H a slower orb; H slides back first', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const c = world.chars[0];
   const run = (text) => {
@@ -456,11 +453,12 @@ test('Malik: Spirit Orb M and H start slower and throw a slower orb; H slides ba
   };
   const L = run('2 3 6+L 5*50'), M = run('2 3 6+M 5*50'), H = run('2 3 6+H 5*50');
   assert.ok(L.spawn < M.spawn && M.spawn < H.spawn, 'L throws first, H last');
-  assert.ok(L.speed > M.speed && M.speed > H.speed && H.speed > 0, 'L orb fastest, H slowest');
+  assert.ok(L.speed > H.speed && H.speed > 0, 'the L orb is faster than the H orb');
+  assert.equal(M.speed, 0, 'the M spout does not travel (the redesign, Nov 26: he strikes the floor and it rises in front of him)');
   assert.equal(L.back, 0); assert.equal(M.back, 0);
   assert.ok(H.back >= px(20) && H.back <= px(45), 'H slides back a little');
-  // Each button has its own sheet (redrawn the night of Nov 25): the strike is on drawing 4 (L), 5 (M) or 8 (H) and the orb leaves on the next.
-  for (const [id, drawing] of [['spiritOrb', 4], ['spiritOrbM', 5], ['spiritOrbH', 8]]) {
+  // Each button has its own sheet (the redesign, Nov 26): the strike is on drawing 4 (L), 5 (M) or 5 (H) and the orb or spout appears on the next.
+  for (const [id, drawing] of [['spiritOrb', 4], ['spiritOrbM', 5], ['spiritOrbH', 5]]) {
     const hits = c.states[id].frames.filter((fr) => fr.hit.length);
     assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [drawing], id);
     const spawnAt = c.states[id].onEnter.findIndex((evs) => evs?.some((e) => e.spawn !== undefined));
@@ -485,13 +483,13 @@ test('Malik: S is a launcher: the hit is on the high kick (drawing 4), it sends 
   assert.ok(hp - game.players[1].health > 700);
 });
 
-test('Malik: Air S hits on drawing 4 (the heel coming down), Standing S on drawing 4, and the air normals chain into Air S', () => {
+test('Malik: Air S hits on drawing 7 (the orb thrown down), Standing S on drawing 4, and the air normals chain into Air S', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const c = world.chars[0];
   const hitDrawings = (id) => [...new Set(c.states[id].frames.filter((fr) => fr.hit.length).map((fr) => fr.sprite.index + 1))];
-  assert.deepEqual(hitDrawings('j.S'), [4]);
+  assert.deepEqual(hitDrawings('j.S'), [7]);
   assert.deepEqual(hitDrawings('5S'), [4]);
-  assert.equal(c.states['j.S'].frames.at(-1).sprite.index + 1, 5); // five of the seven redrawn: 6 and 7 are a landing, and the move has no landing state
+  assert.equal(c.states['j.S'].frames.at(-1).sprite.index + 1, 10); // ten of the twelve drawn (the redesign, Nov 26): 8 and 9 are drawn landed, and the move has no landing state
   assert.ok(fs.existsSync('data/characters/malik/sheets/jS.png'));
   const file = JSON.parse(fs.readFileSync('data/characters/malik/malik.toska.json', 'utf8'));
   for (const from of ['j.L', 'j.M', 'j.H']) assert.ok(file.gatlings[from].includes('j.S'), from + ' chains into j.S');

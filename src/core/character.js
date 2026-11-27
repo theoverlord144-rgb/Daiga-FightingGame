@@ -109,7 +109,7 @@ function ref(v, stats, kind) {
   return kind === 'frames' ? Math.round(v) : px(v);
 }
 
-const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity', 'catch'];
+const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity', 'catch', 'hold'];
 const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile', 'warp', 'detonate'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
@@ -219,6 +219,11 @@ function compileMoveData(m, ctx = {}) {
     perJump: m.perJump ?? null, // a group name: one move of that group per jump (counted until the fighter lands)
     noZoneMark: !!m.noZoneMark, // true: this hit never adds a zone's mark (the hit that spends the mark)
     hitsAirborne: m.hitsAirborne !== false, // false: the hit passes through a fighter who is in the air
+    hitsGrounded: m.hitsGrounded !== false, // false: the hit passes through a fighter who is on the ground
+    // grab: a hit that takes hold instead of knocking away (an air command grab): it cannot be blocked, passes through a
+    // fighter in blockstun, and puts the one it touches in `grabbed`, kept where the grabber's frames say (`hold`).
+    grab: !!m.grab,
+    noFallOut: !!m.noFallOut, // this hit keeps its stun and reaction past the juggle limit (the hits of a grab)
     // Drawing only (the core never reads these): a chain drawn from the hand to the hit, and an effect on hit.
     chain: m.chain ?? null,
     hitFx: m.hitFx ?? null,
@@ -278,8 +283,16 @@ function compileProjectiles(src, meter) {
         scale: p.burst.scale ? { var: p.burst.scale.var, per: Math.max(1, p.burst.scale.per ?? 1), sizePct: Math.round((p.burst.scale.sizePct ?? 0) * 100), damagePct: Math.round((p.burst.scale.damagePct ?? 0) * 100) } : null,
         resonate: p.burst.resonate ? { gap: px(p.burst.resonate.gap ?? 0), pct: Math.round((p.burst.resonate.pct ?? 100) * 100) } : null,
       } : null,
+      // lob: a thrown projectile (src/core/lob.js): it rises for `rise` frames along an arc to `apex` px above the floor,
+      // over the spot `land` px ahead of its owner (kept `margin` px inside the stage walls), hangs `hang` frames (with
+      // `track` it slides toward the opponent, at most that many px a frame), drops for `drop` frames, stays `impact`
+      // frames on the floor, then is `back` frames on its way home before it is gone (a move with `oneAtATime` is
+      // locked until then). Its hitboxes are its `phases`, by age; give it `persist` so a hit does not remove it.
+      lob: p.lob ? { rise: Math.max(1, p.lob.rise | 0), hang: Math.max(0, p.lob.hang | 0), drop: Math.max(1, p.lob.drop | 0), land: px(p.lob.land ?? 0), apex: px(p.lob.apex ?? 0),
+        track: px(p.lob.track ?? 0), impact: Math.max(0, p.lob.impact | 0), back: Math.max(0, p.lob.back | 0), margin: px(p.lob.margin ?? 40) } : null,
+      lobArt: p.lobArt ?? null, // drawing only: a lobbed projectile's layers
       endFx: p.endFx ?? null, // drawing only: { why: effect name } played where it ended (why = hit, block, ground, edge...)
-      lifetime: p.lifetime ?? 600,
+      lifetime: p.lifetime ?? (p.lob ? Math.max(1, p.lob.rise | 0) + Math.max(0, p.lob.hang | 0) + Math.max(1, p.lob.drop | 0) + Math.max(0, p.lob.impact | 0) + Math.max(0, p.lob.back | 0) : 600),
       move: compileMoveData(p, { kind: 'special', meter }),
       sprite: p.sprite ?? null, // drawing only
       anim: p.anim ?? null,
@@ -411,7 +424,7 @@ function compileState(name, src, stats, extra = {}) {
   sets.forEach((s, i) => (s.order = i));
   sets.sort((a, b) => a.at - b.at || a.order - b.order);
 
-  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: 0, gravity: stance === 'air', catch: null };
+  const cur = { sprite: null, hit: [], hitProps: null, hurt: [], push: [], throw: [], throwHurt: [], invuln: { strike: false, throw: false }, armor: 0, counter: 0, gravity: stance === 'air', catch: null, hold: null };
   const frames = [];
   const onEnter = [];
   const reverts = []; // { at, fields }
@@ -452,6 +465,7 @@ function compileState(name, src, stats, extra = {}) {
       counter: cur.counter === true ? 1 : cur.counter | 0,
       gravity: !!cur.gravity,
       catch: cur.catch || null,
+      hold: cur.hold || null,
     });
     onEnter.push(shots);
   }
@@ -487,6 +501,7 @@ function compileState(name, src, stats, extra = {}) {
     onBack: src.onBack ?? null, // holding back leaves to this state (a pressed follow-up wins)
     layers: src.layers ?? null, // drawing only: effects drawn in step with the state's sprite
     landTo: src.landTo ?? 'land',
+    gravityPct: src.gravityPct ?? 10000, // this state's share of gravity (15000 = falls half as fast again)
     duration,
     move: extra.move ?? null,
     frames,
@@ -515,6 +530,9 @@ function normalizeEvent(e, stats, sheetName) {
       if ('airReaction' in v) out[k].airReaction = full.airReaction;
       if ('knockdown' in v || 'crumple' in v || 'hitReaction' in v) { out[k].hitReaction = full.hitReaction; out[k].knockdown = full.knockdown; out[k].crumple = full.crumple; }
     }
+    // hold: where the fighter this one has grabbed is kept, from this fighter's feet: { x (forward), y (up) } px, and
+    // rot (degrees, drawing only). null lets go. See holdVictims in combat.js.
+    else if (k === 'hold') out[k] = v ? { x: px(v.x ?? 0), y: px(v.y ?? 0), rot: v.rot ?? 0 } : null;
     else if (k === 'toOpponent') out[k] = { to: ref(v.to ?? 70, stats, 'px'), frames: Math.max(1, v.frames ?? 6) };
     // spawn: a projectile name, or { name, x, y, under: "opponent" } to put this one somewhere else than its own spawn point.
     else if (k === 'spawn' && typeof v === 'object') out[k] = { name: v.name, x: v.x === undefined ? null : px(v.x), y: v.y === undefined ? null : px(v.y), under: v.under ?? null, fuse: v.fuse ?? null, collapse: v.collapse ?? null };

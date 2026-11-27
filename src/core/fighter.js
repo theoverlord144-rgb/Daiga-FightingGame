@@ -131,6 +131,7 @@ export function createFighter(def, side, x) {
     slideV: 0, // pending slide: the speed the fighter skids at once they reach the ground (signed, units; 0 = none)
     slideT: 0, // and for how many frames
     throwBy: -1, // while being thrown: the attacker's id
+    heldBy: -1, // while in `grabbed`: the id of the fighter holding them
     throwMove: '',
     throwWait: 0, // frames this throw waits after the hold before it hits (the move's throwHit)
     throwHeld: 0, // how long the hold of the throw this fighter is in lasts (the break window is its first frames)
@@ -303,6 +304,12 @@ export function fireOnEnter(game, p, def, world) {
         const x = v.under === 'opponent' ? game.players[1 - p.id].x : p.x + p.facing * (v.x ?? d.spawn[0]);
         const pr = { owner: p.id, kind: name, x, y: (d.fromGround ? 0 : p.y) + (v.y ?? d.spawn[1]), facing: p.facing, age: 0 };
         if (d.persist) pr.hit = 0; // 1 once it has hit: it stays, and hits no more
+        if (d.lob) {
+          // A lobbed projectile: where it left the hand, and the spot it will come down on (inside the stage).
+          const edge = world.battle.halfWidthUnits - d.lob.margin;
+          pr.x0 = pr.x; pr.y0 = pr.y;
+          pr.tx = Math.max(-edge, Math.min(edge, p.x + p.facing * d.lob.land));
+        }
         if (d.ownerOnHit) pr.from = p.state; // the move that made it
         if (d.burst) {
           // A burst projectile (a vacuum): fuse = the age its collapse starts, boom = the age it bursts.
@@ -856,6 +863,7 @@ export function move(game, p, def, world) {
   p.y += p.vy;
   if (fr.gravity) {
     let g = def.stats.gravity;
+    if (st.gravityPct !== 10000) g = pct(g, st.gravityPct);
     const share = world.combo.hit.gravity[p.state]; // spin and tumble fall at their own share of gravity
     if (share) g = pct(g, share);
     // Juggle gravity: the longer the combo, the faster a juggled fighter falls.

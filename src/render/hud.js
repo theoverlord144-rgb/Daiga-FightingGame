@@ -6,6 +6,7 @@
 import FX from '../../data/system/effects.json';
 import CAMERA from '../../data/system/camera.json';
 import { markLive } from './mark-live.js';
+import { lobAges } from '../core/lob.js';
 
 const FONT = 'system-ui, sans-serif';
 
@@ -260,6 +261,28 @@ export function createHud(ctx, W, image = () => null) {
       ctx.restore();
       start += 26;
     }
+    return start;
+  }
+
+  /** A fighter with a lobbed projectile (Khai'ro's bracelet): a small ring after the other icons. Bright while the
+   *  bracelet is on his wrist; while it is out the ring is dark and fills back round as it comes home. */
+  function lobIcon(p, def, H, start, game) {
+    const kinds = Object.entries(def.projectiles || {}).filter(([, d]) => d.lob);
+    if (!kinds.length) return;
+    const D = FX.devotion;
+    const y = H - D.bottom + D.plate.gap + (D.plate.h * D.plate.scale) / 2;
+    const cx = p.id === 0 ? start + 9 : W - start - 9;
+    const out = game?.projectiles.find((pr) => pr.owner === p.id && def.projectiles[pr.kind]?.lob);
+    const total = out ? lobAges(def.projectiles[out.kind].lob)[4] : 1;
+    const done = out ? Math.min(1, out.age / total) : 1;
+    ctx.save();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#3a2a12';
+    ctx.beginPath(); ctx.arc(cx, y, 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = out ? '#E08A2C' : '#FFC861';
+    if (!out) { ctx.shadowColor = '#FFC861'; ctx.shadowBlur = 6; }
+    ctx.beginPath(); ctx.arc(cx, y, 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * done); ctx.stroke();
+    ctx.restore();
   }
 
   /** The Absolve icon (by the health bar), the Devotion meter (bottom corners), the Rite gauge, the mechanic. */
@@ -291,7 +314,7 @@ export function createHud(ctx, W, image = () => null) {
     }
     const top = devotion(p, def, world, H, game.frame);
     riteGauge(p, def, H);
-    markIcons(p, def, H, varPips(p, def, H));
+    lobIcon(p, def, H, markIcons(p, def, H, varPips(p, def, H)), game);
     // The mechanic: its gauge as a percentage, its counters as pips.
     const mech = def.mechanic;
     let line = '';

@@ -7,3 +7,5 @@ Thumbs.db
 .netlify/
 .env
 .env.*
+# cleaned copies of raw art, made by scripts/*-clean.mjs for the cutting tool (not shipped)
+data/characters/*/clean/

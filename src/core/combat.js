@@ -7,6 +7,7 @@ import { perPercent } from './devotion.js';
 import { soften } from './systems.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
 import { pct, sign } from './fixed.js';
+import { lobRise, lobDrop, lobAges } from './lob.js';
 
 // ---------- Boxes ----------
 
@@ -160,7 +161,7 @@ function guardDir(d, a) {
 function blockKind(d, ddef, a, move, world) {
   const st = ddef.states[d.state];
   const blocking = st.free || st.name.startsWith('block') || st.blocking;
-  if (!blocking || move.guard === 'unblockable') return null;
+  if (!blocking || move.guard === 'unblockable' || move.grab) return null;
   const g = guardDir(d, a);
   const back = g === 1 || g === 4 || g === 7;
   if (!back) return null;
@@ -185,6 +186,35 @@ export function hitKind(world, d, fd) {
   const mv = world.chars[d.id].states[d.state].move;
   if (mv && (mv.kind === 'special' || mv.kind === 'super') && d.frame >= mv.startup - 1 && d.contact === CONTACT.NONE && d.hitsDone === 0) return 'witness';
   return 'counter';
+}
+
+/** While held, a fighter's stun never runs out by itself: the grabber's frames end the hold. */
+const HELD_STUN = 30;
+
+/** Can a grab take this fighter? Anyone in the air who is not blocking: in hitstun too, which is what lets it end a combo. */
+function grabbable(ddef, d) {
+  const st = ddef.states[d.state];
+  if (st.stance !== 'air' || st.throwVictim || d.state === 'grabbed') return false;
+  return !(st.name.startsWith('block') || st.blocking);
+}
+
+/**
+ * A grabbed fighter is kept where the grabber's current frame says (`hold`: x forward and y up from the grabber's
+ * feet), never below the floor or outside the stage. A frame with no `hold` lets go: the fighter is left in the air
+ * where they are, to be hit by that frame's own strike or to fall. Runs after movement and before the hits.
+ */
+export function holdVictims(game, world) {
+  for (const d of game.players) {
+    if (d.state !== 'grabbed') { if (d.heldBy !== -1) d.heldBy = -1; continue; }
+    const a = game.players[d.heldBy];
+    const hold = a ? frameOf(world.chars[a.id], a.state, a.frame).hold : null;
+    if (!hold) { d.heldBy = -1; d.stun = Math.min(d.stun, 1); continue; }
+    const half = world.battle.halfWidthUnits;
+    d.x = Math.max(-half, Math.min(half, a.x + a.facing * hold.x));
+    d.y = Math.max(0, a.y + hold.y);
+    d.vx = d.vy = 0;
+    d.stun = HELD_STUN;
+  }
 }
 
 /**
@@ -236,8 +266,11 @@ function resolveStrike(game, world, a, d, rect, snap) {
   } else if (block) {
     out.kind = 'block';
   } else {
-    out.kind = hitKind(world, d, fd);
+    out.kind = move.grab ? 'hit' : hitKind(world, d, fd);
   }
+  // Held by the attacker (their frame has a `hold`): the hit hurts but does not knock the fighter out of the hold.
+  out.held = !move.grab && !!fa.hold && d.state === 'grabbed' && d.heldBy === a.id;
+  if (move.grab) { out.kind = 'hit'; out.block = null; }
   return out;
 }
 
@@ -482,7 +515,7 @@ function applyStrike(game, world, r) {
   // the fighter falls out: the hit does its damage but gives no untechable time, no launch and no bounce.
   if (floored) { combo.otg++; combo.juggle += H.otg.juggleCost; }
   else if (airborne || soft || skid) combo.juggle += zoneHit?.juggleCost ?? move.juggleCost ?? (skid ? H.slide.juggleCost : soft && !airborne ? C.softLaunchCost : C.juggleCost);
-  const out = (airborne || soft || skid || floored) && combo.juggle > C.juggleLimit;
+  const out = !move.grab && !move.noFallOut && !r.held && (airborne || soft || skid || floored) && combo.juggle > C.juggleLimit;
   if (out) react = 'normal'; // past the juggle limit every special reaction is gone
   const whirl = whirlOf(react);
   const R = H[react];
@@ -505,7 +538,15 @@ function applyStrike(game, world, r) {
   // The knockdown this hit asks for when the fighter reaches the ground (0 = the system's rule).
   d.kd = react === 'hardKD' ? 1 : react === 'softKD' ? 2 : react === 'slide' ? ((zoneHit?.slideEnds ?? move.slideEnds ?? (R.endsHard ? 'hardKD' : 'softKD')) === 'hardKD' ? 1 : 2) : 0;
   d.slideV = d.slideT = 0;
-  if (inAir) {
+  if (move.grab) {
+    // Taken hold of: kept in `grabbed` wherever the grabber's frames put them, until those frames let go.
+    enterState(d, ddef, 'grabbed');
+    d.heldBy = a.id;
+    d.vx = d.vy = 0;
+    d.kd = 0;
+  } else if (r.held) {
+    // Hit while held: the damage and the freeze only.
+  } else if (inAir) {
     const v = (floored ? H.otg.lift : null)
       || (launches ? (hard || launchType === 'soft' ? move.launch : null) ?? (!hard && whirl ? R.launch : null) ?? (hard ? C.hardLaunchUnits : C.softLaunchUnits) : null)
       || (out ? null : zoneHit?.airHit ?? move.airHit ?? (whirl ? R.launch : react === 'slide' ? R.slam : null)) || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
@@ -528,8 +569,10 @@ function applyStrike(game, world, r) {
   } else {
     enterState(d, ddef, ddef.states[d.state].stance === 'crouch' ? 'hitCrouch' : 'hitStand');
   }
-  d.stun = d.state === 'crumple' ? world.sys.vow.crumpleStun : d.state === 'slide' ? skidFor : stun;
-  if (move.pull) {
+  d.stun = move.grab || r.held ? HELD_STUN : d.state === 'crumple' ? world.sys.vow.crumpleStun : d.state === 'slide' ? skidFor : stun;
+  if (move.grab || r.held) {
+    // no pushback: the hold places them
+  } else if (move.pull) {
     // Pull-in: the defender slides toward the attacker (instead of pushback), ending pull.to in front of them.
     if (inAir) d.vx = 0;
     const gap = Math.abs(d.x - a.x) - move.pull.to;
@@ -555,6 +598,7 @@ function applyStrike(game, world, r) {
 export function moveProjectiles(game, world) {
   for (const pr of game.projectiles) {
     const pd = world.chars[pr.owner].projectiles[pr.kind];
+    if (pd.lob) { moveLob(game, world, pr, pd.lob); continue; }
     pr.x += pd.speed * pr.facing;
     pr.y += pd.speedY;
     pr.age++;
@@ -570,6 +614,24 @@ export function moveProjectiles(game, world) {
     if ((dx < 0 ? -dx : dx) > range || (dy < 0 ? -dy : dy) > P.reachY) continue;
     d.x += dx > 0 ? Math.min(P.speed, dx) : Math.max(-P.speed, dx);
   }
+}
+
+/** A lobbed projectile's frame: up its arc, hanging (tracking the opponent if it can), down, then lying where it fell. */
+function moveLob(game, world, pr, L) {
+  pr.age++;
+  const [rise, hang, landed] = lobAges(L);
+  if (pr.age <= rise) [pr.x, pr.y] = lobRise(L, pr.x0, pr.y0, pr.tx, pr.age);
+  else if (pr.age <= hang) {
+    pr.y = L.apex;
+    if (L.track > 0) {
+      const edge = world.battle.halfWidthUnits - L.margin;
+      const dx = Math.max(-edge, Math.min(edge, game.players[1 - pr.owner].x)) - pr.x;
+      pr.x += dx > L.track ? L.track : dx < -L.track ? -L.track : dx;
+    }
+  } else if (pr.age <= landed) {
+    pr.y = lobDrop(L, pr.age - hang);
+    if (pr.age === landed) game.cues.push({ type: 'lobLand', p: pr.owner, name: pr.kind, x: pr.x, y: 0, facing: pr.facing });
+  } else pr.y = 0;
 }
 
 /** A burst projectile's box, scaled about its own centre by the burst's size (percent out of 10000). */
@@ -792,6 +854,10 @@ export function resolveHits(game, world, frozen) {
     if (floorBlocks(world, mv, q)) return null; // lying in a hard knockdown: OTG moves only
     if (mv?.hitRequires && !meets(p, mv.hitRequires)) return null; // e.g. only a branded opponent can be hit
     if (mv && mv.hitsAirborne === false && isAirborne(world.chars[q.id], q)) return null; // a ground-only hit
+    if (mv && mv.hitsGrounded === false && !isAirborne(world.chars[q.id], q)) return null; // an air-only hit
+    if (mv?.grab && !grabbable(world.chars[q.id], q)) return null;
+    // The hits of a grab only ever touch the fighter being held.
+    if (fp.hold && !(q.state === 'grabbed' && q.heldBy === p.id)) return null;
     // A remote hit lands wherever the opponent is: the "contact" is their body (their position if they have no hurtbox).
     if (mv?.remote) return fq.hurt[0] ? worldBox(q, fq.hurt[0]) : [q.x, q.y, q.x, q.y];
     return contact(p, fp.hit, q, fq.hurt);

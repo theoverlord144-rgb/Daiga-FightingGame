@@ -11,6 +11,7 @@ import FX from '../../data/system/effects.json';
 import { POLISH } from './polish.js';
 import { FXO } from './fx-opacity.js'; // FXOPACITY
 import { markLive, markFrame } from './mark-live.js'; // MARK
+import { lobRise, lobAges } from '../core/lob.js'; // LOB (a pure path function, read here to draw the trail)
 import CAMERA from '../../data/system/camera.json';
 
 // Game-ready sheets only (data/characters/<id>/sheets/): raw art dropped elsewhere in a character's folder is not
@@ -775,8 +776,96 @@ export function createFightRenderer(ctx, W, H) {
     if (!done) { const [x, y] = toScreen(pr.x, pr.y); drawSheetFrame(def, sized(d.sprite), Math.min(d.sprite.count - 1, before + A.collapse.length + ring), x, y, pr.facing); }
   }
 
+  // ---------- LOB: a lobbed projectile (Khai'ro's bracelet), drawn from its age alone ----------
+  // `lobArt` in its data. Each sheet layer names one of the character's effects (`fx`), so its size, colour, place and
+  // opacity are that effect's (the editor's FX page) and the strengths share them; the layer adds only its timing.
+  //   ring (the projectile itself, turning), trail (code-drawn, the rise only), flash (at the hand), lock (on the ring
+  //   while it hangs), marker (on the floor under where it will land, until it lands), slam (around the ring as it
+  //   drops, then on the floor), dust (on the floor), streak (flying back to the owner's wrist), shake (px).
+  // Order, back to front: marker, dust | fighters | trail, ring, lock, slam, flash, streak.
+  const lobEnds = []; // landings still playing out (slam and dust outlast the projectile): { A, def, x, facing, age }
+  /** One drawing of a layer's effect. angle: extra rotation in radians, on top of the effect's own. */
+  const lobDraw = (def, name, index, x, y, facing, angle = 0) => {
+    const E = def.effects?.[name];
+    if (!E?.sprite) return;
+    const [sx, sy] = toScreen(x, y);
+    ctx.save();
+    fxOp = opOf(E, def, name, 'burst'); // FXOPACITY
+    drawSheetFrame(def, E.sprite, Math.min((E.sprite.count ?? 1) - 1, index), sx, sy, facing, angle + (facing * (E.sprite.angle ?? 0) * Math.PI) / 180);
+    ctx.restore();
+  };
+  /** A layer at `age`: played once through `holds` (its own, or its effect's), or intro then loop with `looped`. */
+  const lobLayer = (def, L, age, x, y, facing, looped = false) => {
+    if (!L?.fx || age < 0) return;
+    if (looped) {
+      const intro = L.intro ?? [], n = intro.reduce((a, b) => a + b, 0);
+      lobDraw(def, L.fx, age < n ? heldFrame(intro, age, false)[0] : intro.length + heldFrame(L.loop, age - n, true)[0], x, y, facing);
+      return;
+    }
+    const holds = L.holds ?? def.effects?.[L.fx]?.holds;
+    if (!holds) return;
+    const [index, over] = heldFrame(holds, age, false);
+    if (!over) lobDraw(def, L.fx, index, x, y, facing);
+  };
+  /** behind = the layers under the fighters (marker, dust); otherwise the ones over them. */
+  function drawLobs(game, world, behind) {
+    for (const e of lobEnds) {
+      if (behind) lobLayer(e.def, e.A.dust, e.age, e.x, 0, e.facing);
+      else if (e.A.slam) { // the drawing after the falling loop on the impact frame, then the rest
+        const first = e.A.slam.loop.length, [k, over] = heldFrame([1, ...e.A.slam.after], e.age, false);
+        if (!over) lobDraw(e.def, e.A.slam.fx, first + k, e.x, 0, e.facing);
+      }
+    }
+    for (const pr of game.projectiles) {
+      const def = world.chars[pr.owner], d = def.projectiles[pr.kind], A = d?.lobArt, L = d?.lob;
+      if (!A || !L) continue;
+      const [rise, hang, landed, impactEnd] = lobAges(L);
+      if (behind) {
+        // The marker: under the landing spot from the throw until it lands (it follows a tracking bracelet).
+        if (pr.age < landed) lobLayer(def, A.marker, pr.age, pr.age <= rise ? pr.tx : pr.x, 0, 1, true);
+        continue;
+      }
+      // The trail: the path it has just flown, the rise only; it thins and fades behind the ring and is gone a moment after the apex.
+      if (A.trail && pr.age <= rise + A.trail.frames) {
+        const n = A.trail.frames;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+        for (let k = 0; k < n; k++) {
+          const a1 = pr.age - k, a0 = a1 - 1;
+          if (a0 < 0 || a1 > rise) continue;
+          const [x0, y0] = toScreen(...lobRise(L, pr.x0, pr.y0, pr.tx, a0)), [x1, y1] = toScreen(...lobRise(L, pr.x0, pr.y0, pr.tx, a1));
+          const f = 1 - k / n;
+          for (const [color, w] of [[A.trail.edge, A.trail.width], [A.trail.core, A.trail.width * 0.45]]) {
+            ctx.globalAlpha = 0.85 * f; ctx.strokeStyle = color; ctx.lineWidth = Math.max(0.6, w * f);
+            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+      // The bracelet itself: its turning drawings, leaning along the arc while it rises.
+      if (A.ring && pr.age < landed) {
+        const rising = pr.age <= rise && pr.age > 0;
+        const [px0, py0] = rising ? lobRise(L, pr.x0, pr.y0, pr.tx, pr.age - 1) : [pr.x, pr.y];
+        const lean = rising ? Math.atan2(-(pr.y - py0), (pr.x - px0) * pr.facing) * (A.ring.lean ?? 0.35) * pr.facing : 0;
+        lobDraw(def, A.ring.fx, heldFrame(A.ring.loop, pr.age, true)[0], pr.x, pr.y, pr.facing, lean);
+      }
+      if (pr.age > rise && pr.age <= hang) lobLayer(def, A.lock, pr.age - rise - 1, pr.x, pr.y, 1, true);
+      if (pr.age > hang && pr.age < landed && A.slam) lobDraw(def, A.slam.fx, heldFrame(A.slam.loop, pr.age - hang - 1, true)[0], pr.x, pr.y - (A.slam.lift ?? 0) * UNIT, 1);
+      lobLayer(def, A.flash, pr.age, pr.x0, pr.y0, pr.facing);
+      // The streak home: from where it fell to the owner's wrist, aimed along the way.
+      if (A.streak && pr.age >= impactEnd && L.back > 0) {
+        const o = game.players[pr.owner], w = A.streak.wrist ?? [0, 60];
+        const tx = o.x + o.facing * w[0] * UNIT, ty = o.y + w[1] * UNIT, f = Math.min(1, (pr.age - impactEnd + 1) / L.back);
+        const [ax, ay] = toScreen(pr.x, 0), [bx, by] = toScreen(tx, ty);
+        lobDraw(def, A.streak.fx, 1 + heldFrame(A.streak.loop, pr.age - impactEnd, true)[0], pr.x + (tx - pr.x) * f, ty * f, 1, Math.atan2(by - ay, bx - ax));
+      }
+    }
+  }
+
   /** Live projectiles (game state) and the ones that just ended (their impact frames, where they vanished). */
   function drawProjectiles(game, world) {
+    drawLobs(game, world, false); // LOB
     for (const pr of game.projectiles) {
       const def = world.chars[pr.owner];
       const d = def.projectiles[pr.kind];
@@ -1237,6 +1326,10 @@ export function createFightRenderer(ctx, W, H) {
         effects.push({ sheet: named, def: world.chars[c.p], x: c.x + c.facing * at[0] * UNIT, y: c.y + at[1] * UNIT, facing: c.facing, age: 0, life: lifeOf(named), owner: named.follow || named.behind ? c.p : undefined, off: at });
         ringOf(named, c.x + c.facing * at[0] * UNIT, c.y + at[1] * UNIT, undefined); // GROUNDFX: a move's effect can bring a ring
       }
+      if (c.type === 'lobLand') { // LOB: the slam and the dust play out where it fell, and the screen jolts
+        const A = world.chars[c.p]?.projectiles[c.name]?.lobArt;
+        if (A) { lobEnds.push({ A, def: world.chars[c.p], x: c.x, facing: c.facing, age: 0 }); jolt(A.shake ?? 0); }
+      }
       if (c.type === 'projectileEnd') {
         // The projectile's impact frames play where it hit or vanished.
         const d = world.chars[c.p]?.projectiles[c.name];
@@ -1334,6 +1427,7 @@ export function createFightRenderer(ctx, W, H) {
       if (p.state === e.state) { e.x = p.x; e.y = p.y + e.dy; e.life = e.age + 1; }
     }
     for (const e of effects) e.age++;
+    for (let i = lobEnds.length - 1; i >= 0; i--) if (++lobEnds[i].age > 40) lobEnds.splice(i, 1); // LOB
     for (let i = effects.length - 1; i >= 0; i--) if (effects[i].age > effects[i].life) effects.splice(i, 1);
   }
 
@@ -1466,6 +1560,7 @@ export function createFightRenderer(ctx, W, H) {
         drawSheetFrame(null, { ...m.sprite, scale: (W * 1.04) / m.sprite.frameW }, Math.min(m.sprite.count - 1, Math.floor((e.age - 1) / m.hold)), W / 2, toScreen(e.x, e.y)[1], e.facing);
         ctx.restore();
       }
+      drawLobs(game, world, true); // LOB: the marker and the dust lie on the floor, under the fighters
       // Draw the attacker last so the whole move (wind-up, hit, follow-through) sits in front of the other fighter:
       // 2 = hitbox out, 1 = anywhere in an attack, 0 = anything else. A tie keeps whoever was in front, so nothing flickers.
       const rank = (p) => {
@@ -1503,10 +1598,20 @@ export function createFightRenderer(ctx, W, H) {
         drawWhile(p, true);
         drawLayers(p, def, fr, true);
         for (const e of effects) if (e.sheet?.behind && e.owner === p.id) drawNamed(e, game);
-        const shown = ruleFrame(p, def, artFrame(p, def, timed(p, def, fr).fr), game, world);
+        let shown = ruleFrame(p, def, artFrame(p, def, timed(p, def, fr).fr), game, world);
+        // GRABBED (drawing only): a held fighter with no drawing of their own for it shows their air hit drawing, turned
+        // about the middle of their body by the angle the holder's frame gives (`hold.rot`, degrees).
+        let turn = 0;
+        if (p.state === 'grabbed') {
+          if (!shown.sprite && def.states.hitAir) shown = { ...shown, sprite: def.states.hitAir.frames[0].sprite };
+          const h = game.players[p.heldBy];
+          const hf = h && world ? world.chars[h.id].states[h.state].frames : null;
+          turn = hf ? (hf[Math.min(h.frame, hf.length - 1)].hold?.rot ?? 0) * h.facing : 0;
+        }
         const [nx, ny] = polishOffset(p, T);
         ctx.save();
         ctx.translate(nx, ny);
+        if (turn) { const [cx, cy] = toScreen(p.x, p.y + 80 * UNIT); ctx.translate(cx, cy); ctx.rotate((turn * Math.PI) / 180); ctx.translate(-cx, -cy); }
         if (!drawSprite(p, def, shown, pal, impact ? (POLISH.impactFrame.style === 'whiteOnBlack' ? '#ffffff' : '#000000') : null)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
         else if (!impact && p.state.endsWith('_ex') && def.sheets[p.state]?.image === def.sheets[p.state.slice(0, -3)]?.image) {
           // An EX move with no art of its own: the normal animation, brightened.
@@ -1556,7 +1661,10 @@ export function createFightRenderer(ctx, W, H) {
       drawProjectiles(game, world);
       if (opts.boxes) {
         for (const pr of game.projectiles) {
-          const [bx, by, bw, bh] = boxRect(pr, world.chars[pr.owner].projectiles[pr.kind].hitbox[0]);
+          const pd = world.chars[pr.owner].projectiles[pr.kind];
+          const live = pd.phases ? pd.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box[0] : pd.hitbox[0]; // a box with phases shows only while it is out
+          if (!live || pr.hit) continue;
+          const [bx, by, bw, bh] = boxRect(pr, live);
           ctx.strokeStyle = '#ff3b3b';
           ctx.lineWidth = 1;
           ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);

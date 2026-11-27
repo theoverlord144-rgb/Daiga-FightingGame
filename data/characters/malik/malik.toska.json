@@ -5,333 +5,4266 @@
   "character": {
     "id": "malik",
     "name": "Malik",
-    "stats": { "airHurt": [[-28, 5, 67, 165, "stomp"]], "standHurt": [[-39, -1, 80, 175]], "throwHold": 14, "crouchHurt": [[-32, 0, 64, 100], [5, 2, 62, 62]] }
+    "stats": {
+      "airHurt": [
+        [
+          -28,
+          5,
+          67,
+          165,
+          "stomp"
+        ]
+      ],
+      "standHurt": [[-75, -2, 89, 175], [5, 91, 40, 40]],
+      "throwHold": 14,
+      "crouchHurt": [[-32, 0, 64, 100], [5, 2, 62, 62], [25, 5, 54, 40]]
+    }
   },
-  "meter": { "archetype": "penitent" },
+  "meter": {
+    "archetype": "penitent"
+  },
   "mechanic": {
     "name": "Spirit Install",
     "vars": {
-      "install": { "start": 0, "min": 0, "max": 600, "perFrame": -1, "label": "Install", "display": "timer",
-        "aura": [{ "effect": "none", "behind": true, "swap": { "spirit5L": "guardianL", "spirit5M": "guardianM", "spirit5H": "guardianH" } }, { "effect": "installMotesBack", "behind": true }, { "effect": "installFlames" }, { "effect": "installMotesFront" }],
-        "art": { "idle": "installIdle", "walkF": "installWalkF", "dashF": "installDashF", "dashStop": "installDashStop", "jumpSquat": "installJumpSquat", "superJumpSquat": "installJumpSquat", "jump": "installJump", "superJump": "installJump", "airJump": "installJump", "fall": "installFall", "land": "installLand" } }
+      "install": {
+        "start": 0,
+        "min": 0,
+        "max": 600,
+        "perFrame": -1,
+        "label": "Install",
+        "display": "timer",
+        "aura": [
+          {
+            "effect": "none",
+            "behind": true,
+            "swap": {
+              "spirit5L": "guardianL",
+              "spirit5M": "guardianM",
+              "spirit5H": "guardianH"
+            }
+          },
+          {
+            "effect": "installMotesBack",
+            "behind": true
+          },
+          {
+            "effect": "installFlames"
+          },
+          {
+            "effect": "installMotesFront"
+          }
+        ],
+        "art": {
+          "idle": "installIdle",
+          "walkF": "installWalkF",
+          "dashF": "installDashF",
+          "dashStop": "installDashStop",
+          "jumpSquat": "installJumpSquat",
+          "superJumpSquat": "installJumpSquat",
+          "jump": "installJump",
+          "superJump": "installJump",
+          "airJump": "installJump",
+          "fall": "installFall",
+          "land": "installLand"
+        }
+      }
     }
   },
   "gatlings": {
-    "5L": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "2L": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "5M": ["spirit5L", "5L", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "2M": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2H", "backHeavy", "5S"],
-    "5H": ["spirit5L", "5L", "spirit5M", "5M", "2L", "2M", "2H", "backHeavy", "5S", "stomp"],
-    "backHeavy": ["2H", "5S"],
-    "j.L": ["j.L", "j.M", "j.H", "j.S"],
-    "j.M": ["j.L", "j.H", "j.S"],
-    "j.H": ["j.L", "j.M", "j.S"],
-    "spirit5L": ["spirit5L", "5L", "spirit5M", "5M", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "spirit5M": ["spirit5L", "5L", "spirit5H", "5H", "2L", "2M", "2H", "backHeavy", "5S"],
-    "spirit5H": ["spirit5L", "5L", "spirit5M", "5M", "2L", "2M", "2H", "backHeavy", "5S", "stomp"]
+    "5L": [
+      "spirit5L",
+      "5L",
+      "spirit5M",
+      "5M",
+      "spirit5H",
+      "5H",
+      "2L",
+      "2M",
+      "2H",
+      "backHeavy",
+      "5S"
+    ],
+    "2L": [
+      "spirit5L",
+      "5L",
+      "spirit5M",
+      "5M",
+      "spirit5H",
+      "5H",
+      "2L",
+      "2M",
+      "2H",
+      "backHeavy",
+      "5S"
+    ],
+    "5M": [
+      "spirit5L",
+      "5L",
+      "spirit5H",
+      "5H",
+      "2L",
+      "2M",
+      "2H",
+      "backHeavy",
+      "5S"
+    ],
+    "2M": [
+      "spirit5L",
+      "5L",
+      "spirit5M",
+      "5M",
+      "spirit5H",
+      "5H",
+      "2L",
+      "2H",
+      "backHeavy",
+      "5S"
+    ],
+    "5H": [
+      "spirit5L",
+      "5L",
+      "spirit5M",
+      "5M",
+      "2L",
+      "2M",
+      "2H",
+      "backHeavy",
+      "5S",
+      "stomp"
+    ],
+    "backHeavy": [
+      "2H",
+      "5S"
+    ],
+    "j.L": [
+      "j.L",
+      "j.M",
+      "j.H",
+      "j.S"
+    ],
+    "j.M": [
+      "j.L",
+      "j.H",
+      "j.S"
+    ],
+    "j.H": [
+      "j.L",
+      "j.M",
+      "j.S"
+    ],
+    "spirit5L": [
+      "spirit5L",
+      "5L",
+      "spirit5M",
+      "5M",
+      "spirit5H",
+      "5H",
+      "2L",
+      "2M",
+      "2H",
+      "backHeavy",
+      "5S"
+    ],
+    "spirit5M": [
+      "spirit5L",
+      "5L",
+      "spirit5H",
+      "5H",
+      "2L",
+      "2M",
+      "2H",
+      "backHeavy",
+      "5S"
+    ],
+    "spirit5H": [
+      "spirit5L",
+      "5L",
+      "spirit5M",
+      "5M",
+      "2L",
+      "2M",
+      "2H",
+      "backHeavy",
+      "5S",
+      "stomp"
+    ]
   },
   "states": {
-    "installIdle": {"duration": 60, "loop": true, "sprite": {"image": "sheets/install-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 277, "frameH": 574, "originX": 119, "originY": 572, "scale": 0.5, "holds": [10, 10, 10, 10, 10, 10]}},
-    "installWalkF": {"duration": 48, "loop": true, "sprite": {"image": "sheets/install-walk.png", "columns": 6, "rows": 1, "count": 6, "frameW": 331, "frameH": 577, "originX": 170, "originY": 575, "scale": 0.5, "holds": [8, 8, 8, 8, 8, 8]}},
-    "installDashF": {"duration": 12, "loop": true, "sprite": {"image": "sheets/install-dash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 391, "frameH": 570, "originX": 213, "originY": 401, "scale": 0.5, "holds": [3, 3, 3, 3]}},
-    "installDashStop": {"duration": 3, "sprite": {"image": "sheets/install-dash-stop.png", "columns": 2, "rows": 1, "count": 2, "frameW": 364, "frameH": 574, "originX": 182, "originY": 572, "scale": 0.5, "holds": [2, 1]}},
-    "installJumpSquat": {"duration": 3, "sprite": {"image": "sheets/install-jumpsquat.png", "columns": 1, "rows": 1, "count": 1, "frameW": 282, "frameH": 530, "originX": 137, "originY": 528, "scale": 0.5, "holds": [3]}},
-    "installJump": {"duration": 60, "sprite": {"image": "sheets/install-jump.png", "columns": 5, "rows": 1, "count": 5, "frameW": 278, "frameH": 583, "originX": 135, "originY": 466, "scale": 0.5, "holds": [5, 9, 9, 9, 28]}},
-    "installFall": {"duration": 60, "sprite": {"image": "sheets/install-fall.png", "columns": 2, "rows": 1, "count": 2, "frameW": 273, "frameH": 587, "originX": 135, "originY": 439, "scale": 0.5, "holds": [8, 52]}},
-    "installLand": {"duration": 3, "sprite": {"image": "sheets/install-land.png", "columns": 1, "rows": 1, "count": 1, "frameW": 278, "frameH": 575, "originX": 137, "originY": 573, "scale": 0.5, "holds": [3]}},
-    "vow_hold": { "duration": 36 }, "vow_absorb": { "duration": 14 },
-    "crouch": { "loopFrom": 3 }, "tumble": { "duration": 12 }, "airdashEnd": { "loopFrom": 8 },
-    "walkF": { "duration": 48 }, "walkB": { "duration": 48 },
-    "jump": { "loopFrom": 59 }, "superJump": { "loopFrom": 59 }, "airJump": { "loopFrom": 59 }, "throwFinish": { "duration": 30 }
+    "installIdle": {
+      "duration": 60,
+      "loop": true,
+      "sprite": {
+        "image": "sheets/install-idle.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 277,
+        "frameH": 574,
+        "originX": 119,
+        "originY": 572,
+        "scale": 0.5,
+        "holds": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ]
+      }
+    },
+    "installWalkF": {
+      "duration": 48,
+      "loop": true,
+      "sprite": {
+        "image": "sheets/install-walk.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 331,
+        "frameH": 577,
+        "originX": 170,
+        "originY": 575,
+        "scale": 0.5,
+        "holds": [
+          8,
+          8,
+          8,
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    "installDashF": {
+      "duration": 12,
+      "loop": true,
+      "sprite": {
+        "image": "sheets/install-dash.png",
+        "columns": 4,
+        "rows": 1,
+        "count": 4,
+        "frameW": 391,
+        "frameH": 570,
+        "originX": 213,
+        "originY": 401,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    "installDashStop": {
+      "duration": 3,
+      "sprite": {
+        "image": "sheets/install-dash-stop.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 364,
+        "frameH": 574,
+        "originX": 182,
+        "originY": 572,
+        "scale": 0.5,
+        "holds": [
+          2,
+          1
+        ]
+      }
+    },
+    "installJumpSquat": {
+      "duration": 3,
+      "sprite": {
+        "image": "sheets/install-jumpsquat.png",
+        "columns": 1,
+        "rows": 1,
+        "count": 1,
+        "frameW": 282,
+        "frameH": 530,
+        "originX": 137,
+        "originY": 528,
+        "scale": 0.5,
+        "holds": [
+          3
+        ]
+      }
+    },
+    "installJump": {
+      "duration": 60,
+      "sprite": {
+        "image": "sheets/install-jump.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 278,
+        "frameH": 583,
+        "originX": 135,
+        "originY": 466,
+        "scale": 0.5,
+        "holds": [
+          5,
+          9,
+          9,
+          9,
+          28
+        ]
+      }
+    },
+    "installFall": {
+      "duration": 60,
+      "sprite": {
+        "image": "sheets/install-fall.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 273,
+        "frameH": 587,
+        "originX": 135,
+        "originY": 439,
+        "scale": 0.5,
+        "holds": [
+          8,
+          52
+        ]
+      }
+    },
+    "installLand": {
+      "duration": 3,
+      "sprite": {
+        "image": "sheets/install-land.png",
+        "columns": 1,
+        "rows": 1,
+        "count": 1,
+        "frameW": 278,
+        "frameH": 575,
+        "originX": 137,
+        "originY": 573,
+        "scale": 0.5,
+        "holds": [
+          3
+        ]
+      }
+    },
+    "vow_hold": {
+      "duration": 36
+    },
+    "vow_absorb": {
+      "duration": 14
+    },
+    "crouch": {
+      "loopFrom": 3
+    },
+    "tumble": {
+      "duration": 12
+    },
+    "airdashEnd": {
+      "loopFrom": 8
+    },
+    "walkF": {
+      "duration": 48
+    },
+    "walkB": {
+      "duration": 48
+    },
+    "jump": {
+      "loopFrom": 59
+    },
+    "superJump": {
+      "loopFrom": 59
+    },
+    "airJump": {
+      "loopFrom": 59
+    },
+    "throwFinish": {
+      "duration": 30
+    }
   },
-  "rite": { "gauge": { "charges": 3, "rechargeFrames": 240, "unlimitedWhile": "install" }, "moves": ["rite_4", "rite_5", "rite_2", "rite_j"] },
+  "rite": {
+    "gauge": {
+      "charges": 3,
+      "rechargeFrames": 240,
+      "unlimitedWhile": "install"
+    },
+    "moves": [
+      "rite_4",
+      "rite_5",
+      "rite_2",
+      "rite_j"
+    ]
+  },
   "projectiles": {
-    "palm5": { "sprite": { "image": "sheets/palm-5.png", "columns": 7, "rows": 1, "count": 7, "frameW": 293, "frameH": 363, "originX": 156, "originY": 191, "scale": 0.5 },
-      "anim": { "release": [2, 2], "loop": [3, 3], "impact": [3, 3, 4] },
-      "speed": 16, "spawn": [70, 100], "hitbox": [-30, -45, 90, 90], "lifetime": 14,
-      "damage": 700, "hitstun": 20, "untech": 26, "blockstun": 14, "hitstop": 10, "pushbackHit": 30, "pushbackBlock": 30, "guard": "mid" },
-    "palm2": { "sprite": { "image": "sheets/palm-2.png", "columns": 9, "rows": 1, "count": 9, "frameW": 229, "frameH": 248, "originX": 115, "originY": 192, "scale": 0.5, "additive": true },
-      "anim": { "release": [2, 2], "loop": [3, 3, 3, 3], "impact": [3, 3, 4] },
-      "speed": 0, "spawn": [110, 26], "hitbox": [-50, -27, 101, 88], "lifetime": 180,
-      "damage": 600, "hitstun": 26, "untech": 30, "blockstun": 14, "hitstop": 10, "pushbackHit": 24, "pushbackBlock": 30, "guard": "low" },
-    "palmJ": { "sprite": { "image": "sheets/air-burst.png", "columns": 8, "rows": 1, "count": 8, "frameW": 372, "frameH": 385, "originX": 185, "originY": 192, "scale": 0.5, "additive": true },
-      "anim": { "release": [2, 2, 2, 2, 3], "loop": [3], "impact": [4, 5] },
-      "fromGround": true, "speed": 0, "spawn": [0, 100], "hitbox": [-25, -100, 50, 250], "phases": [[11, 14, null]], "lifetime": 15,
-      "damage": 700, "hitstun": 20, "untech": 40, "blockstun": 14, "hitstop": 10, "pushbackHit": 14, "pushbackBlock": 32, "guard": "high",
-      "launch": { "x": -5, "y": 15, "type": "hard" }, "airHit": { "x": 2, "y": 18 } },
-    "ward": { "sprite": {"image": "sheets/ward.png", "columns": 7, "rows": 1, "count": 7, "frameW": 491, "frameH": 530, "originX": 245, "originY": 266, "scale": 0.5, "additive": true},
-      "anim": { "release": [2, 2, 2], "loop": [4], "impact": [3, 3, 4] },
-      "speed": 0, "spawn": [10, 100], "hitbox": [-105, -116, 220, 320], "phases": [[6, 9, null]], "lifetime": 10,
-      "damage": 600, "hitstun": 20, "untech": 30, "blockstun": 14, "hitstop": 10, "pushbackHit": 90, "pushbackBlock": 60, "guard": "mid",
-      "launch": { "type": "soft", "x": 9, "y": 14 } },
-    "spiritOrb": { "speed": 9, "spawn": [85, 125], "hitbox": [-20, -45, 62, 81], "lifetime": 110,
-      "damage": 500, "hitstun": 18, "blockstun": 12, "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 22, "guard": "mid",
-      "sprite": { "image": "sheets/orb.png", "columns": 9, "rows": 1, "count": 9, "frameW": 203, "frameH": 206, "originX": 101, "originY": 102, "scale": 0.5, "additive": true },
-      "anim": { "release": [3, 3], "loop": [3, 3, 3, 3], "impact": [3, 4, 5] } },
-    "spiritOrbM": { "speed": 6, "spawn": [85, 125], "hitbox": [-35, -44, 89, 88], "lifetime": 160,
-      "damage": 500, "hitstun": 18, "blockstun": 12, "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 22, "guard": "mid",
-      "sprite": {"image": "sheets/orb-M.png", "columns": 9, "rows": 1, "count": 9, "frameW": 243, "frameH": 255, "originX": 121, "originY": 127, "scale": 0.5, "additive": true},
-      "anim": { "release": [3, 3], "loop": [3, 3, 3, 3], "impact": [3, 4, 5] } },
-    "spiritOrbH": { "speed": 4, "spawn": [85, 125], "hitbox": [-8, -122, 149, 156], "lifetime": 60,
-      "damage": 500, "hitstun": 18, "blockstun": 12, "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 22, "guard": "mid",
-      "sprite": { "image": "sheets/orb-H.png", "columns": 9, "rows": 1, "count": 9, "frameW": 307, "frameH": 300, "originX": 152, "originY": 149, "scale": 0.8, "additive": true, "offset": [63, -43] },
-      "anim": { "release": [3, 3], "loop": [3, 3, 3, 3], "impact": [3, 4, 5] } }
+    "palm5": {
+      "sprite": { "image": "sheets/palm-5.png", "columns": 7, "rows": 1, "count": 7, "frameW": 179, "frameH": 389, "originX": 89, "originY": 194, "scale": 0.5, "additive": true },
+      "anim": { "release": [2], "loop": [2, 2, 2], "impact": [3, 3, 4] },
+      "speed": 16,
+      "spawn": [
+        70,
+        100
+      ],
+      "hitbox": [
+        -30,
+        -45,
+        90,
+        90
+      ],
+      "lifetime": 14,
+      "damage": 700,
+      "hitstun": 20,
+      "untech": 26,
+      "blockstun": 14,
+      "hitstop": 10,
+      "pushbackHit": 30,
+      "pushbackBlock": 30,
+      "guard": "mid"
+    },
+    "palm2": {
+      "sprite": { "image": "sheets/palm-2.png", "columns": 11, "rows": 1, "count": 11, "frameW": 247, "frameH": 204, "originX": 124, "originY": 135, "scale": 0.5, "additive": true },
+      "anim": { "release": [2, 2], "loop": [3, 3, 3, 3], "impact": [2, 2, 3, 3, 4] },
+      "speed": 0,
+      "spawn": [
+        110,
+        26
+      ],
+      "hitbox": [
+        -50,
+        -27,
+        101,
+        88
+      ],
+      "lifetime": 180,
+      "damage": 600,
+      "hitstun": 26,
+      "untech": 30,
+      "blockstun": 14,
+      "hitstop": 10,
+      "pushbackHit": 24,
+      "pushbackBlock": 30,
+      "guard": "low"
+    },
+    "palmJ": {
+      "sprite": {
+        "image": "sheets/air-burst.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 372,
+        "frameH": 385,
+        "originX": 185,
+        "originY": 192,
+        "scale": 0.5,
+        "additive": true
+      },
+      "anim": {
+        "release": [
+          2,
+          2,
+          2,
+          2,
+          3
+        ],
+        "loop": [
+          3
+        ],
+        "impact": [
+          4,
+          5
+        ]
+      },
+      "fromGround": true,
+      "speed": 0,
+      "spawn": [
+        0,
+        100
+      ],
+      "hitbox": [
+        -25,
+        -100,
+        50,
+        250
+      ],
+      "phases": [
+        [
+          11,
+          14,
+          null
+        ]
+      ],
+      "lifetime": 15,
+      "damage": 700,
+      "hitstun": 20,
+      "untech": 40,
+      "blockstun": 14,
+      "hitstop": 10,
+      "pushbackHit": 14,
+      "pushbackBlock": 32,
+      "guard": "high",
+      "launch": {
+        "x": -5,
+        "y": 15,
+        "type": "hard"
+      },
+      "airHit": {
+        "x": 2,
+        "y": 18
+      }
+    },
+    "ward": {
+      "sprite": {
+        "image": "sheets/ward.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 491,
+        "frameH": 530,
+        "originX": 245,
+        "originY": 266,
+        "scale": 0.5,
+        "additive": true
+      },
+      "anim": {
+        "release": [
+          2,
+          2,
+          2
+        ],
+        "loop": [
+          4
+        ],
+        "impact": [
+          3,
+          3,
+          4
+        ]
+      },
+      "speed": 0,
+      "spawn": [
+        10,
+        100
+      ],
+      "hitbox": [
+        -105,
+        -116,
+        220,
+        320
+      ],
+      "phases": [
+        [
+          6,
+          9,
+          null
+        ]
+      ],
+      "lifetime": 10,
+      "damage": 600,
+      "hitstun": 20,
+      "untech": 30,
+      "blockstun": 14,
+      "hitstop": 10,
+      "pushbackHit": 90,
+      "pushbackBlock": 60,
+      "guard": "mid",
+      "launch": {
+        "type": "soft",
+        "x": 9,
+        "y": 14
+      }
+    },
+    "spiritOrb": {
+      "speed": 9,
+      "spawn": [
+        85,
+        125
+      ],
+      "hitbox": [
+        -20,
+        -45,
+        62,
+        81
+      ],
+      "lifetime": 110,
+      "damage": 500,
+      "hitstun": 18,
+      "blockstun": 12,
+      "hitstop": 8,
+      "pushbackHit": 12,
+      "pushbackBlock": 22,
+      "guard": "mid",
+      "sprite": {
+        "image": "sheets/orb.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 212,
+        "frameH": 187,
+        "originX": 104,
+        "originY": 93,
+        "scale": 0.5,
+        "additive": true
+      },
+      "anim": {
+        "release": [
+          3,
+          3
+        ],
+        "loop": [
+          3,
+          3
+        ],
+        "impact": [
+          3,
+          4,
+          5
+        ]
+      },
+      "launch": {
+        "type": "soft",
+        "x": 1,
+        "y": 13
+      },
+      "untech": 30
+    },
+    "spiritOrbM": {
+      "speed": 0,
+      "spawn": [
+        88,
+        0
+      ],
+      "hitbox": [
+        -30,
+        0,
+        60,
+        200
+      ],
+      "lifetime": 9,
+      "damage": 500,
+      "hitstun": 18,
+      "blockstun": 12,
+      "hitstop": 8,
+      "pushbackHit": 12,
+      "pushbackBlock": 22,
+      "guard": "mid",
+      "sprite": {
+        "image": "sheets/orb-M.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 365,
+        "frameH": 477,
+        "originX": 185,
+        "originY": 466,
+        "scale": 0.5,
+        "additive": true
+      },
+      "anim": {
+        "release": [],
+        "loop": [
+          3,
+          3,
+          3
+        ],
+        "impact": [
+          4,
+          5
+        ]
+      },
+      "persist": true
+    },
+    "spiritOrbH": {
+      "speed": 4,
+      "spawn": [
+        110,
+        105
+      ],
+      "hitbox": [
+        -65,
+        -65,
+        130,
+        130
+      ],
+      "lifetime": 60,
+      "damage": 500,
+      "hitstun": 18,
+      "blockstun": 12,
+      "hitstop": 8,
+      "pushbackHit": 12,
+      "pushbackBlock": 22,
+      "guard": "mid",
+      "sprite": {
+        "image": "sheets/orb-H.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 349,
+        "frameH": 204,
+        "originX": 174,
+        "originY": 102,
+        "scale": 0.5,
+        "additive": true
+      },
+      "anim": {
+        "release": [],
+        "loop": [
+          3,
+          3,
+          3
+        ],
+        "impact": [
+          3,
+          4,
+          5
+        ]
+      }
+    }
   },
   "art": {
-    "opacity": {"pillar": 0.8, "guardian": 1, "guardianL": 1, "guardianM": 1, "guardianH": 1, "installFlames": 0.55, "installMotesFront": 0.55, "installMotesBack": 0.55, "spiritHand": 1, "axeArc": 0.6, "stompWave": 0.8, "lariatTrailL": 0.6, "lariatTrailM": 0.6, "lariatTrailH": 0.6, "lariatTrailEx": 0.6, "vowBlast": 0.8, "palm5":0.85, "palm2":1, "palmJ": 0.85, "riteClap": 0.85, "ward": 0.8, "spiritOrb": 1, "spiritOrbM": 1, "spiritOrbH": 1},
-    "shockwave": { "5H": "default", "2H": "default", "backHeavy": "default", "j.H": "default", "spirit5H": "default", "spiritOrbH": "default", "pillarH": "default", "lariatH": "default", "lariatL_ex": "default", "lariatM_ex": "default", "lariatH_ex": "default", "6H": "big", "4H": "big" },
-    "motion": { "lariatL": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
-      "lariatM": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
-      "lariatH": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
-      "lariatL_ex": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
-      "lariatM_ex": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13},
-      "lariatH_ex": {"play": "dashDustF", "at": "feet", "from": 3, "every": 6, "until": 13} },
-    "throws": { "4H": {
-    "throwHold": {"holds": [4,4,6], "sprite": {"image": "sheets/throw-back-hold.png", "columns": 3, "rows": 1, "count": 3, "frameW": 317, "frameH": 376, "originX": 139, "originY": 374, "scale": 0.5}},
-    "throwFinish": {"holds": [8,8,7,7], "sprite": {"image": "sheets/throw-back-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 346, "frameH": 443, "originX": 173, "originY": 441, "scale": 0.5}} } } },
+    "opacity": {
+      "pillar": 0.8,
+      "guardian": 1,
+      "guardianL": 1,
+      "guardianM": 1,
+      "guardianH": 1,
+      "installFlames": 0.55,
+      "installMotesFront": 0.55,
+      "installMotesBack": 0.55,
+      "spiritHand": 1,
+      "axeArc": 0.6,
+      "stompWave": 0.8,
+      "lariatTrailL": 0.6,
+      "lariatTrailM": 0.6,
+      "lariatTrailH": 0.6,
+      "lariatTrailEx": 0.6,
+      "vowBlast": 0.8,
+      "palm5": 0.85,
+      "palm2": 1,
+      "palmJ": 0.85,
+      "riteClap": 0.85,
+      "ward": 0.8,
+      "spiritOrb": 1,
+      "spiritOrbM": 1,
+      "spiritOrbH": 1
+    },
+    "shockwave": {
+      "5H": "default",
+      "2H": "default",
+      "backHeavy": "default",
+      "j.H": "default",
+      "spirit5H": "default",
+      "spiritOrbH": "default",
+      "pillarH": "default",
+      "lariatH": "default",
+      "lariatL_ex": "default",
+      "lariatM_ex": "default",
+      "lariatH_ex": "default",
+      "6H": "big",
+      "4H": "big"
+    },
+    "motion": {
+      "lariatL": {
+        "play": "dashDustF",
+        "at": "feet",
+        "from": 3,
+        "every": 6,
+        "until": 13
+      },
+      "lariatM": {
+        "play": "dashDustF",
+        "at": "feet",
+        "from": 3,
+        "every": 6,
+        "until": 13
+      },
+      "lariatH": {
+        "play": "dashDustF",
+        "at": "feet",
+        "from": 3,
+        "every": 6,
+        "until": 13
+      },
+      "lariatL_ex": {
+        "play": "dashDustF",
+        "at": "feet",
+        "from": 3,
+        "every": 6,
+        "until": 13
+      },
+      "lariatM_ex": {
+        "play": "dashDustF",
+        "at": "feet",
+        "from": 3,
+        "every": 6,
+        "until": 13
+      },
+      "lariatH_ex": {
+        "play": "dashDustF",
+        "at": "feet",
+        "from": 3,
+        "every": 6,
+        "until": 13
+      }
+    },
+    "throws": {
+      "4H": {
+        "throwHold": { "holds": [8, 6], "sprite": { "image": "sheets/throw-back-hold.png", "columns": 2, "rows": 1, "count": 2, "frameW": 390, "frameH": 378, "originX": 201, "originY": 376, "scale": 0.5 } },
+        "throwFinish": { "holds": [8, 10, 12], "sprite": { "image": "sheets/throw-back-finish.png", "columns": 3, "rows": 1, "count": 3, "frameW": 466, "frameH": 361, "originX": 209, "originY": 359, "scale": 0.5 } }
+      }
+    }
+  },
   "effects": {
-    "pillar": { "hold": 3, "at": [95, 0], "sprite": {"image": "sheets/pillar-fx.png", "columns": 8, "rows": 1, "count": 8, "frameW": 232, "frameH": 675, "originX": 114, "originY": 663, "scale": 0.5, "additive": true} },
-    "guardian": {"hold": 8, "at": [-48,62], "alpha": 0.9, "bob": {"px": 5, "period": 96}, "sprite": {"image": "sheets/guardian-idle.png", "columns": 6, "rows": 1, "count": 6, "frameW": 230, "frameH": 467, "originX": 118, "originY": 465, "scale": 0.75}},
-    "guardianL": {"holds": [2,1,3,4,2], "at": [-62,0], "alpha": 0.9, "sprite": {"image": "sheets/guardian-L.png", "columns": 5, "rows": 1, "count": 5, "frameW": 392, "frameH": 480, "originX": 153, "originY": 478, "scale": 0.75}},
-    "guardianM": {"holds": [2,2,1,5,4,4,4], "at": [-62,0], "alpha": 0.9, "sprite": {"image": "sheets/guardian-M.png", "columns": 7, "rows": 1, "count": 7, "frameW": 412, "frameH": 490, "originX": 131, "originY": 488, "scale": 0.75}},
-    "guardianH": {"holds": [3,3,2,5,6,5,5], "at": [-62,0], "alpha": 0.9, "sprite": {"image": "sheets/guardian-H.png", "columns": 7, "rows": 1, "count": 7, "frameW": 444, "frameH": 476, "originX": 146, "originY": 474, "scale": 0.75}},
-    "installFlames": { "hold": 5, "at": [0, 112], "sprite": { "image": "sheets/install-flames.png", "columns": 6, "rows": 1, "count": 6, "frameW": 392, "frameH": 684, "originX": 196, "originY": 342, "scale": 0.5, "additive": true } },
-    "installMotesFront": { "hold": 4, "at": [0, 88], "sprite": { "image": "sheets/install-motes-front.png", "columns": 8, "rows": 1, "count": 8, "frameW": 364, "frameH": 284, "originX": 182, "originY": 142, "scale": 0.5, "additive": true } },
-    "installMotesBack": { "hold": 4, "at": [0, 108], "sprite": { "image": "sheets/install-motes-back.png", "columns": 8, "rows": 1, "count": 8, "frameW": 364, "frameH": 156, "originX": 182, "originY": 78, "scale": 0.5, "additive": true } },
-    "spiritHand": { "hold": 3, "at": [83, 70], "sprite": {"image": "sheets/jH-hand.png", "columns": 7, "rows": 1, "count": 7, "frameW": 328, "frameH": 357, "originX": 164, "originY": 178, "scale": 0.5, "angle": -45, "offset": [34, 0]} },
-    "axeArc": { "holds": [2, 2, 2, 2, 3, 3, 3], "at": [45, 70], "follow": true, "sprite": {"image": "sheets/jS-arc.png", "columns": 7, "rows": 1, "count": 7, "frameW": 312, "frameH": 252, "originX": 158, "originY": 126, "scale": 0.5, "additive": true} },
-    "riteClap": { "holds": [3, 3, 2, 2, 3, 3, 4], "at": [22, 118], "follow": true, "sprite": {"image": "sheets/clap.png", "columns": 7, "rows": 1, "count": 7, "frameW": 381, "frameH": 391, "originX": 190, "originY": 194, "scale": 0.5, "additive": true} },
-    "stompWave": { "holds": [2, 2, 2, 2, 3, 3, 3], "at": [70, 0], "sprite": {"image": "sheets/stomp-wave.png", "columns": 7, "rows": 1, "count": 7, "frameW": 312, "frameH": 303, "originX": 154, "originY": 297, "scale": 0.5, "additive": true} },
-    "lariatTrailL": { "holds": [2, 2, 2, 2, 2, 3], "at": [20, 112], "follow": true, "behind": true, "sprite": {"image": "sheets/lariat-trail.png", "columns": 6, "rows": 1, "count": 6, "frameW": 665, "frameH": 69, "originX": 658, "originY": 40, "scale": 0.5, "additive": true} },
-    "lariatTrailM": { "holds": [2, 3, 3, 3, 2, 3], "at": [20, 112], "follow": true, "behind": true, "sprite": {"image": "sheets/lariat-trail.png", "columns": 6, "rows": 1, "count": 6, "frameW": 665, "frameH": 69, "originX": 658, "originY": 40, "scale": 0.5, "additive": true} },
-    "lariatTrailH": { "holds": [3, 3, 3, 3, 3, 3], "at": [20, 112], "follow": true, "behind": true, "sprite": {"image": "sheets/lariat-trail.png", "columns": 6, "rows": 1, "count": 6, "frameW": 665, "frameH": 69, "originX": 658, "originY": 40, "scale": 0.5, "additive": true} },
-    "lariatTrailEx": { "holds": [2, 3, 3, 3, 2, 3], "at": [20, 112], "follow": true, "behind": true, "sprite": {"image": "sheets/lariat-trail.png", "columns": 6, "rows": 1, "count": 6, "frameW": 665, "frameH": 69, "originX": 658, "originY": 40, "scale": 0.5, "additive": true} },
-    "vowBlast": { "holds": [2, 2, 3, 3, 3, 3], "at": [115, 100], "sprite": {"image": "sheets/vow-blast.png", "columns": 6, "rows": 1, "count": 6, "frameW": 392, "frameH": 385, "originX": 192, "originY": 192, "scale": 0.5, "additive": true} }
+    "pillar": {
+      "hold": 3,
+      "at": [
+        95,
+        0
+      ],
+      "sprite": {
+        "image": "sheets/pillar-fx.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 232,
+        "frameH": 675,
+        "originX": 114,
+        "originY": 663,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "guardian": {
+      "hold": 8,
+      "at": [
+        -48,
+        62
+      ],
+      "alpha": 0.9,
+      "bob": {
+        "px": 5,
+        "period": 96
+      },
+      "sprite": {
+        "image": "sheets/guardian-idle.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 230,
+        "frameH": 467,
+        "originX": 118,
+        "originY": 465,
+        "scale": 0.75
+      }
+    },
+    "guardianL": {
+      "holds": [
+        2,
+        1,
+        3,
+        4,
+        2
+      ],
+      "at": [
+        -62,
+        0
+      ],
+      "alpha": 0.9,
+      "sprite": {
+        "image": "sheets/guardian-L.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 392,
+        "frameH": 480,
+        "originX": 153,
+        "originY": 478,
+        "scale": 0.75
+      }
+    },
+    "guardianM": {
+      "holds": [
+        2,
+        2,
+        1,
+        5,
+        4,
+        4,
+        4
+      ],
+      "at": [
+        -62,
+        0
+      ],
+      "alpha": 0.9,
+      "sprite": {
+        "image": "sheets/guardian-M.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 412,
+        "frameH": 490,
+        "originX": 131,
+        "originY": 488,
+        "scale": 0.75
+      }
+    },
+    "guardianH": {
+      "holds": [
+        3,
+        3,
+        2,
+        5,
+        6,
+        5,
+        5
+      ],
+      "at": [
+        -62,
+        0
+      ],
+      "alpha": 0.9,
+      "sprite": {
+        "image": "sheets/guardian-H.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 444,
+        "frameH": 476,
+        "originX": 146,
+        "originY": 474,
+        "scale": 0.75
+      }
+    },
+    "installFlames": {
+      "hold": 5,
+      "at": [
+        0,
+        112
+      ],
+      "sprite": {
+        "image": "sheets/install-flames.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 392,
+        "frameH": 684,
+        "originX": 196,
+        "originY": 342,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "installMotesFront": {
+      "hold": 4,
+      "at": [
+        0,
+        88
+      ],
+      "sprite": {
+        "image": "sheets/install-motes-front.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 364,
+        "frameH": 284,
+        "originX": 182,
+        "originY": 142,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "installMotesBack": {
+      "hold": 4,
+      "at": [
+        0,
+        108
+      ],
+      "sprite": {
+        "image": "sheets/install-motes-back.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 364,
+        "frameH": 156,
+        "originX": 182,
+        "originY": 78,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "spiritHand": {
+      "hold": 3,
+      "at": [
+        83,
+        70
+      ],
+      "sprite": {
+        "image": "sheets/jH-hand.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 328,
+        "frameH": 357,
+        "originX": 164,
+        "originY": 178,
+        "scale": 0.5,
+        "angle": -45,
+        "offset": [
+          34,
+          0
+        ]
+      }
+    },
+    "axeArc": {
+      "holds": [
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3
+      ],
+      "at": [
+        45,
+        70
+      ],
+      "follow": true,
+      "sprite": {
+        "image": "sheets/jS-arc.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 312,
+        "frameH": 252,
+        "originX": 158,
+        "originY": 126,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "riteClap": {
+      "holds": [
+        3,
+        3,
+        2,
+        2,
+        3,
+        3,
+        4
+      ],
+      "at": [
+        22,
+        118
+      ],
+      "follow": true,
+      "sprite": {
+        "image": "sheets/clap.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 381,
+        "frameH": 391,
+        "originX": 190,
+        "originY": 194,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "stompWave": {
+      "holds": [
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3
+      ],
+      "at": [
+        70,
+        0
+      ],
+      "sprite": {
+        "image": "sheets/stomp-wave.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 312,
+        "frameH": 303,
+        "originX": 154,
+        "originY": 297,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "lariatTrailL": {
+      "holds": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        3
+      ],
+      "at": [
+        20,
+        112
+      ],
+      "follow": true,
+      "behind": true,
+      "sprite": {
+        "image": "sheets/lariat-trail.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 665,
+        "frameH": 69,
+        "originX": 658,
+        "originY": 40,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "lariatTrailM": {
+      "holds": [
+        2,
+        3,
+        3,
+        3,
+        2,
+        3
+      ],
+      "at": [
+        20,
+        112
+      ],
+      "follow": true,
+      "behind": true,
+      "sprite": {
+        "image": "sheets/lariat-trail.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 665,
+        "frameH": 69,
+        "originX": 658,
+        "originY": 40,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "lariatTrailH": {
+      "holds": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "at": [
+        20,
+        112
+      ],
+      "follow": true,
+      "behind": true,
+      "sprite": {
+        "image": "sheets/lariat-trail.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 665,
+        "frameH": 69,
+        "originX": 658,
+        "originY": 40,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "lariatTrailEx": {
+      "holds": [
+        2,
+        3,
+        3,
+        3,
+        2,
+        3
+      ],
+      "at": [
+        20,
+        112
+      ],
+      "follow": true,
+      "behind": true,
+      "sprite": {
+        "image": "sheets/lariat-trail.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 665,
+        "frameH": 69,
+        "originX": 658,
+        "originY": 40,
+        "scale": 0.5,
+        "additive": true
+      }
+    },
+    "vowBlast": {
+      "holds": [
+        2,
+        2,
+        3,
+        3,
+        3,
+        3
+      ],
+      "at": [
+        115,
+        100
+      ],
+      "sprite": {
+        "image": "sheets/vow-blast.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 392,
+        "frameH": 385,
+        "originX": 192,
+        "originY": 192,
+        "scale": 0.5,
+        "additive": true
+      }
+    }
   },
   "moves": [
-    {"id": "spirit5L", "name": "Guardian Light (Spirit Install: the guardian strikes, Malik holds his idle)", "input": "5L", "requires": {"vars": {"install": [1,600]}}, "startup": 4, "active": 2, "recovery": 7, "damage": 400, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "mid", "reach": 118, "starterProration": 8000, "hitboxes": [[28,80,90,170]], "sprite": {"image": "sheets/install-solo.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [2, 2, 2, 2, 2, 2]}},
-    {"id": "spirit5M", "name": "Guardian Medium (Spirit Install: a palm shockwave)", "input": "5M", "requires": {"vars": {"install": [1,600]}}, "startup": 6, "active": 5, "recovery": 12, "damage": 650, "hitstun": 17, "blockstun": 13, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18, "guard": "mid", "reach": 148, "starterProration": 9000, "hitboxes": [[35,80,113,190]], "sprite": {"image": "sheets/install-solo.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [4, 4, 4, 4, 3, 3]}},
-    {"id": "spirit5H", "name": "Guardian Heavy (Spirit Install: the orb blast)", "input": "5H", "requires": {"vars": {"install": [1,600]}}, "startup": 9, "active": 3, "recovery": 18, "damage": 800, "hitstun": 20, "blockstun": 15, "hitstop": 12, "pushbackHit": 28, "pushbackBlock": 34, "selfPushback": 22, "guard": "mid", "reach": 163, "hitboxes": [[50,85,113,170]], "sprite": {"image": "sheets/install-solo.png", "columns": 6, "rows": 1, "count": 6, "frameW": 249, "frameH": 419, "originX": 136, "originY": 417, "scale": 0.5, "holds": [5, 5, 5, 5, 5, 4]}},
-    { "id": "5L", "name": "Standing Light", "input": "5L", "startup": 4, "active": 2, "recovery": 7,
-      "damage": 400, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "mid", "reach": 62,
+    {
+      "id": "spirit5L",
+      "name": "Guardian Light (Spirit Install: the guardian strikes, Malik holds his idle)",
+      "input": "5L",
+      "requires": {
+        "vars": {
+          "install": [
+            1,
+            600
+          ]
+        }
+      },
+      "startup": 4,
+      "active": 2,
+      "recovery": 7,
+      "damage": 400,
+      "hitstun": 13,
+      "blockstun": 10,
+      "hitstop": 8,
+      "pushbackHit": 18,
+      "pushbackBlock": 22,
+      "selfPushback": 14,
+      "guard": "mid",
+      "reach": 118,
       "starterProration": 8000,
-      "hitboxes": [[40, 70, 55, 86]],
-      "sprite": {"image": "sheets/5L.png", "columns": 6, "rows": 1, "count": 6, "frameW": 447, "frameH": 442, "originX": 243, "originY": 440, "scale": 0.5, "holds": [1, 2, 2, 2, 3, 2]} },
-    { "id": "stomp", "name": "Stomp (6M: hits a fighter lying down)", "input": "6M", "otg": true, "startup": 10, "active": 3, "recovery": 22,
-      "damage": 600, "hitstun": 18, "untech": 26, "blockstun": 13, "hitstop": 10, "pushbackHit": 14, "pushbackBlock": 26, "selfPushback": 16, "guard": "mid", "reach": 80,
-      "starterProration": 9000,
-      "hitboxes": [[20, 0, 148, 50]],
-      "timeline": [{ "at": 9, "fx": "stompWave" }],
-      "sprite": {"image": "sheets/stomp.png", "columns": 6, "rows": 1, "count": 6, "frameW": 340, "frameH": 391, "originX": 163, "originY": 389, "scale": 0.5, "holds": [3, 6, 3, 8, 7, 7]} },
-    { "id": "5M", "name": "Standing Medium (two hits)", "input": "5M", "startup": 6, "active": 5, "recovery": 12,
-      "damage": 250, "hitstun": 17, "blockstun": 13, "hitstop": 8, "pushbackHit": 4, "pushbackBlock": 6, "selfPushback": 4, "guard": "mid", "reach": 70,
-      "starterProration": 9000,
-      "hitboxes": [[31, 76, 81, 69]],
-      "timeline": [
-        { "at": 7, "hit": [[18, 99, 56, 45]],
-          "hitProps": { "damage": 400, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18 } }
+      "hitboxes": [
+        [
+          28,
+          80,
+          90,
+          170
+        ]
       ],
-      "sprite": {"image": "sheets/5M.png", "columns": 5, "rows": 1, "count": 5, "frameW": 530, "frameH": 370, "originX": 295, "originY": 368, "scale": 0.5, "holds": [3, 4, 3, 6, 6]}, "jumpCancel": "hit" },
-    { "id": "5H", "name": "Standing Heavy", "input": "5H", "counterReaction": "crumple", "startup": 9, "active": 3, "recovery": 18,
-      "damage": 800, "hitstun": 40, "blockstun": 15, "hitstop": 12, "pushbackHit": 28, "pushbackBlock": 34, "selfPushback": 22, "guard": "mid", "reach": 135,
-      "hitboxes": [[15, 0, 95, 150]],
-      "timeline": [{ "at": 8, "hurt": [[-5, 0, 95, 150]] }, { "at": 11, "hurt": [[-30, 0, 60, 160]] }],
-      "sprite": {"image": "sheets/5H.png", "columns": 8, "rows": 1, "count": 8, "frameW": 445, "frameH": 445, "originX": 246, "originY": 443, "scale": 0.5, "holds": [2, 2, 2, 2, 3, 7, 6, 5]}, "otg": true },
-    { "id": "2L", "name": "Crouching Light", "input": "2L", "otg": true, "startup": 4, "active": 2, "recovery": 8,
-      "damage": 350, "hitstun": 13, "blockstun": 10, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 22, "selfPushback": 14, "guard": "low", "reach": 70,
-      "starterProration": 8000,
-      "hitboxes": [[35, 0, 71, 73]],
-      "sprite": {"image": "sheets/2L.png", "columns": 6, "rows": 1, "count": 6, "frameW": 446, "frameH": 322, "originX": 250, "originY": 320, "scale": 0.5, "holds": [1, 2, 2, 3, 3, 2]} },
-    { "id": "2M", "name": "Crouching Medium", "input": "2M", "startup": 7, "active": 3, "recovery": 13,
-      "damage": 550, "hitstun": 17, "blockstun": 13, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18, "guard": "low", "reach": 170,
+      "sprite": {
+        "image": "sheets/install-solo.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 249,
+        "frameH": 419,
+        "originX": 136,
+        "originY": 417,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "spirit5M",
+      "name": "Guardian Medium (Spirit Install: a palm shockwave)",
+      "input": "5M",
+      "requires": {
+        "vars": {
+          "install": [
+            1,
+            600
+          ]
+        }
+      },
+      "startup": 6,
+      "active": 5,
+      "recovery": 12,
+      "damage": 650,
+      "hitstun": 17,
+      "blockstun": 13,
+      "hitstop": 10,
+      "pushbackHit": 22,
+      "pushbackBlock": 28,
+      "selfPushback": 18,
+      "guard": "mid",
+      "reach": 148,
       "starterProration": 9000,
-      "hitboxes": [[24, 3, 113, 81]],
-      "sprite": {"image": "sheets/2M.png", "columns": 7, "rows": 1, "count": 7, "frameW": 579, "frameH": 313, "originX": 329, "originY": 311, "scale": 0.5, "holds": [2, 2, 2, 3, 5, 4, 4]}, "launch": { "type": "soft", "x": 2, "y": 10 } },
-    { "id": "2H", "name": "Sweep", "input": "2H", "startup": 9, "active": 3, "recovery": 22,
-      "damage": 800, "hitstun": 22, "blockstun": 14, "hitstop": 12, "pushbackHit": 10, "pushbackBlock": 30, "selfPushback": 22, "guard": "low", "reach": 95,
+      "hitboxes": [
+        [
+          35,
+          80,
+          113,
+          190
+        ]
+      ],
+      "sprite": {
+        "image": "sheets/install-solo.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 249,
+        "frameH": 419,
+        "originX": 136,
+        "originY": 417,
+        "scale": 0.5,
+        "holds": [
+          4,
+          4,
+          4,
+          4,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "id": "spirit5H",
+      "name": "Guardian Heavy (Spirit Install: the orb blast)",
+      "input": "5H",
+      "requires": {
+        "vars": {
+          "install": [
+            1,
+            600
+          ]
+        }
+      },
+      "startup": 9,
+      "active": 3,
+      "recovery": 18,
+      "damage": 800,
+      "hitstun": 20,
+      "blockstun": 15,
+      "hitstop": 12,
+      "pushbackHit": 28,
+      "pushbackBlock": 34,
+      "selfPushback": 22,
+      "guard": "mid",
+      "reach": 163,
+      "hitboxes": [
+        [
+          50,
+          85,
+          113,
+          170
+        ]
+      ],
+      "sprite": {
+        "image": "sheets/install-solo.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 249,
+        "frameH": 419,
+        "originX": 136,
+        "originY": 417,
+        "scale": 0.5,
+        "holds": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          4
+        ]
+      }
+    },
+    {
+      "id": "5L",
+      "name": "Standing Light",
+      "input": "5L",
+      "startup": 4,
+      "active": 2,
+      "recovery": 7,
+      "damage": 400,
+      "hitstun": 13,
+      "blockstun": 10,
+      "hitstop": 8,
+      "pushbackHit": 18,
+      "pushbackBlock": 22,
+      "selfPushback": 14,
+      "guard": "mid",
+      "reach": 62,
+      "starterProration": 8000,
+      "hitboxes": [
+        [
+          41,
+          72,
+          85,
+          86
+        ]
+      ],
+      "sprite": {
+        "image": "sheets/5L.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 532,
+        "frameH": 332,
+        "originX": 259,
+        "originY": 330,
+        "scale": 0.5,
+        "holds": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          1
+        ]
+      }
+    },
+    {
+      "id": "stomp",
+      "name": "Stomp (6M: hits a fighter lying down)",
+      "input": "6M",
+      "otg": true,
+      "startup": 10,
+      "active": 3,
+      "recovery": 22,
+      "damage": 600,
+      "hitstun": 18,
+      "untech": 26,
+      "blockstun": 13,
+      "hitstop": 10,
+      "pushbackHit": 14,
+      "pushbackBlock": 26,
+      "selfPushback": 16,
+      "guard": "mid",
+      "reach": 80,
+      "starterProration": 9000,
+      "hitboxes": [
+        [
+          20,
+          0,
+          148,
+          50
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 9,
+          "fx": "stompWave"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/stomp.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 340,
+        "frameH": 391,
+        "originX": 163,
+        "originY": 389,
+        "scale": 0.5,
+        "holds": [
+          3,
+          6,
+          3,
+          8,
+          7,
+          7
+        ]
+      }
+    },
+    {
+      "id": "5M",
+      "name": "Standing Medium (two hits)",
+      "input": "5M",
+      "startup": 6,
+      "active": 5,
+      "recovery": 12,
+      "damage": 250,
+      "hitstun": 17,
+      "blockstun": 13,
+      "hitstop": 8,
+      "pushbackHit": 4,
+      "pushbackBlock": 6,
+      "selfPushback": 4,
+      "guard": "mid",
+      "reach": 70,
+      "starterProration": 9000,
+      "hitboxes": [
+        [
+          40,
+          74,
+          84,
+          69
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 7,
+          "hit": [
+            [
+              41,
+              61,
+              102,
+              83
+            ]
+          ],
+          "hitProps": {
+            "damage": 400,
+            "hitstop": 10,
+            "pushbackHit": 22,
+            "pushbackBlock": 28,
+            "selfPushback": 18
+          }
+        }
+      ],
+      "sprite": {
+        "image": "sheets/5M.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 579,
+        "frameH": 333,
+        "originX": 301,
+        "originY": 331,
+        "scale": 0.5,
+        "holds": [
+          2,
+          3,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "jumpCancel": "hit"
+    },
+    {
+      "id": "5H",
+      "name": "Standing Heavy",
+      "input": "5H",
+      "counterReaction": "crumple",
+      "startup": 9,
+      "active": 3,
+      "recovery": 18,
+      "damage": 800,
+      "hitstun": 40,
+      "blockstun": 15,
+      "hitstop": 12,
+      "pushbackHit": 28,
+      "pushbackBlock": 34,
+      "selfPushback": 22,
+      "guard": "mid",
+      "reach": 135,
+      "hitboxes": [
+        [
+          16,
+          69,
+          124,
+          91
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 8,
+          "hurt": [
+            [
+              -78,
+              1,
+              95,
+              150
+            ]
+          ]
+        },
+        {
+          "at": 11,
+          "hurt": [
+            [
+              -30,
+              0,
+              60,
+              160
+            ]
+          ]
+        }
+      ],
+      "sprite": {
+        "image": "sheets/5H.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 584,
+        "frameH": 358,
+        "originX": 317,
+        "originY": 356,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          2,
+          3,
+          4,
+          5,
+          5,
+          4
+        ]
+      },
+      "otg": true
+    },
+    {
+      "id": "2L",
+      "name": "Crouching Light",
+      "input": "2L",
+      "otg": true,
+      "startup": 4,
+      "active": 2,
+      "recovery": 8,
+      "damage": 350,
+      "hitstun": 13,
+      "blockstun": 10,
+      "hitstop": 8,
+      "pushbackHit": 18,
+      "pushbackBlock": 22,
+      "selfPushback": 14,
+      "guard": "low",
+      "reach": 70,
+      "starterProration": 8000,
+      "hitboxes": [
+        [
+          35,
+          0,
+          71,
+          73
+        ]
+      ],
+      "sprite": {
+        "image": "sheets/2L.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 446,
+        "frameH": 322,
+        "originX": 250,
+        "originY": 320,
+        "scale": 0.5,
+        "holds": [
+          1,
+          2,
+          2,
+          3,
+          3,
+          2
+        ]
+      }
+    },
+    {
+      "id": "2M",
+      "name": "Crouching Medium",
+      "input": "2M",
+      "startup": 7,
+      "active": 3,
+      "recovery": 13,
+      "damage": 550,
+      "hitstun": 17,
+      "blockstun": 13,
+      "hitstop": 10,
+      "pushbackHit": 22,
+      "pushbackBlock": 28,
+      "selfPushback": 18,
+      "guard": "low",
+      "reach": 170,
+      "starterProration": 9000,
+      "hitboxes": [
+        [
+          117,
+          -2,
+          128,
+          81
+        ]
+      ],
+      "sprite": {
+        "image": "sheets/2M.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 686,
+        "frameH": 293,
+        "originX": 200,
+        "originY": 291,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          2,
+          3,
+          3,
+          4,
+          3,
+          3
+        ]
+      },
+      "launch": {
+        "type": "soft",
+        "x": 2,
+        "y": 10
+      }
+    },
+    {
+      "id": "2H",
+      "name": "Sweep",
+      "input": "2H",
+      "startup": 9,
+      "active": 3,
+      "recovery": 22,
+      "damage": 800,
+      "hitstun": 22,
+      "blockstun": 14,
+      "hitstop": 12,
+      "pushbackHit": 10,
+      "pushbackBlock": 30,
+      "selfPushback": 22,
+      "guard": "low",
+      "reach": 95,
       "knockdown": true,
-      "hitboxes": [[28, 1, 186, 60]],
-      "sprite": {"image": "sheets/2H.png", "columns": 8, "rows": 1, "count": 8, "frameW": 536, "frameH": 369, "originX": 151, "originY": 367, "scale": 0.5, "holds": [3, 3, 2, 3, 5, 6, 6, 5]} },
-    { "id": "6H", "name": "Forward Throw (the grab; the hold and the push are the art of throwHold and throwFinish)", "input": "6H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "throwHit": 6, "throwFx": [72, 112], "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70,
-      "sprite": {"image": "sheets/throw-forward.png", "columns": 3, "rows": 1, "count": 3, "frameW": 359, "frameH": 376, "originX": 176, "originY": 374, "scale": 0.5, "holds": [4, 10, 11]} },
-    { "id": "4H", "name": "Back Throw (the grab; its hold and slam are in art.throws)", "input": "4H", "startup": 2, "active": 2, "recovery": 22, "damage": 1000, "throwHit": 8, "throwFx": [62, 30], "pushbackHit": 60, "guard": "unblockable", "reach": 65, "counterHit": "none", "specialCancel": false, "throwboxes": [[10, 20, 55, 120]], "throwDistance": 70, "throwSwap": true,
-      "sprite": {"image": "sheets/throw-back.png", "columns": 3, "rows": 1, "count": 3, "frameW": 317, "frameH": 376, "originX": 139, "originY": 374, "scale": 0.5, "holds": [4, 10, 11]} },
-    { "id": "backHeavy", "name": "Back Heavy", "input": "4H", "startup": 11, "active": 3, "recovery": 22,
-      "damage": 800, "hitstun": 37, "blockstun": 16, "hitstop": 12, "pushbackHit": 30, "pushbackBlock": 36, "selfPushback": 22, "guard": "mid", "reach": 138,
-      "hitboxes": [[44, 63, 88, 92]],
-      "timeline": [{ "at": 10, "hurt": [[-5, 0, 95, 150]] }, { "at": 23, "hurt": [[-30, 0, 60, 160]] }],
-      "sprite": {"image": "sheets/4H.png", "columns": 8, "rows": 1, "count": 8, "frameW": 477, "frameH": 442, "originX": 232, "originY": 440, "scale": 0.5, "holds": [3, 4, 3, 3, 4, 6, 6, 6]}, "launch": { "type": "soft", "x": 3, "y": 19 } },
-    { "id": "j.L", "name": "Jumping Light", "input": "j.L", "startup": 4, "active": 4, "recovery": 8,
-      "damage": 400, "hitstun": 13, "untech": 20, "blockstun": 10, "hitstop": 8, "pushbackHit": 10, "pushbackBlock": 14, "selfPushback": 0, "guard": "high", "reach": 88,
-      "jumpCancel": "hit", "airHit": { "x": 2, "y": 4 },
-      "hitboxes": [[39, 24, 94, 84]],
-      "hitFx": { "hold": 2, "sprite": {"image": "sheets/air-hit-1.png", "columns": 10, "rows": 1, "count": 10, "frameW": 244, "frameH": 232, "originX": 122, "originY": 116, "scale": 0.5} },
-      "sprite": {"image": "sheets/jL.png", "columns": 6, "rows": 1, "count": 6, "frameW": 462, "frameH": 442, "originX": 203, "originY": 377, "scale": 0.5, "holds": [2, 1, 4, 2, 3, 3]} },
-    { "id": "j.M", "name": "Jumping Medium", "input": "j.M", "startup": 6, "active": 4, "recovery": 12,
-      "damage": 600, "hitstun": 16, "untech": 24, "blockstun": 12, "hitstop": 10, "pushbackHit": 12, "pushbackBlock": 16, "selfPushback": 0, "guard": "high", "reach": 119,
-      "jumpCancel": "hit", "airHit": { "x": 2, "y": 5 },
-      "hitboxes": [[17, 37, 84, 78], [-69, 11, 108, 49]],
-      "hitFx": { "hold": 2, "sprite": {"image": "sheets/air-hit-2.png", "columns": 8, "rows": 1, "count": 8, "frameW": 236, "frameH": 250, "originX": 118, "originY": 125, "scale": 0.5} },
-      "sprite": {"image": "sheets/jM.png", "columns": 6, "rows": 1, "count": 6, "frameW": 404, "frameH": 454, "originX": 190, "originY": 372, "scale": 0.5, "holds": [3, 2, 4, 4, 4, 4]} },
-    { "id": "j.H", "name": "Jumping Heavy (spirit hand)", "input": "j.H", "startup": 10, "active": 3, "recovery": 9,
-      "damage": 800, "hitstun": 20, "untech": 28, "blockstun": 16, "hitstop": 12, "pushbackHit": 14, "pushbackBlock": 18, "selfPushback": 0, "guard": "high", "reach": 108,
-      "airHit": { "x": 3, "y": 6 },
-      "hitboxes": [[39, -19, 183, 142]],
-      "layers": [{ "effect": "spiritHand" }],
-      "hitFx": { "hold": 2, "sprite": {"image": "sheets/air-hit-3.png", "columns": 8, "rows": 1, "count": 8, "frameW": 244, "frameH": 274, "originX": 122, "originY": 137, "scale": 0.5} },
-      "sprite": {"image": "sheets/jH.png", "columns": 6, "rows": 1, "count": 6, "frameW": 437, "frameH": 431, "originX": 207, "originY": 376, "scale": 0.5, "holds": [4, 5, 3, 3, 3, 3]} },
-    { "id": "j.S", "name": "Air Axe Kick", "input": "j.S", "airReaction": "hardKD", "startup": 9, "active": 4, "recovery": 18,
-      "damage": 900, "hitstun": 22, "untech": 30, "blockstun": 14, "hitstop": 14, "pushbackHit": 0, "pushbackBlock": 18, "selfPushback": 0, "guard": "high", "reach": 90,
-      "airHit": { "x": 1, "y": -14 }, "groundBounce": { "y": 13 },
-      "timeline": [{ "at": 6, "fx": "axeArc" }],
-      "hitboxes": [[15, -30, 78, 250]],
-      "sprite": {"image": "sheets/jS.png", "columns": 5, "rows": 1, "count": 5, "frameW": 459, "frameH": 479, "originX": 236, "originY": 411, "scale": 0.5, "holds": [3, 3, 2, 6, 16]} },
-    { "id": "5S", "name": "Launcher", "input": "5S", "hitReaction": "tumble", "startup": 9, "active": 3, "recovery": 24,
-      "damage": 700, "hitstun": 30, "untech": 50, "blockstun": 14, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 30, "selfPushback": 22, "guard": "mid", "reach": 64,
-      "launcher": true, "launch": { "x": 0, "y": 24 },
-      "hitboxes": [[11, -4, 85, 246]],
-      "timeline": [{ "at": 4, "vel": { "x": 6 } }, { "at": 8, "vel": { "x": 0 } }],
-      "sprite": {"image": "sheets/5S.png", "columns": 8, "rows": 1, "count": 8, "frameW": 405, "frameH": 488, "originX": 159, "originY": 486, "scale": 0.5, "holds": [3, 3, 2, 3, 8, 6, 5, 5]} },
-    { "id": "spiritOrb", "name": "Spirit Orb (L)", "input": "236L", "kind": "special", "startup": 12, "active": 3, "recovery": 22,
-      "damage": 300, "hitstun": 30, "blockstun": 14, "hitstop": 8, "pushbackHit": 6, "pushbackBlock": 10, "selfPushback": 4, "guard": "mid", "reach": 75,
-      "hitboxes": [[0, 70, 75, 60]],
-      "oneAtATime": "spiritOrb", "cancels": [{ "from": 15, "into": ["rite_5", "rite_4", "rite_2"], "on": ["hit", "block", "whiff"] }], "timeline": [{ "at": 14, "spawn": "spiritOrb" }],
-      "sprite": {"image": "sheets/fireball.png", "columns": 6, "rows": 1, "count": 6, "frameW": 587, "frameH": 442, "originX": 300, "originY": 440, "scale": 0.5, "holds": [4, 4, 3, 3, 12, 10]}, "airReaction": "softKD" },
-    { "id": "spiritOrbM", "name": "Spirit Orb (M)", "input": "236M", "kind": "special", "startup": 16, "active": 3, "recovery": 22,
-      "damage": 300, "hitstun": 22, "blockstun": 14, "hitstop": 8, "pushbackHit": 6, "pushbackBlock": 10, "selfPushback": 4, "guard": "mid", "reach": 75,
-      "hitboxes": [[0, 70, 75, 60]],
-      "oneAtATime": "spiritOrbM", "cancels": [{ "from": 19, "into": ["rite_5", "rite_4", "rite_2"], "on": ["hit", "block", "whiff"] }], "timeline": [{ "at": 18, "spawn": "spiritOrbM" }],
-      "sprite": {"image": "sheets/fireball-M.png", "columns": 8, "rows": 1, "count": 8, "frameW": 483, "frameH": 442, "originX": 237, "originY": 440, "scale": 0.5, "holds": [4, 4, 4, 3, 3, 10, 6, 6]} },
-    { "id": "spiritOrbH", "name": "Spirit Orb (H)", "input": "236H", "kind": "special", "startup": 21, "active": 3, "recovery": 22,
-      "damage": 300, "hitstun": 22, "blockstun": 14, "hitstop": 8, "pushbackHit": 6, "pushbackBlock": 10, "selfPushback": 4, "guard": "mid", "reach": 75,
-      "hitboxes": [[0, 70, 75, 60]],
-      "oneAtATime": "spiritOrbH", "cancels": [{ "from": 24, "into": ["rite_5", "rite_4", "rite_2"], "on": ["hit", "block", "whiff"] }], "timeline": [{ "at": 3, "vel": { "x": -3 } }, { "at": 13, "vel": { "x": 0 } }, { "at": 23, "spawn": "spiritOrbH" }],
-      "sprite": {"image": "sheets/fireball-H.png", "columns": 10, "rows": 1, "count": 10, "frameW": 680, "frameH": 458, "originX": 390, "originY": 456, "scale": 0.5, "holds": [3, 3, 4, 3, 3, 2, 2, 3, 12, 10]} },
-    { "id": "pillarL", "name": "Resilience Pillar (L)", "input": "623L", "startup": 15, "active": 8, "recovery": 18,
-      "damage": 800, "hitstun": 30, "untech": 40, "blockstun": 16, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 24, "selfPushback": 0, "guard": "mid", "reach": 135,
-      "launch": { "x": 2, "y": 14 }, "specialCancel": false,
-      "hitboxes": [[55, 0, 80, 290]],
-      "timeline": [{ "at": 5, "fx": "pillar" }],
-      "sprite": {"image": "sheets/pillar.png", "columns": 7, "rows": 1, "count": 7, "frameW": 339, "frameH": 554, "originX": 148, "originY": 526, "scale": 0.5, "holds": [2, 2, 1, 9, 9, 9, 8]} },
-    { "id": "pillarM", "name": "Resilience Pillar (M)", "input": "623M", "startup": 18, "active": 8, "recovery": 22,
-      "damage": 1000, "hitstun": 30, "untech": 40, "blockstun": 16, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 24, "selfPushback": 0, "guard": "mid", "reach": 135,
-      "launch": { "x": 2, "y": 14 }, "specialCancel": false,
-      "hitboxes": [[55, 0, 80, 290]],
-      "timeline": [{ "at": 8, "fx": "pillar" }, { "at": 0, "hurt": [[-30, 0, 60, 75]] }, { "at": 25, "hurt": [[-39, -1, 80, 175]] }],
-      "sprite": {"image": "sheets/pillar.png", "columns": 7, "rows": 1, "count": 7, "frameW": 339, "frameH": 554, "originX": 148, "originY": 526, "scale": 0.5, "holds": [3, 3, 2, 10, 10, 10, 9]} },
-    { "id": "pillarH", "name": "Resilience Pillar (H)", "input": "623H", "startup": 22, "active": 8, "recovery": 26,
-      "damage": 1300, "hitstun": 30, "untech": 40, "blockstun": 16, "hitstop": 12, "pushbackHit": 0, "pushbackBlock": 24, "selfPushback": 0, "guard": "mid", "reach": 135,
-      "launch": { "x": 2, "y": 14 }, "specialCancel": false,
-      "hitboxes": [[55, 0, 80, 290]],
-      "timeline": [{ "at": 12, "fx": "pillar" }],
-      "sprite": {"image": "sheets/pillar.png", "columns": 7, "rows": 1, "count": 7, "frameW": 339, "frameH": 554, "originX": 148, "originY": 526, "scale": 0.5, "holds": [4, 4, 4, 11, 11, 11, 10]} },
-    { "id": "lariatL", "name": "Running Lariat (L)", "input": "214L", "startup": 14, "active": 4, "recovery": 24,
-      "damage": 900, "hitstun": 24, "untech": 30, "blockstun": 24, "hitstop": 12, "pushbackHit": 20, "pushbackBlock": 30, "selfPushback": 20, "guard": "mid", "reach": 130,
+      "hitboxes": [
+        [
+          78,
+          -1,
+          78,
+          60
+        ]
+      ],
+      "sprite": {
+        "image": "sheets/2H.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 511,
+        "frameH": 270,
+        "originX": 208,
+        "originY": 268,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          2,
+          3,
+          4,
+          6,
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "6H",
+      "name": "Forward Throw (the grab; the hold and the push are the art of throwHold and throwFinish)",
+      "input": "6H",
+      "startup": 2,
+      "active": 2,
+      "recovery": 22,
+      "damage": 1000,
+      "throwHit": 6,
+      "throwFx": [
+        72,
+        112
+      ],
+      "pushbackHit": 60,
+      "guard": "unblockable",
+      "reach": 65,
+      "counterHit": "none",
       "specialCancel": false,
-      "hitboxes": [[20, 70, 110, 80]],
-      "timeline": [{ "at": 7, "fx": "lariatTrailL" }, {"at": 3, "vel": {"x": 12}}, {"at": 13, "vel": {"x": 0}}],
-      "ex": {"name": "Running Lariat (EX)", "startup": 18, "active": 4, "recovery": 24, "timeline": [{"at": 8, "fx": "lariatTrailEx"}, {"from": 0, "to": 20, "armor": 1}, {"at": 3, "vel": {"x": 23}}, {"at": 17, "vel": {"x": 0}}], "sprite": {"image": "sheets/lariat.png", "columns": 9, "rows": 1, "count": 9, "frameW": 577, "frameH": 442, "originX": 321, "originY": 440, "scale": 0.5, "holds": [4, 3, 4, 3, 3, 4, 9, 8, 7]}, "damage": 1300, "blockstun": 17},
-      "sprite": {"image": "sheets/lariat.png", "columns": 9, "rows": 1, "count": 9, "frameW": 577, "frameH": 442, "originX": 321, "originY": 440, "scale": 0.5, "holds": [4, 2, 3, 2, 2, 4, 9, 8, 7]} },
-    { "id": "lariatM", "name": "Running Lariat (M)", "input": "214M", "startup": 18, "active": 4, "recovery": 24,
-      "damage": 1000, "hitstun": 34, "untech": 30, "blockstun": 20, "hitstop": 12, "pushbackHit": 20, "pushbackBlock": 30, "selfPushback": 20, "guard": "mid", "reach": 130,
+      "throwboxes": [
+        [
+          10,
+          20,
+          55,
+          120
+        ]
+      ],
+      "throwDistance": 70,
+      "sprite": { "image": "sheets/throw-forward.png", "columns": 3, "rows": 1, "count": 3, "frameW": 367, "frameH": 332, "originX": 157, "originY": 330, "scale": 0.5, "holds": [2, 12, 11] }
+    },
+    {
+      "id": "4H",
+      "name": "Back Throw (the grab; its hold and slam are in art.throws)",
+      "input": "4H",
+      "startup": 2,
+      "active": 2,
+      "recovery": 22,
+      "damage": 1000,
+      "throwHit": 8,
+      "throwFx": [
+        62,
+        30
+      ],
+      "pushbackHit": 60,
+      "guard": "unblockable",
+      "reach": 65,
+      "counterHit": "none",
       "specialCancel": false,
-      "hitboxes": [[20, 70, 110, 76]],
-      "timeline": [{ "at": 8, "fx": "lariatTrailM" }, {"at": 3, "vel": {"x": 16}}, {"at": 17, "vel": {"x": 0}}],
-      "ex": {"name": "Running Lariat (EX)", "startup": 18, "active": 4, "recovery": 24, "timeline": [{"at": 8, "fx": "lariatTrailEx"}, {"from": 0, "to": 20, "armor": 1}, {"at": 3, "vel": {"x": 23}}, {"at": 17, "vel": {"x": 0}}], "sprite": {"image": "sheets/lariat.png", "columns": 9, "rows": 1, "count": 9, "frameW": 577, "frameH": 442, "originX": 321, "originY": 440, "scale": 0.5, "holds": [4, 3, 4, 3, 3, 4, 9, 8, 7]}, "damage": 1300, "blockstun": 17},
-      "sprite": {"image": "sheets/lariat.png", "columns": 9, "rows": 1, "count": 9, "frameW": 577, "frameH": 442, "originX": 321, "originY": 440, "scale": 0.5, "holds": [4, 3, 4, 3, 3, 4, 9, 8, 7]}, "airHit": { "x": 3, "y": -2 }, "airReaction": "hardKD" },
-    { "id": "lariatH", "name": "Running Lariat (H)", "input": "214H", "hitReaction": "crumple", "startup": 22, "active": 4, "recovery": 26,
-      "damage": 1100, "hitstun": 30, "untech": 30, "blockstun": 19, "hitstop": 12, "pushbackHit": 20, "pushbackBlock": 30, "selfPushback": 20, "guard": "mid", "reach": 130,
+      "throwboxes": [
+        [
+          10,
+          20,
+          55,
+          120
+        ]
+      ],
+      "throwDistance": 70,
+      "throwSwap": true,
+      "sprite": { "image": "sheets/throw-back.png", "columns": 3, "rows": 1, "count": 3, "frameW": 458, "frameH": 353, "originX": 201, "originY": 351, "scale": 0.5, "holds": [2, 12, 11] }
+    },
+    {
+      "id": "backHeavy",
+      "name": "Back Heavy",
+      "input": "4H",
+      "startup": 11,
+      "active": 3,
+      "recovery": 22,
+      "damage": 800,
+      "hitstun": 37,
+      "blockstun": 16,
+      "hitstop": 12,
+      "pushbackHit": 30,
+      "pushbackBlock": 36,
+      "selfPushback": 22,
+      "guard": "mid",
+      "reach": 138,
+      "hitboxes": [
+        [
+          44,
+          63,
+          88,
+          92
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 10,
+          "hurt": [
+            [
+              -5,
+              0,
+              95,
+              150
+            ]
+          ]
+        },
+        {
+          "at": 23,
+          "hurt": [
+            [
+              -30,
+              0,
+              60,
+              160
+            ]
+          ]
+        }
+      ],
+      "sprite": {
+        "image": "sheets/4H.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 591,
+        "frameH": 390,
+        "originX": 314,
+        "originY": 388,
+        "scale": 0.5,
+        "holds": [
+          3,
+          4,
+          3,
+          4,
+          5,
+          6,
+          5,
+          5
+        ]
+      },
+      "launch": {
+        "type": "soft",
+        "x": 3,
+        "y": 19
+      }
+    },
+    {
+      "id": "j.L",
+      "name": "Jumping Light",
+      "input": "j.L",
+      "startup": 4,
+      "active": 4,
+      "recovery": 8,
+      "damage": 400,
+      "hitstun": 13,
+      "untech": 20,
+      "blockstun": 10,
+      "hitstop": 8,
+      "pushbackHit": 10,
+      "pushbackBlock": 14,
+      "selfPushback": 0,
+      "guard": "high",
+      "reach": 88,
+      "jumpCancel": "hit",
+      "airHit": {
+        "x": 2,
+        "y": 4
+      },
+      "hitboxes": [
+        [
+          39,
+          24,
+          94,
+          84
+        ]
+      ],
+      "hitFx": {
+        "hold": 2,
+        "sprite": {
+          "image": "sheets/air-hit-1.png",
+          "columns": 10,
+          "rows": 1,
+          "count": 10,
+          "frameW": 244,
+          "frameH": 232,
+          "originX": 122,
+          "originY": 116,
+          "scale": 0.5
+        }
+      },
+      "sprite": {
+        "image": "sheets/jL.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 431,
+        "frameH": 336,
+        "originX": 198,
+        "originY": 357,
+        "scale": 0.5,
+        "holds": [
+          1,
+          1,
+          1,
+          4,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "j.M",
+      "name": "Jumping Medium",
+      "input": "j.M",
+      "startup": 6,
+      "active": 4,
+      "recovery": 12,
+      "damage": 600,
+      "hitstun": 16,
+      "untech": 24,
+      "blockstun": 12,
+      "hitstop": 10,
+      "pushbackHit": 12,
+      "pushbackBlock": 16,
+      "selfPushback": 0,
+      "guard": "high",
+      "reach": 119,
+      "jumpCancel": "hit",
+      "airHit": {
+        "x": 2,
+        "y": 5
+      },
+      "hitboxes": [
+        [
+          17,
+          37,
+          84,
+          78
+        ],
+        [
+          -69,
+          11,
+          108,
+          49
+        ]
+      ],
+      "hitFx": {
+        "hold": 2,
+        "sprite": {
+          "image": "sheets/air-hit-2.png",
+          "columns": 8,
+          "rows": 1,
+          "count": 8,
+          "frameW": 236,
+          "frameH": 250,
+          "originX": 118,
+          "originY": 125,
+          "scale": 0.5
+        }
+      },
+      "sprite": {
+        "image": "sheets/jM.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 483,
+        "frameH": 429,
+        "originX": 192,
+        "originY": 381,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          1,
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "id": "j.H",
+      "name": "Jumping Heavy (spirit hand)",
+      "input": "j.H",
+      "startup": 10,
+      "active": 3,
+      "recovery": 9,
+      "damage": 800,
+      "hitstun": 20,
+      "untech": 28,
+      "blockstun": 16,
+      "hitstop": 12,
+      "pushbackHit": 14,
+      "pushbackBlock": 18,
+      "selfPushback": 0,
+      "guard": "high",
+      "reach": 108,
+      "airHit": {
+        "x": 3,
+        "y": 6
+      },
+      "hitboxes": [
+        [
+          39,
+          -19,
+          183,
+          142
+        ]
+      ],
+      "hitFx": {
+        "hold": 2,
+        "sprite": {
+          "image": "sheets/air-hit-3.png",
+          "columns": 8,
+          "rows": 1,
+          "count": 8,
+          "frameW": 244,
+          "frameH": 274,
+          "originX": 122,
+          "originY": 137,
+          "scale": 0.5
+        }
+      },
+      "sprite": {
+        "image": "sheets/jH.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 417,
+        "frameH": 445,
+        "originX": 221,
+        "originY": 395,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "j.S",
+      "name": "Air Axe Kick",
+      "input": "j.S",
+      "airReaction": "hardKD",
+      "startup": 9,
+      "active": 4,
+      "recovery": 18,
+      "damage": 900,
+      "hitstun": 22,
+      "untech": 30,
+      "blockstun": 14,
+      "hitstop": 14,
+      "pushbackHit": 0,
+      "pushbackBlock": 18,
+      "selfPushback": 0,
+      "guard": "high",
+      "reach": 90,
+      "airHit": {
+        "x": 1,
+        "y": -14
+      },
+      "groundBounce": {
+        "y": 13
+      },
+      "hitboxes": [
+        [
+          15,
+          -30,
+          78,
+          250
+        ]
+      ],
+      "sprite": {
+        "image": "sheets/jS.png",
+        "columns": 10,
+        "rows": 1,
+        "count": 10,
+        "frameW": 498,
+        "frameH": 432,
+        "originX": 236,
+        "originY": 396,
+        "scale": 0.5,
+        "holds": [
+          1,
+          1,
+          2,
+          2,
+          1,
+          1,
+          4,
+          6,
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "5S",
+      "name": "Launcher",
+      "input": "5S",
+      "hitReaction": "tumble",
+      "startup": 9,
+      "active": 3,
+      "recovery": 24,
+      "damage": 700,
+      "hitstun": 30,
+      "untech": 50,
+      "blockstun": 14,
+      "hitstop": 12,
+      "pushbackHit": 0,
+      "pushbackBlock": 30,
+      "selfPushback": 22,
+      "guard": "mid",
+      "reach": 64,
+      "launcher": true,
+      "launch": {
+        "x": 0,
+        "y": 24
+      },
+      "hitboxes": [
+        [
+          11,
+          -4,
+          85,
+          246
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 4,
+          "vel": {
+            "x": 6
+          }
+        },
+        {
+          "at": 8,
+          "vel": {
+            "x": 0
+          }
+        }
+      ],
+      "sprite": {
+        "image": "sheets/5S.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 553,
+        "frameH": 522,
+        "originX": 318,
+        "originY": 488,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          2,
+          3,
+          6,
+          6,
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "spiritOrb",
+      "name": "Spirit Orb (L)",
+      "input": "236L",
+      "kind": "special",
+      "startup": 12,
+      "active": 3,
+      "recovery": 22,
+      "damage": 300,
+      "hitstun": 30,
+      "blockstun": 14,
+      "hitstop": 8,
+      "pushbackHit": 6,
+      "pushbackBlock": 10,
+      "selfPushback": 4,
+      "guard": "mid",
+      "reach": 75,
+      "hitboxes": [
+        [
+          0,
+          70,
+          75,
+          60
+        ]
+      ],
+      "oneAtATime": "spiritOrb",
+      "cancels": [
+        {
+          "from": 15,
+          "into": [
+            "rite_5",
+            "rite_4",
+            "rite_2"
+          ],
+          "on": [
+            "hit",
+            "block",
+            "whiff"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "at": 14,
+          "spawn": "spiritOrb"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/fireball.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 507,
+        "frameH": 332,
+        "originX": 251,
+        "originY": 330,
+        "scale": 0.5,
+        "holds": [
+          4,
+          4,
+          3,
+          3,
+          5,
+          5,
+          6,
+          6
+        ]
+      },
+      "airReaction": "softKD",
+      "untech": 40
+    },
+    {
+      "id": "spiritOrbM",
+      "name": "Spirit Orb (M)",
+      "input": "236M",
+      "kind": "special",
+      "startup": 16,
+      "active": 3,
+      "recovery": 22,
+      "damage": 300,
+      "hitstun": 22,
+      "blockstun": 14,
+      "hitstop": 8,
+      "pushbackHit": 6,
+      "pushbackBlock": 10,
+      "selfPushback": 4,
+      "guard": "mid",
+      "reach": 75,
+      "hitboxes": [
+        [
+          0,
+          70,
+          75,
+          60
+        ]
+      ],
+      "oneAtATime": "spiritOrbM",
+      "cancels": [
+        {
+          "from": 19,
+          "into": [
+            "rite_5",
+            "rite_4",
+            "rite_2"
+          ],
+          "on": [
+            "hit",
+            "block",
+            "whiff"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "at": 18,
+          "spawn": "spiritOrbM"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/fireball-M.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 461,
+        "frameH": 407,
+        "originX": 188,
+        "originY": 394,
+        "scale": 0.5,
+        "holds": [
+          4,
+          5,
+          4,
+          2,
+          3,
+          7,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "id": "spiritOrbH",
+      "name": "Spirit Orb (H)",
+      "input": "236H",
+      "kind": "special",
+      "startup": 21,
+      "active": 3,
+      "recovery": 22,
+      "damage": 300,
+      "hitstun": 22,
+      "blockstun": 14,
+      "hitstop": 8,
+      "pushbackHit": 6,
+      "pushbackBlock": 10,
+      "selfPushback": 4,
+      "guard": "mid",
+      "reach": 75,
+      "hitboxes": [
+        [
+          0,
+          70,
+          75,
+          60
+        ]
+      ],
+      "oneAtATime": "spiritOrbH",
+      "cancels": [
+        {
+          "from": 24,
+          "into": [
+            "rite_5",
+            "rite_4",
+            "rite_2"
+          ],
+          "on": [
+            "hit",
+            "block",
+            "whiff"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "at": 3,
+          "vel": {
+            "x": -3
+          }
+        },
+        {
+          "at": 13,
+          "vel": {
+            "x": 0
+          }
+        },
+        {
+          "at": 23,
+          "spawn": "spiritOrbH"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/fireball-H.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 527,
+        "frameH": 372,
+        "originX": 279,
+        "originY": 370,
+        "scale": 0.5,
+        "holds": [
+          5,
+          5,
+          6,
+          4,
+          3,
+          7,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "id": "pillarL",
+      "name": "Resilience Pillar (L)",
+      "input": "623L",
+      "startup": 15,
+      "active": 8,
+      "recovery": 18,
+      "damage": 800,
+      "hitstun": 30,
+      "untech": 40,
+      "blockstun": 16,
+      "hitstop": 12,
+      "pushbackHit": 0,
+      "pushbackBlock": 24,
+      "selfPushback": 0,
+      "guard": "mid",
+      "reach": 135,
+      "launch": {
+        "x": 2,
+        "y": 14
+      },
       "specialCancel": false,
-      "hitboxes": [[20, 70, 110, 78]],
-      "timeline": [{ "at": 9, "fx": "lariatTrailH" }, {"at": 3, "vel": {"x": 18}}, {"at": 21, "vel": {"x": 0}}],
-      "ex": {"name": "Running Lariat (EX)", "startup": 18, "active": 4, "recovery": 24, "timeline": [{"at": 8, "fx": "lariatTrailEx"}, {"from": 0, "to": 20, "armor": 1}, {"at": 3, "vel": {"x": 23}}, {"at": 17, "vel": {"x": 0}}], "sprite": {"image": "sheets/lariat.png", "columns": 9, "rows": 1, "count": 9, "frameW": 577, "frameH": 442, "originX": 321, "originY": 440, "scale": 0.5, "holds": [4, 3, 4, 3, 3, 4, 9, 8, 7]}, "damage": 1300, "blockstun": 17},
-      "sprite": {"image": "sheets/lariat.png", "columns": 9, "rows": 1, "count": 9, "frameW": 577, "frameH": 442, "originX": 321, "originY": 440, "scale": 0.5, "holds": [4, 4, 5, 5, 3, 4, 10, 9, 7]}, "airReaction": "hardKD", "airHit": { "x": 9, "y": -17 } },
-    { "id": "dashF", "name": "Dash (system state art)", "sprite": {"image": "sheets/dash.png", "columns": 5, "rows": 1, "count": 5, "frameW": 525, "frameH": 350, "originX": 322, "originY": 348, "scale": 0.5, "holds": [2, 3, 2, 3, 2]} },
-    { "id": "dashStop", "name": "Dash stop (system state art)", "sprite": {"image": "sheets/dash-stop.png", "columns": 2, "rows": 1, "count": 2, "frameW": 429, "frameH": 442, "originX": 170, "originY": 440, "scale": 0.5, "holds": [2, 1]} },
-    { "id": "backdash", "name": "Back dash (system state art)", "sprite": {"image": "sheets/backdash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 378, "frameH": 458, "originX": 138, "originY": 456, "scale": 0.5, "holds": [2, 4, 4, 4]} },
-    { "id": "backdashStop", "name": "Back dash stop (system state art)", "sprite": {"image": "sheets/backdash-stop.png", "columns": 2, "rows": 1, "count": 2, "frameW": 391, "frameH": 442, "originX": 170, "originY": 440, "scale": 0.5, "holds": [4, 2]} },
-    { "id": "airdashF", "name": "Air dash (system state art)", "sprite": {"image": "sheets/airdash.png", "columns": 4, "rows": 1, "count": 4, "frameW": 530, "frameH": 371, "originX": 280, "originY": 350, "scale": 0.5, "holds": [2, 4, 4, 4]} },
-    { "id": "airdashB", "name": "Back air dash (system state art)", "sprite": {"image": "sheets/airdash-back.png", "columns": 4, "rows": 1, "count": 4, "frameW": 311, "frameH": 505, "originX": 145, "originY": 421, "scale": 0.5, "holds": [2, 4, 4, 2]} },
-    { "id": "airdashEnd", "name": "After an air dash (system state art: the fall drawings)", "sprite": {"image": "sheets/airdash-end.png", "columns": 1, "rows": 1, "count": 1, "frameW": 330, "frameH": 421, "originX": 173, "originY": 356, "scale": 0.5, "holds": [60]} },
-    { "id": "blockStand", "name": "Standing block (system state art)", "sprite": {"image": "sheets/block-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 316, "frameH": 364, "originX": 125, "originY": 362, "scale": 0.5, "holds": [4, 1]} },
-    { "id": "blockCrouch", "name": "Crouching block (system state art)", "sprite": {"image": "sheets/block-crouch.png", "columns": 2, "rows": 1, "count": 2, "frameW": 294, "frameH": 287, "originX": 119, "originY": 285, "scale": 0.5, "holds": [4, 1]} },
-    { "id": "blockAir", "name": "Air block (system state art)", "sprite": {"image": "sheets/block-air.png", "columns": 2, "rows": 1, "count": 2, "frameW": 252, "frameH": 310, "originX": 133, "originY": 301, "scale": 0.5, "holds": [4, 1]} },
-    { "id": "hitStand", "name": "Hit, standing (system state art: drawing 1 for now; drawings 2 and 3 are on the sheet for per-strength reactions)", "sprite": {"image": "sheets/hit-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 286, "frameH": 364, "originX": 113, "originY": 362, "scale": 0.5, "holds": [6, 1]} },
-    { "id": "hitCrouch", "name": "Hit, crouching (system state art: drawing 1 only)", "sprite": {"image": "sheets/hit-crouch.png", "columns": 2, "rows": 1, "count": 2, "frameW": 278, "frameH": 284, "originX": 109, "originY": 282, "scale": 0.5, "holds": [6, 1]} },
-    { "id": "hitAir", "name": "Hit in the air (system state art: drawings 1 and 2)", "sprite": {"image": "sheets/hit-air.png", "columns": 2, "rows": 1, "count": 2, "frameW": 303, "frameH": 346, "originX": 106, "originY": 331, "scale": 0.5, "holds": [5, 1]} },
-    { "id": "airTech", "name": "Air tech (recoil, tuck, flip, then upright and falling)", "sprite": {"image": "sheets/air-tech.png", "columns": 5, "rows": 1, "count": 5, "frameW": 307, "frameH": 447, "originX": 133, "originY": 379, "scale": 0.5, "holds": [2, 2, 3, 2, 3]} },
-    { "id": "tumble", "name": "Tumbling after an air hit (system state art: drawings 4 and 5; drawn frame 3 left out)", "sprite": {"image": "sheets/tumble.png", "columns": 2, "rows": 1, "count": 2, "frameW": 237, "frameH": 329, "originX": 118, "originY": 382, "scale": 0.5, "holds": [6, 6]} },
-    { "id": "knockdown", "name": "Knocked down (system state art)", "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 346, "frameH": 186, "originX": 173, "originY": 184, "scale": 0.5, "holds": [6, 34] } },
-    { "id": "hitSpin", "name": "Spin (hit state; placeholder art: a copy of the air hit)", "sprite": {"image": "sheets/hit-air.png", "columns": 2, "rows": 1, "count": 2, "frameW": 303, "frameH": 346, "originX": 106, "originY": 331, "scale": 0.5, "holds": [5, 1]} },
-    { "id": "hitTumble", "name": "Tumble (hit state; placeholder art: a copy of the tumbling fall)", "sprite": {"image": "sheets/tumble.png", "columns": 2, "rows": 1, "count": 2, "frameW": 237, "frameH": 329, "originX": 118, "originY": 382, "scale": 0.5, "holds": [6, 6]} },
-    { "id": "slide", "name": "Slide (hit state; placeholder art: a copy of the knockdown)", "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 346, "frameH": 186, "originX": 173, "originY": 184, "scale": 0.5, "holds": [6, 34] } },
-    { "id": "knockdownSoft", "name": "Soft knockdown (the same drawings as the knockdown)", "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 346, "frameH": 186, "originX": 173, "originY": 184, "scale": 0.5, "holds": [6, 34] } },
-    { "id": "koDown", "name": "Down after a KO (system state art: lying flat)", "timeline": [{ "at": 0, "sprite": 1 }], "sprite": { "image": "sheets/knockdown.png", "columns": 2, "rows": 1, "count": 2, "frameW": 346, "frameH": 186, "originX": 173, "originY": 184, "scale": 0.5, "holds": [60] } },
-    { "id": "wakeup", "name": "Getting up (system state art)", "sprite": { "image": "sheets/wakeup.png", "columns": 3, "rows": 1, "count": 3, "frameW": 268, "frameH": 376, "originX": 134, "originY": 374, "scale": 0.5, "holds": [4, 4, 4] } },
-    { "id": "thrown", "name": "Held in a throw (system state art: the recoil drawing)", "sprite": {"image": "sheets/hit-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 286, "frameH": 364, "originX": 113, "originY": 362, "scale": 0.5, "holds": [1]} },
-    { "id": "throwHold", "name": "Holding a thrown opponent (system state art: forward throw drawings 1-3)", "sprite": {"image": "sheets/throw-hold.png", "columns": 3, "rows": 1, "count": 3, "frameW": 359, "frameH": 375, "originX": 176, "originY": 373, "scale": 0.5, "holds": [4, 4, 6]} },
-    { "id": "throwFinish", "name": "After the throw lands (system state art: forward throw drawings 4-7, the double palm)", "sprite": {"image": "sheets/throw-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 337, "frameH": 376, "originX": 129, "originY": 374, "scale": 0.5, "holds": [6, 8, 8, 8]} },
-    {"id": "throwTech", "name": "Throw tech: both push each other off (system state art)", "sprite": {"image": "sheets/throw-tech.png", "columns": 5, "rows": 1, "count": 5, "frameW": 234, "frameH": 380, "originX": 113, "originY": 378, "scale": 0.5, "holds": [3,4,5,4,4]}},
-    { "id": "install", "name": "Spirit Install (super)", "input": "22HS", "kind": "super", "startup": 31, "active": 0, "recovery": 10,
-      "requires": { "vars": { "install": [0, 0] } },
-      "timeline": [{ "at": 2, "superFlash": 30 }, { "at": 3, "setVar": { "install": 600 } }],
-      "sprite": {"image": "sheets/install-change.png", "columns": 12, "rows": 1, "count": 12, "frameW": 360, "frameH": 617, "originX": 173, "originY": 615, "scale": 0.5, "holds": [3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3]} },
-    { "id": "crouch", "name": "Crouch (system state art)", "sprite": { "image": "sheets/crouch.png", "columns": 6, "rows": 1, "count": 6, "frameW": 298, "frameH": 368, "originX": 161, "originY": 366, "scale": 0.5, "holds": [3, 12, 12, 12, 12, 12] } },
-    { "id": "jumpSquat", "name": "Jump squat (system state art)", "sprite": {"image": "sheets/jumpsquat.png", "columns": 1, "rows": 1, "count": 1, "frameW": 291, "frameH": 301, "originX": 139, "originY": 299, "scale": 0.5} },
-    { "id": "superJumpSquat", "name": "Super jump squat (system state art)", "sprite": {"image": "sheets/jumpsquat.png", "columns": 1, "rows": 1, "count": 1, "frameW": 291, "frameH": 301, "originX": 139, "originY": 299, "scale": 0.5} },
-    { "id": "jump", "name": "Jump (system state art)", "sprite": {"image": "sheets/jump.png", "columns": 5, "rows": 1, "count": 5, "frameW": 220, "frameH": 462, "originX": 112, "originY": 370, "scale": 0.5, "holds": [5, 9, 9, 9, 28]} },
-    { "id": "superJump", "name": "Super jump (system state art)", "sprite": {"image": "sheets/jump.png", "columns": 5, "rows": 1, "count": 5, "frameW": 220, "frameH": 462, "originX": 112, "originY": 370, "scale": 0.5, "holds": [5, 9, 9, 9, 28]} },
-    { "id": "airJump", "name": "Air jump (system state art)", "sprite": {"image": "sheets/jump.png", "columns": 5, "rows": 1, "count": 5, "frameW": 220, "frameH": 462, "originX": 112, "originY": 370, "scale": 0.5, "holds": [5, 9, 9, 9, 28]} },
-    { "id": "fall", "name": "Fall (system state art)", "sprite": {"image": "sheets/fall.png", "columns": 2, "rows": 1, "count": 2, "frameW": 222, "frameH": 499, "originX": 113, "originY": 390, "scale": 0.5, "holds": [8, 52]} },
-    { "id": "land", "name": "Landing (system state art)", "sprite": {"image": "sheets/land.png", "columns": 1, "rows": 1, "count": 1, "frameW": 293, "frameH": 304, "originX": 142, "originY": 302, "scale": 0.5} },
-    { "id": "idle", "name": "Idle (art for the system idle state)",
-      "sprite": {"image": "sheets/idle.png", "columns": 12, "rows": 1, "count": 12, "frameW": 376, "frameH": 386, "originX": 176, "originY": 384, "scale": 0.5, "holds": [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]} },
-    { "id": "walkF", "name": "Walk forward (system state art)",
-      "sprite": {"image": "sheets/walk.png", "columns": 8, "rows": 1, "count": 8, "frameW": 404, "frameH": 415, "originX": 162, "originY": 413, "scale": 0.5, "holds": [6, 6, 6, 6, 6, 6, 6, 6]} },
-    { "id": "walkB", "name": "Walk back (system state art)",
-      "sprite": {"image": "sheets/walk-back.png", "columns": 8, "rows": 1, "count": 8, "frameW": 447, "frameH": 435, "originX": 180, "originY": 433, "scale": 0.5, "holds": [6, 6, 6, 6, 6, 6, 6, 6]} },
-    { "id": "rite_4", "sprite": {"image": "sheets/rite-4.png", "columns": 7, "rows": 1, "count": 7, "frameW": 407, "frameH": 485, "originX": 162, "originY": 483, "scale": 0.5, "holds": [3, 4, 4, 6, 6, 6, 6]},
-      "name": "Guardian's Wrath", "input": "4R", "startup": 5, "active": 0, "recovery": 31,
-      "timeline": [{ "from": 0, "to": 10, "invuln": { "strike": true, "throw": false } }, { "at": 5, "spawn": "ward" }] },
-    { "id": "rite_5", "sprite": { "image": "sheets/rite-5.png", "columns": 5, "rows": 1, "count": 5, "frameW": 456, "frameH": 477, "originX": 271, "originY": 475, "scale": 0.5, "holds": [5, 6, 6, 9, 7] },
-      "name": "Guardian Palm", "input": "5R", "startup": 12, "active": 0, "recovery": 22,
-      "timeline": [{ "at": 12, "spawn": "palm5" }] },
-    { "id": "rite_2", "sprite": { "image": "sheets/rite-2.png", "columns": 5, "rows": 1, "count": 5, "frameW": 299, "frameH": 410, "originX": 138, "originY": 393, "scale": 0.5, "holds": [5, 8, 9, 7, 7] },
-      "name": "Ancestor's Seal", "input": "2R", "startup": 13, "active": 0, "recovery": 24,
-      "timeline": [{ "at": 12, "endProjectile": "palm2" }, { "at": 13, "spawn": { "name": "palm2", "under": "opponent" } }], "jumpCancel": true },
-    { "id": "rite_j", "sprite": {"image": "sheets/rite-j.png", "columns": 5, "rows": 1, "count": 5, "frameW": 297, "frameH": 455, "originX": 149, "originY": 387, "scale": 0.5, "holds": [5, 6, 4, 7, 6]},
-      "name": "Guardian's Judgment", "input": "j.R", "perJump": "rite", "startup": 11, "active": 0, "recovery": 18,
-      "timeline": [{ "at": 1, "fx": "riteClap" }, { "at": 11, "spawn": { "name": "palmJ", "under": "opponent" } }] },
-    { "id": "vow_start", "name": "Vow: the guard coming up",
-      "sprite": { "image": "sheets/vow-start.png", "columns": 1, "rows": 1, "count": 1, "frameW": 196, "frameH": 364, "originX": 98, "originY": 362, "scale": 0.5, "holds": [4] } },
-    { "id": "vow_hold", "name": "Vow: holding the guard (a breathing loop: drawings 2 to 5 of the sheet, there and back)",
-      "sprite": { "image": "sheets/vow-hold.png", "columns": 6, "rows": 1, "count": 6, "frameW": 194, "frameH": 341, "originX": 98, "originY": 339, "scale": 0.5, "holds": [6, 6, 6, 6, 6, 6] } },
-    { "id": "vow_absorb", "name": "Vow: an absorbed hit (drawing 2 is the emphasis and holds)",
-      "sprite": { "image": "sheets/vow-absorb.png", "columns": 4, "rows": 1, "count": 4, "frameW": 232, "frameH": 352, "originX": 126, "originY": 350, "scale": 0.5, "holds": [2, 8, 2, 2] } },
-    { "id": "vow_strike_quick", "name": "Vow: quick strike",
-      "timeline": [{"at": 4, "vel": {"x": 6}},{"at": 9, "vel": {"x": 0}},{"at": 9, "fx": "vowBlast"}],
-      "sprite": {"image": "sheets/vow-strike-quick.png", "columns": 6, "rows": 1, "count": 6, "frameW": 374, "frameH": 425, "originX": 166, "originY": 423, "scale": 0.5, "holds": [3, 3, 3, 3, 10, 10]} },
-    { "id": "vow_strike", "name": "Vow: strike (crumples)",
-      "timeline": [{"at": 7, "vel": {"x": 7}},{"at": 13, "vel": {"x": 0}},{"at": 13, "fx": "vowBlast"}],
-      "sprite": {"image": "sheets/vow-strike.png", "columns": 6, "rows": 1, "count": 6, "frameW": 374, "frameH": 425, "originX": 166, "originY": 423, "scale": 0.5, "holds": [5, 4, 4, 3, 11, 11]} },
-    { "id": "vow_strike_full", "name": "Vow: full strike (unblockable)",
-      "timeline": [{"at": 8, "vel": {"x": 8}},{"at": 15, "vel": {"x": 0}},{"at": 15, "fx": "vowBlast"}],
-      "sprite": {"image": "sheets/vow-strike-full.png", "columns": 6, "rows": 1, "count": 6, "frameW": 374, "frameH": 425, "originX": 166, "originY": 423, "scale": 0.5, "holds": [5, 5, 5, 4, 12, 12]} },
-    { "id": "absolve", "name": "Absolve",
-      "sprite": { "image": "sheets/absolve.png", "columns": 5, "rows": 1, "count": 5, "frameW": 290, "frameH": 418, "originX": 145, "originY": 416, "scale": 0.5, "holds": [5, 2, 6, 5, 5] } },
-    { "id": "absolve_air", "name": "Absolve in the air (the same drawings)",
-      "sprite": { "image": "sheets/absolve.png", "columns": 5, "rows": 1, "count": 5, "frameW": 290, "frameH": 418, "originX": 145, "originY": 416, "scale": 0.5, "holds": [5, 2, 6, 5, 5] } },
-    { "id": "absolve_recovery", "name": "Absolve: the baited recovery",
-      "sprite": { "image": "sheets/absolve-recovery.png", "columns": 3, "rows": 1, "count": 3, "frameW": 258, "frameH": 349, "originX": 138, "originY": 347, "scale": 0.5, "holds": [14, 14, 12] } },
-    { "id": "absolve_recovery_air", "name": "Absolve: the baited recovery, falling (placeholder art: a copy of fall)",
-      "sprite": { "image": "sheets/absolve_recovery_air-placeholder.png", "columns": 2, "rows": 1, "count": 2, "frameW": 254, "frameH": 575, "originX": 127, "originY": 573, "scale": 0.5, "holds": [8, 52] } },
-    { "id": "repel", "name": "Repel",
-      "sprite": { "image": "sheets/repel.png", "columns": 4, "rows": 1, "count": 4, "frameW": 249, "frameH": 372, "originX": 106, "originY": 370, "scale": 0.5, "holds": [2, 3, 6, 1] } },
-    { "id": "draw", "name": "Draw",
-      "sprite": { "image": "sheets/draw.png", "columns": 4, "rows": 1, "count": 4, "frameW": 245, "frameH": 372, "originX": 108, "originY": 370, "scale": 0.5, "holds": [2, 3, 6, 1] } },
-    { "id": "drawn", "name": "pulled in by a Draw (placeholder art: a copy of hitStand)",
-      "sprite": { "image": "sheets/drawn-placeholder.png", "columns": 3, "rows": 1, "count": 3, "frameW": 252, "frameH": 391, "originX": 126, "originY": 389, "scale": 0.5, "holds": [1] } },
-    { "id": "crumple", "name": "Crumple (hit by a Vow strike)",
-      "sprite": {"image": "sheets/crumple.png", "columns": 6, "rows": 1, "count": 6, "frameW": 270, "frameH": 384, "originX": 131, "originY": 382, "scale": 0.5, "holds": [5, 5, 6, 8, 8, 1]} }
+      "hitboxes": [
+        [
+          55,
+          0,
+          80,
+          290
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 5,
+          "fx": "pillar"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/pillar.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 339,
+        "frameH": 554,
+        "originX": 148,
+        "originY": 526,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          1,
+          9,
+          9,
+          9,
+          8
+        ]
+      }
+    },
+    {
+      "id": "pillarM",
+      "name": "Resilience Pillar (M)",
+      "input": "623M",
+      "startup": 18,
+      "active": 8,
+      "recovery": 22,
+      "damage": 1000,
+      "hitstun": 30,
+      "untech": 40,
+      "blockstun": 16,
+      "hitstop": 12,
+      "pushbackHit": 0,
+      "pushbackBlock": 24,
+      "selfPushback": 0,
+      "guard": "mid",
+      "reach": 135,
+      "launch": {
+        "x": 2,
+        "y": 14
+      },
+      "specialCancel": false,
+      "hitboxes": [
+        [
+          55,
+          0,
+          80,
+          290
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 8,
+          "fx": "pillar"
+        },
+        {
+          "at": 0,
+          "hurt": [
+            [
+              -30,
+              0,
+              60,
+              75
+            ]
+          ]
+        },
+        {
+          "at": 25,
+          "hurt": [[-75, -2, 89, 175], [5, 91, 40, 40]]
+        }
+      ],
+      "sprite": {
+        "image": "sheets/pillar.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 339,
+        "frameH": 554,
+        "originX": 148,
+        "originY": 526,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          2,
+          10,
+          10,
+          10,
+          9
+        ]
+      }
+    },
+    {
+      "id": "pillarH",
+      "name": "Resilience Pillar (H)",
+      "input": "623H",
+      "startup": 22,
+      "active": 8,
+      "recovery": 26,
+      "damage": 1300,
+      "hitstun": 30,
+      "untech": 40,
+      "blockstun": 16,
+      "hitstop": 12,
+      "pushbackHit": 0,
+      "pushbackBlock": 24,
+      "selfPushback": 0,
+      "guard": "mid",
+      "reach": 135,
+      "launch": {
+        "x": 2,
+        "y": 14
+      },
+      "specialCancel": false,
+      "hitboxes": [
+        [
+          55,
+          0,
+          80,
+          290
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 12,
+          "fx": "pillar"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/pillar.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 339,
+        "frameH": 554,
+        "originX": 148,
+        "originY": 526,
+        "scale": 0.5,
+        "holds": [
+          4,
+          4,
+          4,
+          11,
+          11,
+          11,
+          10
+        ]
+      }
+    },
+    {
+      "id": "lariatL",
+      "name": "Running Lariat (L)",
+      "input": "214L",
+      "startup": 14,
+      "active": 4,
+      "recovery": 24,
+      "damage": 900,
+      "hitstun": 24,
+      "untech": 30,
+      "blockstun": 24,
+      "hitstop": 12,
+      "pushbackHit": 20,
+      "pushbackBlock": 30,
+      "selfPushback": 20,
+      "guard": "mid",
+      "reach": 130,
+      "specialCancel": false,
+      "hitboxes": [
+        [
+          20,
+          70,
+          110,
+          80
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 7,
+          "fx": "lariatTrailL"
+        },
+        {
+          "at": 3,
+          "vel": {
+            "x": 12
+          }
+        },
+        {
+          "at": 13,
+          "vel": {
+            "x": 0
+          }
+        }
+      ],
+      "ex": {
+        "name": "Running Lariat (EX)",
+        "startup": 18,
+        "active": 4,
+        "recovery": 24,
+        "timeline": [
+          {
+            "at": 8,
+            "fx": "lariatTrailEx"
+          },
+          {
+            "from": 0,
+            "to": 20,
+            "armor": 1
+          },
+          {
+            "at": 3,
+            "vel": {
+              "x": 23
+            }
+          },
+          {
+            "at": 17,
+            "vel": {
+              "x": 0
+            }
+          }
+        ],
+        "sprite": {
+          "image": "sheets/lariat.png",
+          "columns": 9,
+          "rows": 1,
+          "count": 9,
+          "frameW": 577,
+          "frameH": 442,
+          "originX": 321,
+          "originY": 440,
+          "scale": 0.5,
+          "holds": [
+            4,
+            3,
+            4,
+            3,
+            3,
+            4,
+            9,
+            8,
+            7
+          ]
+        },
+        "damage": 1300,
+        "blockstun": 17
+      },
+      "sprite": {
+        "image": "sheets/lariat.png",
+        "columns": 9,
+        "rows": 1,
+        "count": 9,
+        "frameW": 577,
+        "frameH": 442,
+        "originX": 321,
+        "originY": 440,
+        "scale": 0.5,
+        "holds": [
+          4,
+          2,
+          3,
+          2,
+          2,
+          4,
+          9,
+          8,
+          7
+        ]
+      }
+    },
+    {
+      "id": "lariatM",
+      "name": "Running Lariat (M)",
+      "input": "214M",
+      "startup": 18,
+      "active": 4,
+      "recovery": 24,
+      "damage": 1000,
+      "hitstun": 34,
+      "untech": 30,
+      "blockstun": 20,
+      "hitstop": 12,
+      "pushbackHit": 20,
+      "pushbackBlock": 30,
+      "selfPushback": 20,
+      "guard": "mid",
+      "reach": 130,
+      "specialCancel": false,
+      "hitboxes": [
+        [
+          20,
+          70,
+          110,
+          76
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 8,
+          "fx": "lariatTrailM"
+        },
+        {
+          "at": 3,
+          "vel": {
+            "x": 16
+          }
+        },
+        {
+          "at": 17,
+          "vel": {
+            "x": 0
+          }
+        }
+      ],
+      "ex": {
+        "name": "Running Lariat (EX)",
+        "startup": 18,
+        "active": 4,
+        "recovery": 24,
+        "timeline": [
+          {
+            "at": 8,
+            "fx": "lariatTrailEx"
+          },
+          {
+            "from": 0,
+            "to": 20,
+            "armor": 1
+          },
+          {
+            "at": 3,
+            "vel": {
+              "x": 23
+            }
+          },
+          {
+            "at": 17,
+            "vel": {
+              "x": 0
+            }
+          }
+        ],
+        "sprite": {
+          "image": "sheets/lariat.png",
+          "columns": 9,
+          "rows": 1,
+          "count": 9,
+          "frameW": 577,
+          "frameH": 442,
+          "originX": 321,
+          "originY": 440,
+          "scale": 0.5,
+          "holds": [
+            4,
+            3,
+            4,
+            3,
+            3,
+            4,
+            9,
+            8,
+            7
+          ]
+        },
+        "damage": 1300,
+        "blockstun": 17
+      },
+      "sprite": {
+        "image": "sheets/lariat.png",
+        "columns": 9,
+        "rows": 1,
+        "count": 9,
+        "frameW": 577,
+        "frameH": 442,
+        "originX": 321,
+        "originY": 440,
+        "scale": 0.5,
+        "holds": [
+          4,
+          3,
+          4,
+          3,
+          3,
+          4,
+          9,
+          8,
+          7
+        ]
+      },
+      "airHit": {
+        "x": 3,
+        "y": -2
+      },
+      "airReaction": "hardKD"
+    },
+    {
+      "id": "lariatH",
+      "name": "Running Lariat (H)",
+      "input": "214H",
+      "hitReaction": "crumple",
+      "startup": 22,
+      "active": 4,
+      "recovery": 26,
+      "damage": 1100,
+      "hitstun": 30,
+      "untech": 30,
+      "blockstun": 19,
+      "hitstop": 12,
+      "pushbackHit": 20,
+      "pushbackBlock": 30,
+      "selfPushback": 20,
+      "guard": "mid",
+      "reach": 130,
+      "specialCancel": false,
+      "hitboxes": [
+        [
+          20,
+          70,
+          110,
+          78
+        ]
+      ],
+      "timeline": [
+        {
+          "at": 9,
+          "fx": "lariatTrailH"
+        },
+        {
+          "at": 3,
+          "vel": {
+            "x": 18
+          }
+        },
+        {
+          "at": 21,
+          "vel": {
+            "x": 0
+          }
+        }
+      ],
+      "ex": {
+        "name": "Running Lariat (EX)",
+        "startup": 18,
+        "active": 4,
+        "recovery": 24,
+        "timeline": [
+          {
+            "at": 8,
+            "fx": "lariatTrailEx"
+          },
+          {
+            "from": 0,
+            "to": 20,
+            "armor": 1
+          },
+          {
+            "at": 3,
+            "vel": {
+              "x": 23
+            }
+          },
+          {
+            "at": 17,
+            "vel": {
+              "x": 0
+            }
+          }
+        ],
+        "sprite": {
+          "image": "sheets/lariat.png",
+          "columns": 9,
+          "rows": 1,
+          "count": 9,
+          "frameW": 577,
+          "frameH": 442,
+          "originX": 321,
+          "originY": 440,
+          "scale": 0.5,
+          "holds": [
+            4,
+            3,
+            4,
+            3,
+            3,
+            4,
+            9,
+            8,
+            7
+          ]
+        },
+        "damage": 1300,
+        "blockstun": 17
+      },
+      "sprite": {
+        "image": "sheets/lariat.png",
+        "columns": 9,
+        "rows": 1,
+        "count": 9,
+        "frameW": 577,
+        "frameH": 442,
+        "originX": 321,
+        "originY": 440,
+        "scale": 0.5,
+        "holds": [
+          4,
+          4,
+          5,
+          5,
+          3,
+          4,
+          10,
+          9,
+          7
+        ]
+      },
+      "airReaction": "hardKD",
+      "airHit": {
+        "x": 9,
+        "y": -17
+      }
+    },
+    {
+      "id": "dashF",
+      "name": "Dash (system state art)",
+      "sprite": {
+        "image": "sheets/dash.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 565,
+        "frameH": 287,
+        "originX": 286,
+        "originY": 285,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "dashStop",
+      "name": "Dash stop (system state art)",
+      "sprite": {
+        "image": "sheets/dash-stop.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 424,
+        "frameH": 313,
+        "originX": 199,
+        "originY": 311,
+        "scale": 0.5,
+        "holds": [
+          2,
+          1
+        ]
+      }
+    },
+    {
+      "id": "backdash",
+      "name": "Back dash (system state art)",
+      "sprite": {
+        "image": "sheets/backdash.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 559,
+        "frameH": 339,
+        "originX": 210,
+        "originY": 337,
+        "scale": 0.5,
+        "holds": [
+          2,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "id": "backdashStop",
+      "name": "Back dash stop (system state art)",
+      "sprite": {
+        "image": "sheets/backdash-stop.png",
+        "columns": 3,
+        "rows": 1,
+        "count": 3,
+        "frameW": 410,
+        "frameH": 332,
+        "originX": 172,
+        "originY": 330,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "airdashF",
+      "name": "Air dash (system state art)",
+      "sprite": {
+        "image": "sheets/airdash.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 622,
+        "frameH": 272,
+        "originX": 280,
+        "originY": 312,
+        "scale": 0.5,
+        "holds": [
+          2,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "id": "airdashB",
+      "name": "Back air dash (system state art)",
+      "sprite": {
+        "image": "sheets/airdash-back.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 340,
+        "frameH": 400,
+        "originX": 133,
+        "originY": 372,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "airdashEnd",
+      "name": "After an air dash (system state art: the fall drawings)",
+      "sprite": {
+        "image": "sheets/airdash-end.png",
+        "columns": 3,
+        "rows": 1,
+        "count": 3,
+        "frameW": 279,
+        "frameH": 358,
+        "originX": 158,
+        "originY": 342,
+        "scale": 0.5,
+        "holds": [
+          4,
+          4,
+          52
+        ]
+      }
+    },
+    {
+      "id": "blockStand",
+      "name": "Standing block (system state art)",
+      "sprite": {
+        "image": "sheets/block-stand.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 295,
+        "frameH": 332,
+        "originX": 147,
+        "originY": 330,
+        "scale": 0.5,
+        "holds": [
+          4,
+          1
+        ]
+      }
+    },
+    {
+      "id": "blockCrouch",
+      "name": "Crouching block (system state art)",
+      "sprite": {
+        "image": "sheets/block-crouch.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 267,
+        "frameH": 266,
+        "originX": 122,
+        "originY": 264,
+        "scale": 0.5,
+        "holds": [
+          4,
+          1
+        ]
+      }
+    },
+    {
+      "id": "blockAir",
+      "name": "Air block (system state art)",
+      "sprite": {
+        "image": "sheets/block-air.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 244,
+        "frameH": 304,
+        "originX": 125,
+        "originY": 327,
+        "scale": 0.5,
+        "holds": [
+          4,
+          1
+        ]
+      }
+    },
+    {
+      "id": "hitStand",
+      "name": "Hit, standing (system state art: drawing 1 for now; drawings 2 and 3 are on the sheet for per-strength reactions)",
+      "sprite": {
+        "image": "sheets/hit-stand.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 317,
+        "frameH": 295,
+        "originX": 141,
+        "originY": 293,
+        "scale": 0.5,
+        "holds": [
+          6,
+          1
+        ]
+      }
+    },
+    {
+      "id": "hitCrouch",
+      "name": "Hit, crouching (system state art: drawing 1 only)",
+      "sprite": {
+        "image": "sheets/hit-crouch.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 324,
+        "frameH": 245,
+        "originX": 136,
+        "originY": 243,
+        "scale": 0.5,
+        "holds": [
+          6,
+          1
+        ]
+      }
+    },
+    {
+      "id": "hitAir",
+      "name": "Hit in the air (system state art: drawings 1 and 2)",
+      "sprite": {
+        "image": "sheets/hit-air.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 325,
+        "frameH": 311,
+        "originX": 130,
+        "originY": 335,
+        "scale": 0.5,
+        "holds": [
+          5,
+          1
+        ]
+      }
+    },
+    {
+      "id": "airTech",
+      "name": "Air tech (recoil, tuck, flip, then upright and falling)",
+      "sprite": {
+        "image": "sheets/air-tech.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 350,
+        "frameH": 330,
+        "originX": 158,
+        "originY": 342,
+        "scale": 0.5,
+        "holds": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "tumble",
+      "name": "Tumbling after an air hit (system state art: drawings 4 and 5; drawn frame 3 left out)",
+      "sprite": {
+        "image": "sheets/tumble.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 322,
+        "frameH": 289,
+        "originX": 148,
+        "originY": 328,
+        "scale": 0.5,
+        "holds": [
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "knockdown",
+      "name": "Knocked down (system state art)",
+      "sprite": {
+        "image": "sheets/knockdown.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 346,
+        "frameH": 186,
+        "originX": 173,
+        "originY": 184,
+        "scale": 0.5,
+        "holds": [
+          6,
+          34
+        ]
+      }
+    },
+    {
+      "id": "hitSpin",
+      "name": "Spin (hit state; placeholder art: a copy of the air hit)",
+      "sprite": {
+        "image": "sheets/hit-air.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 325,
+        "frameH": 311,
+        "originX": 130,
+        "originY": 335,
+        "scale": 0.5,
+        "holds": [
+          5,
+          1
+        ]
+      }
+    },
+    {
+      "id": "hitTumble",
+      "name": "Tumble (hit state; placeholder art: a copy of the tumbling fall)",
+      "sprite": {
+        "image": "sheets/tumble.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 322,
+        "frameH": 289,
+        "originX": 148,
+        "originY": 328,
+        "scale": 0.5,
+        "holds": [
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "slide",
+      "name": "Slide (hit state; placeholder art: a copy of the knockdown)",
+      "sprite": {
+        "image": "sheets/knockdown.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 346,
+        "frameH": 186,
+        "originX": 173,
+        "originY": 184,
+        "scale": 0.5,
+        "holds": [
+          6,
+          34
+        ]
+      }
+    },
+    {
+      "id": "knockdownSoft",
+      "name": "Soft knockdown (the same drawings as the knockdown)",
+      "sprite": {
+        "image": "sheets/knockdown.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 346,
+        "frameH": 186,
+        "originX": 173,
+        "originY": 184,
+        "scale": 0.5,
+        "holds": [
+          6,
+          34
+        ]
+      }
+    },
+    {
+      "id": "koDown",
+      "name": "Down after a KO (system state art: lying flat)",
+      "timeline": [
+        {
+          "at": 0,
+          "sprite": 1
+        }
+      ],
+      "sprite": {
+        "image": "sheets/knockdown.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 346,
+        "frameH": 186,
+        "originX": 173,
+        "originY": 184,
+        "scale": 0.5,
+        "holds": [
+          60
+        ]
+      }
+    },
+    {
+      "id": "wakeup",
+      "name": "Getting up (system state art)",
+      "sprite": {
+        "image": "sheets/wakeup.png",
+        "columns": 3,
+        "rows": 1,
+        "count": 3,
+        "frameW": 268,
+        "frameH": 376,
+        "originX": 134,
+        "originY": 374,
+        "scale": 0.5,
+        "holds": [
+          4,
+          4,
+          4
+        ]
+      }
+    },
+    {
+      "id": "thrown",
+      "name": "Held in a throw (system state art: the recoil drawing)",
+      "sprite": {
+        "image": "sheets/hit-stand.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 317,
+        "frameH": 295,
+        "originX": 141,
+        "originY": 293,
+        "scale": 0.5,
+        "holds": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "throwHold",
+      "name": "Holding a thrown opponent (system state art: forward throw drawings 1-3)",
+      "sprite": { "image": "sheets/throw-hold.png", "columns": 3, "rows": 1, "count": 3, "frameW": 392, "frameH": 333, "originX": 194, "originY": 331, "scale": 0.5, "holds": [4, 4, 6] }
+    },
+    {
+      "id": "throwFinish",
+      "name": "After the throw lands (system state art: forward throw drawings 4-7, the double palm)",
+      "sprite": { "image": "sheets/throw-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 420, "frameH": 332, "originX": 190, "originY": 330, "scale": 0.5, "holds": [6, 8, 8, 8] }
+    },
+    {
+      "id": "throwTech",
+      "name": "Throw tech: both push each other off (system state art)",
+      "sprite": {
+        "image": "sheets/throw-tech.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 234,
+        "frameH": 380,
+        "originX": 113,
+        "originY": 378,
+        "scale": 0.5,
+        "holds": [
+          3,
+          4,
+          5,
+          4,
+          4
+        ]
+      }
+    },
+    {
+      "id": "install",
+      "name": "Spirit Install (super)",
+      "input": "22HS",
+      "kind": "super",
+      "startup": 31,
+      "active": 0,
+      "recovery": 10,
+      "requires": {
+        "vars": {
+          "install": [
+            0,
+            0
+          ]
+        }
+      },
+      "timeline": [
+        {
+          "at": 2,
+          "superFlash": 30
+        },
+        {
+          "at": 3,
+          "setVar": {
+            "install": 600
+          }
+        }
+      ],
+      "sprite": {
+        "image": "sheets/install-change.png",
+        "columns": 12,
+        "rows": 1,
+        "count": 12,
+        "frameW": 360,
+        "frameH": 617,
+        "originX": 173,
+        "originY": 615,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    {
+      "id": "crouch",
+      "name": "Crouch (system state art)",
+      "sprite": {
+        "image": "sheets/crouch.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 386,
+        "frameH": 332,
+        "originX": 179,
+        "originY": 330,
+        "scale": 0.5,
+        "holds": [
+          3,
+          12,
+          12,
+          12,
+          12,
+          12
+        ]
+      }
+    },
+    {
+      "id": "jumpSquat",
+      "name": "Jump squat (system state art)",
+      "sprite": {
+        "image": "sheets/jumpsquat.png",
+        "columns": 1,
+        "rows": 1,
+        "count": 1,
+        "frameW": 364,
+        "frameH": 267,
+        "originX": 175,
+        "originY": 265,
+        "scale": 0.5
+      }
+    },
+    {
+      "id": "superJumpSquat",
+      "name": "Super jump squat (system state art)",
+      "sprite": {
+        "image": "sheets/jumpsquat.png",
+        "columns": 1,
+        "rows": 1,
+        "count": 1,
+        "frameW": 364,
+        "frameH": 267,
+        "originX": 175,
+        "originY": 265,
+        "scale": 0.5
+      }
+    },
+    {
+      "id": "jump",
+      "name": "Jump (system state art)",
+      "sprite": {
+        "image": "sheets/jump.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 360,
+        "frameH": 399,
+        "originX": 187,
+        "originY": 336,
+        "scale": 0.5,
+        "holds": [
+          5,
+          9,
+          9,
+          9,
+          28
+        ]
+      }
+    },
+    {
+      "id": "superJump",
+      "name": "Super jump (system state art)",
+      "sprite": {
+        "image": "sheets/jump.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 360,
+        "frameH": 399,
+        "originX": 187,
+        "originY": 336,
+        "scale": 0.5,
+        "holds": [
+          5,
+          9,
+          9,
+          9,
+          28
+        ]
+      }
+    },
+    {
+      "id": "airJump",
+      "name": "Air jump (system state art)",
+      "sprite": {
+        "image": "sheets/jump.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 360,
+        "frameH": 399,
+        "originX": 187,
+        "originY": 336,
+        "scale": 0.5,
+        "holds": [
+          5,
+          9,
+          9,
+          9,
+          28
+        ]
+      }
+    },
+    {
+      "id": "fall",
+      "name": "Fall (system state art)",
+      "sprite": {
+        "image": "sheets/fall.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 370,
+        "frameH": 340,
+        "originX": 190,
+        "originY": 341,
+        "scale": 0.5,
+        "holds": [
+          8,
+          52
+        ]
+      }
+    },
+    {
+      "id": "land",
+      "name": "Landing (system state art)",
+      "sprite": {
+        "image": "sheets/land.png",
+        "columns": 1,
+        "rows": 1,
+        "count": 1,
+        "frameW": 388,
+        "frameH": 274,
+        "originX": 182,
+        "originY": 272,
+        "scale": 0.5
+      }
+    },
+    {
+      "id": "idle",
+      "name": "Idle (art for the system idle state)",
+      "sprite": {
+        "image": "sheets/idle.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 310,
+        "frameH": 379,
+        "originX": 141,
+        "originY": 377,
+        "scale": 0.5,
+        "holds": [
+          8,
+          8,
+          7,
+          7,
+          8,
+          8,
+          7,
+          7
+        ]
+      }
+    },
+    {
+      "id": "walkF",
+      "name": "Walk forward (system state art)",
+      "sprite": {
+        "image": "sheets/walk.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 304,
+        "frameH": 383,
+        "originX": 137,
+        "originY": 381,
+        "scale": 0.5,
+        "holds": [
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "walkB",
+      "name": "Walk back (system state art)",
+      "sprite": {
+        "image": "sheets/walk-back.png",
+        "columns": 8,
+        "rows": 1,
+        "count": 8,
+        "frameW": 304,
+        "frameH": 383,
+        "originX": 137,
+        "originY": 381,
+        "scale": 0.5,
+        "holds": [
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "rite_4",
+      "sprite": {
+        "image": "sheets/rite-4.png",
+        "columns": 7,
+        "rows": 1,
+        "count": 7,
+        "frameW": 407,
+        "frameH": 485,
+        "originX": 162,
+        "originY": 483,
+        "scale": 0.5,
+        "holds": [
+          3,
+          4,
+          4,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "name": "Guardian's Wrath",
+      "input": "4R",
+      "startup": 5,
+      "active": 0,
+      "recovery": 31,
+      "timeline": [
+        {
+          "from": 0,
+          "to": 10,
+          "invuln": {
+            "strike": true,
+            "throw": false
+          }
+        },
+        {
+          "at": 5,
+          "spawn": "ward"
+        }
+      ]
+    },
+    {
+      "id": "rite_5",
+      "sprite": { "image": "sheets/rite-5.png", "columns": 8, "rows": 1, "count": 8, "frameW": 411, "frameH": 457, "originX": 198, "originY": 380, "scale": 0.5, "holds": [2, 2, 3, 3, 2, 6, 7, 8] },
+      "name": "Guardian Palm",
+      "input": "5R",
+      "startup": 12,
+      "active": 0,
+      "recovery": 22,
+      "timeline": [
+        {
+          "at": 12,
+          "spawn": "palm5"
+        }
+      ]
+    },
+    {
+      "id": "rite_2",
+      "sprite": { "image": "sheets/rite-2.png", "columns": 8, "rows": 1, "count": 8, "frameW": 479, "frameH": 489, "originX": 230, "originY": 487, "scale": 0.5, "holds": [2, 2, 3, 3, 3, 7, 8, 8] },
+      "name": "Ancestor's Seal",
+      "input": "2R",
+      "startup": 13,
+      "active": 0,
+      "recovery": 24,
+      "timeline": [
+        {
+          "at": 12,
+          "endProjectile": "palm2"
+        },
+        {
+          "at": 13,
+          "spawn": {
+            "name": "palm2",
+            "under": "opponent"
+          }
+        }
+      ],
+      "jumpCancel": true
+    },
+    {
+      "id": "rite_j",
+      "sprite": {
+        "image": "sheets/rite-j.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 297,
+        "frameH": 455,
+        "originX": 149,
+        "originY": 387,
+        "scale": 0.5,
+        "holds": [
+          5,
+          6,
+          4,
+          7,
+          6
+        ]
+      },
+      "name": "Guardian's Judgment",
+      "input": "j.R",
+      "perJump": "rite",
+      "startup": 11,
+      "active": 0,
+      "recovery": 18,
+      "timeline": [
+        {
+          "at": 1,
+          "fx": "riteClap"
+        },
+        {
+          "at": 11,
+          "spawn": {
+            "name": "palmJ",
+            "under": "opponent"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vow_start",
+      "name": "Vow: the guard coming up",
+      "sprite": {
+        "image": "sheets/vow-start.png",
+        "columns": 1,
+        "rows": 1,
+        "count": 1,
+        "frameW": 196,
+        "frameH": 364,
+        "originX": 98,
+        "originY": 362,
+        "scale": 0.5,
+        "holds": [
+          4
+        ]
+      }
+    },
+    {
+      "id": "vow_hold",
+      "name": "Vow: holding the guard (a breathing loop: drawings 2 to 5 of the sheet, there and back)",
+      "sprite": {
+        "image": "sheets/vow-hold.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 194,
+        "frameH": 341,
+        "originX": 98,
+        "originY": 339,
+        "scale": 0.5,
+        "holds": [
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "vow_absorb",
+      "name": "Vow: an absorbed hit (drawing 2 is the emphasis and holds)",
+      "sprite": {
+        "image": "sheets/vow-absorb.png",
+        "columns": 4,
+        "rows": 1,
+        "count": 4,
+        "frameW": 232,
+        "frameH": 352,
+        "originX": 126,
+        "originY": 350,
+        "scale": 0.5,
+        "holds": [
+          2,
+          8,
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "id": "vow_strike_quick",
+      "name": "Vow: quick strike",
+      "timeline": [
+        {
+          "at": 4,
+          "vel": {
+            "x": 6
+          }
+        },
+        {
+          "at": 9,
+          "vel": {
+            "x": 0
+          }
+        },
+        {
+          "at": 9,
+          "fx": "vowBlast"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/vow-strike-quick.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 374,
+        "frameH": 425,
+        "originX": 166,
+        "originY": 423,
+        "scale": 0.5,
+        "holds": [
+          3,
+          3,
+          3,
+          3,
+          10,
+          10
+        ]
+      }
+    },
+    {
+      "id": "vow_strike",
+      "name": "Vow: strike (crumples)",
+      "timeline": [
+        {
+          "at": 7,
+          "vel": {
+            "x": 7
+          }
+        },
+        {
+          "at": 13,
+          "vel": {
+            "x": 0
+          }
+        },
+        {
+          "at": 13,
+          "fx": "vowBlast"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/vow-strike.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 374,
+        "frameH": 425,
+        "originX": 166,
+        "originY": 423,
+        "scale": 0.5,
+        "holds": [
+          5,
+          4,
+          4,
+          3,
+          11,
+          11
+        ]
+      }
+    },
+    {
+      "id": "vow_strike_full",
+      "name": "Vow: full strike (unblockable)",
+      "timeline": [
+        {
+          "at": 8,
+          "vel": {
+            "x": 8
+          }
+        },
+        {
+          "at": 15,
+          "vel": {
+            "x": 0
+          }
+        },
+        {
+          "at": 15,
+          "fx": "vowBlast"
+        }
+      ],
+      "sprite": {
+        "image": "sheets/vow-strike-full.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 374,
+        "frameH": 425,
+        "originX": 166,
+        "originY": 423,
+        "scale": 0.5,
+        "holds": [
+          5,
+          5,
+          5,
+          4,
+          12,
+          12
+        ]
+      }
+    },
+    {
+      "id": "absolve",
+      "name": "Absolve",
+      "sprite": {
+        "image": "sheets/absolve.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 290,
+        "frameH": 418,
+        "originX": 145,
+        "originY": 416,
+        "scale": 0.5,
+        "holds": [
+          5,
+          2,
+          6,
+          5,
+          5
+        ]
+      }
+    },
+    {
+      "id": "absolve_air",
+      "name": "Absolve in the air (the same drawings)",
+      "sprite": {
+        "image": "sheets/absolve.png",
+        "columns": 5,
+        "rows": 1,
+        "count": 5,
+        "frameW": 290,
+        "frameH": 418,
+        "originX": 145,
+        "originY": 416,
+        "scale": 0.5,
+        "holds": [
+          5,
+          2,
+          6,
+          5,
+          5
+        ]
+      }
+    },
+    {
+      "id": "absolve_recovery",
+      "name": "Absolve: the baited recovery",
+      "sprite": {
+        "image": "sheets/absolve-recovery.png",
+        "columns": 3,
+        "rows": 1,
+        "count": 3,
+        "frameW": 258,
+        "frameH": 349,
+        "originX": 138,
+        "originY": 347,
+        "scale": 0.5,
+        "holds": [
+          14,
+          14,
+          12
+        ]
+      }
+    },
+    {
+      "id": "absolve_recovery_air",
+      "name": "Absolve: the baited recovery, falling (placeholder art: a copy of fall)",
+      "sprite": {
+        "image": "sheets/absolve_recovery_air-placeholder.png",
+        "columns": 2,
+        "rows": 1,
+        "count": 2,
+        "frameW": 254,
+        "frameH": 575,
+        "originX": 127,
+        "originY": 573,
+        "scale": 0.5,
+        "holds": [
+          8,
+          52
+        ]
+      }
+    },
+    {
+      "id": "repel",
+      "name": "Repel",
+      "sprite": {
+        "image": "sheets/repel.png",
+        "columns": 4,
+        "rows": 1,
+        "count": 4,
+        "frameW": 249,
+        "frameH": 372,
+        "originX": 106,
+        "originY": 370,
+        "scale": 0.5,
+        "holds": [
+          2,
+          3,
+          6,
+          1
+        ]
+      }
+    },
+    {
+      "id": "draw",
+      "name": "Draw",
+      "sprite": {
+        "image": "sheets/draw.png",
+        "columns": 4,
+        "rows": 1,
+        "count": 4,
+        "frameW": 245,
+        "frameH": 372,
+        "originX": 108,
+        "originY": 370,
+        "scale": 0.5,
+        "holds": [
+          2,
+          3,
+          6,
+          1
+        ]
+      }
+    },
+    {
+      "id": "drawn",
+      "name": "pulled in by a Draw (placeholder art: a copy of hitStand)",
+      "sprite": {
+        "image": "sheets/drawn-placeholder.png",
+        "columns": 3,
+        "rows": 1,
+        "count": 3,
+        "frameW": 252,
+        "frameH": 391,
+        "originX": 126,
+        "originY": 389,
+        "scale": 0.5,
+        "holds": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "crumple",
+      "name": "Crumple (hit by a Vow strike)",
+      "sprite": {
+        "image": "sheets/crumple.png",
+        "columns": 6,
+        "rows": 1,
+        "count": 6,
+        "frameW": 442,
+        "frameH": 332,
+        "originX": 228,
+        "originY": 330,
+        "scale": 0.5,
+        "holds": [
+          5,
+          5,
+          6,
+          8,
+          8,
+          1
+        ]
+      }
+    }, { "id": "spearL", "name": "Spirit Spear (L)", "input": "421L", "startup": 14, "active": 6, "recovery": 18, "damage": 800, "hitstun": 22, "untech": 26, "blockstun": 16, "hitstop": 11, "pushbackHit": 30, "pushbackBlock": 34, "selfPushback": 10, "guard": "mid", "reach": 250, "specialCancel": false, "hitboxes": [[60, 78, 190, 34]], "sprite": { "image": "sheets/spear.png", "columns": 8, "rows": 1, "count": 8, "frameW": 816, "frameH": 361, "originX": 368, "originY": 359, "scale": 0.5, "holds": [4, 4, 5, 3, 3, 6, 6, 6] } }, { "id": "spearH", "name": "Spirit Spear (H)", "input": "421H", "startup": 19, "active": 6, "recovery": 16, "damage": 1100, "hitstun": 24, "untech": 30, "blockstun": 18, "hitstop": 13, "pushbackHit": 24, "pushbackBlock": 30, "selfPushback": 10, "guard": "high", "reach": 230, "specialCancel": false, "hitReaction": "softKD", "hitboxes": [[55, 0, 120, 120]], "timeline": [{ "at": 3, "vel": { "x": 6 } }, { "at": 18, "vel": { "x": 0 } }], "sprite": { "image": "sheets/spear-H.png", "columns": 8, "rows": 1, "count": 8, "frameW": 549, "frameH": 462, "originX": 180, "originY": 460, "scale": 0.5, "holds": [3, 5, 5, 5, 3, 3, 8, 8] } }
   ]
 }

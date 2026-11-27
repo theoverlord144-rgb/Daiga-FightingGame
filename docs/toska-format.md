@@ -256,6 +256,14 @@ frame data (the move fields: `damage`, `hitstun`, `blockstun`, `hitstop`, `guard
 Drawing only: `sprite` (with `additive: true` for light on black) and `anim: { release, loop, impact }`, hold lists
 over the sheet's frames in that order; the impact frames play where it ended (cue `projectileEnd`).
 
+A lobbed projectile (Khai'ro's bracelet) has `lob: { rise, hang, drop, land, apex, track, impact, back, margin }`: it rises for `rise` frames along an arc
+(fast, then slowing) to `apex` px above the floor over the spot `land` px ahead of its owner (kept `margin` px inside the walls, default 40),
+hangs `hang` frames (with `track` it slides toward the opponent, at most that many px a frame), drops straight down for `drop` frames
+(speeding up), lies on the floor `impact` frames, and is gone `back` frames later (its way home; `oneAtATime` locks the move until then).
+Its lifetime is the sum. Its hitboxes are its `phases` by age, so give it `persist: true`. Its drawing is `lobArt` (look only): `trail` (code-drawn) and `shake` (px), plus the sheet layers `ring` (the projectile itself, looping),
+`flash`, `lock`, `marker`, `slam`, `dust`, `streak`. Each sheet layer is `{ fx: name, ...its timing }`, where `name` is one of the character's
+`effects`: the sheet and its size, colour, place and opacity live there (so they are on the editor's FX page, once for every strength).
+
 More projectile fields: `endsOnGround: true` (it ends when it reaches the floor), `endFx: { why: effect }` (drawing only: a
 named effect played where it ended; why = `hit`, `block`, `ground`, `edge`, `clash`, `recall`), `phases: [[fromAge, toAge, box or null]]` (the hitbox is out only at those ages; null = its
 `hitbox`), `persist: true` (it stays after its hit, hits once, never clashes), `noHit: true` (it never hits: a light,
@@ -399,3 +407,11 @@ var's last frames. `live`: while the fighter who placed it could spend it now (o
 icon lights up. `flash`: a timeline `sound` cue of that name from the marker brightens it for `frames`. `shatter`:
 played in its place when the var drops to 0 before its fade (spent, not run out), with a shockwave ring of `set` at
 `scale` on drawing `frame`. Its opacity is `art.opacity["mark:<var>"]`.
+
+## Grabs that hold (Nov 26)
+
+- Move `grab: true`: the hit takes hold instead of knocking away. Unblockable, passes through a fighter in blockstun, takes anyone else in the air (hitstun too). The fighter goes to the shared state `grabbed`.
+- Move `hitsGrounded: false`: the hit passes through a fighter on the ground.
+- Move `noFallOut: true`: the hit keeps its stun and reaction past the juggle limit.
+- Timeline `hold: { x, y, rot }` (lasting; `null` lets go): where the held fighter is kept, in px from the holder's feet to theirs (x forward, y up); `rot` turns their drawing (degrees, drawing only). While a frame has a `hold`, the holder's hits only touch the held fighter and do damage and hitstop only. A frame without one lets go.
+- State `gravityPct` (default 10000): the state's share of gravity.

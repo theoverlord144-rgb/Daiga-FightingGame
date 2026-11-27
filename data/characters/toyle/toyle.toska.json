@@ -1,0 +1,102 @@
+{
+  "engine": "Toska",
+  "version": 2,
+  "notes": "Toyle. Only his idle and forward walk are drawn so far (owner, Nov 26), so that is all he has: he stands and walks in his own art, and has no attacks, specials, throws or Rite of his own (owner's word: just the two sheets). The back walk is the forward walk played the other way round. Every other state (crouch, jump, dashes, blocks, hit reactions) is the engine's shared one with no art yet. Default stats; 205 px tall (owner: a little taller than the first 195).",
+  "character": {
+    "id": "toyle",
+    "name": "Toyle",
+    "stats": {}
+  },
+  "gatlings": {},
+  "states": {
+    "walkF": {
+      "duration": 48
+    },
+    "walkB": {
+      "duration": 48
+    }
+  },
+  "moves": [
+    {
+      "id": "idle",
+      "name": "Idle (system state art)",
+      "sprite": {
+        "image": "sheets/idle.png",
+        "columns": 10,
+        "rows": 1,
+        "count": 10,
+        "frameW": 145,
+        "frameH": 419,
+        "originX": 68,
+        "originY": 417,
+        "scale": 0.5,
+        "holds": [
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      }
+    },
+    {
+      "id": "walkF",
+      "name": "Walk forward (system state art)",
+      "sprite": {
+        "image": "sheets/walk.png",
+        "columns": 10,
+        "rows": 1,
+        "count": 10,
+        "frameW": 278,
+        "frameH": 419,
+        "originX": 125,
+        "originY": 417,
+        "scale": 0.5,
+        "holds": [
+          5,
+          5,
+          5,
+          5,
+          4,
+          5,
+          5,
+          5,
+          5,
+          4
+        ]
+      }
+    },
+    {
+      "id": "walkB",
+      "name": "Walk back (system state art)",
+      "sprite": {
+        "image": "sheets/walk-back.png",
+        "columns": 10,
+        "rows": 1,
+        "count": 10,
+        "frameW": 278,
+        "frameH": 419,
+        "originX": 125,
+        "originY": 417,
+        "scale": 0.5,
+        "holds": [
+          4,
+          5,
+          5,
+          5,
+          5,
+          4,
+          5,
+          5,
+          5,
+          5
+        ]
+      }
+    }
+  ]
+}

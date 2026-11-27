@@ -24,10 +24,12 @@ function canvas(W, H) {
   let m = [1, 0, 0, 1, 0, 0];
   const stack = [];
   const none = () => {};
+  let path = []; // lines only (for stroke): lists of screen points
+  const at = (x, y) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
   const ctx = {
     globalAlpha: 1, globalCompositeOperation: 'source-over', fillStyle: '#000', strokeStyle: '#000', lineWidth: 1, font: '', textAlign: 'left', lineCap: 'butt',
-    save() { stack.push([m.slice(), this.globalAlpha, this.globalCompositeOperation]); },
-    restore() { const s = stack.pop(); if (s) [m, this.globalAlpha, this.globalCompositeOperation] = s; },
+    save() { stack.push([m.slice(), this.globalAlpha, this.globalCompositeOperation, this.strokeStyle, this.lineWidth]); },
+    restore() { const s = stack.pop(); if (s) [m, this.globalAlpha, this.globalCompositeOperation, this.strokeStyle, this.lineWidth] = s; },
     translate(x, y) { m[4] += m[0] * x + m[2] * y; m[5] += m[1] * x + m[3] * y; },
     scale(x, y) { m[0] *= x; m[1] *= x; m[2] *= y; m[3] *= y; },
     rotate(a) { const c = Math.cos(a), s = Math.sin(a); m = [m[0] * c + m[2] * s, m[1] * c + m[3] * s, m[2] * c - m[0] * s, m[3] * c - m[1] * s, m[4], m[5]]; },
@@ -62,8 +64,30 @@ function canvas(W, H) {
       }
     },
     createLinearGradient: () => ({ addColorStop: none }), createRadialGradient: () => ({ addColorStop: none }),
-    beginPath: none, moveTo: none, lineTo: none, stroke: none, fill: none, arc: none, ellipse: none, rect: none, clip: none, closePath: none,
-    strokeRect: none, fillText: none, measureText: () => ({ width: 0 }), setLineDash: none, quadraticCurveTo: none, bezierCurveTo: none, roundRect: none,
+    // Outlines (straight lines, circles, ovals, boxes), drawn as a solid line of the stroke colour. Fills and curves are left out.
+    beginPath() { path = []; },
+    moveTo(x, y) { path.push([at(x, y)]); },
+    lineTo(x, y) { if (!path.length) path.push([]); path.at(-1).push(at(x, y)); },
+    ellipse(cx, cy, rx, ry, rot, a0, a1) { const pts = []; const n = 28; for (let i = 0; i <= n; i++) { const a = a0 + ((a1 - a0) * i) / n; pts.push(at(cx + rx * Math.cos(a), cy + ry * Math.sin(a))); } path.push(pts); },
+    arc(cx, cy, r, a0, a1) { this.ellipse(cx, cy, r, r, 0, a0, a1); },
+    rect(x, y, w, h) { path.push([at(x, y), at(x + w, y), at(x + w, y + h), at(x, y + h), at(x, y)]); },
+    stroke() {
+      if (typeof this.strokeStyle !== 'string' || this.strokeStyle[0] !== '#') return;
+      const [r, g, b, a] = colour(this.strokeStyle), half = Math.max(0.5, (this.lineWidth * Math.hypot(m[0], m[1])) / 2), al = (a / 255) * this.globalAlpha;
+      const done = new Set();
+      for (const pts of path) for (let i = 1; i < pts.length; i++) {
+        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], dx = x1 - x0, dy = y1 - y0, len2 = dx * dx + dy * dy || 1;
+        for (let y = Math.max(0, Math.floor(Math.min(y0, y1) - half)); y <= Math.min(H - 1, Math.ceil(Math.max(y0, y1) + half)); y++)
+          for (let x = Math.max(0, Math.floor(Math.min(x0, x1) - half)); x <= Math.min(W - 1, Math.ceil(Math.max(x0, x1) + half)); x++) {
+            const k = Math.max(0, Math.min(1, ((x + 0.5 - x0) * dx + (y + 0.5 - y0) * dy) / len2));
+            if (Math.hypot(x + 0.5 - x0 - k * dx, y + 0.5 - y0 - k * dy) > half || done.has(y * W + x)) continue;
+            done.add(y * W + x);
+            this.put((y * W + x) * 4, r, g, b, al);
+          }
+      }
+    },
+    strokeRect(x, y, w, h) { const keep = path; this.beginPath(); this.rect(x, y, w, h); this.stroke(); path = keep; },
+    fill: none, clip: none, closePath: none, fillText: none, measureText: () => ({ width: 0 }), setLineDash: none, quadraticCurveTo: none, bezierCurveTo: none, roundRect: none,
   };
   return { ctx, px, clear() { for (let i = 0; i < W * H; i++) { px[i * 4] = 34; px[i * 4 + 1] = 30; px[i * 4 + 2] = 44; px[i * 4 + 3] = 255; } } };
 }
@@ -381,9 +405,51 @@ try {
   const wtFilm = (s, frames, every = 2, p2 = '') => { every = Number(process.env.WT_EVERY) || every; for (let i = 0; i < frames; i += every) { s.shot('f' + String(i + 1).padStart(2, '0')); s.go('', p2, every); } };
   // Malik's redrawn effects (Nov 26): the light and heavy orb, the Down Rite orb, the air Rite's burst.
   for (const b of ['L', 'H']) scene('mfx-orb-' + b, 'malik', 'avner', 420, (s) => { qcf(s, b); wtFilm(s, 80, 2); });
+  // Late Nov 26: the redrawn throws, 5R and Spirit Spear (421 L / H).
+  scene('mnew-throw-f', 'malik', 'avner', 60, (s) => { s.go('', '', 4); s.go('FH', '', 1); wtFilm(s, 60, 3); });
+  scene('mnew-throw-b', 'malik', 'avner', 60, (s) => { s.go('', '', 4); s.go('KH', '', 1); wtFilm(s, 60, 3); });
+  scene('mnew-rite-5', 'malik', 'avner', 200, (s) => { s.go('', '', 4); s.go('R', '', 1); wtFilm(s, 44, 2); });
+  scene('mnew-spear-L', 'malik', 'avner', 200, (s) => { if (process.env.SHOT_BOXES) s.opts = { boxes: true }; s.go('K', '', 1); s.go('D', '', 1); s.go('DKL', '', 1); wtFilm(s, 40, 2); });
+  scene('mnew-spear-H', 'malik', 'avner', 200, (s) => { if (process.env.SHOT_BOXES) s.opts = { boxes: true }; s.go('K', '', 1); s.go('D', '', 1); s.go('DKH', '', 1); wtFilm(s, 44, 2); });
   scene('mfx-rite-2', 'malik', 'avner', 300, (s) => { s.go('DR', '', 1); wtFilm(s, 70, 2); });
   scene('mfx-rite-j', 'malik', 'avner', 300, (s) => { s.go('U', '', 1); s.go('', '', 12); s.go('R', '', 1); wtFilm(s, 44, 2); });
   scene('mfx-airtech', 'malik', 'avner', 300, (s) => { s.go('', '', 10); const p = s.game.players[0]; p.y = 16000; enterState(p, s.world.chars[0], 'airTech'); for (let k = 0; k < 16; k++) { s.go('', '', 1); s.shot('f' + String(k + 1).padStart(2, '0')); } });
+  // Khai'ro: only his idle so far.
+  // Toyle (Nov 26): only his idle and walk are drawn.
+  scene('ty-idle', 'toyle', 'avner', 260, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.shot('f' + String(k + 1).padStart(2, '0')); s.go('', '', 6); } });
+  scene('ty-walk', 'toyle', 'avner', 700, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.go('F', '', 5); s.shot('f' + String(k + 1).padStart(2, '0')); } for (let k = 10; k < 20; k++) { s.go('K', '', 5); s.shot('f' + String(k + 1).padStart(2, '0')); } });
+  scene('kh-idle', 'khairo', 'malik', 260, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.shot('f' + String(k + 1).padStart(2, '0')); s.go('', '', 8); } });
+  scene('kh-walk', 'khairo', 'malik', 700, (s) => { s.go('', '', 4); for (let k = 0; k < 20; k++) { s.go('F', '', 3); s.shot('f' + String(k + 1).padStart(2, '0')); } });
+  scene('kh-dash', 'khairo', 'malik', 700, (s) => { s.go('', '', 4); s.go('F', '', 1); s.go('', '', 1); s.go('F', '', 1); for (let k = 0; k < 24; k++) { s.shot('f' + String(k + 1).padStart(2, '0')); s.go('', '', 1); } });
+  // Khai'ro's normals (Nov 26): stance, the move, stance again, every other frame (WT_EVERY=1 for every frame).
+  for (const [n, keys, len] of [['5L', 'L', 22], ['5M', 'M', 32], ['5H', 'H', 42], ['5S', 'S', 46]]) scene('khn-' + n, 'khairo', 'malik', 300, (s) => { s.go('', '', 4); s.go(keys, '', 1); wtFilm(s, len, 2); });
+  for (const [n, keys, len] of [['2L', 'DL', 22], ['2M', 'DM', 34], ['2H', 'DH', 44]]) scene('khn-' + n, 'khairo', 'malik', 300, (s) => { s.go('D', '', 8); s.go(keys, '', 1); wtFilm(s, len, 2, ''); });
+  for (const [n, keys, len] of [['jL', 'L', 22], ['jM', 'M', 28], ['jH', 'H', 34], ['jS', 'S', 34]]) scene('khn-' + n, 'khairo', 'malik', 300, (s) => { s.go('U', '', 1); s.go('', '', 9); s.go(keys, '', 1); wtFilm(s, len, 2); });
+  scene('khn-jump', 'khairo', 'malik', 300, (s) => { s.go('', '', 4); s.go('U', '', 1); wtFilm(s, 48, 2); });
+  scene('khn-crouch', 'khairo', 'malik', 300, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.shot('c' + String(k + 1).padStart(2, '0')); s.go('D', '', 7); } s.shot('up1'); s.go('', '', 2); s.shot('up2'); });
+  // Khai'ro's 236 Bracelet Slam (Nov 26): each strength from mid-screen and by each wall (SHOT_BOXES=1 draws the boxes).
+  const khThrow = (name, b, ax, dx, extra) => scene('khb-' + name, 'khairo', 'malik', 300, (s) => {
+    if (process.env.SHOT_BOXES) s.opts = { boxes: true };
+    s.game.players[0].x = ax * 100; s.game.players[1].x = dx * 100;
+    if (b.includes('S')) s.game.players[0].meter = 40000;
+    s.go('', '', 4); qcf(s, b); wtFilm(s, extra ?? 80, 1);
+  });
+  for (const [b, name] of [['L', 'L'], ['M', 'M'], ['H', 'H'], ['MS', 'EX']]) {
+    khThrow(name + '-mid', b, -330, 330);
+    khThrow(name + '-leftwall', b, -700, -80);
+    khThrow(name + '-rightwall', b, 420, 700);
+  }
+  // 4H Back Heavy, three kicks (SHOT_BOXES=1 draws the boxes).
+  scene('khn-4H', 'khairo', 'malik', 180, (s) => { if (process.env.SHOT_BOXES) s.opts = { boxes: true }; s.go('', '', 4); s.go('KH', '', 1); wtFilm(s, 76, 2); });
+  // j.214 Sky Maul: both jump, he grabs on the way up (SKY=L|M|H picks the strength, SHOT_BOXES=1 draws the boxes).
+  scene('khn-skymaul', 'khairo', 'malik', 75, (s) => { if (process.env.SHOT_BOXES) s.opts = { boxes: true }; s.go('', '', 4); s.go('U', 'U', 1); s.go('', '', 12); qcb(s, process.env.SKY || 'H'); wtFilm(s, 120, 2); });
+  // 214 Low Blade (SHOT_BOXES=1 draws the boxes).
+  for (const b of ['L', 'M', 'H']) scene('khl-' + b, 'khairo', 'malik', 300, (s) => {
+    if (process.env.SHOT_BOXES) s.opts = { boxes: true };
+    s.game.players[0].x = -33000; s.game.players[1].x = b === 'L' ? 33000 : 12000;
+    s.go('', '', 4); qcb(s, b); wtFilm(s, 60, 1);
+  });
+  scene('kh-back', 'khairo', 'malik', 300, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.go('K', '', 6); s.shot('w' + String(k + 1).padStart(2, '0')); } s.go('', '', 6); s.go('K', '', 1); s.go('', '', 1); s.go('K', '', 1); for (let k = 0; k < 25; k++) { s.shot('x' + String(k + 1).padStart(2, '0')); s.go('', '', 1); } });
   const dd = (s, b) => { s.go('D', '', 2); s.go('', '', 2); s.go('D' + b, '', 1); };
   for (const vs of ['avner', 'malik']) {
     scene('wt-stand-' + vs, 'warteun', vs, 240, (s) => { s.go('', '', 20); s.shot('idle'); s.go('F', '', 14); s.shot('walk'); s.go('D', '', 20); s.shot('crouch'); s.go('', '', 4); s.go('U', '', 1); s.go('', '', 14); s.shot('jump'); s.go('', '', 40); s.go('K', 'L', 6); s.shot('block'); });

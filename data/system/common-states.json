@@ -34,6 +34,7 @@
     "knockdown": {"stance": "crouch", "duration": 40, "next": "wakeup", "floor": true, "timeline": [{"at": 0, "hurt": [[-65, 0, 130, 45]], "invuln": {"throw": true}}]},
     "knockdownSoft": {"stance": "crouch", "duration": 40, "next": "wakeup", "techable": true, "timeline": [{"at": 0, "hurt": [], "invuln": {"strike": true, "throw": true}}]},
     "wakeup": {"stance": "stand", "duration": 12, "next": "idle", "timeline": [{"at": 0, "invuln": {"strike": true, "throw": true}}]},
+    "grabbed": {"stance": "air", "stun": true, "next": "tumble", "landTo": "knockdown", "timeline": [{"at": 0, "gravity": false, "hurt": [], "push": [], "invuln": {"throw": true}}]},
     "thrown": {"stance": "stand", "stun": true, "next": "knockdown", "throwVictim": true, "timeline": [{"at": 0, "hurt": [], "invuln": {"strike": true, "throw": true}}]},
     "throwHold": {"stance": "stand", "stun": true, "next": "throwFinish", "timeline": [{"at": 0, "invuln": {"strike": true, "throw": true}}]},
     "throwFinish": {"stance": "stand", "duration": 18, "next": "idle"},

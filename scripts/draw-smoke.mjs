@@ -16,7 +16,7 @@ try {
   const chars = boot.loadCharacters();
   const ids = Object.keys(chars);
   let frames = 0;
-  for (const [a, b] of [['malik', 'avner'], ['avner', 'malik'], ['proto', 'proto']]) {
+  for (const [a, b] of [['malik', 'avner'], ['avner', 'malik'], ['proto', 'proto'], ['toyle', 'avner']]) {
     const world = boot.makeWorld(chars[a], chars[b], boot.MATCH);
     const renderer = createFightRenderer(any(), boot.W, boot.H);
     const game = createGame(world);

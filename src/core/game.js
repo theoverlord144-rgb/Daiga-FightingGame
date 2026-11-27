@@ -7,14 +7,14 @@
 import { createInputState, pushInput, BTN } from './input.js';
 import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from './match.js';
 import { createFighter, advanceAndDecide, move, land, resolveGuardActions, tickRite, tickDrains } from './fighter.js';
-import { separate, holdTogether, resolveHits, checkThrowBreaks, throwLands, throwTurns, moveProjectiles, resolveProjectiles } from './combat.js';
+import { separate, holdTogether, holdVictims, resolveHits, checkThrowBreaks, throwLands, throwTurns, moveProjectiles, resolveProjectiles } from './combat.js';
 import { px } from './fixed.js';
 import { compileSystems, compileHitStates } from './systems.js';
 
 export const FPS = 60;
 
 /** States a fighter can be in while still being comboed. */
-export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'hitSpin', 'hitTumble', 'slide', 'tumble', 'knockdown', 'knockdownSoft', 'thrown', 'crumple']);
+export const COMBO_STATES = new Set(['hitStand', 'hitCrouch', 'hitAir', 'hitSpin', 'hitTumble', 'slide', 'tumble', 'knockdown', 'knockdownSoft', 'thrown', 'crumple', 'grabbed']);
 
 /** Bundle the system data and two compiled characters into the read-only world. */
 export function createWorld({ input, battle, combo, meter = null, burst = null, match = null, systems = null, chars }) {
@@ -132,6 +132,7 @@ export function step(state, rawInputs, world) {
   separate(state, world);
   holdTogether(state, world, before);
   for (const p of ps) if (!frozen[p.id]) land(state, p, world.chars[p.id], world);
+  holdVictims(state, world);
   // A combo ends the moment its victim gets free, before this frame's hits: a hit on a fighter who has just
   // recovered starts a new combo (and they could have blocked it).
   for (const p of ps) {
