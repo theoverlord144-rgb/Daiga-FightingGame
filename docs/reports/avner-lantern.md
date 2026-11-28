@@ -174,3 +174,15 @@ Ten effect sheets were redrawn or added after they were last cut.
 ## Not done
 
 `docs/baseline` still doesn't match. That's from Malik's earlier changes, which were already waiting on your word to re-record. Avner's new moves only show up there as "new".
+
+## Nov 28: Beckon (6R with the lantern set)
+
+The owner's go after the character study. Pendulum holds one spot; Beckon moves it.
+
+- **What it does:** with the lantern set, 6R calls it straight to where the opponent is standing. It flies there (24 px a frame, never longer than 16 frames), hits once on the way, and then hangs there as the new set point. It aims where they stood when he pressed it and doesn't follow them, so they can dodge by moving.
+- **Cost:** 1 flame. Once per combo. Not usable with the lantern in hand (6R is still the Lob) or dark.
+- **The hit:** 500 damage, a small pop back toward Avner (so he can keep the combo going), mid. First guesses, tune them in HIT SETTINGS.
+- **The risk:** if they block it, the lantern ends up right next to them, where they can hit it and take a flame. If Avner gets hit while it flies, or they strike the lantern on its way, the Beckon loses its hit and still lands where it was going.
+- **Avner:** free on frame 16, the same as Pendulum. He's drawn with the Pendulum drawings until his own beckoning pose is drawn (about 6 to 8 drawings).
+- **Rules changed:** a new lantern action type `beckon` in `src/core/relic.js`. The engine's once-per-combo rule counts the move that hits, and here the lantern hits, so the action's `countsAs` makes the lantern's hit count for the 6R move.
+- **Tests:** four new ones in `tests/lantern.test.js` (where it goes and what it costs; in hand, dark, and 5R still being Recall; once per combo and the blocked case; struck or hit mid-flight). All 576 tests pass, the build passes, and the drawing check passes.

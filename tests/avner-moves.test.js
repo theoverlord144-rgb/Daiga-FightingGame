@@ -220,7 +220,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], Array.from({ length: count }, (_, i) => i), `${name}: all ${count} drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_4', 'rite_5', 'rite_j', 'spearH', 'spearL', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'stomp', 'vow_start']); // vow_start: the universal Vow (M+H), every character has it
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'parry_start', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_4', 'rite_5', 'rite_j', 'spearH', 'spearL', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'stomp']); // parry_start: the universal M+H (the parry; Vow when guardButton is vow), every character has it
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);

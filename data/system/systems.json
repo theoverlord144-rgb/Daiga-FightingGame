@@ -42,5 +42,5 @@
       "penitent":  { "give": 0.6, "take": 1.0, "extras": { "guardPerPct": 1, "repel": 10, "drawRefund": 0.5, "vowAbsorb": 1.0 } },
       "trickster": { "give": 1.0, "take": 1.0, "extras": { "variety": { "newMove": 1.5, "repeat": 0.2, "switch": 10 } } }
     }
-  }
+  }, "guardButton": "parry", "parry": { "notes": "Parry (owner, Nov 28; an experiment in place of Vow on M+H). guardButton picks what M+H is: \"parry\" or \"vow\" (Vow and Debt come back whole with \"vow\"). Pressed from neutral (not in blockstun: there two attack buttons are Repel / Draw), the parry catches a strike that lands in its window: no damage, the attacker freezes for freeze frames, the defender goes to parry_success (8 frames, a free state: attack, block, walk or parry again at once) and gains devotion. A whiffed parry is stuck for recovery frames and cannot block. Throws, supers and pierce moves go through; projectiles are parried when projectiles is true (the projectile is used up). Frames: startup before the window, window frames long.", "startup": 2, "window": 6, "recovery": 20, "freeze": 12, "successFrames": 8, "devotion": 10, "projectiles": true }
 }

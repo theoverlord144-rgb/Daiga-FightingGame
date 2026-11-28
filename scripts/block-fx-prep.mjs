@@ -1,100 +1,158 @@
-// Cuts the block effect sheet (data/UniversalEffects/Game_Block_Effect.png: the glass guard, 10 drawings in a
-// 5 x 2 grid: the oval with a glint crossing it, then breaking into a swirl of shards) into two game-ready strips
-// in data/effects/:
+// Cuts the universal block effect (owner's brief, Nov 27: two layers on one timeline, used by every character) into
+// game-ready strips in data/effects/:
 //
 //   node scripts/block-fx-prep.mjs
 //
-//   block-guard.png         the guard as drawn, with the sheet's own opacity (so its faint glow and the mist of
-//                           the breaking drawings are kept as the artist made them)
-//   block-guard-white.png   the same shapes in plain white (the flash on a heavy block)
+//   block-body.png        data/UniversalEffects/Game_Block_Effect.png  (FX_Block_Body: the shield, 8 drawings in a
+//                         4 x 2 grid on magenta; the magenta is keyed out from the edges of each cell inward)
+//   block-light.png       Game_Block_Effect2.png  (FX_Block_Light: its glow, 8 drawings, 4 x 2, on black)
+//   block-heavy-light.png Game_Block_Effect3.png  (FX_BlockHeavy_Light: the heavy glow, 10 drawings, 5 x 2)
+//   (FX_BlockHeavy_Body has not been drawn yet: heavy blocks play their light layer alone until it is.)
 //
-// Every drawing is placed by the centre of what is solidly drawn in it (the shards keep the oval's outline), so
-// the oval stays on one spot as it plays.
-// Also cuts Game_Block_Effect_Heavys_PhysicalSpecials.png (one row of 7 drawings on black, no transparency: a swirl
-// of shards flying outward) into block-shards.png: brightness becomes opacity, each drawing placed by the middle of
-// what is drawn in it, the largest SHARDS game px across.
-// Prints the "sprite" blocks for effects.json ("bodyH" = the height of the full oval in strip px).
+// Every sheet is sliced on its fixed grid, and each drawing is placed by the oval's centre in its cell: the white
+// diamond in the shield drawings, the bright star in the glow drawings (a drawing where it has faded out keeps the
+// drawing before it's spot). Each strip's cells are centred on that point, so body and light line up drawing for
+// drawing. All three are cut at one scale (sheet px to strip px), so the layers match in size.
+// Prints the sprite blocks for effects.json and lightOffset: the light's centre minus the body's, per drawing, in
+// sheet px, as measured (it is corrected by the cut).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { decodePng, encodePng } from './png.mjs';
 
-const SRC = 'data/UniversalEffects/Game_Block_Effect.png', OUT = 'data/effects/';
-const COLS = 5, ROWS = 2, N = 10;
-const BODY = 300; // strip px for the tallest drawing of the whole oval (drawings 1 to 4)
-const GLOW = 44; // sheet px kept around the oval for its glow
-const SOLID = 40; // opacity (0-255) above which a pixel belongs to the drawing
+const SRC = 'data/UniversalEffects/', OUT = 'data/effects/';
+const BODY = 300; // strip px for the height of the whole shield (drawing 4)
+const MARGIN = 8; // sheet px kept around what is drawn
+const NEAR = 70; // sheet px around a first guess where the centre mark is looked for
 
-const { width: W, height: H, data: D } = decodePng(readFileSync(SRC));
-const cw = W / COLS, ch = H / ROWS;
-const frames = [];
-for (let i = 0; i < N; i++) {
-  const x0 = Math.round((i % COLS) * cw), x1 = Math.round((i % COLS + 1) * cw), y0 = Math.round(Math.floor(i / COLS) * ch), y1 = Math.round((Math.floor(i / COLS) + 1) * ch);
-  let bx0 = x1, bx1 = x0, by0 = y1, by1 = y0;
-  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
-    if (D[(y * W + x) * 4 + 3] <= SOLID) continue;
-    bx0 = Math.min(bx0, x); bx1 = Math.max(bx1, x); by0 = Math.min(by0, y); by1 = Math.max(by1, y);
-  }
-  frames.push({ x0, x1, y0, y1, cx: (bx0 + bx1 + 1) / 2, cy: (by0 + by1 + 1) / 2, w: bx1 - bx0 + 1, h: by1 - by0 + 1 });
+function load(file) {
+  const im = decodePng(readFileSync(SRC + file));
+  return { W: im.width, H: im.height, D: im.data };
 }
-const tall = Math.max(...frames.slice(0, 4).map((f) => f.h));
-const k = BODY / tall; // strip px per sheet px
-let halfX = 0, halfY = 0;
-for (const f of frames) { halfX = Math.max(halfX, f.w / 2 + GLOW); halfY = Math.max(halfY, f.h / 2 + GLOW); }
-const ow = 2 * Math.ceil(halfX * k) + 6, oh = 2 * Math.ceil(halfY * k) + 6;
+const cellsOf = (im, cols, rows, n) => Array.from({ length: n }, (_, i) => ({
+  x0: Math.round((i % cols) * (im.W / cols)), x1: Math.round(((i % cols) + 1) * (im.W / cols)),
+  y0: Math.round(Math.floor(i / cols) * (im.H / rows)), y1: Math.round((Math.floor(i / cols) + 1) * (im.H / rows)),
+}));
 
-const blocks = {};
-for (const [suffix, white] of [['', false], ['-white', true]]) {
-  const out = new Uint8Array(ow * N * oh * 4);
-  frames.forEach((f, i) => {
+/** Magenta out, from the cell edges inward; the antialiased rim gets partial opacity with the magenta taken out. */
+function keyMagenta(im, cells) {
+  const { W, D } = im;
+  const isKey = (j) => D[j] > 150 && D[j + 2] > 150 && D[j + 1] < 110 && D[j] - D[j + 1] > 90 && D[j + 2] - D[j + 1] > 90;
+  const keyed = new Uint8Array(im.W * im.H);
+  for (const c of cells) {
+    const stack = [];
+    for (let x = c.x0; x < c.x1; x++) stack.push([x, c.y0], [x, c.y1 - 1]);
+    for (let y = c.y0; y < c.y1; y++) stack.push([c.x0, y], [c.x1 - 1, y]);
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      if (x < c.x0 || x >= c.x1 || y < c.y0 || y >= c.y1) continue;
+      const k = y * W + x;
+      if (keyed[k] || !isKey(k * 4)) continue;
+      keyed[k] = 1;
+      stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+    }
+  }
+  const out = new Uint8Array(D.length);
+  for (let k = 0; k < im.W * im.H; k++) {
+    const j = k * 4;
+    if (keyed[k]) continue;
+    let a = 1;
+    const edge = (keyed[k - 1] || keyed[k + 1] || keyed[k - W] || keyed[k + W]);
+    if (edge) a = Math.max(0, Math.min(1, 1 - (Math.min(D[j], D[j + 2]) - D[j + 1]) / 255));
+    if (a <= 0.02) continue;
+    // P = a F + (1 - a) magenta  →  F
+    out[j] = Math.max(0, Math.min(255, (D[j] - (1 - a) * 255) / a));
+    out[j + 1] = Math.max(0, Math.min(255, D[j + 1] / a));
+    out[j + 2] = Math.max(0, Math.min(255, (D[j + 2] - (1 - a) * 255) / a));
+    out[j + 3] = Math.round(a * 255);
+  }
+  return { ...im, D: out };
+}
+
+const lum = (D, j) => (D[j + 3] ? Math.max(D[j], D[j + 1], D[j + 2]) * (D[j + 3] / 255) : 0);
+function bbox(im, c, test) {
+  let bx0 = c.x1, bx1 = c.x0, by0 = c.y1, by1 = c.y0;
+  for (let y = c.y0; y < c.y1; y++) for (let x = c.x0; x < c.x1; x++) if (test((y * im.W + x) * 4)) { bx0 = Math.min(bx0, x); bx1 = Math.max(bx1, x); by0 = Math.min(by0, y); by1 = Math.max(by1, y); }
+  return bx1 < bx0 ? null : { x0: bx0, x1: bx1 + 1, y0: by0, y1: by1 + 1, cx: (bx0 + bx1 + 1) / 2, cy: (by0 + by1 + 1) / 2 };
+}
+/** The centroid of the marks passing `test` within NEAR of (gx, gy), or null. */
+function centreNear(im, c, gx, gy, test) {
+  let sx = 0, sy = 0, n = 0;
+  for (let y = Math.max(c.y0, Math.round(gy - NEAR)); y < Math.min(c.y1, gy + NEAR); y++) for (let x = Math.max(c.x0, Math.round(gx - NEAR)); x < Math.min(c.x1, gx + NEAR); x++) if (test((y * im.W + x) * 4)) { sx += x; sy += y; n++; }
+  return n >= 4 ? [sx / n + 0.5, sy / n + 0.5] : null;
+}
+
+/** Each drawing's centre, cell-relative where a drawing has none of its own. */
+function anchors(im, cells, guess, mark) {
+  const out = [];
+  cells.forEach((c, i) => {
+    const g = guess(i, c);
+    const at = g && centreNear(im, c, g[0], g[1], mark);
+    if (at) out.push(at);
+    else { const p = out[i - 1], pc = cells[i - 1]; out.push([p[0] - pc.x0 + c.x0, p[1] - pc.y0 + c.y0]); } // faded: the drawing before's spot
+  });
+  return out;
+}
+
+/** A strip: each drawing's cell centred on its anchor, scaled by k (strip px per sheet px). */
+function strip(im, cells, at, k, name) {
+  const n = cells.length;
+  let hx = 0, hy = 0;
+  cells.forEach((c, i) => {
+    const b = bbox(im, c, (j) => im.D[j + 3] > 8);
+    if (!b) return;
+    hx = Math.max(hx, at[i][0] - b.x0, b.x1 - at[i][0]); hy = Math.max(hy, at[i][1] - b.y0, b.y1 - at[i][1]);
+  });
+  const ow = 2 * Math.ceil((hx + MARGIN) * k) + 2, oh = 2 * Math.ceil((hy + MARGIN) * k) + 2;
+  const o = new Uint8Array(ow * n * oh * 4);
+  cells.forEach((c, i) => {
     for (let oy = 0; oy < oh; oy++) for (let ox = 0; ox < ow; ox++) {
-      // the patch of sheet this strip pixel covers, averaged (weighted by opacity)
-      const ax = f.cx + (ox - ow / 2) / k, ay = f.cy + (oy - oh / 2) / k;
-      let r = 0, g = 0, b = 0, a = 0, c = 0;
+      const ax = at[i][0] + (ox - ow / 2) / k, ay = at[i][1] + (oy - oh / 2) / k;
+      let r = 0, g = 0, b = 0, a = 0, cnt = 0;
       for (let yy = Math.floor(ay); yy < ay + 1 / k; yy++) for (let xx = Math.floor(ax); xx < ax + 1 / k; xx++) {
-        c++;
-        if (xx < f.x0 || xx >= f.x1 || yy < f.y0 || yy >= f.y1) continue;
-        const j = (yy * W + xx) * 4, al = D[j + 3] / 255;
+        cnt++;
+        if (xx < c.x0 || xx >= c.x1 || yy < c.y0 || yy >= c.y1) continue;
+        const j = (yy * im.W + xx) * 4, al = im.D[j + 3] / 255;
         if (!al) continue;
-        r += D[j] * al; g += D[j + 1] * al; b += D[j + 2] * al; a += al;
+        r += im.D[j] * al; g += im.D[j + 1] * al; b += im.D[j + 2] * al; a += al;
       }
       if (!a) continue;
-      const o = (oy * ow * N + i * ow + ox) * 4;
-      out[o] = white ? 255 : r / a; out[o + 1] = white ? 255 : g / a; out[o + 2] = white ? 255 : b / a; out[o + 3] = Math.round((a / c) * 255);
+      const q = (oy * ow * n + i * ow + ox) * 4;
+      o[q] = r / a; o[q + 1] = g / a; o[q + 2] = b / a; o[q + 3] = Math.round((a / cnt) * 255);
     }
   });
-  const name = `block-guard${suffix}`;
-  writeFileSync(`${OUT}${name}.png`, encodePng({ width: ow * N, height: oh, data: Buffer.from(out) }));
-  blocks[name] = { image: `${name}.png`, columns: N, rows: 1, count: N, frameW: ow, frameH: oh, originX: ow / 2, originY: oh / 2, scale: 0.5, bodyH: BODY };
+  writeFileSync(`${OUT}${name}.png`, encodePng({ width: ow * n, height: oh, data: Buffer.from(o) }));
+  return { image: `${name}.png`, columns: n, rows: 1, count: n, frameW: ow, frameH: oh, originX: ow / 2, originY: oh / 2, scale: 0.5 };
 }
-console.log(`block-guard: ${N} drawings, cell ${ow}x${oh}, drawn at ${(k * 100).toFixed(1)}%`);
-console.log(`centres against the middle of each sheet cell (sheet px): ${frames.map((f) => `${Math.round(f.cx - (f.x0 + f.x1) / 2)},${Math.round(f.cy - (f.y0 + f.y1) / 2)}`).join('  ')}`);
-console.log(`sizes (sheet px): ${frames.map((f) => `${f.w}x${f.h}`).join('  ')}`);
-{
-  const SHARDS = 150, CUTS = [340, 651, 1012, 1429, 1882, 2292]; // game px across; the cuts between drawings, by hand
-  const im = decodePng(readFileSync('data/UniversalEffects/Game_Block_Effect_Heavys_PhysicalSpecials.png'));
-  const SW = im.width, SH = im.height, S = im.data;
-  const lum = (x, y) => { const j = (y * SW + x) * 4, m = Math.max(S[j], S[j + 1], S[j + 2]); return m < 28 ? 0 : m; };
-  const xs = [0, ...CUTS, SW], n = xs.length - 1, fr = [];
-  for (let i = 0; i < n; i++) {
-    let bx0 = SW, bx1 = 0, by0 = SH, by1 = 0;
-    for (let y = 0; y < SH; y++) for (let x = xs[i]; x < xs[i + 1]; x++) if (lum(x, y)) { bx0 = Math.min(bx0, x); bx1 = Math.max(bx1, x); by0 = Math.min(by0, y); by1 = Math.max(by1, y); }
-    fr.push({ x0: xs[i], x1: xs[i + 1], cx: (bx0 + bx1 + 1) / 2, cy: (by0 + by1 + 1) / 2, w: bx1 - bx0 + 1, h: by1 - by0 + 1 });
-  }
-  const big = Math.max(...fr.map((f) => Math.max(f.w, f.h)));
-  const ks = (SHARDS * 2) / big; // strip px per sheet px
-  const sw = 2 * Math.ceil((Math.max(...fr.map((f) => f.w)) / 2) * ks) + 6, sh = 2 * Math.ceil((Math.max(...fr.map((f) => f.h)) / 2) * ks) + 6;
-  const o = new Uint8Array(sw * n * sh * 4);
-  fr.forEach((f, i) => {
-    for (let oy = 0; oy < sh; oy++) for (let ox = 0; ox < sw; ox++) {
-      const ax = f.cx + (ox - sw / 2) / ks, ay = f.cy + (oy - sh / 2) / ks;
-      let a = 0, c = 0;
-      for (let yy = Math.floor(ay); yy < ay + 1 / ks; yy++) for (let xx = Math.floor(ax); xx < ax + 1 / ks; xx++) { c++; if (xx >= f.x0 && xx < f.x1 && yy >= 0 && yy < SH) a += lum(xx, yy) / 255; }
-      if (!a) continue;
-      const q = (oy * sw * n + i * sw + ox) * 4;
-      o[q] = 255; o[q + 1] = 255; o[q + 2] = 255; o[q + 3] = Math.round(Math.min(1, (a / c) * 1.25) * 255);
-    }
-  });
-  writeFileSync(OUT + 'block-shards.png', encodePng({ width: sw * n, height: sh, data: Buffer.from(o) }));
-  blocks['block-shards'] = { image: 'block-shards.png', columns: n, rows: 1, count: n, frameW: sw, frameH: sh, originX: sw / 2, originY: sh / 2, scale: 0.5 };
-  console.log(`block-shards: ${n} drawings, cell ${sw}x${sh}; sizes (sheet px) ${fr.map((f) => `${f.w}x${f.h}`).join('  ')}; centres ${fr.map((f) => `${Math.round(f.cx)},${Math.round(f.cy)}`).join('  ')}`);
-}
-console.log(JSON.stringify(blocks));
+
+// The shield.
+const rawBody = load('Game_Block_Effect.png');
+const bodyCells = cellsOf(rawBody, 4, 2, 8);
+const body = keyMagenta(rawBody, bodyCells);
+const white = (j) => body.D[j + 3] > 200 && body.D[j] > 235 && body.D[j + 1] > 235 && body.D[j + 2] > 235;
+const bodyAt = anchors(body, bodyCells, (i, c) => { const b = bbox(body, c, (j) => body.D[j + 3] > 100); return i < 6 && b ? [b.cx, b.cy] : null; }, white);
+const oval = bbox(body, bodyCells[3], (j) => body.D[j + 3] > 100);
+const k = BODY / (oval.y1 - oval.y0);
+
+// Its glow, looked for where the shield's centre is in the same cell.
+const light = load('Game_Block_Effect2.png');
+const lightCells = cellsOf(light, 4, 2, 8);
+const bright = (im) => (j) => lum(im.D, j) >= 245;
+const lightAt = anchors(light, lightCells, (i, c) => [bodyAt[i][0] - bodyCells[i].x0 + c.x0, bodyAt[i][1] - bodyCells[i].y0 + c.y0], bright(light));
+
+// The heavy glow (no shield of its own yet): first guess, the middle of what is clearly lit.
+const heavy = load('Game_Block_Effect3.png');
+const heavyCells = cellsOf(heavy, 5, 2, 10);
+const heavyAt = anchors(heavy, heavyCells, (i, c) => { const b = bbox(heavy, c, (j) => lum(heavy.D, j) > 120); return b ? [b.cx, b.cy] : null; }, bright(heavy));
+
+const sprites = {
+  body: { ...strip(body, bodyCells, bodyAt, k, 'block-body'), bodyH: BODY },
+  light: { ...strip(light, lightCells, lightAt, k, 'block-light'), additive: true },
+  heavyLight: { ...strip(heavy, heavyCells, heavyAt, k, 'block-heavy-light'), additive: true },
+};
+const rel = (at, cells) => at.map((p, i) => [p[0] - cells[i].x0, p[1] - cells[i].y0]);
+const lightOffset = rel(lightAt, lightCells).map((p, i) => { const b = rel(bodyAt, bodyCells)[i]; return [Math.round(p[0] - b[0]), Math.round(p[1] - b[1])]; });
+console.log(`scale ${(k * 100).toFixed(1)}% (shield ${oval.y1 - oval.y0} sheet px tall → ${BODY})`);
+console.log('body centres (in cell):', JSON.stringify(rel(bodyAt, bodyCells).map((p) => p.map(Math.round))));
+console.log('light centres (in cell):', JSON.stringify(rel(lightAt, lightCells).map((p) => p.map(Math.round))));
+console.log('heavy light centres (in cell):', JSON.stringify(rel(heavyAt, heavyCells).map((p) => p.map(Math.round))));
+console.log('"lightOffset":', JSON.stringify(lightOffset));
+console.log(JSON.stringify(sprites));

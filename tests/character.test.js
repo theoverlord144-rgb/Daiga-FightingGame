@@ -37,7 +37,7 @@ test('a version 1 export loads: ids, commands, frame data, durations', () => {
   assert.equal(c.states['5L'].kind, 'normal');
   assert.equal(c.states['5L'].move.damage, 300);
   assert.equal(c.states['5L'].move.pushbackBlock, px(20));
-  assert.deepEqual(c.commands.map((k) => k.move), ['623H', 'vow_start', '5L'], 'specials first'); // vow_start: the universal Vow (M+H), added to every character
+  assert.deepEqual(c.commands.map((k) => k.move), ['623H', 'parry_start', '5L'], 'specials first'); // parry_start: the universal M+H (the parry; Vow when guardButton is vow), added to every character
 });
 
 test('version 1 sprite sheets drive sprite events: holds, and an even spread without holds', () => {

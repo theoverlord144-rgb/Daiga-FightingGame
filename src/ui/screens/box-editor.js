@@ -5,6 +5,9 @@
 // src/editor/box-model.js. Projectiles are in the list too ("proj:<name>"): one hitbox each, shown on the
 // projectile's own drawing at the spot it is released from. Pages: BOXES (here), HIT SETTINGS (move-tuner.js),
 // CANCELS (cancel-grid.js) and FX (fx-page.js: an effect sheet's size, rotation, opacity and colour).
+// Drawing timing (BOXES page): the strip above the frame bar shows each drawing with the frames it stays on screen;
+// drag a line between two drawings, or press - / = on the drawing on screen, to trade frames between neighbours.
+// The state's length never changes (src/editor/timing-model.js), so frame data and boxes stay where they are.
 import { compileCharacter } from '../../core/character.js';
 import { UNIT } from '../../core/fixed.js';
 import { createFightRenderer } from '../../render/fight-renderer.js';
@@ -14,11 +17,18 @@ import { FONT, INK, DIM, GOLD } from './common.js';
 import { createTuner } from './move-tuner.js';
 import { createCancelGrid } from './cancel-grid.js';
 import { createFxPage } from './fx-page.js';
+import { drawingRuns, timingPlan, moveChange, snapApplies } from '../../editor/timing-model.js';
+
+// Snap timing per character (data/snap/<id>.json): the game re-times some moves with it (drawing only).
+const SNAP = Object.fromEntries(Object.entries(import.meta.glob('../../../data/snap/*.json', { eager: true, import: 'default' }))
+  .map(([path, v]) => [path.match(/snap\/([^/]+)\.json$/)[1], v]));
 
 const LIST_W = 176; // the state list, on the left
-const STAGE = { x: 184, y: 30, w: 768, h: 338 }; // where the fighter is drawn
-const GY = 350; // the floor line, on screen
-const BAR = { x: 190, y: 378, w: 756, h: 18 }; // the frame bar
+const STAGE = { x: 184, y: 30, w: 768, h: 314 }; // where the fighter is drawn
+const PAGE_STAGE = { ...STAGE, h: 338 }; // the other pages (HIT SETTINGS, FX) keep the full height
+const GY = 326; // the floor line, on screen
+const BAR = { x: 190, y: 362, w: 756, h: 18 }; // the frame bar
+const STRIP = { x: BAR.x, y: 346, w: BAR.w, h: 14 }; // the drawings and their lengths, just above the bar
 const ROW = 15;
 const LIST_TOP = 56;
 const COLORS = { hurt: '#36d27a', hit: '#ff3b3b', push: '#ffffff', throw: '#e0d050' };
@@ -36,6 +46,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
 
   let charId, raw, saved, def, names, sel, frame, listScroll;
   let playing = false;
+  let slow = false; // PLAY at half speed
   let picked = null; // the selected box: { kind: 'hurt' | 'hit', i }
   let drag = null;
   let undo = [];
@@ -233,6 +244,70 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     change(() => setBoxes(raw, c.src[picked.kind], list));
   }
 
+  // ---------- Drawing timing ----------
+
+  /** The drawings of the entry on screen: { runs, at (the one on screen), plan (can they be retimed here?) }. */
+  function timingOf(c) {
+    const runs = drawingRuns(c.st);
+    const at = Math.max(0, runs.findIndex((r) => c.f >= r.start && c.f < r.start + r.len));
+    const plan = c.info.type === 'projectile' ? { ok: false, why: 'A projectile\'s drawings are timed by its own animation, not here.' }
+      : runs.length < 2 ? { ok: false, why: 'This has only one drawing: there is nothing to retime.' }
+        : timingPlan(raw, SYSTEM, c.name);
+    return { runs, at, plan };
+  }
+
+  /** The drawing on screen one frame longer (dir 1) or shorter (-1): the next drawing gives or takes it (the last one: the drawing before). */
+  function holdStep(dir) {
+    const c = now();
+    const t = timingOf(c);
+    if (!t.plan.ok) { say(t.plan.why, '#ffb86b'); return; }
+    const last = t.at === t.runs.length - 1;
+    const b = last ? t.at : t.at + 1;
+    const d = last ? -dir : dir;
+    playing = false;
+    if (change(() => moveChange(raw, SYSTEM, c.name, b, d))) {
+      // Stay on the same drawing (its first frame moves when the change before it moves).
+      const runs = drawingRuns(stOf(names[sel]));
+      const r = runs[t.at];
+      if (r && (frame < r.start || frame >= r.start + r.len)) setFrame(r.start);
+    }
+  }
+
+  /** The line between two drawings under the mouse on the strip (its number b, from 1), or 0. */
+  function lineAt(p) {
+    if (!inside(p, { ...STRIP, x: STRIP.x - 6, w: STRIP.w + 12 })) return 0;
+    const runs = drawingRuns(stOf(names[sel]));
+    const cw = BAR.w / stOf(names[sel]).frames.length;
+    let best = 0, dist = 6;
+    for (let b = 1; b < runs.length; b++) {
+      const dx = Math.abs(p.x - (BAR.x + runs[b].start * cw));
+      if (dx <= dist) { best = b; dist = dx; }
+    }
+    return best;
+  }
+
+  /** Dragging line b: the change between the two drawings goes to the frame under the mouse. */
+  function dragLine(p) {
+    const st = stOf(names[sel]);
+    const runs = drawingRuns(st);
+    const b = drag.line;
+    const cw = BAR.w / st.frames.length;
+    const lo = runs[b - 1].start + 1, hi = runs[b].start + runs[b].len - 1;
+    const target = Math.max(lo, Math.min(hi, Math.round((p.x - BAR.x) / cw)));
+    const d = target - runs[b].start;
+    if (!d) return;
+    try {
+      moveChange(raw, SYSTEM, names[sel], b, d);
+      recompile();
+      setFrame(target);
+    } catch (err) {
+      raw = JSON.parse(drag.before);
+      recompile();
+      drag = null;
+      say(err.message, '#ff6b6b');
+    }
+  }
+
   async function save() {
     if (saving) return;
     const ops = diffOps(saved, raw);
@@ -308,7 +383,15 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     if (mode === 'hit') { tuner.onDown(p); return; }
     if (mode === 'cancel') { grid.onDown(p); return; }
     if (mode === 'fx') { fxPage.onDown(p); return; }
-    if (inside(p, { ...BAR, y: BAR.y - 4, h: BAR.h + 8 })) { drag = { bar: true }; scrub(p); return; }
+    const line = lineAt(p);
+    if (line) {
+      const plan = timingOf(now()).plan;
+      if (!plan.ok) { say(plan.why, '#ffb86b'); return; }
+      playing = false;
+      drag = { line, before: JSON.stringify(raw) };
+      return;
+    }
+    if (inside(p, STRIP) || inside(p, { ...BAR, y: BAR.y - 2, h: BAR.h + 6 })) { drag = { bar: true }; scrub(p); return; }
     if (!inside(p, STAGE)) return;
     const hit = boxAt(p);
     if (!hit) { picked = null; return; }
@@ -330,6 +413,8 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     mouse.shift = e.shiftKey;
     if (mode === 'hit') { canvas.style.cursor = ''; tuner.onMove(p); return; }
     if (mode === 'cancel' || mode === 'fx') { canvas.style.cursor = ''; return; }
+    if (!drag && lineAt(p)) { canvas.style.cursor = timingOf(now()).plan.ok ? 'ew-resize' : 'not-allowed'; return; }
+    if (drag?.line) { dragLine(p); return; }
     if (!drag) {
       const hit = inside(p, STAGE) ? boxAt(p) : null;
       const part = hit?.part;
@@ -375,13 +460,13 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     } else if (p.x < LIST_W) {
       const rows = Math.floor((H - 24 - LIST_TOP) / ROW);
       listScroll = Math.max(0, Math.min(Math.max(0, names.length - rows), listScroll + Math.sign(e.deltaY) * 3));
-    } else if (inside(p, STAGE) && mode === 'fx') {
+    } else if (inside(p, PAGE_STAGE) && mode === 'fx') {
       fxPage.onWheel(e);
-    } else if (inside(p, STAGE) && mode === 'hit') {
+    } else if (inside(p, PAGE_STAGE) && mode === 'hit') {
       tuner.onWheel(e);
     } else if (inside(p, STAGE)) {
       zoomMul = Math.max(0.5, Math.min(3, zoomMul * (e.deltaY < 0 ? 1.25 : 0.8)));
-    } else if (mode === 'hit' && p.y > STAGE.y + STAGE.h) {
+    } else if (mode === 'hit' && p.y > PAGE_STAGE.y + PAGE_STAGE.h) {
       tuner.onScroll(e);
     } else return;
     e.preventDefault();
@@ -590,10 +675,30 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.strokeRect(BAR.x + c.f * cw, BAR.y - 1, Math.max(3, cw), BAR.h + 2);
+    drawStrip(c, cw);
+  }
+
+  /** Each drawing as a block with the frames it stays on screen; gold lines between them can be dragged. */
+  function drawStrip(c, cw) {
+    const t = timingOf(c);
+    t.runs.forEach((r, i) => {
+      const x = BAR.x + r.start * cw, w = r.len * cw;
+      const on = i === t.at;
+      ctx.fillStyle = on ? '#5a4514' : i % 2 ? '#2a2238' : '#221b2e';
+      ctx.fillRect(x + 0.5, STRIP.y, Math.max(1, w - 1), STRIP.h);
+      if (w >= 9) text(String(r.len), x + w / 2, STRIP.y + 11, { color: on ? GOLD : INK, size: w >= 16 ? 10 : 8, weight: on ? 700 : 400, align: 'center' });
+    });
+    if (!t.plan.ok) return;
+    const hover = drag?.line ?? lineAt(mouse);
+    for (let b = 1; b < t.runs.length; b++) {
+      const x = Math.round(BAR.x + t.runs[b].start * cw);
+      ctx.fillStyle = b === hover ? '#ffffff' : GOLD;
+      ctx.fillRect(x - 1, STRIP.y - 2, b === hover ? 3 : 2, STRIP.h + 4);
+    }
   }
 
   function drawPanel(c) {
-    let y = 404;
+    let y = 388;
     // Where this frame's boxes come from, and the ways to give it its own.
     const hs = c.src.hurt;
     text('Hurtbox:', 190, y + 14, { color: COLORS.hurt, size: 11, weight: 700 });
@@ -615,7 +720,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     text(describe('hit', c), 246, y + 14, { color: DIM, size: 11 });
 
     // Actions.
-    y = 478;
+    y = 454;
     x = 190;
     const plan = hitPlan(c);
     x = button('+ HURTBOX', x, y, editable(hs) ? { on: () => addBox('hurt') } : { why: c.info.type === 'projectile' ? 'A projectile has no hurtbox.' : 'The hurtbox on this frame is set by the system for every character.' });
@@ -625,20 +730,36 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     x = button('◀ FRAME', x, y, { on: () => { playing = false; setFrame(frame - 1); } });
     x = button(playing ? 'PAUSE' : 'PLAY', x, y, { on: () => { playing = !playing; }, lit: playing });
     x = button('FRAME ▶', x, y, { on: () => { playing = false; setFrame(frame + 1); } });
+    x = button('½×', x, y, { on: () => { slow = !slow; }, lit: slow });
     x += 10;
     x = button('UNDO', x, y, undo.length ? { on: undoOnce } : { why: 'Nothing to undo.' });
     const d = dirty();
     x = button(saving ? 'SAVING…' : 'SAVE', x, y, d && !saving ? { on: save, lit: true } : { why: 'Nothing to save.' });
     text(d ? 'unsaved changes' : 'saved', x + 4, y + 14, { color: d ? '#ffb86b' : '#5a516b', size: 11 });
 
+    // The drawing on screen and how long it holds.
+    const t = timingOf(c);
+    const r = t.runs[t.at];
+    const ty = 480;
+    text('Drawing:', 190, ty + 14, { color: GOLD, size: 11, weight: 700 });
+    x = button('−1 FRAME', 246, ty, t.plan.ok ? { on: () => holdStep(-1) } : { why: t.plan.why });
+    x = button('+1 FRAME', x, ty, t.plan.ok ? { on: () => holdStep(1) } : { why: t.plan.why });
+    const snap = SNAP[charId];
+    const snapNote = !t.plan.ok ? t.plan.why
+      : snapApplies(snap, def, c.name) ? 'In the fight, snap timing (a polish switch) plays this move re-timed until you change its timing here.'
+        : snap?.moves?.[c.name] ? 'Your own timing: snap timing no longer re-times this move in the fight.' : '';
+    text(`${r.index >= 0 ? `drawing ${r.index + 1}` : 'no drawing'} · ${r.len} frame${r.len === 1 ? '' : 's'} (frames ${r.start}–${r.start + r.len - 1}) · ${t.runs.length} drawings, ${c.st.frames.length} frames in all`, x + 6, ty + 14, { color: INK, size: 11 });
+
     // The frame, and the selected box in numbers.
-    text(`Frame ${c.f} of 0–${c.st.frames.length - 1}`, W - 10, 418, { size: 12, weight: 700, align: 'right' });
+    text(`Frame ${c.f} of 0–${c.st.frames.length - 1}`, W - 10, 402, { size: 12, weight: 700, align: 'right' });
     if (picked && c.boxes[picked.kind][picked.i]) {
       const [bx, by, bw, bh] = c.boxes[picked.kind][picked.i];
-      text(`${NAMES[picked.kind]} ${picked.i + 1} of ${c.boxes[picked.kind].length}`, W - 10, 440, { color: COLORS[picked.kind], size: 11, weight: 700, align: 'right' });
-      text(`forward ${bx} · up ${by} · wide ${bw} · tall ${bh}`, W - 10, 456, { color: INK, size: 11, align: 'right' });
-    } else text('click a box to select it', W - 10, 440, { color: '#5a516b', size: 11, align: 'right' });
-    if (msg && tick < msg.until) text(msg.text, 190, 511, { color: msg.color, size: 12, weight: 600 });
+      text(`${NAMES[picked.kind]} ${picked.i + 1} of ${c.boxes[picked.kind].length}`, W - 10, 424, { color: COLORS[picked.kind], size: 11, weight: 700, align: 'right' });
+      text(`forward ${bx} · up ${by} · wide ${bw} · tall ${bh}`, W - 10, 440, { color: INK, size: 11, align: 'right' });
+    } else text('click a box to select it', W - 10, 424, { color: '#5a516b', size: 11, align: 'right' });
+    // The bottom line: a message, else what to know about this state's drawing timing.
+    if (msg && tick < msg.until) text(msg.text, 190, 513, { color: msg.color, size: 12, weight: 600 });
+    else if (snapNote) text(snapNote, 190, 513, { color: '#8a7f9e', size: 11 });
   }
 
   /** The page tabs, top right, on both pages. */
@@ -651,7 +772,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
   }
 
   const tuner = createTuner({
-    ctx, app, renderer, STAGE, W, H, text, button, say, mouse,
+    ctx, app, renderer, STAGE: PAGE_STAGE, W, H, text, button, say, mouse,
     raw: () => raw, def: () => def, charId: () => charId, entry: () => names[sel], version: () => version,
     change, undoOnce, undoCount: () => undo.length, dirty, saving: () => saving, save,
     hint: (s, weak = false) => { if (!weak || !hintText) hintText = s; },
@@ -673,7 +794,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
   });
 
   const fxPage = createFxPage({
-    ctx, renderer, STAGE, W, H, LIST_W, text, button, say, mouse,
+    ctx, renderer, STAGE: PAGE_STAGE, W, H, LIST_W, text, button, say, mouse,
     raw: () => raw, def: () => def, charId: () => charId, manyCharacters: () => ids.length > 1,
     change, undoOnce, undoCount: () => undo.length, dirty, saving: () => saving, save,
     hint: (s, weak = false) => { if (!weak || !hintText) hintText = s; },
@@ -683,7 +804,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
     get help() {
       return mode === 'hit' ? tuner.help : mode === 'cancel' ? grid.help : mode === 'fx' ? fxPage.help : this.boxHelp;
     },
-    boxHelp: 'T: next page · Drag a box to move it, an edge to resize · arrows nudge (Shift: resize, Ctrl: ×10) · , . frame · [ ] move · Space play · Ctrl+Z undo · Ctrl+S save · Esc back',
+    boxHelp: 'T page · drag a box · arrows nudge (Shift size, Ctrl ×10) · , . frame · [ ] move · gold line or - = : drawing timing · Space play · S slow · Ctrl+Z / Ctrl+S · Esc',
     /** Ctrl+S (main.js sends it to the current screen under this name). */
     saveReplay: save,
     close() {
@@ -697,7 +818,7 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
       tick++;
       if (mode === 'hit') tuner.step();
       else if (mode === 'fx') fxPage.step();
-      else if (playing && !drag) setFrame(frame + 1);
+      else if (playing && !drag && (!slow || tick % 2 === 0)) setFrame(frame + 1);
       if (menu[0].escape) {
         if (mode === 'hit' && tuner.cancel()) return;
         if (mode === 'fx' && fxPage.cancel()) return;
@@ -750,8 +871,11 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
       else if (e.code === 'Period') { playing = false; setFrame(frame + 1); }
       else if (e.code === 'BracketLeft' || e.code === 'PageUp') { e.preventDefault(); setState(sel - 1); }
       else if (e.code === 'BracketRight' || e.code === 'PageDown') { e.preventDefault(); setState(sel + 1); }
+      else if (e.code === 'Minus' || e.code === 'NumpadSubtract') holdStep(-1);
+      else if (e.code === 'Equal' || e.code === 'NumpadAdd') holdStep(1);
       else if (e.repeat) return;
       else if (e.code === 'Space') { e.preventDefault(); playing = !playing; }
+      else if (e.code === 'KeyS') slow = !slow;
       else if (e.code === 'Delete' || e.code === 'KeyX') deleteBox();
       else if (e.code === 'KeyH') addBox('hit');
       else if (e.code === 'KeyU') addBox('hurt');
@@ -780,8 +904,8 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
         const line = msg && tick < msg.until ? msg : hintText ? { text: hintText, color: INK } : null;
         if (line) {
           ctx.fillStyle = '#0d0b12dd';
-          ctx.fillRect(STAGE.x, STAGE.y + STAGE.h - 20, STAGE.w, 20);
-          text(line.text, STAGE.x + 8, STAGE.y + STAGE.h - 6, { color: line.color, size: 12, weight: 600 });
+          ctx.fillRect(PAGE_STAGE.x, PAGE_STAGE.y + PAGE_STAGE.h - 20, PAGE_STAGE.w, 20);
+          text(line.text, PAGE_STAGE.x + 8, PAGE_STAGE.y + PAGE_STAGE.h - 6, { color: line.color, size: 12, weight: 600 });
         }
       } else if (mode === 'fx') {
         const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -793,8 +917,8 @@ export function createBoxEditorScreen(app, { char, state, frame: startFrame = 0,
         const line = msg && tick < msg.until ? msg : hintText ? { text: hintText, color: INK } : null;
         if (line) {
           ctx.fillStyle = '#0d0b12dd';
-          ctx.fillRect(STAGE.x, STAGE.y + STAGE.h - 20, STAGE.w, 20);
-          text(line.text, STAGE.x + 8, STAGE.y + STAGE.h - 6, { color: line.color, size: 12, weight: 600 });
+          ctx.fillRect(PAGE_STAGE.x, PAGE_STAGE.y + PAGE_STAGE.h - 20, PAGE_STAGE.w, 20);
+          text(line.text, PAGE_STAGE.x + 8, PAGE_STAGE.y + PAGE_STAGE.h - 6, { color: line.color, size: 12, weight: 600 });
         }
       } else if (mode === 'cancel') {
         ctx.fillStyle = '#1b1726';

@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadJSON, SYSTEM } from './helpers.js';
 import { compileCharacter } from '../src/core/character.js';
-import { createWorld } from '../src/core/game.js';
+import { createWorld, createGame, step } from '../src/core/game.js';
+import { enterState } from '../src/core/fighter.js';
 import { px } from '../src/core/fixed.js';
 import { FIELDS, settingsTarget, applies, readSetting, writeSetting, resetSetting, nudgeSetting, showSetting } from '../src/editor/move-model.js';
 import { measure, reachOf, stateFor } from '../src/editor/preview.js';
@@ -52,6 +53,8 @@ for (const file of [MALIK, 'data/characters/avner/avner.toska.json']) {
       }
       const air = move.airHit ?? { x: px(RULES.battle.airHit.x), y: px(RULES.battle.airHit.y) };
       assert.deepEqual([px(get('airHit.x')), px(get('airHit.y'))], [air.x, air.y], `${entry} air hit`);
+      assert.equal(get('groundBounce.on'), !!move.groundBounce, `${entry} ground bounce`);
+      if (move.groundBounce) assert.equal(px(get('groundBounce.y')), move.groundBounce.y, `${entry} bounce height`);
       checked++;
     };
     for (const [name, st] of Object.entries(def.states)) if (st.move) check(name, st.move);
@@ -391,4 +394,61 @@ test("The preview of a move with its own hit shows that hit alone: the vacuum it
   // Malik releases no burst projectiles: his previews are untouched.
   const malik = compileCharacter(loadJSON(MALIK), SYSTEM);
   for (const name of Object.keys(malik.states)) assert.deepEqual(leftOut(malik, name), []);
+});
+
+test('hit settings: Ground bounce (owner, Nov 28): yes writes a bounce the game reads, height changes it, no and "back to default" take it out', () => {
+  const raw = fixture();
+  const t = settingsTarget(raw, SYSTEM, '5L');
+  const move = () => compileCharacter(raw, SYSTEM).states['5L'].move;
+  assert.equal(readSetting(raw, t, 'groundBounce.on', RULES).value, false);
+  assert.ok(readSetting(raw, t, 'groundBounce.y', RULES).off, 'the height does nothing while there is no bounce');
+  assert.throws(() => writeSetting(raw, t, 'groundBounce.y', 15, RULES), /Ground bounce to yes/);
+  nudgeSetting(raw, t, 'groundBounce.on', 1, false, RULES);
+  assert.deepEqual(t.write.groundBounce, { y: 12 });
+  writeSetting(raw, t, 'groundBounce.y', 15, RULES);
+  assert.deepEqual(move().groundBounce, { y: px(15) });
+  assert.equal(readSetting(raw, t, 'groundBounce.y', RULES).value, 15);
+  assert.equal(showSetting('groundBounce.on', true), 'yes');
+  writeSetting(raw, t, 'groundBounce.on', false, RULES);
+  assert.equal('groundBounce' in t.write, false);
+  assert.equal(move().groundBounce, null);
+  writeSetting(raw, t, 'groundBounce.on', true, RULES);
+  resetSetting(raw, t, 'groundBounce.on');
+  assert.equal('groundBounce' in t.write, false);
+  // An EX version over a bouncing move must write "none" for itself, and leaves the normal version's bounce alone.
+  const m = raw.moves.find((x) => x.id === 'spiritOrb'); // a special: only specials have EX versions
+  m.groundBounce = { y: 13 };
+  m.ex = { damage: 700 };
+  const ex = settingsTarget(raw, SYSTEM, 'spiritOrb_ex');
+  assert.equal(readSetting(raw, ex, 'groundBounce.on', RULES).value, true, 'inherited from the normal version');
+  writeSetting(raw, ex, 'groundBounce.on', false, RULES);
+  assert.equal(m.ex.groundBounce, null);
+  assert.deepEqual(m.groundBounce, { y: 13 });
+  assert.equal(compileCharacter(raw, SYSTEM).states['spiritOrb_ex'].move.groundBounce, null);
+});
+
+test('hit settings: a ground bounce set on the page makes a juggled opponent bounce in the real game', () => {
+  const raw = fixture();
+  const m = raw.moves.find((x) => x.id === '5L');
+  const t = settingsTarget(raw, SYSTEM, '5L');
+  writeSetting(raw, t, 'launch.type', 'soft', RULES);
+  const bounced = (on) => {
+    writeSetting(raw, t, 'groundBounce.on', on, RULES);
+    const def = compileCharacter(raw, SYSTEM);
+    const w = makeWorld(def, def);
+    const g = createGame(w);
+    g.players[0].x = px(-40); g.players[1].x = px(40);
+    enterState(g.players[0], def, '5L');
+    let rose = false, wasDown = false;
+    for (let i = 0; i < 120; i++) {
+      step(g, [0, 0], w);
+      const d = g.players[1];
+      if (d.y <= 0 && i > 5 && d.combo) wasDown = true;
+      if (wasDown && d.vy > 0 && d.y >= 0 && d.combo) rose = true;
+    }
+    return rose;
+  };
+  assert.equal(bounced(false), false, 'without it they land');
+  assert.equal(bounced(true), true, 'with it they come back up off the floor');
+  assert.ok(m.groundBounce);
 });

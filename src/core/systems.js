@@ -5,6 +5,9 @@ import { px } from './fixed.js';
 
 const toPct = (n) => Math.round(n * 10000);
 
+/** Is M+H the parry (systems.json guardButton "parry" with a parry block) rather than Vow? */
+const parryOn = (r) => r?.guardButton === 'parry' && !!r.parry;
+
 /** raw = the parsed systems.json (or nothing: every rule then takes its default). */
 export function compileSystems(raw) {
   const r = raw || {};
@@ -61,9 +64,14 @@ export function compileSystems(raw) {
       advantage: dr.advantage ?? 4,
       punishWindow: dr.punishWindow ?? 30,
     },
+    // Parry (owner, Nov 28, an experiment): M+H when guardButton is "parry" (then Vow is off).
+    parry: {
+      enabled: parryOn(r),
+      devotion: Math.round((r.parry?.devotion ?? 0) * unit),
+    },
     // Vow: the M+H guard that absorbs hits into Debt, and its release strike.
     vow: {
-      enabled: !!r.vow,
+      enabled: !!r.vow && !parryOn(r),
       startup: v.startup ?? 4,
       maxHold: v.maxHold ?? 60,
       absorbHitstop: v.absorbHitstop ?? 6,
@@ -99,10 +107,12 @@ export function universalContent(system) {
     states.drawn = { stance: 'stand', stun: true, next: 'idle' };
   }
   const v = system.systems?.vow;
+  const parry = parryOn(system.systems) ? system.systems.parry : null;
   if (v) {
     // Vow: M+H starts it (a command like any other, so it obeys buffers and cancel rules); the guard is a held
-    // state; letting go picks a strike by the time held.
-    moves.vow_start = { input: 'MH', anyDir: true, kind: 'vow', startup: (v.startup ?? 4) + 1, active: 0, recovery: 0, next: 'vow_hold',
+    // state; letting go picks a strike by the time held. With the parry on M+H, Vow keeps its states and art but
+    // has no input.
+    moves.vow_start = { ...(parry ? {} : { input: 'MH' }), anyDir: true, kind: 'vow', startup: (v.startup ?? 4) + 1, active: 0, recovery: 0, next: 'vow_hold',
       specialCancel: false, superCancel: false };
     states.vow_hold = { stance: 'stand', loop: true, duration: 60, vow: true };
     states.crumple = { stance: 'stand', stun: true, next: 'idle' };
@@ -110,6 +120,17 @@ export function universalContent(system) {
     for (const [id, m] of Object.entries(v.moves || {})) {
       moves[id] = { specialCancel: false, superCancel: false, ...m, kind: 'vow', vowStrike: true };
     }
+  }
+  if (parry) {
+    // Parry: a short window that catches a strike (the `catch` rule, as War'Teun's Listen uses it); caught, the
+    // fighter goes to parry_success, a free state (attack, block, walk or parry again at once) while the attacker
+    // is frozen. artFrom: until a character draws its own, the parry shows its Vow guard and absorb drawings.
+    const s = parry.startup ?? 2, w = parry.window ?? 6;
+    states.crumple ??= { stance: 'stand', stun: true, next: 'idle' };
+    moves.parry_start = { input: 'MH', anyDir: true, kind: 'parry', startup: s, active: 0, recovery: w + (parry.recovery ?? 20),
+      specialCancel: false, superCancel: false, artFrom: 'vow_hold',
+      timeline: [{ from: s, to: s + w - 1, catch: { to: 'parry_success', hitstop: parry.freeze ?? 12, projectiles: parry.projectiles !== false, parry: true } }] };
+    states.parry_success = { stance: 'stand', free: true, duration: parry.successFrames ?? 8, next: 'idle', artFrom: 'vow_absorb' };
   }
   return { states, moves };
 }

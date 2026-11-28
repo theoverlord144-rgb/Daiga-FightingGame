@@ -1,4 +1,4 @@
-// Block effect (the spinning guard) and see-through effect pictures, and timing, on the real screen:
+// Block effect (the two-layer shield, Nov 27) and see-through effect pictures, and timing, on the real screen:
 //   node scripts/block-fx-shots.mjs <out-folder> [--url http://localhost:5300]
 // Needs the dev server running. Headless Chrome plays scripted situations over the stage and saves every frame from
 // the first block (or hit), cropped around it: a light, a medium and a heavy block, a block string, a Repel; then a

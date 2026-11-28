@@ -50,7 +50,7 @@ test('the lantern starts in his hand with 3 flames; the old Moonlit Rite and Tid
 });
 
 test('Rite frame data: every move is free on the brief\'s frame and releases or commands on its bracketed drawing', () => {
-  const want = { riteHang: [20, 10], riteLob: [26, 8], riteSlide: [30, 10], riteLeave: [18, 8], riteRecall: [18, 8], ritePendulum: [16, 6], pulseL: [24, 10] };
+  const want = { riteHang: [20, 10], riteLob: [26, 8], riteSlide: [30, 10], riteLeave: [18, 8], riteRecall: [18, 8], ritePendulum: [16, 6], riteBeckon: [16, 6], pulseL: [24, 10] };
   for (const [id, [free, at]] of Object.entries(want)) {
     const st = A.states[id];
     assert.equal(st.frames.length, free, `${id} is free on ${free}`);
@@ -435,4 +435,75 @@ test('the rekka\'s full moon throws them at a set lantern; they bounce back off 
   const marked = bounce(200);
   assert.equal(marked.b.marked, 1);
   assert.equal(V(marked.g, 'mark'), 0, 'mark used');
+});
+
+// Beckon (owner, Nov 28): 6R with the lantern set calls it straight to where the opponent stands, hitting once on the
+// way; it stays set where it stops. One flame, once per combo. Pendulum holds a spot; Beckon moves it.
+test('6R Beckon: the lantern flies to where the opponent stood, hits once, and stays set there; one flame; free on 16', () => {
+  const g = setup(400);
+  run(g, `5+R ${idle(25)}`);
+  assert.equal(L(g).mode, 'rest');
+  const ox = g.players[1].x;
+  const cues = run(g, `6+R ${idle(40)}`);
+  assert.equal(A.states.riteBeckon.frames.length, 16, 'free on 16');
+  assert.ok(cues.some((c) => c.type === 'relicBeckon'), 'called');
+  const hits = cues.filter((c) => (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && c.move === 'relic:beckon');
+  assert.equal(hits.length, 1, 'one hit');
+  assert.equal(L(g).mode, 'rest', 'set again where it stopped');
+  assert.equal(L(g).x, ox, 'where they stood when he called it');
+  assert.equal(V(g, 'lantern'), 1);
+  assert.equal(V(g, 'flames'), 2, 'one flame');
+  assert.ok(g.players[1].x < ox, 'the hit pops them back toward him');
+});
+
+test('Beckon: not with the lantern in hand, not dark; 5R is still Recall', () => {
+  let g = setup(400);
+  run(g, '6+R');
+  assert.equal(g.players[0].state, 'riteLob', 'in hand, 6R is still the Lob');
+  g = setup(400);
+  run(g, `5+R ${idle(25)} 5+R`);
+  assert.equal(g.players[0].state, 'riteRecall');
+  g = setup(400);
+  run(g, `5+R ${idle(25)}`);
+  g.players[0].vars.flames = 0;
+  run(g, idle(1)); // out of flames: it goes dark and heads home
+  run(g, '6+R');
+  assert.notEqual(g.players[0].state, 'riteBeckon', 'no flame, no Beckon');
+});
+
+test('Beckon: once per combo (its lantern hit counts for the move), and a blocked one leaves the lantern by the opponent', () => {
+  const g = setup(400);
+  run(g, `5+R ${idle(25)}`);
+  const cues = run(g, `6+R ${idle(17)} 6+R ${idle(10)}`);
+  assert.equal(cues.filter((c) => c.type === 'hit' && c.move === 'relic:beckon').length, 1);
+  assert.ok(g.players[1].combo, 'still in the combo');
+  assert.ok(!cues.slice(18).some((c) => c.type === 'relicBeckon'), 'the second 6R in the same combo is refused');
+  const b = setup(400);
+  run(b, `5+R ${idle(25)}`);
+  const ox = b.players[1].x;
+  const bc = run(b, `6+R ${idle(30)}`, '3*40'); // crouch-blocking: walking back would take them out of its path
+  assert.ok(bc.some((c) => c.type === 'block' && c.move === 'relic:beckon'), 'blocked');
+  assert.ok(Math.abs(L(b).x - ox) <= px(10), 'the lantern now hangs right by them');
+});
+
+test('Beckon: Avner hit while it flies, or the lantern struck on its way, loses its hit', () => {
+  // The opponent 300 px past the lantern swings 5H as it flies at them: struck on its way (frame 15), so no hit, and it
+  // still lands where it was going.
+  const g = setup(600);
+  run(g, `5+R ${idle(25)}`);
+  g.players[1].x = L(g).x + px(300);
+  g.players[1].facing = -1;
+  const cues = run(g, `6+R ${idle(30)}`, `${idle(6)} 5+H ${idle(30)}`);
+  const struck = cues.find((c) => c.type === 'relicStruck');
+  assert.ok(struck, 'struck');
+  assert.ok(!cues.some((c) => ['hit', 'counter', 'witness', 'block'].includes(c.type) && c.move === 'relic:beckon'), 'struck on its way: no hit');
+  assert.equal(L(g).mode, 'rest', 'set where it was going');
+  assert.equal(V(g, 'flames'), 1, 'one flame for the Beckon, one for being struck');
+  // Avner hit while it is on its way: no hit either.
+  const h = setup(160);
+  run(h, `5+R ${idle(25)}`);
+  h.players[1].x = h.players[0].x + px(100);
+  const hc = run(h, `6+R ${idle(30)}`, `5+L ${idle(30)}`);
+  assert.ok(hc.some((c) => ['hit', 'counter', 'witness'].includes(c.type) && c.p === 1), 'Avner was hit');
+  assert.ok(!hc.some((c) => ['hit', 'counter', 'witness', 'block'].includes(c.type) && c.move === 'relic:beckon'), 'and the Beckon lost its hit');
 });

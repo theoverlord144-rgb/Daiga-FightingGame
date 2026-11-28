@@ -44,17 +44,20 @@ export const SYSTEM = {
   systems: loadJSON('data/system/systems.json'),
 };
 
+/** The same rules with Vow on M+H instead of the parry (systems.json guardButton), for Vow's own tests. */
+export const VOW_SYSTEM = { ...SYSTEM, systems: { ...SYSTEM.systems, guardButton: 'vow' } };
+
 export const loadChar = (rel) => compileCharacter(loadJSON(rel), SYSTEM);
 
 /** A world with two characters (default: the frozen test fighter, tests/fixtures/fighter.toska.json, both sides). */
-export function loadWorld(a = 'tests/fixtures/fighter.toska.json', b = a, { match = null } = {}) {
+export function loadWorld(a = 'tests/fixtures/fighter.toska.json', b = a, { match = null, systems = SYSTEM.systems } = {}) {
   return createWorld({
     match,
     input: loadJSON('data/system/input.json'),
     battle: loadJSON('data/system/battle.json'),
     combo: loadJSON('data/system/combo.json'),
     meter: SYSTEM.meter,
-    systems: SYSTEM.systems,
+    systems,
     burst: SYSTEM.burst,
     chars: [typeof a === 'string' ? loadChar(a) : a, typeof b === 'string' ? loadChar(b) : b],
   });

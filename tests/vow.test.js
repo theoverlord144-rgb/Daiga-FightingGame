@@ -1,4 +1,5 @@
-// Universal systems, section 5 (docs/specs/universal-systems.md): Vow (M+H) and Debt.
+// Universal systems, section 5 (docs/specs/universal-systems.md): Vow (M+H) and Debt. M+H is the parry for now
+// (systems.json guardButton, Nov 28); these tests switch Vow back on, so it stays whole for when it returns.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { compileCharacter } from '../src/core/character.js';
@@ -7,7 +8,7 @@ import { enterState } from '../src/core/fighter.js';
 import { RAW } from '../src/core/input.js';
 import { px, pct } from '../src/core/fixed.js';
 import { runSyncTest } from '../src/net/sync-test.js';
-import { loadWorld, loadJSON, lcg, SYSTEM } from './helpers.js';
+import { loadWorld, loadJSON, lcg, VOW_SYSTEM as SYSTEM } from './helpers.js';
 
 const RULES = loadJSON('data/system/systems.json').vow;
 const BIG = [[0, 0, 300, 300]];
@@ -26,7 +27,7 @@ const T = compileCharacter({ engine: 'Toska', version: 2, character: { id: 'v', 
       throwboxes: [[10, 20, 200, 120]], throwDistance: 70 },
     { ...base, id: 'throwBall', input: '214L', startup: 6, active: 0, recovery: 30, hitboxes: undefined, timeline: [{ at: 6, spawn: 'ball' }] },
   ] }, SYSTEM);
-const W = loadWorld(T, T);
+const W = loadWorld(T, T, { systems: SYSTEM.systems });
 const V = W.sys.vow;
 const D = SYSTEM.meter.unit;
 const MH = RAW.M | RAW.H;

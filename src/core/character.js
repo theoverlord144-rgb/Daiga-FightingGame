@@ -57,7 +57,7 @@ export function parseInput(input) {
   return { air, motion: dirs, dir: null, buttons };
 }
 
-const KIND_RANK = { super: 3, special: 2, vow: 1.5, normal: 1 };
+const KIND_RANK = { super: 3, special: 2, vow: 1.5, parry: 1.5, normal: 1 };
 
 function inferKind(m, parsed) {
   if (m.kind) return m.kind;
@@ -362,7 +362,7 @@ function compileRelic(src, meter) {
   const hit = (h) => (h ? compileMoveData(h, { kind: 'special', meter }) : null);
   const actions = {};
   for (const [name, a] of Object.entries(src.actions || {})) {
-    if (!['place', 'slide', 'recall', 'pendulum', 'pulse', 'moon', 'fx'].includes(a.type)) throw new Error(`relic action ${name}: type must be place, slide, recall, pendulum, pulse, moon or fx (got ${a.type})`);
+    if (!['place', 'slide', 'recall', 'pendulum', 'pulse', 'moon', 'fx', 'beckon'].includes(a.type)) throw new Error(`relic action ${name}: type must be place, slide, recall, pendulum, pulse, moon, fx or beckon (got ${a.type})`);
     const hitAt = a.hitAt ?? [];
     actions[name] = {
       name, type: a.type,
@@ -377,6 +377,9 @@ function compileRelic(src, meter) {
       fx: a.fx ?? null,
       cost: a.cost ?? 0, // flames it spends when it fires (the second moon)
       trail: a.trail ?? null, // drawing only: named effects that follow it while it travels (the slide's sparks and dust)
+      // beckon: it flies at `speed` px a frame (taking at most `frames`) to where the opponent stood, hits once on the
+      // way, and stays set there. countsAs: the move its hit counts as in the combo, so that move's perCombo sees it.
+      countsAs: a.countsAs ?? null,
       box: boxes(a.box ? [a.box] : []), // its hitbox from the ring, [x, y, w, h] px (y up)
       hit: hit(a.hit), far: a.hit && a.far ? hit({ ...a.hit, ...a.far }) : null,
     };
@@ -613,11 +616,23 @@ function normalizeEvent(e, stats, sheetName) {
     // detonate: { name, collapse }: the fighter's projectiles of that kind burst `collapse` frames from now.
     else if (k === 'detonate') out[k] = typeof v === 'string' ? { name: v, collapse: 0 } : { name: v.name, collapse: v.collapse | 0 };
     // catch: { to, hitstop }: while it lasts, a strike that would hit is caught instead: no damage, the fighter
-    // switches to state `to`, the attacker freezes for `hitstop`. Throws, projectiles and supers are not caught.
-    else if (k === 'catch') out[k] = v ? { to: v.to, hitstop: v.hitstop | 0 } : null;
+    // switches to state `to`, the attacker freezes for `hitstop`. Throws and supers are not caught; projectiles only
+    // with projectiles: true (the projectile is used up). parry: true = the universal parry (it gives Devotion).
+    else if (k === 'catch') out[k] = v ? { to: v.to, hitstop: v.hitstop | 0, projectiles: !!v.projectiles, parry: !!v.parry } : null;
     else out[k] = v;
   }
   return out;
+}
+
+/**
+ * Another move's drawings, for a universal move or state that has none of its own yet (artFrom). The holds are
+ * left out, so the drawings spread evenly over whatever length the borrower has.
+ */
+function borrowArt(t, from) {
+  const m = from ? t.moves.find((x) => x.id === from && x.sprite) : null;
+  if (!m) return undefined;
+  const { holds, ...sprite } = m.sprite;
+  return { id: m.id, sprite };
 }
 
 /**
@@ -642,7 +657,8 @@ export function compileCharacter(file, system) {
   const common = content.states;
   for (const [name, base] of Object.entries(common)) {
     const over = t.states?.[name] || {};
-    const spriteMove = t.moves.find((m) => m.id === name);
+    // artFrom: a universal state with no drawings of its own shows another state's (the parry shows the Vow guard).
+    const spriteMove = t.moves.find((m) => m.id === name) ?? borrowArt(t, base.artFrom);
     const src = { ...base, ...over, timeline: [...(base.timeline || []), ...(over.timeline || []), ...(spriteMove?.timeline || [])] };
     if (spriteMove?.sprite) sheets[name] = spriteMove.sprite;
     states[name] = compileState(name, src, stats, { sheet: spriteMove?.sprite, sheetName: name });
@@ -663,7 +679,10 @@ export function compileCharacter(file, system) {
 
   // Universal moves (burst, Vow). A character's own move with the same id is laid over the universal one, so it
   // can give just the art, or its own boxes and frame data.
-  const universal = Object.entries(content.moves).filter(([id]) => !moveIds.has(id)).map(([id, m]) => ({ ...m, id }));
+  const universal = Object.entries(content.moves).filter(([id]) => !moveIds.has(id)).map(([id, m]) => {
+    const art = m.sprite ? null : borrowArt(t, m.artFrom); // drawn as another move until it has its own
+    return { ...m, id, ...(art ? { sprite: art.sprite } : {}) };
+  });
   // Rite moves (the R button): `rite: { gauge: { charges, rechargeFrames, unlimitedWhile } | null, moves: [ids] }`.
   // The ids name moves in the list above whose input uses R. They count as specials unless they say otherwise, and
   // each use spends a charge when there is a gauge.

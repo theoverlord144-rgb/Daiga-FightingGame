@@ -1061,10 +1061,9 @@ export function createFightRenderer(ctx, W, H) {
     return a * FXO.global;
   }
   // FXOPACITY END
-  // BLOCKFX BEGIN (drawing only; data/system/effects.json "blockFx": the guard and the spark of a blocked hit)
+  // BLOCKFX BEGIN (drawing only; data/system/effects.json "blockFx": the two-layer block effect, owner brief Nov 27)
   const BLK = FX.blockFx;
   const guards = [null, null]; // one per defender
-  const blockSparks = []; // { id: the defender, kind, x, y, facing, t }
   const btnOf = new WeakMap(); // character → { move: its buttons }
   const sumOf = (a) => a.reduce((p, q) => p + q, 0);
   /** light / medium / heavy, from the move that was blocked. */
@@ -1075,72 +1074,54 @@ export function createFightRenderer(ctx, W, H) {
     if (!btnOf.has(src)) { const m = {}; for (const cmd of src.commands) m[cmd.move] ??= cmd.buttons; btnOf.set(src, m); }
     return by.buttons?.[btnOf.get(src)[c.move]] ?? 'heavy';
   }
-  /** A block (or a Repel) on defender d at x, y. A guard that is still up is not started over: it pops again at full size, then its loop goes on. */
-  function guardHit(d, how, x, y, repel) {
-    const front = Math.max((BLK.minFront ?? 0) * UNIT, (x - d.x) * d.facing); // in front of the defender, never inside the body
-    let g = guards[d.id];
-    if (!g) g = guards[d.id] = { dx: front, y, size: how.size, turn: 0, again: false };
-    else g.again = true;
-    g.phase = 'in'; g.t = 0;
-    g.facing = d.facing; g.toDx = front; g.toY = y; g.toSize = how.size;
-    g.flash = !!how.flash; g.repel = repel;
-    if (repel) g.size = how.size;
-    for (const kind of [].concat(how.spark ?? [])) if (BLK.sparks?.[kind]) blockSparks.push({ id: d.id, kind, x, y, facing: d.facing, t: 0 }); // one name or a list
+  /** standing / crouching / air, from the defender's state. */
+  const stanceOf = (d) => (d.state === 'blockCrouch' ? 'crouch' : d.state === 'blockAir' || d.y > 0 ? 'air' : 'stand');
+  /** A block (or a Repel) on defender d: the effect starts over at the guard point, in front of their chest. */
+  function guardHit(d, how, repel) {
+    guards[d.id] = { set: how.set, size: how.size, facing: d.facing, stance: stanceOf(d), phase: 'in', t: 0, repel }; // the pose at the block: it stays crouch-high if they keep crouching after
   }
   function blockCue(c, game, world) {
     if (!BLK || BLK.on === false) return false;
-    guardHit(game.players[1 - c.p], BLK.strengths[blockStrength(c, world)], c.x, c.y, false);
+    guardHit(game.players[1 - c.p], BLK.strengths[blockStrength(c, world)], false);
     return true;
   }
   function blockRepel(c, game) {
     if (!BLK || BLK.on === false || !BLK.repel) return;
-    const d = game.players[c.p], g = guards[d.id];
-    guardHit(d, BLK.repel, g ? d.x + d.facing * g.dx : d.x, g ? g.y : d.y + FX.motion.bodyY * UNIT, true);
+    guardHit(game.players[c.p], BLK.repel, true);
   }
-  /** One game frame. With holdInHitstop, the first drawing holds while the defender is frozen in hitstop; the rest plays after it. */
+  /** One game frame. Drawing 4 (the loop) holds while the blockstun lasts, at least once; then the rest play. */
   function blockAge(game, world) {
-    for (let i = blockSparks.length - 1; i >= 0; i--) if (++blockSparks[i].t >= sumOf(BLK.sparks[blockSparks[i].kind].holds)) blockSparks.splice(i, 1); // sparks play through hitstop
     for (const d of game.players) {
       const g = guards[d.id];
       if (!g) continue;
+      const S = BLK.sets[g.set];
       if (d.hitstop > 0 && BLK.holdInHitstop !== false && g.phase === 'in' && g.t === 0) continue;
       const stunned = (d.state.startsWith('block') || world.chars[d.id].states[d.state]?.blocking) && d.stun > 0;
       g.t++;
-      g.dx += (g.toDx - g.dx) * 0.5; g.y += (g.toY - g.y) * 0.5; g.size += (g.toSize - g.size) * 0.5;
-      if (g.phase === 'in' && g.t >= sumOf(BLK.in)) { g.phase = stunned && BLK.loop.length ? 'loop' : 'out'; g.t = 0; } // an empty loop list: no held drawings, it plays straight through
-      else if (g.phase === 'loop') { g.turn += BLK.spin ?? 0; if (!stunned) { g.phase = 'out'; g.t = 0; } }
-      else if (g.phase === 'out' && g.t * (g.repel ? BLK.repel.outSpeed ?? 1 : 1) >= sumOf(BLK.out)) guards[d.id] = null;
+      if (g.phase === 'in' && g.t >= sumOf(S.in)) { g.phase = S.loop.length ? 'loop' : 'out'; g.t = 0; }
+      else if (g.phase === 'loop' && !stunned && g.t >= sumOf(S.loop)) { g.phase = 'out'; g.t = 0; }
+      else if (g.phase === 'out' && g.t * (g.repel ? BLK.repel.outSpeed ?? 1 : 1) >= sumOf(S.out)) guards[d.id] = null;
     }
   }
   /** Drawn right after the defender, so it is in front of them and behind an attacker who is drawn after. */
   function blockDraw(p) {
-    guardDraw(p);
-    for (const sp of blockSparks) {
-      if (sp.id !== p.id) continue;
-      const K = BLK.sparks[sp.kind], [sx, sy] = toScreen(sp.x, sp.y);
-      fxOp = K.opacity;
-      drawSheetFrame(null, { ...K.sprite, additive: K.additive !== false }, heldFrame(K.holds, sp.t, false)[0], sx, sy, sp.facing);
-    }
-  }
-  function guardDraw(p) {
     const g = guards[p.id];
     if (!g) return;
-    const f = g.facing, n = BLK.in.length;
-    let frame, pop = 1, drift = 0;
-    if (g.phase === 'in') { frame = heldFrame(BLK.in, g.t, false)[0]; if (!g.again) pop = BLK.pop?.[frame] ?? 1; }
-    else if (g.phase === 'loop') frame = n + heldFrame(BLK.loop, g.t, true)[0];
+    const S = BLK.sets[g.set], f = g.facing, n = S.in.length;
+    let frame, drift = 0;
+    if (g.phase === 'in') frame = heldFrame(S.in, g.t, false)[0];
+    else if (g.phase === 'loop') frame = n + heldFrame(S.loop, g.t, true)[0];
     else {
-      const t = Math.floor(g.t * (g.repel ? BLK.repel.outSpeed ?? 1 : 1)), total = sumOf(BLK.out);
-      frame = n + BLK.loop.length + heldFrame(BLK.out, Math.min(t, total - 1), false)[0];
+      const t = Math.floor(g.t * (g.repel ? BLK.repel.outSpeed ?? 1 : 1)), total = sumOf(S.out);
+      frame = n + S.loop.length + heldFrame(S.out, Math.min(t, total - 1), false)[0];
       if (g.repel) drift = (BLK.repel.drift ?? 0) * Math.min(1, t / total); // a Repel moves toward the attacker as it breaks apart
     }
-    const at = toScreen(p.x + f * g.dx, g.y);
+    const [front, up] = BLK.guard[g.stance]; // follows the defender: in front of the chest, lower crouching
+    const at = toScreen(p.x + f * front * UNIT, p.y + up * UNIT);
     const x = at[0] + f * drift, y = at[1];
-    const k = (BLK.charHeight * BLK.height * g.size * pop) / BLK.sprite.bodyH;
-    const angle = (f * g.turn * Math.PI) / 180; // the whole guard turns while it loops, on top of the drawn swirl
-    fxOp = BLK.opacity; // flat, ordinary drawing, a little see-through
-    drawSheetFrame(null, { ...BLK.sprite, scale: k }, frame, x, y, f, angle);
-    if (g.flash && g.phase === 'in' && g.t < BLK.flash.frames) { fxOp = BLK.flash.opacity; drawSheetFrame(null, { ...BLK.white, scale: k }, frame, x, y, f, angle); }
+    const k = (BLK.charHeight * BLK.height * g.size) / BLK.sets.normal.body.bodyH; // one scale for every layer
+    if (S.body) { fxOp = BLK.bodyOpacity; drawSheetFrame(null, { ...S.body, scale: k }, frame, x, y, f, 0); } // the shield, flat
+    fxOp = BLK.lightOpacity; drawSheetFrame(null, { ...S.light, scale: k, additive: true }, frame, x, y, f, 0); // its glow, as light, same drawing
   }
   // BLOCKFX END
   // SHOCKWAVE BEGIN (drawing only; data/system/effects.json "shockwave"; remove the three marked blocks to take it out)

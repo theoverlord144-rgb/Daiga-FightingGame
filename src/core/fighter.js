@@ -633,6 +633,7 @@ function decide(game, p, opp, def, world) {
       const refunded = { ...p, vars: { ...p.vars }, meter: p.meter + paid.meter - p.spGain, gauge: p.gauge + paid.gauge };
       if (!affords(refunded, cmd.cost)) continue;
       if (cmd.move === 'vow_start' && p.viaCancel && refunded.meter < world.sys.vow.cancelCost) continue;
+      if (cmd.kind === 'parry' && p.viaCancel) continue; // the parry starts from neutral only (parry_success is neutral)
       const presses = commandInput(game, p, cmd, world, buffer, cmd.buttons);
       if (presses) {
         // Refund the one-button version's cost (and take back its Devotion), then start the chord version.

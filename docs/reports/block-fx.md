@@ -96,3 +96,29 @@ is inside the same marks.
 ## Nov 25, later: no held drawings
 
 Owner: "dont hold any frames for now. just let the animation play through normally." The guard no longer holds its middle drawings while blockstun lasts: all ten drawings play once, in order, at their frame counts (2, 3, 3, 3, then 2, 2, 2, 3, 3, 3 = 26 frames). A new block while it is up restarts it from the first drawing. In `data/system/effects.json`, `blockFx.loop` is empty; one line in the drawing code (approved) skips the hold when it is. To bring the hold back, put drawings back in `loop`.
+
+## Nov 27: the two-layer block effect (replaces everything above about the guard, sparks and shards)
+
+Your brief: one universal block effect, two layers on one timeline. Built as given except where noted.
+
+- **Body** (`Game_Block_Effect.png`, the shield, 8 drawings): magenta keyed out from the edges of each cell, drawn
+  normally at 70%. **Light** (`Game_Block_Effect2.png`, its glow, 8 drawings): drawn as light on top. Both show the
+  same drawing on the same frame.
+- **Alignment:** both sheets are sliced on their fixed 4 x 2 grid and every drawing is centred on the oval's centre
+  (the white diamond in the shield, the bright star in the glow). The glow sat 7 to 23 sheet px off the shield in
+  each drawing; that measured offset is stored (`lightOffset`) and corrected when cut. Drawings 7 and 8 have no
+  centre mark left (only shards), so they keep drawing 6's spot.
+- **Which set:** blocked L and M normals play the oval set; heavies, specials, supers and projectiles play the heavy
+  set (`Game_Block_Effect3.png`, 10 glow drawings). **There is no FX_BlockHeavy_Body sheet yet**, so heavy blocks
+  play the glow alone; when you draw it, it is one line in `effects.json`.
+- **Where:** in front of the defender's chest: standing 120 px up, crouching 78, in the air 105, all 40 px in front.
+  It follows the defender and keeps the height of the pose it was blocked in.
+- **Timing:** drawings 1-3 in at 2 / 3 / 3 frames, drawing 4 held for the whole blockstun, then the rest (light:
+  2 / 2 / 3 / 3; heavy: 2 / 2 / 2 / 3 / 3 / 3). These holds are mine; tune them in `effects.json`.
+- **Gone:** the Nov 25 glass guard, its white flash, the block sparks and the shards (strips deleted; copies kept
+  outside the project). Repel now breaks the new shield apart, twice as fast.
+- **Not built yet:** the optional per-character rim tint.
+
+![The two layers, drawing by drawing](block-fx/two-layer-sheet.jpg)
+
+![Stand, crouch, heavy and air blocks](block-fx/two-layer-blocks.jpg)

@@ -49,7 +49,7 @@
       "draw": { "play": "draw_pull", "on": "between", "at": "body" },
       "perfect": { "play": "perfect_flash", "on": "self", "at": "body" },
       "ex": { "play": "ex_flash", "on": "self", "at": "body" },
-      "superflash": [{ "play": "super_flash", "on": "self", "at": "body" }, { "play": "super_slash", "on": "screen", "at": "body" }]
+      "superflash": [{ "play": "super_flash", "on": "self", "at": "body" }, { "play": "super_slash", "on": "screen", "at": "body" }], "parry": { "play": "vow_absorb", "on": "self", "at": "body" }
     },
     "while": {
       "vow_hold": { "play": "vow_guard", "at": "body", "loopFrom": 2 },
@@ -149,33 +149,25 @@
     "coverInset": 0.7
   },
   "blockFx": {
-    "notes": "Owner, Nov 25: no held drawings for now, so loop is empty and all ten drawings play once (in, then out); to bring the hold back, move drawings into loop (they repeat while blockstun lasts). The block effect (drawing only): one spinning guard per defender at the contact point, drawn flat (not as light) at 'opacity'. on: false brings back the old block flash and Repel wave. holdInHitstop: true = its first drawing holds while the defender is frozen in hitstop and the rest plays after; false = it plays through the freeze (the owner asked for false twice, Nov 25: the hold reads as the game freezing). sparks = the spark of each block, as light at the contact point, on top of the guard; it always plays through hitstop; a strength's 'spark' names which one, or a list of them. shards = the burst for blocked heavies and physical specials (H, S and R normals, specials and supers that are the fighter's own body; additive: false = drawn flat, not as light). strengthOf.projectile = the strength of a blocked projectile that is not light, so projectiles get no shards. charHeight x height = the guard's height in game px at size 1. minFront = it is never nearer the defender's middle than this. in / loop / out = game frames for each drawing, in sheet order: the glass guard (third sheet, Nov 25) is drawing 1 in, drawings 2-4 looped while blockstun lasts (the glint crossing), drawings 5-10 breaking into shards. pop = extra scale on the 'in' drawings of a fresh guard (a block landing on a guard that is still up replays 'in' at full size instead). spin = degrees a frame the whole guard turns while it loops (0: the owner wants only the drawn swirl). flash = the white copy over a heavy block's first frames. strengths: by the blocked move (strengthOf: a normal by its button, anything else heavy; a projectile under lightProjectileBelow base damage is light). repel: outSpeed = how many times faster it breaks apart, drift = px it moves toward the attacker as it does.",
+    "notes": "The universal block effect (owner brief, Nov 27; drawing only, every character). Two layers on one timeline, so both always show the same drawing: body = the shield (Game_Block_Effect.png, magenta keyed out), drawn flat at bodyOpacity; light = its glow (Game_Block_Effect2.png), drawn on top as light (additive). Cut by scripts/block-fx-prep.mjs on each sheet’s fixed grid, every drawing centred on the oval’s centre; lightOffset = the light’s centre minus the body’s per drawing in sheet px, as measured (corrected by the cut). sets: normal (blocked L and M normals, and projectiles under strengthOf.lightProjectileBelow base damage) and heavy (H, S and R normals, specials, supers, other projectiles); heavy has no body drawn yet (FX_BlockHeavy_Body), so it plays its light alone: add a body sprite to it when the sheet exists. in / loop / out = game frames per drawing in sheet order: drawing 4 (loop) holds for as long as the blockstun lasts (at least once), then the rest play. guard = where it sits, by the defender’s block state: [px in front of their middle, px above their feet]. charHeight x height x size = the shield’s height in game px (all layers share one scale). holdInHitstop: false = it plays through the freeze. repel: the Repel plays the normal set, size bigger, the out drawings outSpeed times faster, drifting drift px toward the attacker. on: false brings back the old block flash and Repel wave.",
     "on": true,
     "holdInHitstop": false,
     "charHeight": 190,
     "height": 0.5,
-    "minFront": 30,
-    "opacity": 0.8,
-    "in": [2, 3, 3, 3],
-    "loop": [],
-    "out": [2, 2, 2, 3, 3, 3],
-    "pop": [0.85, 1, 1, 1],
-    "spin": 0,
-    "flash": { "frames": 2, "opacity": 0.85 },
-    "sprite": {"image": "block-guard.png", "columns": 10, "rows": 1, "count": 10, "frameW": 236, "frameH": 346, "originX": 118, "originY": 173, "scale": 0.5, "bodyH": 300},
-    "white": {"image": "block-guard-white.png", "columns": 10, "rows": 1, "count": 10, "frameW": 236, "frameH": 346, "originX": 118, "originY": 173, "scale": 0.5, "bodyH": 300},
-    "sparks": {
-      "normal": { "opacity": 0.85, "holds": [1, 2, 2, 3, 3], "sprite": {"image": "block-spark.png", "columns": 5, "rows": 1, "count": 5, "frameW": 264, "frameH": 226, "originX": 132, "originY": 113, "scale": 0.5} },
-      "shards": { "opacity": 0.9, "additive": false, "holds": [1, 2, 2, 2, 3, 3, 3], "sprite": {"image": "block-shards.png", "columns": 7, "rows": 1, "count": 7, "frameW": 212, "frameH": 306, "originX": 106, "originY": 153, "scale": 0.5} },
-      "heavy": { "opacity": 0.85, "holds": [1, 2, 2, 3, 3, 4], "sprite": {"image": "block-spark-heavy.png", "columns": 6, "rows": 1, "count": 6, "frameW": 370, "frameH": 384, "originX": 185, "originY": 192, "scale": 0.5} }
+    "bodyOpacity": 0.7,
+    "lightOpacity": 1,
+    "guard": { "stand": [40, 120], "crouch": [40, 78], "air": [40, 105] },
+    "lightOffset": [[9, 15], [19, 21], [7, 21], [8, 20], [13, -23], [10, -16], [10, -16], [10, -16]],
+    "sets": {
+      "normal": { "in": [2, 3, 3], "loop": [4], "out": [2, 2, 3, 3], "body": {"image":"block-body.png","columns":8,"rows":1,"count":8,"frameW":254,"frameH":320,"originX":127,"originY":160,"scale":0.5,"bodyH":300}, "light": {"image":"block-light.png","columns":8,"rows":1,"count":8,"frameW":364,"frameH":400,"originX":182,"originY":200,"scale":0.5,"additive":true} },
+      "heavy": { "in": [2, 3, 3], "loop": [4], "out": [2, 2, 2, 3, 3, 3], "light": {"image":"block-heavy-light.png","columns":10,"rows":1,"count":10,"frameW":318,"frameH":412,"originX":159,"originY":206,"scale":0.5,"additive":true} }
     },
     "strengths": {
-      "light": { "size": 0.8, "flash": false, "spark": "normal" },
-      "medium": { "size": 1, "flash": false, "spark": "normal" },
-      "heavy": { "size": 1.15, "flash": true, "spark": ["heavy", "shards"] },
-      "heavyProjectile": { "size": 1.15, "flash": true, "spark": "heavy" }
+      "light": { "set": "normal", "size": 0.9 },
+      "medium": { "set": "normal", "size": 1 },
+      "heavy": { "set": "heavy", "size": 1.15 }
     },
-    "strengthOf": { "buttons": { "L": "light", "M": "medium" }, "lightProjectileBelow": 500, "projectile": "heavyProjectile" },
-    "repel": { "size": 1.3, "flash": true, "spark": "heavy", "replacesWave": true, "outSpeed": 2, "drift": 6 }
+    "strengthOf": { "buttons": { "L": "light", "M": "medium" }, "lightProjectileBelow": 500, "projectile": "heavy" },
+    "repel": { "set": "normal", "size": 1.3, "replacesWave": true, "outSpeed": 2, "drift": 6 }
   }
 }

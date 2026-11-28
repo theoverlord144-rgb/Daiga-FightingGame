@@ -262,6 +262,7 @@ function resolveStrike(game, world, a, d, rect, snap) {
     out.block = null;
     out.to = fd.catch.to;
     out.freeze = fd.catch.hitstop;
+    out.parry = fd.catch.parry;
   } else if (!block && fd.armor > d.armorUsed) {
     out.kind = 'armor';
   } else if (block) {
@@ -273,6 +274,13 @@ function resolveStrike(game, world, a, d, rect, snap) {
   out.held = !move.grab && !!fa.hold && d.state === 'grabbed' && d.heldBy === a.id;
   if (move.grab) { out.kind = 'hit'; out.block = null; }
   return out;
+}
+
+/** A parry landed (systems.json parry): the defender gains its Devotion, and the cue for the screen. */
+function parried(game, world, d, ddef, rect, moveId) {
+  const P = world.sys.parry;
+  if (world.meter && P?.devotion) gainDevotion(game, d, ddef, P.devotion, 'parry');
+  cue(game, 'parry', d, rect, { move: moveId });
 }
 
 /** Is this hit absorbed by the defender's Vow guard? Supers and moves flagged `pierce` go through it. */
@@ -380,6 +388,7 @@ function applyStrike(game, world, r) {
     d.hitstop = 0;
     enterState(d, ddef, r.to);
     cue(game, 'catch', a, rect, { move: r.moveId, by: d.id });
+    if (r.parry) parried(game, world, d, ddef, rect, r.moveId);
     return;
   }
 
@@ -702,6 +711,13 @@ export function resolveProjectiles(game, world) {
       // from its centre and is blocked holding either way.
       const away = def.burst ? (d.x > pr.x ? 1 : d.x < pr.x ? -1 : pr.facing) : pr.vx ? (pr.vx > 0 ? 1 : -1) : pr.facing;
       const block = blockKind(d, ddef, { x: d.x - away }, move, world) || (def.burst ? blockKind(d, ddef, { x: d.x + away }, move, world) : null);
+      // Parried (a catch that takes projectiles, the universal parry): it is used up, nothing else happens to anyone.
+      if (!block && fd.catch?.projectiles && move.kind !== 'super' && !move.pierce) {
+        enterState(d, ddef, fd.catch.to);
+        if (fd.catch.parry) parried(game, world, d, ddef, rect, pr.kind);
+        gone[i] = 'block';
+        return;
+      }
       const kind = absorbs(ddef, d.state, move) ? 'absorb' : !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
       const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
       applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: !(pr.n > 0), kind, stagger, proj: pr });

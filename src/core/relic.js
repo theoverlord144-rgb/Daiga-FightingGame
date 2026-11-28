@@ -148,6 +148,32 @@ export function relicAction(game, p, def, world, name) {
       syncVar(p, R);
       game.cues.push({ type: 'relicSwing', p: p.id, x: r.x, y: r.y });
       return;
+    case 'beckon': {
+      // Called to the opponent (owner, Nov 28): from wherever it is set, straight to where they stand now (it does
+      // not follow them after), hitting once on the way; it stays set where it stops.
+      if (!isSet(r) || r.dark || r.mode === 'wait') return;
+      const o = game.players[1 - p.id];
+      if (r.mode === 'fly' || r.mode === 'slide') { r.x = r.tx; r.y = r.ty; } // a travel still going ends where it was going
+      r.x0 = r.x; r.y0 = r.y;
+      r.tx = inStage(o.x, world, R);
+      r.ty = o.y + R.aim + R.body; // its body level with their middle
+      const far = Math.max(abs(r.tx - r.x), abs(r.ty - r.y));
+      const n = Math.ceil(far / A.speed);
+      r.frames = Math.max(1, A.frames > 1 ? Math.min(A.frames, n) : n);
+      r.mode = 'fly';
+      r.arc = 0;
+      r.t = -1;
+      r.act = name;
+      r.life = 0;
+      r.hitOn = 1;
+      r.hitDone = 0;
+      r.hitN = 0;
+      r.home = r.pulse = r.moon = 0;
+      r.height = heightOf(r.ty, R);
+      syncVar(p, R);
+      game.cues.push({ type: 'relicBeckon', p: p.id, x: r.x, y: r.y, tx: r.tx, ty: r.ty });
+      return;
+    }
     case 'pulse':
       if (!isSet(r) || r.dark) return;
       r.pulse = 1;
@@ -418,6 +444,7 @@ export function resolveRelics(game, world) {
           spendFlame(game, p, R, 'struck');
           game.cues.push({ type: 'relicStruck', p: p.id, by: o.id, x: r.x, y: bodyY(r, R) });
           if (r.mode === 'pendulum' || r.mode === 'wait') { r.mode = 'rest'; r.t = 0; }
+          if (r.mode === 'fly') r.hitOn = 0; // a Beckon struck on its way loses its hit (it still goes where it was going)
           r.pulse = r.moon = 0;
           syncVar(p, R);
           checkDark(game, p, R);
@@ -444,7 +471,7 @@ export function resolveRelics(game, world) {
   }
 }
 
-/** The relic's own hits this frame: the slide, the pendulum's swings, the pulse, the second moon, a recall on its way home. */
+/** The relic's own hits this frame: the slide, a Beckon on its way, the pendulum's swings, the pulse, the second moon, a recall on its way home. */
 function relicHits(game, world, p, R, o, odef) {
   const r = p.relic;
   const A = R.actions[r.act];
@@ -488,6 +515,14 @@ function relicHits(game, world, p, R, o, odef) {
     if (A.hitAt.includes(r.t) && can(A.hit)) { // t = frames since the swing started
       const rect = touch(A.box);
       if (rect) strike(A.hit, rect, `relic:${r.act}`);
+    }
+  }
+  if (r.mode === 'fly' && r.hitOn && !r.hitDone && A?.hit && can(A.hit)) { // a Beckon on its way
+    const rect = touch(A.box);
+    if (rect) {
+      strike(A.hit, rect, `relic:${r.act}`);
+      r.hitDone = 1;
+      if (A.countsAs && o.combo) o.combo.used[A.countsAs] = (o.combo.used[A.countsAs] | 0) + 1; // so the move's perCombo sees it
     }
   }
   if (r.mode === 'return' && r.hitOn && !r.hitDone && A?.hit && can(A.hit)) {

@@ -1,13 +1,13 @@
 {
   "engine": "Toska",
   "version": 2,
-  "notes": "Toyle. Only his idle and forward walk are drawn so far (owner, Nov 26), so that is all he has: he stands and walks in his own art, and has no attacks, specials, throws or Rite of his own (owner's word: just the two sheets). The back walk is the forward walk played the other way round. Every other state (crouch, jump, dashes, blocks, hit reactions) is the engine's shared one with no art yet. Default stats; 205 px tall (owner: a little taller than the first 195).",
+  "notes": "Toyle. Only his idle and forward walk are drawn so far (owner, Nov 26), so that is all he has: he stands and walks in his own art, and has no attacks, specials, throws or Rite of his own (owner's word: just the two sheets). The back walk is the forward walk played the other way round. Every other state (crouch, jump, dashes, blocks, hit reactions) is the engine's shared one with no art yet. Default stats; 205 px tall (owner: a little taller than the first 195). Owner, Nov 27: 5H High Side Kick and 6H Spin Elbow Drop from his GIFs, with his frame data and holds (6H last hold 10 → 12 so the drawings fill his 45 frames); hitboxes, damage, pushback and the 6H forward step (about 44 px) are my placements. He has no specials or S launcher yet, so those cancels have nothing to go to.",
   "character": {
     "id": "toyle",
     "name": "Toyle",
     "stats": {}
   },
-  "gatlings": {},
+  "gatlings": { "5H": ["6H"] },
   "states": {
     "walkF": {
       "duration": 48
@@ -97,6 +97,6 @@
           5
         ]
       }
-    }
+    }, { "id": "5H", "name": "High Side Kick", "input": "5H", "startup": 13, "active": 4, "recovery": 22, "damage": 800, "hitstun": 26, "blockstun": 19, "hitstop": 16, "pushbackHit": 40, "pushbackBlock": 34, "selfPushback": 22, "guard": "mid", "reach": 110, "hitboxes": [[25, 100, 82, 70]], "timeline": [{ "at": 8, "hurt": [[-50, 0, 66, 180]] }, { "at": 17, "hurt": [[-30, 0, 60, 160]] }], "sprite": { "image": "sheets/5H.png", "columns": 15, "rows": 1, "count": 15, "frameW": 432, "frameH": 414, "originX": 157, "originY": 412, "scale": 0.5, "holds": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4] } }, { "id": "6H", "name": "Spin Elbow Drop", "input": "6H", "startup": 22, "active": 4, "recovery": 20, "damage": 900, "hitstun": 30, "blockstun": 17, "hitstop": 16, "pushbackHit": 20, "pushbackBlock": 30, "selfPushback": 20, "guard": "high", "reach": 110, "knockdown": true, "specialCancel": "hit", "hitboxes": [[30, 40, 76, 140]], "timeline": [{ "at": 10, "vel": { "x": 4 } }, { "at": 21, "vel": { "x": 0 } }, { "at": 6, "hit": [[0, 55, 100, 60]], "hitProps": { "damage": 300, "hitstun": 16, "blockstun": 12, "hitstop": 8, "pushbackHit": 6, "pushbackBlock": 8, "selfPushback": 4, "guard": "mid", "knockdown": false } }, { "at": 10, "hit": [] }, { "at": 21, "hitProps": {} }], "sprite": { "image": "sheets/6H.png", "columns": 12, "rows": 1, "count": 12, "frameW": 421, "frameH": 422, "originX": 111, "originY": 420, "scale": 0.5, "holds": [2, 2, 2, 2, 2, 3, 4, 4, 2, 2, 8, 12] } }
   ]
 }

@@ -16,4 +16,8 @@ export const SHEETS = [
     { name: 'walk', frames: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], anchor: 'upper', holds: [5, 5, 5, 5, 4, 5, 5, 5, 5, 4] },
     { name: 'walk-back', frames: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1], anchor: 'upper', holds: [4, 5, 5, 5, 5, 4, 5, 5, 5, 5] },
   ] },
+  // Heavies (owner, Nov 27; first as GIFs, then redrawn in the usual sheet style): 5H on magenta, 5 x 3; 6H see-through, 4 x 3.
+  // Drawing 1 is his standing pose, so it sets the scale. Holds are the owner's.
+  { name: '5H', ref: [1, S], bb: true, file: 'Toyle_Heavy.png', n: 15, rows: 3, anchor: 'foot', holds: [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4] },
+  { name: '6H', ref: [1, S], bb: true, file: 'Toyle_ForwardHeavy.png', n: 12, rows: 3, anchor: 'foot', holds: [2, 2, 2, 2, 2, 3, 4, 4, 2, 2, 8, 12] }, // last hold 10 → 12: his frame table totals 45
 ];

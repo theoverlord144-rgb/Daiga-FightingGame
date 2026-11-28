@@ -417,6 +417,12 @@ try {
   // Khai'ro: only his idle so far.
   // Toyle (Nov 26): only his idle and walk are drawn.
   scene('ty-idle', 'toyle', 'avner', 260, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.shot('f' + String(k + 1).padStart(2, '0')); s.go('', '', 6); } });
+  // Toyle's heavies (Nov 27): 5H and 6H on a standing Avner, a still every 3 frames, boxes on.
+  for (const [n, input, gap] of [['5H', 'H', 150], ['6H', 'FH', 110]]) scene('ty-' + n, 'toyle', 'avner', gap, (s) => {
+    s.opts = { boxes: true };
+    s.go('', '', 4); s.go(input, '', 1);
+    for (let k = 0; k < 16; k++) { s.shot('f' + String(k * 3 + 1).padStart(2, '0')); s.go('', '', 3); }
+  });
   scene('ty-walk', 'toyle', 'avner', 700, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.go('F', '', 5); s.shot('f' + String(k + 1).padStart(2, '0')); } for (let k = 10; k < 20; k++) { s.go('K', '', 5); s.shot('f' + String(k + 1).padStart(2, '0')); } });
   scene('kh-idle', 'khairo', 'malik', 260, (s) => { s.go('', '', 4); for (let k = 0; k < 10; k++) { s.shot('f' + String(k + 1).padStart(2, '0')); s.go('', '', 8); } });
   scene('kh-walk', 'khairo', 'malik', 700, (s) => { s.go('', '', 4); for (let k = 0; k < 20; k++) { s.go('F', '', 3); s.shot('f' + String(k + 1).padStart(2, '0')); } });
@@ -512,6 +518,12 @@ try {
   scene('lant-slide', 'avner', 'malik', 600, (s) => { s.go('', '', 10); s.go('DR', '', 1); lantFilm(s, 40, 'D'); });
   scene('lant-leave', 'avner', 'malik', 500, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 10); s.go('R', '', 1); lantFilm(s, 40); });
   scene('lant-pendulum', 'avner', 'malik', 300, (s) => { s.go('', '', 10); s.go('R', '', 1); s.go('', '', 24); s.go('DR', '', 1); lantFilm(s, 130, 'D'); });
+  // The two-layer block effect (Nov 27): P1 blocks Malik standing, crouching, a heavy, and in the air (a still every 2 frames).
+  for (const [label, hold, hit, gap] of [['stand', 'K', 'M', 90], ['crouch', 'DK', 'DM', 90], ['heavy', 'K', 'H', 100], ['air', 'UK', 'H', 100]]) scene('block-fx-' + label, 'avner', 'malik', gap, (s) => {
+    if (label === 'air') { s.go('UK', '', 3); if (!s.until('K', 'H', s.cue('block'), 40)) return console.log('air: no block'); }
+    else if (!s.until(hold, hit, s.cue('block'), 40)) return console.log(label + ': no block');
+    for (let k = 0; k < 14; k++) { s.shot(label); s.go(hold.replace('U', ''), '', 2); }
+  });
   // Stages (Nov 27): the painted desert, wide (no zoom) and as the fight camera frames it, with a jump and a walk to the wall.
   scene('stage-desert', 'avner', 'malik', 300, (s) => {
     s.opts = { stage: boot.STAGES['desert-test'] };

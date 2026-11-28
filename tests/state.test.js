@@ -67,7 +67,7 @@ test('every position, velocity and timer in the state is an integer', () => {
 
 test('the random fights used by these tests really fight: hits, blocks and both players hurt', () => {
   const g = createGame(WORLD);
-  const inputs = fightInputs(13); // a seed whose fight has hits and blocks under the current rules (11 stopped having a block when soft knockdowns arrived)
+  const inputs = fightInputs(4); // a seed whose fight has hits and blocks under the current rules (11 stopped having a block when soft knockdowns arrived; 13 when the parry took M+H, Nov 28; 4 has parries too)
   const seen = new Set();
   for (let i = 0; i < 3000; i++) { step(g, inputs(g), WORLD); for (const c of g.cues) seen.add(c.type); }
   assert.ok(seen.has('hit') && seen.has('block'), [...seen].join(','));

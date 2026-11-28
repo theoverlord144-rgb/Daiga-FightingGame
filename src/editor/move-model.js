@@ -42,6 +42,8 @@ export const FIELDS = [
   { key: 'airHit.y', group: 'launch', label: 'Air hit up', min: -40, max: 60, help: 'How an opponent already in the air is knocked: speed upward (negative spikes them down).' },
   { key: 'untech', group: 'launch', label: 'No air tech for', unit: 'f', min: 0, max: 240, inherit: 'hitstun', help: 'Frames an airborne opponent cannot recover after this hit. Left alone: the same as hitstun.' },
   { key: 'juggleCost', group: 'launch', label: 'Juggle cost', min: 0, max: 20, system: true, help: 'What this hit adds to the combo\'s juggle total. Left alone: the system default.' },
+  { key: 'groundBounce.on', group: 'launch', label: 'Ground bounce', type: 'bool', help: 'Yes: an opponent this hit puts in the air bounces off the floor once (back up, still in the combo) instead of landing. One ground bounce per combo (combo.json bounceLimit); a hit past the juggle limit gives none.' },
+  { key: 'groundBounce.y', group: 'launch', label: 'Bounce height', min: 1, max: 40, help: 'How high the ground bounce sends them: upward speed off the floor, px a frame. More = higher.' },
 
   { key: 'speed', group: 'flight', label: 'Speed forward', min: -60, max: 60, only: 'projectile', help: 'px a frame.' },
   { key: 'speedY', group: 'flight', label: 'Speed up', min: -60, max: 60, only: 'projectile', help: 'px a frame; negative goes down.' },
@@ -80,6 +82,10 @@ export function settingsTarget(raw, system, name) {
 export const applies = (field, target) => target.kind !== 'none' && (!field.only || (field.only === 'projectile') === (target.kind === 'projectile'));
 
 const find = (layers, key) => layers.find((l) => l && key in l);
+/** The bounce height a move gets when Ground bounce is switched on (a first guess; Avner's bounces use 12 and 13). */
+const BOUNCE_Y = 12;
+/** The ground bounce as written, resolved the way the game does: { y } or null (an EX version may say null = none). */
+const bounceOf = (layers) => find(layers, 'groundBounce')?.groundBounce ?? null;
 
 /** Every timeline event in the file (moves and their EX versions) that releases this projectile. */
 function spawnEvents(raw, name) {
@@ -124,6 +130,12 @@ export function readSetting(raw, target, key, rules) {
   if (key.startsWith('spawn.')) {
     const at = find(layers, 'spawn');
     return { value: at?.spawn?.[Number(key.slice(6))] ?? 0, own: !!at };
+  }
+  if (key.startsWith('groundBounce.')) {
+    const b = bounceOf(layers);
+    const own = !!write && 'groundBounce' in write;
+    if (key === 'groundBounce.on') return { value: !!b, own };
+    return { value: b ? b.y ?? 0 : BOUNCE_Y, own: own && !!b, off: !b };
   }
   if (key === 'place') {
     // Where it appears is written in the moves that release it, not in the projectile.
@@ -245,6 +257,17 @@ export function writeSetting(raw, target, key, value, rules) {
     w.spawn = now;
     return;
   }
+  if (key === 'groundBounce.on') {
+    if (value) { w.groundBounce = { y: readSetting(raw, target, 'groundBounce.y', rules).value }; return; }
+    // An EX version, or a character's entry over a universal move, must say "no bounce" out loud.
+    if (target.layers.slice(1).some((x) => x && x.groundBounce)) w.groundBounce = null; else delete w.groundBounce;
+    return;
+  }
+  if (key === 'groundBounce.y') {
+    if (!bounceOf(target.layers)) throw new Error('This hit does not ground bounce. Set Ground bounce to yes first.');
+    w.groundBounce = { y: clamp(field, value) };
+    return;
+  }
   if (key === 'place') {
     if (!field.choices.includes(value)) throw new Error(`${field.label} must be one of ${field.choices.join(', ')}`);
     const evs = spawnEvents(raw, target.name);
@@ -284,6 +307,8 @@ export function resetSetting(raw, target, key) {
   }
   if (key.startsWith('airHit.')) { delete w.airHit; return; }
   if (key.startsWith('spawn.')) { const now = clone(w.spawn ?? [0, 0]); now[Number(key.slice(6))] = 0; w.spawn = now; return; }
+  if (key === 'groundBounce.on') { delete w.groundBounce; return; }
+  if (key === 'groundBounce.y') { if (w.groundBounce) w.groundBounce = { y: BOUNCE_Y }; return; }
   if (key === 'place') { if (spawnEvents(raw, target.name).length) writeSetting(raw, target, key, 'front'); return; }
   delete w[key];
 }

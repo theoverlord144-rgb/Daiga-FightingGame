@@ -272,8 +272,9 @@ export function createTuner(env) {
       if (!list.length) continue;
       const x = 190 + col * COL_W;
       text(heading, x, TOP, { color: GOLD, size: 10, weight: 800 });
+      const after = x + ctx.measureText(heading).width + 8; // just past the heading (text() left its font set)
       // A column longer than the screen scrolls with the mouse wheel; the arrows say there is more.
-      if (list.length > FIT) text(`${scroll > 0 ? '▲' : ' '} ${scroll + FIT < list.length ? `▼ ${list.length - FIT - scroll} more (wheel)` : ''}`, x + 60, TOP, { color: DIM, size: 9 });
+      if (list.length > FIT) text(`${scroll > 0 ? '▲' : ' '} ${scroll + FIT < list.length ? `▼ ${list.length - FIT - scroll} more (wheel)` : ''}`, after, TOP, { color: DIM, size: 9 });
       list.forEach((f, n) => {
         const i = n - scroll;
         if (i < 0 || i >= FIT) return;
