@@ -3,6 +3,23 @@
 // whole stage, and filled as shapes each frame: under the fight camera's zoom that is many times cheaper than
 // enlarging a stored picture of them, and the edges stay sharp at any zoom. Drawing only: the stage never affects the game.
 
+// Painted stage pieces (layer type "image"): every picture under data/stages/, found by its path from there.
+// (Vite fills this in when it builds; under plain Node, as in the tests, there are no pictures.)
+let STAGE_URLS = {};
+try { STAGE_URLS = import.meta.glob('../../data/stages/**/*.{png,webp,jpg}', { eager: true, query: '?url', import: 'default' }); } catch { /* plain Node */ }
+const stageImages = new Map();
+function stageImage(path) {
+  const key = Object.keys(STAGE_URLS).find((k) => k.endsWith(`/stages/${path}`));
+  if (!key) return null;
+  let img = stageImages.get(key);
+  if (!img) {
+    img = new Image();
+    img.src = STAGE_URLS[key];
+    stageImages.set(key, img);
+  }
+  return img.complete && img.naturalWidth ? img : null;
+}
+
 function lcg(seed) {
   let s = seed >>> 0 || 1;
   return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
@@ -129,7 +146,18 @@ export function createStageRenderer(stage, W, H, GROUND, halfWidth) {
       for (const { L, par, travel, canvas, shapes, dots, glow: glowImg, shade, sheen } of layers) {
         const dx = -cam.x * par;
         const dy = cam.y * par;
-        if (L.type === 'sky') {
+        if (L.type === 'image') {
+          // A painted piece: `scale` screen px per picture px, its picture row `ground` on the ground line (default: its
+          // bottom edge), centred on the stage's middle, sliding with the camera at its parallax. `repeat` (default
+          // on) tiles it sideways so no edge shows however far the camera goes.
+          const img = stageImage(L.image);
+          if (!img) continue;
+          const s = L.scale ?? 1, w = img.naturalWidth * s, h = img.naturalHeight * s;
+          const y = Math.round(GROUND + dy - (L.ground ?? img.naturalHeight) * s);
+          const x0 = W / 2 - w / 2 + dx;
+          if (L.repeat === false) ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, Math.round(x0), y, Math.ceil(w), Math.ceil(h));
+          else for (let x = x0 - Math.ceil((x0 + W) / w) * w; x < 2 * W; x += w) ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, Math.round(x), y, Math.ceil(w) + 1, Math.ceil(h));
+        } else if (L.type === 'sky') {
           const g = ctx.createLinearGradient(0, 0, 0, GROUND + cam.y);
           for (const [at, col] of L.stops) g.addColorStop(at, col);
           ctx.fillStyle = g;

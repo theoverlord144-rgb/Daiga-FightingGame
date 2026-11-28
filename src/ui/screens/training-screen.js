@@ -10,7 +10,7 @@ import { drawMenu, shade, title, hint } from './common.js';
 
 const PAUSE = ['RESUME', 'CHARACTER SELECT', 'MAIN MENU'];
 
-export function createTrainingScreen(app, { picks }) {
+export function createTrainingScreen(app, { picks, stage = app.stage }) {
   const { ctx, W, H } = app;
   const world = app.makeWorld(app.chars[picks[0].id], app.chars[picks[1].id], null);
   const training = createTraining(world, loadTrainingSettings());
@@ -34,7 +34,7 @@ export function createTrainingScreen(app, { picks }) {
           if (m.confirm) {
             const item = PAUSE[sel];
             if (item === 'RESUME') paused = false;
-            else if (item === 'CHARACTER SELECT') app.go('select', { mode: 'training', last: picks });
+            else if (item === 'CHARACTER SELECT') app.go('select', { mode: 'training', last: picks, stageId: stage.id });
             else app.go('title', { index: 2 });
             return;
           }
@@ -53,7 +53,7 @@ export function createTrainingScreen(app, { picks }) {
       readout.update(game, world);
     },
     draw() {
-      app.renderer.draw(game, world, { ...app.opts, stage: app.stage, palettes, marks: true });
+      app.renderer.draw(game, world, { ...app.opts, stage, palettes, marks: true });
       if (app.opts.meter) drawTrainingOverlay(ctx, W, H, meter, training, readout, game);
       app.drawHistories(game);
       if (paused) {

@@ -486,5 +486,51 @@ try {
   scene('wt-airwarp', 'warteun', 'malik', 500, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 14); qcb(s, 'M'); wtFilm(s, 50, 3); });
   scene('wt-dash', 'warteun', 'malik', 600, (s) => { s.go('', '', 10); s.go('F', '', 1); s.go('', '', 1); s.go('F', '', 1); wtFilm(s, 22, 2); s.go('', '', 10); s.go('K', '', 1); s.go('', '', 1); s.go('K', '', 1); wtFilm(s, 22, 2); });
   scene('wt-2M', 'warteun', 'malik', 320, (s) => { s.go('', '', 10); s.go('DM', '', 1); wtFilm(s, 50, 3); });
+  // ----- Avner, the Lantern-Bearer (Nov 27): node scripts/shots.mjs <folder> lant   (LANT_EVERY=1 films every frame) -----
+  const lantEvery = Number(process.env.LANT_EVERY) || 2;
+  const lantFilm = (s, frames, p1 = '', p2 = '') => { for (let i = 0; i < frames; i += lantEvery) { s.shot('f' + String(i + 1).padStart(3, '0')); s.go(p1, p2, lantEvery); } };
+  /** Presses a motion (a list of raw-button strings, one a frame) until Player 1 is in `want`, filming each frame if asked. */
+  const lantAct = (s, seq, want, film) => {
+    for (let i = 0; i < 3; i++) { s.go('', '', 1); if (film) s.shot('f'); } // a gap, so the last press and this one never read as two buttons together (M then H = Vow)
+    for (let k = 0; k < 60; k++) {
+      for (const b of seq) { s.go(b, '', 1); if (film) s.shot('f'); }
+      if (s.game.players[0].state === want) return true;
+      s.go('', '', 1); if (film) s.shot('f');
+      if (s.game.players[0].state === want) return true;
+    }
+    return false;
+  };
+  const QCB = (b) => ['D', 'DK', 'K' + b], QCF = (b) => ['D', 'DF', 'F' + b];
+  const lantRoute = (s) => {
+    for (const [seq, want] of [[['L'], '5L'], [['M'], '5M'], [['H'], '5H'], [QCB('L'), 'moonstruckL'], [['DR'], 'riteSlide'], [QCB('L'), 'pulseL'], [['FH'], 'e6H'], [QCB('L'), 'pulseL']]) lantAct(s, seq, want, true);
+    for (let i = 0; i < 60; i++) { s.go('', '', 1); s.shot('f'); }
+  };
+  scene('lant-route', 'avner', 'malik', 90, lantRoute);
+  scene('lant-corner', 'avner', 'malik', 90, (s) => { const e = s.world.battle.halfWidthUnits; s.game.players[1].x = e - 3000; s.game.players[0].x = s.game.players[1].x - 9000; lantRoute(s); });
+  scene('lant-hang', 'avner', 'malik', 500, (s) => { s.go('', '', 10); s.go('R', '', 1); lantFilm(s, 24); s.go('', '', 30); s.go('R', '', 1); lantFilm(s, 40); });
+  scene('lant-lob', 'avner', 'malik', 600, (s) => { s.go('', '', 10); s.go('FR', '', 1); lantFilm(s, 30); s.go('', '', 30); s.go('R', '', 1); lantFilm(s, 60); });
+  scene('lant-slide', 'avner', 'malik', 600, (s) => { s.go('', '', 10); s.go('DR', '', 1); lantFilm(s, 40, 'D'); });
+  scene('lant-leave', 'avner', 'malik', 500, (s) => { s.go('', '', 10); s.go('U', '', 1); s.go('', '', 10); s.go('R', '', 1); lantFilm(s, 40); });
+  scene('lant-pendulum', 'avner', 'malik', 300, (s) => { s.go('', '', 10); s.go('R', '', 1); s.go('', '', 24); s.go('DR', '', 1); lantFilm(s, 130, 'D'); });
+  // Stages (Nov 27): the painted desert, wide (no zoom) and as the fight camera frames it, with a jump and a walk to the wall.
+  scene('stage-desert', 'avner', 'malik', 300, (s) => {
+    s.opts = { stage: boot.STAGES['desert-test'] };
+    s.go('', '', 10); s.shot('wide');
+    s.opts.zoom = true; s.go('', '', 30); s.shot('zoomed');
+    s.go('U', '', 1); s.go('', '', 18); s.shot('jump');
+    s.go('', '', 40); s.go('K', '', 200); s.shot('left-wall');
+    s.opts.zoom = false; s.shot('left-wall-wide');
+  });
+  scene('lant-pendulum-hit', 'avner', 'malik', 300, (s) => { s.go('', '', 10); s.go('R', '', 1); s.go('', '', 24); s.game.players[1].x = s.game.players[0].relic.x + 2500; s.go('DR', '', 1); lantFilm(s, 60, 'D'); });
+  scene('lant-idles', 'avner', 'malik', 500, (s) => { s.go('', '', 10); s.shot('lantern-idle'); s.go('R', '', 1); lantFilm(s, 24); s.go('', '', 10); s.shot('empty-idle'); s.go('R', '', 1); lantFilm(s, 40); s.shot('lantern-idle-again'); });
+  const lantCrescent = (rite, wait, gap, mark) => (s) => { s.go('', '', 10); s.go(rite, '', 1); s.go('', '', wait); s.game.players[1].x = s.game.players[0].relic.x + gap * 100; if (mark) s.game.players[0].vars.mark = 250; lantAct(s, QCF('H'), 'sliverH', true); lantFilm(s, 70); }; // with the lantern set 236 is the Sliver
+  scene('lant-sliver', 'avner', 'malik', 700, (s) => { s.go('', '', 10); s.go('R', '', 1); s.go('', '', 30); s.game.players[0].relic.x = s.game.players[0].x + 60000; s.game.players[1].x = s.game.players[0].x + 30000; lantAct(s, QCF('M'), 'sliverM', true); lantFilm(s, 50); });
+  scene('lant-crescent-low', 'avner', 'malik', 600, lantCrescent('DR', 40, 150, false));
+  scene('lant-crescent-high', 'avner', 'malik', 600, lantCrescent('FR', 30, 150, false));
+  scene('lant-crescent-marked', 'avner', 'malik', 600, lantCrescent('FR', 30, 260, true));
+  scene('lant-halo', 'avner', 'malik', 600, (s) => { s.go('', '', 10); s.go('R', '', 1); s.go('', '', 24); s.game.players[1].x = s.game.players[0].relic.x + 2000; lantAct(s, ['F', 'D', 'DFL'], 'haloSetL', true); lantFilm(s, 40); });
+  scene('lant-pulse', 'avner', 'malik', 600, (s) => { s.go('', '', 10); s.go('R', '', 1); s.go('', '', 24); s.game.players[1].x = s.game.players[0].relic.x + 4000; lantAct(s, QCB('L'), 'pulseL', true); lantFilm(s, 40); });
+  scene('lant-struck', 'avner', 'malik', 300, (s) => { s.go('', '', 10); s.go('R', '', 1); s.go('', '', 24); s.game.players[1].x = s.game.players[0].relic.x + 6000; s.go('', 'H', 1); lantFilm(s, 30); });
+  scene('lant-dark', 'avner', 'malik', 600, (s) => { s.go('', '', 10); s.go('FR', '', 1); s.go('', '', 30); s.game.players[0].vars.flames = 0; lantFilm(s, 40); s.go('', '', 120); s.shot('relit'); });
 } catch (e) { console.log('ERROR', e.stack.split('\n').slice(0, 8).join('\n')); }
 await server.close();

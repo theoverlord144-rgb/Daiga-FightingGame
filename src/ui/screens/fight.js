@@ -8,7 +8,7 @@ import { drawMenu, drawPortrait, shade, title, hint, FONT, INK, DIM, GOLD } from
 const PAUSE = ['RESUME', 'CHARACTER SELECT', 'MAIN MENU'];
 const RESULTS = ['REMATCH', 'CHARACTER SELECT', 'MAIN MENU'];
 
-export function createFightScreen(app, { mode = 'versus', picks }) {
+export function createFightScreen(app, { mode = 'versus', picks, stage = app.stage }) {
   const { ctx, W, H } = app;
   const rules = app.matchRules();
   const defs = picks.map((p) => app.chars[p.id]);
@@ -36,7 +36,7 @@ export function createFightScreen(app, { mode = 'versus', picks }) {
   const choose = (item) => {
     if (item === 'RESUME') paused = false;
     else if (item === 'REMATCH') { start(); splash = 0; }
-    else if (item === 'CHARACTER SELECT') app.go('select', { mode, last: picks });
+    else if (item === 'CHARACTER SELECT') app.go('select', { mode, last: picks, stageId: stage.id });
     else if (item === 'MAIN MENU') app.go('title', { index: mode === 'cpu' ? 1 : 0 });
   };
 
@@ -68,7 +68,7 @@ export function createFightScreen(app, { mode = 'versus', picks }) {
     },
     draw() {
       if (splash > 0) return drawSplash();
-      renderer.draw(game, world, { ...app.opts, labels: false, stage: app.stage, palettes });
+      renderer.draw(game, world, { ...app.opts, labels: false, stage, palettes });
       app.drawHistories(game);
       if (cpu && game.match.phase === 'intro') {
         ctx.font = `700 13px ${FONT}`;
@@ -116,6 +116,6 @@ export function createFightScreen(app, { mode = 'versus', picks }) {
     ctx.font = `600 14px ${FONT}`;
     ctx.fillStyle = DIM;
     ctx.textAlign = 'center';
-    ctx.fillText(`${app.stage.name} · first to ${rules.roundsToWin} · ${rules.timerSeconds ? `${rules.timerSeconds}s rounds` : 'no timer'}`, W / 2, 340);
+    ctx.fillText(`${stage.name} · first to ${rules.roundsToWin} · ${rules.timerSeconds ? `${rules.timerSeconds}s rounds` : 'no timer'}`, W / 2, 340);
   }
 }

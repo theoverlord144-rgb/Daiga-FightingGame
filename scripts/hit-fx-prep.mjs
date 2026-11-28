@@ -15,11 +15,11 @@ const SRC = 'data/UniversalEffects/', OUT = 'data/effects/';
 const PREVIEW = process.argv[2] || null;
 const RES = 2; // sheet px per game px
 // name, file, how many drawings, size (game px across the largest drawing), and the cuts by hand where the emptiest
-// columns are not between drawings (the projectile burst: its first two glows touch, its last ones scatter).
+// columns are not between drawings (the projectile burst: its first two glows touch, its last ones scatter; the heavy).
 const SHEETS = [
   ['light', 'Game_HitEffect_Light.png', 5, 130],
   ['medium', 'Game_HitEffect_Medium.png', 6, 170],
-  ['heavy', 'Game_HitEffect_Heavy.png', 8, 210],
+  ['heavy', 'Game_HitEffect_Heavy.png', 8, 210, [393, 747, 1104, 1440, 1747, 2064, 2375]], // redrawn Nov 27: the big first glows touch
   ['slash', 'Game_HitEffect_Slash.png', 6, 190],
   ['counter', 'Game_HitEffect_Counter.png', 6, 220],
   ['witness', 'Game_HitEffect_WitnessCounter.png', 6, 230],

@@ -75,7 +75,43 @@ export function createHud(ctx, W, image = () => null) {
     ctx.fillStyle = '#f2ecdf';
     ctx.textAlign = left ? 'left' : 'right';
     ctx.fillText(def.name.toUpperCase(), left ? x : x + BAR_W, BAR_Y + BAR_H + UNDER + 5);
+    flameIcons(p, def, left ? x + ctx.measureText(def.name.toUpperCase()).width + 14 : x + BAR_W - ctx.measureText(def.name.toUpperCase()).width - 14, BAR_Y + BAR_H + UNDER, left);
     return x;
+  }
+
+  /**
+   * A mechanic var shown as `display: "flames"` (Avner's lantern flames): one small flame per point of its max, beside
+   * the name under the health bar, lit or dark. Drawn in code (no art yet).
+   */
+  function flameIcons(p, def, x0, cy, left) {
+    for (const [k, v] of Object.entries(def.mechanic?.vars || {})) {
+      if (v.display !== 'flames' || !v.show) continue;
+      const n = p.vars[k] | 0;
+      for (let i = 0; i < v.max; i++) {
+        const cx = left ? x0 + i * 16 : x0 - i * 16;
+        const lit = i < n;
+        ctx.save();
+        ctx.beginPath(); // a drop: round below, a point above
+        ctx.moveTo(cx, cy - 9);
+        ctx.bezierCurveTo(cx + 6, cy - 2, cx + 6, cy + 5, cx, cy + 5);
+        ctx.bezierCurveTo(cx - 6, cy + 5, cx - 6, cy - 2, cx, cy - 9);
+        if (lit) {
+          const g = ctx.createLinearGradient(0, cy - 9, 0, cy + 5);
+          g.addColorStop(0, '#fff4c8');
+          g.addColorStop(0.5, '#ffc24a');
+          g.addColorStop(1, '#e0702a');
+          ctx.fillStyle = g;
+          ctx.shadowColor = '#ffb347';
+          ctx.shadowBlur = 8;
+        } else ctx.fillStyle = '#2a2535';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = lit ? '#7a3a12' : '#4a4258';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
   }
 
   function roundPips(game, world, p, x) {
@@ -339,7 +375,7 @@ export function createHud(ctx, W, image = () => null) {
     let line = '';
     if (mech?.gauge) line += `${mech.gauge.label ?? mech.name} ${Math.floor((100 * p.gauge) / mech.gauge.max)}%  `;
     for (const [k, v] of Object.entries(mech?.vars || {})) {
-      if (!v.show || v.display === 'pips') continue;
+      if (!v.show || v.display === 'pips' || v.display === 'flames') continue;
       const n = p.vars[k];
       if (v.display === 'timer') line += n > 0 ? `${v.label} ${(n / 60).toFixed(1)}s  ` : '';
       else line += v.max <= 6 ? `${v.label} ${'●'.repeat(n)}${'○'.repeat(Math.max(0, v.max - n))}  ` : `${v.label} ${n}  `;
