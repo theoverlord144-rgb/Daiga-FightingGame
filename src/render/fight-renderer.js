@@ -970,7 +970,10 @@ export function createFightRenderer(ctx, W, H) {
       if (d.burst && d.burstArt) { drawBurst(pr, d, def); continue; }
       const rel = d.anim?.release ?? [], loop = d.anim?.loop ?? [1];
       const relLen = rel.reduce((a, b) => a + b, 0);
-      const index = Math.min(d.sprite.count - 1, pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0]);
+      // anim.wake: a trap's drawings from the moment it woke (played once, the last one held), after release and loop.
+      const wk = d.anim?.wake && pr.woke >= 0 ? d.anim.wake : null;
+      const index = Math.min(d.sprite.count - 1, wk ? rel.length + loop.length + heldFrame(wk, pr.age - pr.woke, false)[0]
+        : pr.age < relLen ? heldFrame(rel, pr.age, false)[0] : rel.length + heldFrame(loop, pr.age - relLen, true)[0]);
       const [x, y] = toScreen(...rootOf(pr, d));
       ctx.save();
       if (d.sprite.additive) ctx.globalCompositeOperation = 'lighter';
@@ -1420,7 +1423,7 @@ export function createFightRenderer(ctx, W, H) {
         const endFx = world.chars[c.p]?.effects?.[d?.endFx?.[c.why]]; // a named effect for this way of ending (a burst on the ground)
         if (endFx) effects.push({ sheet: endFx, def: world.chars[c.p], x: c.x, y: c.y, facing: c.facing, age: 0, life: lifeOf(endFx) });
         if (d?.sprite && d.anim?.impact) {
-          const first = (d.anim.release?.length ?? 0) + (d.anim.loop?.length ?? 0);
+          const first = (d.anim.release?.length ?? 0) + (d.anim.loop?.length ?? 0) + (d.anim.wake?.length ?? 0);
           const [ex, ey] = groundSeen[`${c.p}:${c.name}`] ?? [c.x, c.y];
           effects.push({ proj: d, def: world.chars[c.p], first, x: ex, y: ey, facing: c.facing, age: 0, life: d.anim.impact.reduce((a, b) => a + b, 0) - 1 });
         }

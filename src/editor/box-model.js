@@ -115,7 +115,7 @@ export const projectileNames = (raw) => Object.keys(raw.projectiles || {});
  */
 export function projectileSource(raw, id) {
   if (!raw.projectiles?.[id]) throw new Error(`No projectile called ${id}`);
-  return { kind: 'path', path: ['projectiles', id, 'hitbox'], where: 'projectile', at: 0, single: true };
+  return { kind: 'path', path: ['projectiles', id, 'hitbox'], where: 'projectile', at: 0, single: !Array.isArray(raw.projectiles[id].hitbox?.[0]) };
 }
 
 /** The boxes a source holds, in pixels: [[x, y, w, h], ...] (a copy). */

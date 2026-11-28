@@ -369,8 +369,10 @@ test('the cast: launchers tumble, the jumping S slams into a hard knockdown, 2L 
     const c = compileCharacter(loadJSON(`data/characters/${id}/${id}.toska.json`), SYSTEM);
     assert.equal(c.states['5S'].move.hitReaction, 'tumble', `${id} 5S`);
     assert.equal(c.states['5S'].move.launchType, 'hard', `${id} 5S is still the hard launcher`);
-    assert.equal(c.states['j.S'].move.airReaction, 'hardKD', `${id} j.S`);
-    assert.equal(c.states['j.S'].move.hitReaction, 'normal', `${id} j.S on a standing fighter is plain hitstun`);
+    // (Malik's slam moved to j.2H on Nov 28, the owner's redesign; his j.S is a sideways spirit lance, a poke.)
+    const slam = id === 'malik' ? 'j.2H' : 'j.S';
+    assert.equal(c.states[slam].move.airReaction, 'hardKD', `${id} ${slam}`);
+    assert.equal(c.states[slam].move.hitReaction, 'normal', `${id} ${slam} on a standing fighter is plain hitstun`);
     assert.equal(c.states['2L'].move.otg, true, `${id} 2L`);
     // (Avner's redrawn 5H of Nov 25 is set to an ordinary reaction on counter hit in his file: the owner's setting.)
     assert.equal(c.states['5H'].move.counterReaction, id === 'malik' ? 'crumple' : 'normal', `${id} 5H`);

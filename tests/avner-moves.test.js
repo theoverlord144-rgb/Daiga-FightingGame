@@ -220,7 +220,7 @@ test('Malik: loads, stands and walks with his own art, and can be put in a match
     assert.deepEqual([...new Set(c.states[name].frames.map((f) => f.sprite.index))], Array.from({ length: count }, (_, i) => i), `${name}: all ${count} drawings`);
     assert.ok(fs.existsSync('data/characters/malik/' + c.sheets[name].image));
   }
-  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'backHeavy', 'install', 'j.H', 'j.L', 'j.M', 'j.S', 'lariatH', 'lariatH_ex', 'lariatL', 'lariatL_ex', 'lariatM', 'lariatM_ex', 'parry_start', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_4', 'rite_5', 'rite_j', 'spearH', 'spearL', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'stomp']); // parry_start: the universal M+H (the parry; Vow when guardButton is vow), every character has it
+  assert.deepEqual(c.commands.map((x) => x.move).sort(), ['2H', '2L', '2M', '4H', '5H', '5L', '5M', '5S', '6H', 'airBurstM', 'airOrbL', 'backHeavy', 'install', 'j.2H', 'j.H', 'j.L', 'j.M', 'j.S', 'parry_start', 'pillarH', 'pillarL', 'pillarM', 'rite_2', 'rite_4', 'rite_5', 'rite_j', 'spearH', 'spearL', 'spearM', 'specter', 'specter2H', 'specter2L', 'specter2M', 'specter5H', 'specter5L', 'specter5M', 'specterBarrage', 'specterGraspL', 'specterGraspM', 'specterJudgmentH', 'specterJudgmentL', 'specterJudgmentM', 'specterStompH', 'specterStompL', 'specterStompM', 'specterToll', 'specterTrap2', 'specterTrap5', 'spirit5H', 'spirit5L', 'spirit5M', 'spiritOrb', 'spiritOrbH', 'spiritOrbM', 'stomp']); // parry_start: the universal M+H (the parry; Vow when guardButton is vow), every character has it
   // Twenty frames holding forward against Avner: he walks, nothing breaks.
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const game = createGame(world);
@@ -281,7 +281,7 @@ test('Malik: every attack hits on the drawing its sheet shows the strike on, and
   const c = loadChar('data/characters/malik/malik.toska.json');
   // move -> the drawing (counted from 1) its hit lands on
   // (The redesign, Nov 26: every redrawn attack lands on its drawing 4, the spirit limb at full reach. 2L and the stomp keep their earlier sheets.)
-  const want = { '2L': 3, '2M': 4, '2H': 4, 'j.L': 4, 'j.M': 4, 'j.H': 4, backHeavy: 4, spiritOrb: 4, stomp: 3 };
+  const want = { '2L': 3, '2M': 4, '2H': 4, 'j.L': 4, 'j.M': 4, 'j.H': 4, backHeavy: 4, spiritOrb: 8, stomp: 3 }; // (Spirit Orb L redrawn Nov 27: twelve drawings, the palm strike on 8)
   for (const [move, drawing] of Object.entries(want)) {
     const st = c.states[move];
     const hits = st.frames.filter((fr) => fr.hit.length);
@@ -454,11 +454,11 @@ test('Malik: Spirit Orb M and H start slower; M is a spout that stands where it 
   const L = run('2 3 6+L 5*50'), M = run('2 3 6+M 5*50'), H = run('2 3 6+H 5*50');
   assert.ok(L.spawn < M.spawn && M.spawn < H.spawn, 'L throws first, H last');
   assert.ok(L.speed > H.speed && H.speed > 0, 'the L orb is faster than the H orb');
-  assert.equal(M.speed, 0, 'the M spout does not travel (the redesign, Nov 26: he strikes the floor and it rises in front of him)');
+  assert.equal(M.speed, 0, 'the M spout does not travel (he strikes the floor and it rises; since Nov 27 under the opponent)');
   assert.equal(L.back, 0); assert.equal(M.back, 0);
   assert.ok(H.back >= px(20) && H.back <= px(45), 'H slides back a little');
   // Each button has its own sheet (the redesign, Nov 26): the strike is on drawing 4 (L), 5 (M) or 5 (H) and the orb or spout appears on the next.
-  for (const [id, drawing] of [['spiritOrb', 4], ['spiritOrbM', 5], ['spiritOrbH', 5]]) {
+  for (const [id, drawing] of [['spiritOrb', 8], ['spiritOrbM', 5], ['spiritOrbH', 5]]) {
     const hits = c.states[id].frames.filter((fr) => fr.hit.length);
     assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [drawing], id);
     const spawnAt = c.states[id].onEnter.findIndex((evs) => evs?.some((e) => e.spawn !== undefined));
@@ -466,13 +466,13 @@ test('Malik: Spirit Orb M and H start slower; M is a spout that stands where it 
   }
 });
 
-test('Malik: S is a launcher: the hit is on the high kick (drawing 4), it sends them up, and every ground normal chains into it', () => {
+test('Malik: S is a launcher: the hit is on the spirit uppercut (drawing 6), it sends them up, and every ground normal chains into it', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const c = world.chars[0];
   const st = c.states['5S'];
   const hits = st.frames.filter((fr) => fr.hit.length);
-  assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [4]);
-  assert.equal(st.frames.at(-1).sprite.index + 1, 8, 'all eight drawings are used');
+  assert.deepEqual([...new Set(hits.map((fr) => fr.sprite.index + 1))], [6]); // (redrawn Nov 27: twelve drawings, the spirit fist erupts on 6)
+  assert.equal(st.frames.at(-1).sprite.index + 1, 12, 'all twelve drawings are used');
   assert.ok(fs.existsSync('data/characters/malik/sheets/5S.png'));
   const game = createGame(world);
   game.players[0].x = -px(35); game.players[1].x = px(35);
@@ -483,13 +483,13 @@ test('Malik: S is a launcher: the hit is on the high kick (drawing 4), it sends 
   assert.ok(hp - game.players[1].health > 700);
 });
 
-test('Malik: Air S hits on drawing 7 (the orb thrown down), Standing S on drawing 4, and the air normals chain into Air S', () => {
+test('Malik: Air S hits on drawings 8-10 (the spirit arm at full reach, Nov 28), Standing S on drawing 6, and the air normals chain into Air S', () => {
   const world = loadWorld('data/characters/malik/malik.toska.json', AVNER);
   const c = world.chars[0];
   const hitDrawings = (id) => [...new Set(c.states[id].frames.filter((fr) => fr.hit.length).map((fr) => fr.sprite.index + 1))];
-  assert.deepEqual(hitDrawings('j.S'), [7]);
-  assert.deepEqual(hitDrawings('5S'), [4]);
-  assert.equal(c.states['j.S'].frames.at(-1).sprite.index + 1, 10); // ten of the twelve drawn (the redesign, Nov 26): 8 and 9 are drawn landed, and the move has no landing state
+  assert.deepEqual(hitDrawings('j.S'), [8, 9, 10]);
+  assert.deepEqual(hitDrawings('5S'), [6]);
+  assert.equal(c.states['j.S'].frames.at(-1).sprite.index + 1, 16); // all sixteen drawings of the spirit lance (Nov 28)
   assert.ok(fs.existsSync('data/characters/malik/sheets/jS.png'));
   const file = JSON.parse(fs.readFileSync('data/characters/malik/malik.toska.json', 'utf8'));
   for (const from of ['j.L', 'j.M', 'j.H']) assert.ok(file.gatlings[from].includes('j.S'), from + ' chains into j.S');

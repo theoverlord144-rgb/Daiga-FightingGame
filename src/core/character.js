@@ -110,7 +110,7 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity', 'catch', 'hold'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile', 'warp', 'detonate', 'relic'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile', 'warp', 'detonate', 'relic', 'wakeTraps'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
@@ -267,9 +267,13 @@ function compileProjectiles(src, meter) {
       name,
       speed: px(p.speed ?? 0),
       speedY: px(p.speedY ?? 0), // per frame, up is positive (a rising or diving projectile)
+      track: px(p.track ?? 0), // per frame: it slides along x toward the opponent at most this far (0 = it never follows)
       spawn: [px(sp[0]), px(sp[1])],
       fromGround: !!p.fromGround, // spawn[1] is a height above the floor, not above the fighter (it erupts from the ground)
-      hitbox: boxes([p.hitbox ?? [0, 0, 0, 0]]),
+      // hitbox: one box, or a list of boxes (a slanted beam drawn as a staircase of boxes)
+      hitbox: boxes(Array.isArray(p.hitbox?.[0]) ? p.hitbox : [p.hitbox ?? [0, 0, 0, 0]]),
+      // wakesTraps: { names, range }: every waiting trap of those kinds its owner has within range px (along x) wakes as it passes
+      wakesTraps: p.wakesTraps ? { names: p.wakesTraps.names ?? [], range: px(p.wakesTraps.range ?? 40) } : null,
       // phases: [[fromAge, toAge, [x, y, w, h]]]: the hitbox is only out during these ages, with that box (none
       // given = its `hitbox`). Without phases the hitbox is out all its life.
       phases: p.phases ? p.phases.map(([from, to, box]) => ({ from, to, box: boxes([box ?? p.hitbox ?? [0, 0, 0, 0]]) })) : null,
@@ -281,6 +285,7 @@ function compileProjectiles(src, meter) {
       onEnd: p.onEnd?.setVar ?? null, // { var: n }: set on its owner when it ends, however it ends
       ownerOnHit: p.ownerOnHit ?? null, // on hit, an owner still in the move that made it switches to this state
       endsOnGround: !!p.endsOnGround, // it ends when it reaches the floor (a diving projectile)
+      minY: p.minY === undefined ? null : px(p.minY), // px above the floor it never goes below (it dives, then skims along at that height)
       hits: Math.max(1, p.hits ?? 1), // how many times it hits before it is used up
       rehit: Math.max(1, p.rehit ?? 8), // frames between those hits
       // bend: { range, rangeY, pull, through, into, floorY }: near its owner's set relic it curves toward it (pull px a
@@ -309,6 +314,12 @@ function compileProjectiles(src, meter) {
       // locked until then). Its hitboxes are its `phases`, by age; give it `persist` so a hit does not remove it.
       lob: p.lob ? { rise: Math.max(1, p.lob.rise | 0), hang: Math.max(0, p.lob.hang | 0), drop: Math.max(1, p.lob.drop | 0), land: px(p.lob.land ?? 0), apex: px(p.lob.apex ?? 0),
         track: px(p.lob.track ?? 0), impact: Math.max(0, p.lob.impact | 0), back: Math.max(0, p.lob.back | 0), margin: px(p.lob.margin ?? 40) } : null,
+      // wake: a trap. It waits with no hitbox until the opponent comes within range (x) / reachY of it; then it pulls them
+      // toward its centre at `pull` px a frame and its box is out from `delay` frames after waking, for `active` frames,
+      // then it is gone. limit = at most that many out at once (a new one ends the oldest); endVar = when the owner's var
+      // runs out, every waiting one wakes at once.
+      wake: p.wake ? { range: px(p.wake.range ?? 0), reachY: px(p.wake.reachY ?? 9999), pull: px(p.wake.pull ?? 0), delay: Math.max(0, p.wake.delay | 0),
+        active: Math.max(1, p.wake.active ?? 1), limit: p.wake.limit | 0, endVar: p.wake.endVar ?? null } : null,
       lobArt: p.lobArt ?? null, // drawing only: a lobbed projectile's layers
       endFx: p.endFx ?? null, // drawing only: { why: effect name } played where it ended (why = hit, block, ground, edge...)
       lifetime: p.lifetime ?? (p.lob ? Math.max(1, p.lob.rise | 0) + Math.max(0, p.lob.hang | 0) + Math.max(1, p.lob.drop | 0) + Math.max(0, p.lob.impact | 0) + Math.max(0, p.lob.back | 0) : 600),
@@ -343,7 +354,12 @@ function compileMechanic(src) {
       mark: v.mark ?? null, // drawing only: a colour; while the var is above 0 the opponent glows with it (a brand)
       // Drawing only, while the var is above 0 (an install): `aura` = [{ effect, behind }], named effects looping on the
       // fighter; `art` = { state: otherState }, that state is drawn with the other state's drawings.
-      aura: v.aura ?? null, art: v.art ?? null };
+      aura: v.aura ?? null, art: v.art ?? null,
+      // mode (rules, not drawing): while the var is above 0 the fighter plays by other rules. states: { state: other }
+      // = that state is replaced by the other wherever it would start (a slow walk, a glide for a dash); noJump; pushbackPct
+      // = the share of pushback he takes; keepFooting = hits on him on the ground never launch or knock down (supers and
+      // throws still do).
+      mode: v.mode ? { states: v.mode.states ?? {}, noJump: !!v.mode.noJump, pushbackPct: Math.round((v.mode.pushbackPct ?? 100) * 100), keepFooting: !!v.mode.keepFooting } : null };
   }
   const modifiers = (src.modifiers || []).map((x) => ({ when: x.when || {}, damagePct: x.damagePct ?? 10000 }));
   return { name: src.name ?? null, gauge, vars, modifiers };
@@ -615,6 +631,8 @@ function normalizeEvent(e, stats, sheetName) {
     else if (k === 'warp') out[k] = { x: px(v.x ?? 0), y: px(v.y ?? 0), behind: !!v.behind, behindIf: v.behindIf ?? null, gap: px(v.gap ?? 70), swap: !!v.swap, stop: px(v.stop ?? 0), face: !!v.face, above: v.above === undefined ? null : px(v.above), aboveAir: v.aboveAir === undefined ? null : px(v.aboveAir) };
     // detonate: { name, collapse }: the fighter's projectiles of that kind burst `collapse` frames from now.
     else if (k === 'detonate') out[k] = typeof v === 'string' ? { name: v, collapse: 0 } : { name: v.name, collapse: v.collapse | 0 };
+    // wakeTraps: [names]: every waiting trap (a `wake` projectile) of those kinds the fighter owns wakes now.
+    else if (k === 'wakeTraps') out[k] = Array.isArray(v) ? v : [v];
     // catch: { to, hitstop }: while it lasts, a strike that would hit is caught instead: no damage, the fighter
     // switches to state `to`, the attacker freezes for `hitstop`. Throws and supers are not caught; projectiles only
     // with projectiles: true (the projectile is used up). parry: true = the universal parry (it gives Devotion).
@@ -695,8 +713,9 @@ export function compileCharacter(file, system) {
   }
   const rg = riteSrc?.gauge ?? null;
   if (rg && rg.unlimitedWhile && !mechanic.vars[rg.unlimitedWhile]) throw new Error(`${ch.id}: rite gauge names unknown var ${rg.unlimitedWhile}`);
+  if (rg && rg.fastWhile && !mechanic.vars[rg.fastWhile.var]) throw new Error(`${ch.id}: rite gauge names unknown var ${rg.fastWhile.var}`);
   const rite = riteSrc ? { moves: [...riteIds],
-    gauge: rg ? { charges: rg.charges ?? 1, rechargeFrames: rg.rechargeFrames ?? 60, unlimitedWhile: rg.unlimitedWhile ?? null } : null } : null;
+    gauge: rg ? { charges: rg.charges ?? 1, rechargeFrames: rg.rechargeFrames ?? 60, unlimitedWhile: rg.unlimitedWhile ?? null, fastWhile: rg.fastWhile ? { var: rg.fastWhile.var, rechargeFrames: Math.max(1, rg.fastWhile.rechargeFrames | 0) } : null } : null } : null;
   const own = t.moves.map((m) => (content.moves[m.id] ? { ...content.moves[m.id], ...m } : m))
     .map((m) => (riteIds.has(m.id) && !m.kind ? { ...m, kind: 'special' } : m));
 
@@ -749,6 +768,7 @@ export function compileCharacter(file, system) {
         if (s.type === 'spawn' && !projectiles[s.value?.name ?? s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value?.name ?? s.value}`);
         if (s.type === 'relic' && !relic?.actions[s.value]) throw new Error(`${ch.id}: ${st.name} names relic action ${s.value}, which the relic doesn't have`);
         if (s.type === 'endProjectile' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} ends unknown projectile ${s.value}`);
+        if (s.type === 'wakeTraps') for (const n of s.value) if (!projectiles[n]?.wake) throw new Error(`${ch.id}: ${st.name} wakes ${n}, which is not a trap (wake) projectile`);
         if (s.type === 'detonate' && !projectiles[s.value.name]?.burst) throw new Error(`${ch.id}: ${st.name} detonates ${s.value.name}, which is not a burst projectile`);
         if (s.type === 'warp' && s.value.behindIf && !mechanic.vars[s.value.behindIf]) throw new Error(`${ch.id}: ${st.name} warps by unknown var ${s.value.behindIf}`);
       }

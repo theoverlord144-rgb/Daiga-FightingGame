@@ -19,7 +19,9 @@ export function tickRite(p, def) {
   const g = def.rite?.gauge;
   if (!g) return;
   if (p.rite >= g.charges) { p.riteTimer = 0; return; }
-  if (++p.riteTimer >= g.rechargeFrames) { p.rite++; p.riteTimer = 0; }
+  // fastWhile: while that var of the fighter's runs, a charge comes back in its own (shorter) time.
+  const need = g.fastWhile && (p.vars[g.fastWhile.var] | 0) > 0 ? g.fastWhile.rechargeFrames : g.rechargeFrames;
+  if (++p.riteTimer >= need) { p.rite++; p.riteTimer = 0; }
 }
 
 /** The button pairs that Repel or Draw during blockstun: any two of the three attack buttons. */
@@ -222,7 +224,21 @@ export const isAirborne = (def, p) => def.states[p.state].stance === 'air';
 export const inZone = (pr, zone, p) => p.x >= pr.x + zone.box[0] && p.x <= pr.x + zone.box[0] + zone.box[2] && p.y >= zone.box[1] && p.y <= zone.box[1] + zone.box[3];
 
 /** Switch state. Velocity rules: ground states stop the fighter unless the state keeps velocity. */
+/** The rules of the first var with a `mode` that is running (a super's install), or null. */
+export function modeOf(p, def) {
+  const vars = def.mechanic?.vars;
+  if (!vars) return null;
+  for (const k in vars) if (vars[k].mode && p.vars[k] > 0) return vars[k].mode;
+  return null;
+}
+/** The state that starts in place of `name` under the running mode (the same name when none replaces it). */
+export function modeState(p, def, name) {
+  const m = modeOf(p, def);
+  return (m && m.states[name]) || name;
+}
+
 export function enterState(p, def, name) {
+  name = modeState(p, def, name);
   const st = def.states[name];
   if (!st) throw new Error(`${def.id}: no state ${name}`);
   // Leaving a move that never touched anyone: the move's on-whiff effects (a whiff builds no Devotion). Not when
@@ -306,6 +322,13 @@ export function fireOnEnter(game, p, def, world) {
         const x = v.under === 'opponent' ? game.players[1 - p.id].x : p.x + p.facing * (v.x ?? d.spawn[0]);
         const pr = { owner: p.id, kind: name, x, y: (d.fromGround ? 0 : p.y) + (v.y ?? d.spawn[1]), facing: p.facing, age: 0 };
         if (d.persist) pr.hit = 0; // 1 once it has hit: it stays, and hits no more
+        if (d.wake) {
+          pr.woke = -1; // the age it woke at
+          if (d.wake.limit > 0) {
+            const out = game.projectiles.filter((q) => q.owner === p.id && q.kind === name && !q.end);
+            if (out.length >= d.wake.limit) out[0].end = 1; // the oldest goes
+          }
+        }
         if (d.lob) {
           // A lobbed projectile: where it left the hand, and the spot it will come down on (inside the stage).
           const edge = world.battle.halfWidthUnits - d.lob.margin;
@@ -363,6 +386,11 @@ export function fireOnEnter(game, p, def, world) {
           p.slide = 0; p.slideLeft = 0;
         }
         game.cues.push({ p: p.id, type: 'warp', fromX: fx, fromY: fy, x: p.x, y: p.y, facing: p.facing });
+        break;
+      }
+      case 'wakeTraps': {
+        // Every waiting trap of those kinds the fighter owns wakes now (as if the opponent had come near it).
+        for (const q of game.projectiles) if (q.owner === p.id && v.includes(q.kind) && !q.end && q.woke < 0) q.woke = q.age;
         break;
       }
       case 'detonate': {
@@ -722,10 +750,11 @@ function decide(game, p, opp, def, world) {
   const rules = world.input;
   const dir = relDirAt(inp, 0, p.facing);
   const freshUp = dir >= 7 && relDirAt(inp, 1, p.facing) < 7;
-  const canJump = st.free || windows.some((w) => w.into.has('#jump'));
+  const mode = modeOf(p, def);
+  const canJump = !mode?.noJump && (st.free || windows.some((w) => w.into.has('#jump')));
   const canDash = st.free || windows.some((w) => w.into.has('#dash'));
   // Launcher: on hit, up goes straight into a super jump (no pre-jump), following the opponent up.
-  if (!st.free && !air && dir >= 7 && windows.some((w) => w.into.has('#superjump'))) {
+  if (!st.free && !air && dir >= 7 && !mode?.noJump && windows.some((w) => w.into.has('#superjump'))) {
     p.jumpDir = dir;
     enterState(p, def, 'superJump');
     return;
@@ -770,7 +799,7 @@ function decide(game, p, opp, def, world) {
     if (dirMotionNow(inp, rules, '44', p.facing)) { enterState(p, def, 'backdash'); return; }
   }
   if (!st.free) return;
-  const want = dir <= 3 ? 'crouch' : dir === 6 ? 'walkF' : dir === 4 ? 'walkB' : 'idle';
+  const want = modeState(p, def, dir <= 3 ? 'crouch' : dir === 6 ? 'walkF' : dir === 4 ? 'walkB' : 'idle');
   if (p.state !== want) enterState(p, def, want);
 }
 

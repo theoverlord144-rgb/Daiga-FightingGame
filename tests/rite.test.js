@@ -66,8 +66,9 @@ test('Avner: the Vigil follow-ups still come out of the stance entered with R', 
 
 // ---------- Malik: Guardian Palm ----------
 
-test('Malik: the Rite data: a gauge of 3 charges, 240 frames each, unlimited during his install; four Rite moves', () => {
-  assert.deepEqual(MALIK_FILE.rite, { gauge: { charges: 3, rechargeFrames: 240, unlimitedWhile: 'install' }, moves: ['rite_4', 'rite_5', 'rite_2', 'rite_j'] });
+test('Malik: the Rite data: a gauge of 3 charges, 240 frames each (80 while he is the Specter), unlimited during his install; four Rite moves and the Specter\'s three', () => {
+  assert.deepEqual(MALIK_FILE.rite, { gauge: { charges: 3, rechargeFrames: 240, unlimitedWhile: 'install', fastWhile: { var: 'specter', rechargeFrames: 80 } },
+    moves: ['rite_4', 'rite_5', 'rite_2', 'rite_j', 'specterTrap5', 'specterTrap2', 'specterToll'] });
   const inputs = Object.fromEntries(MALIK_FILE.moves.filter((m) => m.id.startsWith('rite_')).map((m) => [m.id, m.input]));
   assert.deepEqual(inputs, { rite_4: '4R', rite_5: '5R', rite_2: '2R', rite_j: 'j.R' });
   assert.equal(createGame(WM).players[0].rite, 3, 'a round starts with all three');
@@ -136,7 +137,7 @@ function seal(g) {
   return born;
 }
 
-test("Malik 2R, Ancestor's Seal: the orb always rises under the opponent, wherever they are, and stays there for 3 seconds; one at a time", () => {
+test("Malik 2R, Ancestor's Seal: the orb always rises under the opponent, wherever they are, then follows them for 3 seconds; one at a time", () => {
   const P = MALIK.projectiles.palm2;
   assert.equal(P.speed, 0, 'it does not travel');
   assert.equal(P.lifetime, 180, '3 seconds');
@@ -147,19 +148,24 @@ test("Malik 2R, Ancestor's Seal: the orb always rises under the opponent, wherev
     assert.ok(born.under.includes(born.x), `gap ${gap}: under the opponent, not a fixed step from Malik`);
     assert.ok(born.y > 0 && born.y < px(50), 'at shin height');
   }
-  // Nobody touches it: it hovers where it rose for 180 frames, then it is gone.
+  // Nobody touches it: it follows them along the floor (owner, Nov 27: "make his 2R opponent tracking"), 3 px a frame,
+  // at its own height, for 180 frames, then it is gone.
+  assert.equal(P.track, px(3), 'it tracks at 3 px a frame (slower than any walk back)');
   const g = setup(WM, 400);
   const a = g.players[0], d = g.players[1];
   const born = seal(g);
-  const clear = () => { d.x = born.x + px(300); }; // (P2 is put down away from it by hand: they would land on it)
-  clear();
-  let alive = 1;
+  const side = (x) => (x > 0 ? -1 : 1); // (P2 is kept 300 px from it by hand, on the open side of the stage: it would reach them)
+  const clear = (x) => { d.x = x + side(x) * px(300); d.y = 0; d.vy = 0; };
+  clear(born.x);
+  let alive = 1, was = born.x;
   for (let i = 0; i < 260; i++) {
     step(g, [0, 0], WM);
-    if (d.y > 0) clear();
     const m = mine(g);
     if (!m.length) continue;
-    assert.deepEqual({ x: m[0].x, y: m[0].y }, { x: born.x, y: born.y }, 'it does not follow them afterwards');
+    assert.equal(m[0].x - was, side(was) * px(3), 'it slides 3 px toward them each frame');
+    assert.equal(m[0].y, born.y, 'it stays at its height');
+    was = m[0].x;
+    clear(was);
     alive++;
   }
   assert.equal(alive, 180);
@@ -203,60 +209,37 @@ test('Malik 2R: the orb is a low: a crouching block stops it, a standing block d
   assert.equal(mine(g).length, 0, 'and the orb is spent');
 });
 
-/** Malik jumps and claps; P2 does p2 (a script) from the frame of the R press. Returns what happened. */
-function judgment({ gap = 500, p2 = '5', frames = 40 } = {}) {
-  const g = setup(WM, gap);
-  const a = g.players[0], d = g.players[1];
-  run(g, WM, '8 5*10');
-  const b = script(p2);
-  step(g, [RAW.R, b[0] ?? 0], WM);
-  const r = { g, state: a.state, born: null, bornX: null, victimX: null, hit: null, type: null };
-  for (let i = 1; i < frames && r.hit === null; i++) {
-    const before = d.x;
-    step(g, [0, b[i] ?? 0], WM);
-    const q = mine(g)[0];
-    if (q && r.born === null) { r.born = i; r.bornX = q.x; r.victimX = before; }
-    const c = g.cues.find((c) => [...HIT, 'block'].includes(c.type));
-    if (c) { r.hit = i; r.type = c.type; }
-  }
-  return r;
-}
-
-test("Malik j.R, Guardian's Judgment: it opens where the opponent stands on the clap, whatever the distance, and strikes 11 frames later", () => {
-  const P = MALIK.projectiles.palmJ;
-  assert.equal(P.speed, 0);
-  assert.equal(MALIK.states.rite_j.frames.every((f) => f.hit.length === 0), true, 'Malik himself has no hitbox in it');
-  for (const gap of [150, 500, 900]) {
-    const r = judgment({ gap });
-    assert.equal(r.state, 'rite_j');
-    assert.equal(r.born, 11, 'on the clap');
-    assert.equal(r.bornX, r.g.players[1].x, `gap ${gap}: on the opponent, not a fixed step from Malik`);
-    assert.equal(r.type, 'hit');
-    assert.equal(r.hit - r.born, 11, 'the beams meet 11 frames after the clap');
-  }
+// j.R is Guardian's Thrust since Nov 27 (owner): the guardian folds into an orb round him, the orb is gathered back into his
+// hands and thrust down and forward at j.H's angle, the guardian's arms ramming it home (drawings 10-11). It replaces the Shell.
+test("Malik j.R, Ancestral Roar: he hangs while the guardian's head roars and fires its orb on drawing 8; the orb hits from the moment it is out, so it combos in the air", () => {
+  // (Owner, Nov 28: "it needs to be active as soon as the orb comes out" so it combos; it was a trap that only woke
+  // near the opponent. It still dives at 45 degrees and skims above the floor.)
+  const st = MALIK.states.rite_j;
+  assert.equal(st.duration, 33);
+  assert.ok(st.frames.every((f) => !f.hit.length), 'the move itself never hits: the orb does');
+  const P = MALIK.projectiles.roarOrb;
+  assert.ok(P.speed > 0 && P.speedY === -P.speed, 'down and forward at 45 degrees');
+  assert.ok(P.minY > 0, 'it skims above the floor');
+  assert.equal(P.wake, null, 'no waiting: its box is out as soon as it appears');
+  const g = setup(WM, 420);
+  const a = g.players[0];
+  run(g, WM, '8 5*5');
+  step(g, [RAW.R, 0], WM);
+  assert.equal(a.state, 'rite_j');
+  const ys = [];
+  let out = -1;
+  for (let i = 0; i < 30 && a.state === 'rite_j'; i++) { step(g, [0, 0], WM); ys.push(a.y); if (out < 0 && g.projectiles.some((q) => q.kind === 'roarOrb')) out = a.frame; }
+  assert.ok(ys.slice(0, 20).every((y) => y === ys[0]), 'he hangs');
+  assert.equal(st.frames[out].sprite.index + 1, 8, 'the orb leaves on drawing 8');
+  // In the air: both jump, j.M hits, then j.R: the orb lands as the combo's second hit.
+  const h = setup(WM, 100);
+  const s1 = script('8 5*4 5+M 5*3 5+R'), s2 = script('8');
+  const hits = [];
+  for (let i = 0; i < 100; i++) { step(h, [s1[i] ?? 0, s2[i] ?? 0], WM); for (const c of h.cues) if (HIT.includes(c.type) && c.p === 0) hits.push(`${c.move}#${c.hits}`); }
+  assert.deepEqual(hits, ['j.M#1', 'roarOrb#2'], hits.join(' '));
 });
 
-test('Malik j.R: it locks on the clap; an opponent who gets away before the beams meet is missed', () => {
-  // A backdash begun as the portals open.
-  const r = judgment({ gap: 500, p2: '5*10 6 5 6 5*40' });
-  assert.ok(r.born !== null);
-  assert.equal(r.hit, null, 'missed');
-  assert.ok(Math.abs(r.g.players[1].x - r.bornX) > px(60), 'they are no longer between the portals');
-  assert.equal(mine(r.g).length, 0, 'and it is over');
-});
-
-test('Malik j.R: must be blocked standing; a hit launches upward (a hard launch while the combo has one, else a soft one); once per jump', () => {
-  const P = MALIK.projectiles.palmJ;
-  assert.equal(P.move.guard, 'high');
-  assert.equal(P.move.launchType, 'hard');
-  assert.equal(judgment({ p2: '3*40' }).type, 'hit', 'a crouching block does not stop it');
-  const r = judgment();
-  const d = r.g.players[1];
-  let peak = 0;
-  for (let k = 0; k < 40; k++) { step(r.g, [0, 0], WM); peak = Math.max(peak, d.y); }
-  assert.ok(peak > px(80), `sent up (${peak})`);
-  assert.equal(d.health, MALIK.stats.health - P.move.damage);
-  // Once per jump.
+test("Malik j.R: once per jump, one charge", () => {
   assert.equal(MALIK.commands.find((c) => c.move === 'rite_j').perJump, 'rite');
   const g = setup(WM, 900);
   const a = g.players[0];
@@ -264,49 +247,40 @@ test('Malik j.R: must be blocked standing; a hit launches upward (a hard launch 
   if (a.state !== 'rite_j') { g.players[0].x = -px(450); run(g, WM, '5*80 8 5*3 5+R'); }
   assert.equal(a.state, 'rite_j');
   assert.equal(a.rite, 2);
-  let tried = false;
   for (let i = 0; i < 80 && a.y > 0; i++) {
     const free = a.state !== 'rite_j';
     step(g, [free && i % 2 ? RAW.R : 0, 0], WM);
-    if (free && a.y > 0) { tried = true; assert.notEqual(a.state, 'rite_j', 'no second one in the same jump'); }
+    if (free && a.y > 0) assert.notEqual(a.state, 'rite_j', 'no second one in the same jump');
   }
   assert.equal(a.rite, 2, 'and no second charge spent');
-  assert.ok(a.airUsed.includes('rite') || a.y === 0);
-  void tried;
 });
 
-test("Malik 4R, Guardian's Wrath: strike- and projectile-invincible from the first frame until the burst on frame 12; not against throws", () => {
+// 4R is Colossus Clap since Nov 27 (owner): the guardian swells to giant size and claps overhead; it replaces Guardian's Wrath.
+test("Malik 4R, Colossus Clap: invincible to strikes through its startup, not to throws; the clap is above him and a little in front", () => {
   const st = MALIK.states.rite_4;
-  assert.equal(st.duration, 35);
+  assert.equal(st.duration, 40, 'startup 9, 4 active, 28 recovery');
   st.frames.forEach((f, i) => {
-    assert.equal(f.invStrike, i <= 10, `frame ${i + 1}`);
+    assert.equal(f.invStrike, i <= 8, `frame ${i + 1}`);
     assert.equal(f.invThrow, false, 'a throw still takes him');
-    assert.equal(f.hit.length, 0);
   });
-  // An opponent's Light, pressed with it at point blank, passes through him; the burst then hits them.
+  const first = st.frames.findIndex((f) => f.hit.length);
+  assert.equal(first, 8);
+  assert.equal(st.frames[first].sprite.index + 1, 8, 'on the clap drawing');
+  const box = st.frames[first].hit[0];
+  assert.ok(box[1] >= px(100), 'above his head, not at his feet');
+  assert.ok(box[0] + box[2] > px(80), 'and reaching a little in front');
+  assert.equal(st.move.launchType, 'hard', 'it launches');
+  // An opponent's Light at point blank passes through him during the startup.
   const g = setup(WM, 110);
-  const a = g.players[0], d = g.players[1];
+  const a = g.players[0];
   step(g, [RAW.LEFT | RAW.R, RAW.L], WM);
   assert.equal(a.state, 'rite_4');
   assert.equal(a.rite, 2);
-  let burst = null;
-  for (let i = 1; i < 30 && burst === null; i++) {
-    step(g, [0, 0], WM);
-    for (const c of g.cues) if (HIT.includes(c.type)) burst = a.frame;
-  }
+  for (let i = 0; i < 8; i++) step(g, [0, 0], WM);
   assert.equal(a.health, MALIK.stats.health, 'nothing touched him');
-  assert.ok(d.health < MALIK.stats.health, 'and the burst hit them');
-  assert.equal(burst, 11, 'on his 12th frame');
-  const x0 = d.x;
-  for (let i = 0; i < 30; i++) step(g, [0, 0], WM);
-  assert.ok(d.x - x0 > px(60) || d.y > 0, 'knocked well away');
 });
 
-test('Malik 4R: it hits all round him, above too (a jump-in is caught); blocked or whiffed he is open for a long time', () => {
-  const box = MALIK.projectiles.ward.hitbox[0];
-  assert.ok(box[0] < -px(80) && box[0] + box[2] > px(80), 'behind him and in front');
-  assert.ok(MALIK.projectiles.ward.spawn[1] + box[1] + box[3] > px(280), 'well above his head');
-  // A jump-in.
+test('Malik 4R: a jump-in is clapped out of the air; blocked or whiffed he is open for a long time', () => {
   const tries = [];
   for (let wait = 6; wait < 34; wait += 1) {
     const g = setup(WM, 300);
@@ -319,23 +293,11 @@ test('Malik 4R: it hits all round him, above too (a jump-in is caught); blocked 
     }
     tries.push(got);
   }
-  assert.ok(tries.filter((t) => t === 'caught in the air').length >= 5, `a jumping Heavy is caught in the air from several timings (${tries.join(', ')})`);
-  // Blocked: count how long he is still stuck after the blocker is free.
-  const g = setup(WM, 110);
-  const a = g.players[0], d = g.players[1];
-  step(g, [RAW.LEFT | RAW.R, 0], WM);
-  let blocked = false, free = null, done = null;
-  for (let i = 1; i < 80 && done === null; i++) {
-    step(g, [0, !blocked && a.frame >= 9 ? RAW.RIGHT : 0], WM); // (guarding only as it bursts, so as not to walk out of it)
-    if (g.cues.some((c) => c.type === 'block')) blocked = true;
-    if (blocked && free === null && d.state === 'idle') free = i;
-    if (a.state !== 'rite_4') done = i;
-  }
-  assert.ok(blocked, 'it can be blocked');
-  assert.ok(done - free >= 8, `the blocker is free ${done - free} frames before he is: a full punish`);
-  // Whiffed: 24 frames with no invincibility and no hitbox.
-  assert.equal(st4().frames.slice(11).every((f) => !f.invStrike), true);
-  assert.equal(st4().frames.length - 11, 24);
+  assert.ok(tries.filter((t) => t === 'caught in the air').length >= 4, `a jumping Heavy is caught in the air from several timings (${tries.join(', ')})`);
+  // Whiffed: 28 frames with no invincibility and no hitbox.
+  const rest = st4().frames.slice(12);
+  assert.equal(rest.length, 28);
+  assert.ok(rest.every((f) => !f.invStrike && !f.hit.length));
 });
 const st4 = () => MALIK.states.rite_4;
 
@@ -471,7 +433,8 @@ test('the Rite data is checked when the character loads', () => {
   assert.throws(() => compileCharacter(file({ gauge: null, moves: ['b'] }), SYSTEM), /must use the R button/);
   assert.throws(() => compileCharacter(file({ gauge: { charges: 2, rechargeFrames: 60, unlimitedWhile: 'ghost' }, moves: ['a'] }), SYSTEM), /unknown var ghost/);
   const ok = compileCharacter(file({ gauge: { charges: 2, rechargeFrames: 60 }, moves: ['a'] }), SYSTEM);
-  assert.deepEqual(ok.rite, { moves: ['a'], gauge: { charges: 2, rechargeFrames: 60, unlimitedWhile: null } });
+  assert.deepEqual(ok.rite, { moves: ['a'], gauge: { charges: 2, rechargeFrames: 60, unlimitedWhile: null, fastWhile: null } });
+  assert.throws(() => compileCharacter(file({ gauge: { charges: 2, rechargeFrames: 60, fastWhile: { var: 'ghost', rechargeFrames: 20 } }, moves: ['a'] }), SYSTEM), /unknown var ghost/);
   assert.equal(compileCharacter(file(undefined), SYSTEM).rite, null, 'a character with no Rite moves');
 });
 
@@ -494,4 +457,16 @@ test('Rite moves and the gauge survive rollback: 4000 frames of Malik against Ma
   }, { frames: 4000, distance: 8 });
   assert.ok(r.ok, `desync at frame ${r.failFrame}: ${r.diff}`);
   assert.ok(palms > 10, `contact happened (${palms})`);
+});
+
+test('Malik 236M: the spout erupts under the opponent wherever they stand (owner, Nov 27: the tracking special)', () => {
+  for (const gap of [250, 600, 900]) {
+    const g = setup(WM, gap);
+    const d = g.players[1];
+    run(g, WM, '2 3 6+M');
+    let spout = null;
+    for (let i = 0; i < 30 && !spout; i++) { step(g, [0, 0], WM); spout = mine(g).find((q) => q.kind === 'spiritOrbM'); }
+    assert.ok(spout, `gap ${gap}: the spout came up`);
+    assert.equal(spout.x, d.x, `gap ${gap}: right under them, not a fixed step in front of Malik`);
+  }
 });

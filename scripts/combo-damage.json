@@ -41,23 +41,21 @@
       { "name": "Throw", "combo": "6H", "gap": 50 },
       { "name": "Light, medium, heavy", "combo": "5L > 5M > 5H" },
       { "name": "Basic into Pillar", "combo": "5L > 5M > 5H > 623H" },
-      { "name": "Basic into Lariat", "combo": "5L > 5M > 5H > 214H" },
+      { "name": "Basic into Spirit Spear", "combo": "5L > 5M > 5H > 214H" },
       { "name": "Heavy into Pillar", "combo": "5H > 623H" },
       { "name": "Basic into Pillar (L)", "combo": "5L > 5M > 5H > 623L" },
-      { "name": "Basic into Lariat (L)", "combo": "5L > 5M > 5H > 214L" },
-      { "name": "Heavy into Lariat (L)", "combo": "5H > 214L" },
+      { "name": "Basic into Spirit Spear (L)", "combo": "5L > 5M > 5H > 214L" },
+      { "name": "Heavy into Spirit Spear (L)", "combo": "5H > 214L" },
       { "name": "Basic into Spirit Orb", "combo": "5L > 5M > 5H > 236H" },
       { "name": "Heavy start: launcher, air string", "combo": "5H > 5S > 9 > j.M > j.H > j.S" },
       { "name": "Jump-in heavy, launcher, air string", "combo": "9 > j.H > 5H > 5S > 9 > j.M > j.H > j.S", "gap": 260 },
       { "name": "Launcher, air string", "combo": "5L > 5M > 5H > 5S > 9 > j.M > j.H > j.S" },
-      { "name": "Basic into EX Lariat", "combo": "5L > 5M > 5H > 214HS", "bars": 1 },
       { "name": "Counter hit: launcher, air string", "combo": "5H > 5S > 9 > j.M > j.H > j.S", "start": "counter" },
       { "name": "Heavy start, Perfect Links, air string", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S" },
       { "name": "Witness, Perfect Links, air string", "combo": "5H > link:5S > 9 > j.M > link:j.H > link:j.S", "start": "witness" },
-      { "name": "Sweep, floor pickup, Lariat (L)", "combo": "5L > 5M > 2H > 2L > 214L" },
-      { "name": "Air string, slam, floor pickup, Pillar (L)", "combo": "5M > 5H > 5S > 9 > j.M > j.H > j.S > 2L > 623L" },
-      { "name": "EX Lariat (slide), pickup", "combo": "5L > 5M > 5H > 214HS > 66 > 5M > 5H", "bars": 1 },
-      { "name": "Counter-hit heavy (crumple), full route", "combo": "5H > 5M > 5H > 5S > 9 > j.M > j.H > j.S > 2L > 623L", "start": "counter" }
+      { "name": "Sweep, floor pickup, Spirit Spear (L)", "combo": "5L > 5M > 2H > 2L > 214L" },
+      { "name": "Air string, slam, floor pickup, Pillar (L)", "combo": "5M > 5H > 5S > 9 > j.M > j.H > j.2H > 2L > 623L" },
+      { "name": "Counter-hit heavy (crumple), full route", "combo": "5H > 5M > 5H > 5S > 9 > j.M > j.H > j.2H > 2L > 623L", "start": "counter" }
     ]
   }
 }
