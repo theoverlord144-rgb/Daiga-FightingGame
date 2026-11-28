@@ -67,127 +67,22 @@
           "fall": "installFall",
           "land": "installLand"
         }
-      }
+      }, "specter": { "start": 0, "min": 0, "max": 600, "perFrame": -1, "label": "Specter", "display": "timer", "mode": { "states": { "idle": "specterIdle", "walkF": "specterWalkF", "walkB": "specterWalkB", "dashF": "specterDash", "backdash": "specterBack" }, "noJump": true, "pushbackPct": 50, "keepFooting": true }, "art": { "crouch": "specterCrouch", "blockStand": "specterBlockStand", "blockCrouch": "specterBlockCrouch" }, "aura": [{ "effect": "none", "swap": { "blockStand": "specterShield", "blockCrouch": "specterShield" } }] }
     }
   },
   "gatlings": {
-    "5L": [
-      "spirit5L",
-      "5L",
-      "spirit5M",
-      "5M",
-      "spirit5H",
-      "5H",
-      "2L",
-      "2M",
-      "2H",
-      "backHeavy",
-      "5S"
-    ],
-    "2L": [
-      "spirit5L",
-      "5L",
-      "spirit5M",
-      "5M",
-      "spirit5H",
-      "5H",
-      "2L",
-      "2M",
-      "2H",
-      "backHeavy",
-      "5S"
-    ],
-    "5M": [
-      "spirit5L",
-      "5L",
-      "spirit5H",
-      "5H",
-      "2L",
-      "2M",
-      "2H",
-      "backHeavy",
-      "5S"
-    ],
-    "2M": [
-      "spirit5L",
-      "5L",
-      "spirit5M",
-      "5M",
-      "spirit5H",
-      "5H",
-      "2L",
-      "2H",
-      "backHeavy",
-      "5S"
-    ],
-    "5H": [
-      "spirit5L",
-      "5L",
-      "spirit5M",
-      "5M",
-      "2L",
-      "2M",
-      "2H",
-      "backHeavy",
-      "5S",
-      "stomp"
-    ],
-    "backHeavy": [
-      "2H",
-      "5S"
-    ],
-    "j.L": [
-      "j.L",
-      "j.M",
-      "j.H",
-      "j.S"
-    ],
-    "j.M": [
-      "j.L",
-      "j.H",
-      "j.S"
-    ],
-    "j.H": [
-      "j.L",
-      "j.M",
-      "j.S"
-    ],
-    "spirit5L": [
-      "spirit5L",
-      "5L",
-      "spirit5M",
-      "5M",
-      "spirit5H",
-      "5H",
-      "2L",
-      "2M",
-      "2H",
-      "backHeavy",
-      "5S"
-    ],
-    "spirit5M": [
-      "spirit5L",
-      "5L",
-      "spirit5H",
-      "5H",
-      "2L",
-      "2M",
-      "2H",
-      "backHeavy",
-      "5S"
-    ],
-    "spirit5H": [
-      "spirit5L",
-      "5L",
-      "spirit5M",
-      "5M",
-      "2L",
-      "2M",
-      "2H",
-      "backHeavy",
-      "5S",
-      "stomp"
-    ]
+    "5L": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"],
+    "2L": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"],
+    "5M": ["spirit5L", "specter5L", "5L", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"],
+    "2M": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2H", "2H", "backHeavy", "5S"],
+    "5H": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S", "stomp"],
+    "backHeavy": ["specter2H", "2H", "5S"],
+    "j.L": ["j.L", "j.M", "j.H", "j.S", "j.2H"],
+    "j.M": ["j.L", "j.H", "j.S", "j.2H"],
+    "j.H": ["j.L", "j.M", "j.S", "j.2H"],
+    "spirit5L": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"],
+    "spirit5M": ["spirit5L", "specter5L", "5L", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"],
+    "spirit5H": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S", "stomp"], "specter5L": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"], "specter5M": ["spirit5L", "specter5L", "5L", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"], "specter5H": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S", "stomp"], "specter2L": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2M", "2M", "specter2H", "2H", "backHeavy", "5S"], "specter2M": ["spirit5L", "specter5L", "5L", "spirit5M", "specter5M", "5M", "spirit5H", "specter5H", "5H", "specter2L", "2L", "specter2H", "2H", "backHeavy", "5S"]
   },
   "states": {
     "installIdle": {
@@ -380,19 +275,19 @@
     },
     "throwFinish": {
       "duration": 30
-    }
+    }, "specterIdle": { "stance": "stand", "free": true, "loop": true, "duration": 8, "sprite": { "image": "sheets/specter-idle.png", "columns": 1, "rows": 1, "count": 1, "frameW": 703, "frameH": 423, "originX": 302, "originY": 421, "scale": 0.5, "holds": [8] } }, "specterWalkF": { "stance": "stand", "free": true, "loop": true, "duration": 56, "timeline": [{ "at": 0, "vel": { "x": 3 } }], "sprite": { "image": "sheets/specter-walk.png", "columns": 8, "rows": 1, "count": 8, "frameW": 458, "frameH": 396, "originX": 227, "originY": 394, "scale": 0.5, "holds": [7, 7, 7, 7, 7, 7, 7, 7] } }, "specterWalkB": { "stance": "stand", "free": true, "loop": true, "duration": 56, "timeline": [{ "at": 0, "vel": { "x": -2.4 } }], "sprite": { "image": "sheets/specter-walk-back.png", "columns": 8, "rows": 1, "count": 8, "frameW": 458, "frameH": 396, "originX": 227, "originY": 394, "scale": 0.5, "holds": [7, 7, 7, 7, 7, 7, 7, 7] } }, "specterDash": { "stance": "stand", "duration": 22, "next": "idle", "timeline": [{ "at": 0, "vel": { "x": 6 } }, { "at": 16, "vel": { "x": 0 } }], "cancels": [{ "from": 10, "into": ["#normal", "#special", "#super"], "on": ["whiff", "hit", "block"] }], "sprite": { "image": "sheets/specter-dash.png", "columns": 6, "rows": 1, "count": 6, "frameW": 586, "frameH": 414, "originX": 310, "originY": 412, "scale": 0.5, "holds": [3, 3, 4, 4, 4, 4] } }, "specterBack": { "stance": "stand", "duration": 22, "next": "idle", "timeline": [{ "at": 0, "vel": { "x": -6 } }, { "at": 16, "vel": { "x": 0 } }, { "from": 0, "to": 5, "invuln": { "strike": true, "throw": true } }], "sprite": { "image": "sheets/specter-backdash.png", "columns": 6, "rows": 1, "count": 6, "frameW": 459, "frameH": 432, "originX": 219, "originY": 430, "scale": 0.5, "holds": [3, 4, 4, 4, 4, 3] } }, "specterCrouch": { "stance": "crouch", "loop": true, "duration": 63, "sprite": { "image": "sheets/specter-crouch.png", "columns": 6, "rows": 1, "count": 6, "frameW": 520, "frameH": 423, "originX": 262, "originY": 421, "scale": 0.5, "holds": [3, 12, 12, 12, 12, 12] } }, "specterBlockStand": { "stance": "stand", "duration": 60, "sprite": { "image": "sheets/specter-block-stand.png", "columns": 2, "rows": 1, "count": 2, "frameW": 352, "frameH": 498, "originX": 171, "originY": 496, "scale": 0.5, "holds": [4, 56] } }, "specterBlockCrouch": { "stance": "crouch", "duration": 60, "sprite": { "image": "sheets/specter-block-crouch.png", "columns": 2, "rows": 1, "count": 2, "frameW": 391, "frameH": 336, "originX": 190, "originY": 334, "scale": 0.5, "holds": [4, 56] } }
   },
   "rite": {
     "gauge": {
       "charges": 3,
       "rechargeFrames": 240,
-      "unlimitedWhile": "install"
+      "unlimitedWhile": "install", "fastWhile": { "var": "specter", "rechargeFrames": 80 }
     },
     "moves": [
       "rite_4",
       "rite_5",
       "rite_2",
-      "rite_j"
+      "rite_j", "specterTrap5", "specterTrap2", "specterToll"
     ]
   },
   "projectiles": {
@@ -442,7 +337,7 @@
       "hitstop": 10,
       "pushbackHit": 24,
       "pushbackBlock": 30,
-      "guard": "low"
+      "guard": "low", "track": 3
     },
     "palmJ": {
       "sprite": {
@@ -573,7 +468,7 @@
       }
     },
     "spiritOrb": {
-      "speed": 9,
+      "speed": 7,
       "spawn": [
         85,
         125
@@ -584,7 +479,7 @@
         62,
         81
       ],
-      "lifetime": 110,
+      "lifetime": 141,
       "damage": 500,
       "hitstun": 18,
       "blockstun": 12,
@@ -592,33 +487,8 @@
       "pushbackHit": 12,
       "pushbackBlock": 22,
       "guard": "mid",
-      "sprite": {
-        "image": "sheets/orb.png",
-        "columns": 7,
-        "rows": 1,
-        "count": 7,
-        "frameW": 212,
-        "frameH": 187,
-        "originX": 104,
-        "originY": 93,
-        "scale": 0.5,
-        "additive": true
-      },
-      "anim": {
-        "release": [
-          3,
-          3
-        ],
-        "loop": [
-          3,
-          3
-        ],
-        "impact": [
-          3,
-          4,
-          5
-        ]
-      },
+      "sprite": { "image": "sheets/orb.png", "columns": 12, "rows": 1, "count": 12, "frameW": 307, "frameH": 177, "originX": 152, "originY": 90, "scale": 0.5, "additive": true },
+      "anim": { "release": [1, 2, 2], "loop": [2, 2, 2, 2, 2], "impact": [2, 2, 3, 4] },
       "launch": {
         "type": "soft",
         "x": 1,
@@ -638,7 +508,7 @@
         60,
         200
       ],
-      "lifetime": 9,
+      "lifetime": 25,
       "damage": 500,
       "hitstun": 18,
       "blockstun": 12,
@@ -646,31 +516,9 @@
       "pushbackHit": 12,
       "pushbackBlock": 22,
       "guard": "mid",
-      "sprite": {
-        "image": "sheets/orb-M.png",
-        "columns": 5,
-        "rows": 1,
-        "count": 5,
-        "frameW": 365,
-        "frameH": 477,
-        "originX": 185,
-        "originY": 466,
-        "scale": 0.5,
-        "additive": true
-      },
-      "anim": {
-        "release": [],
-        "loop": [
-          3,
-          3,
-          3
-        ],
-        "impact": [
-          4,
-          5
-        ]
-      },
-      "persist": true
+      "sprite": { "image": "sheets/orb-M.png", "columns": 8, "rows": 1, "count": 8, "frameW": 365, "frameH": 477, "originX": 185, "originY": 466, "scale": 0.5, "additive": true },
+      "anim": { "release": [5, 5, 6], "loop": [3, 3, 3], "impact": [4, 5] },
+      "persist": true, "phases": [[16, 24, null]]
     },
     "spiritOrbH": {
       "speed": 4,
@@ -692,32 +540,9 @@
       "pushbackHit": 12,
       "pushbackBlock": 22,
       "guard": "mid",
-      "sprite": {
-        "image": "sheets/orb-H.png",
-        "columns": 6,
-        "rows": 1,
-        "count": 6,
-        "frameW": 349,
-        "frameH": 204,
-        "originX": 174,
-        "originY": 102,
-        "scale": 0.5,
-        "additive": true
-      },
-      "anim": {
-        "release": [],
-        "loop": [
-          3,
-          3,
-          3
-        ],
-        "impact": [
-          3,
-          4,
-          5
-        ]
-      }
-    }
+      "sprite": { "image": "sheets/orb-H.png", "columns": 12, "rows": 1, "count": 12, "frameW": 429, "frameH": 326, "originX": 214, "originY": 164, "scale": 0.5, "additive": true },
+      "anim": { "release": [2, 2, 3], "loop": [3, 3, 3, 3, 3], "impact": [2, 3, 4, 5] }
+    }, "airOrbL": { "speed": 7.5, "speedY": -4.35, "spawn": [70, 60], "hitbox": [-25, -25, 50, 50], "lifetime": 107, "endsOnGround": true, "damage": 450, "hitstun": 18, "untech": 26, "blockstun": 12, "hitstop": 8, "pushbackHit": 10, "pushbackBlock": 18, "guard": "mid", "airHit": { "x": 2, "y": 4 }, "sprite": { "image": "sheets/orb.png", "columns": 12, "rows": 1, "count": 12, "frameW": 307, "frameH": 177, "originX": 152, "originY": 90, "scale": 0.5, "additive": true, "angle": 30 }, "anim": { "release": [1, 2, 2], "loop": [2, 2, 2, 2, 2], "impact": [2, 2, 3, 4] } }, "specterOrb": { "speed": 0, "spawn": [236, 130], "hitbox": [-60, -60, 120, 120], "lifetime": 900, "wake": { "range": 120, "reachY": 130, "pull": 4, "delay": 18, "active": 6, "limit": 3, "endVar": "specter" }, "damage": 700, "hitstun": 30, "untech": 40, "blockstun": 18, "hitstop": 10, "pushbackHit": 30, "pushbackBlock": 40, "guard": "mid", "launch": { "type": "soft", "x": 2, "y": 12 }, "sprite": { "image": "sheets/specter-orb.png", "columns": 12, "rows": 1, "count": 12, "frameW": 329, "frameH": 251, "originX": 164, "originY": 126, "scale": 0.5, "additive": true }, "anim": { "loop": [3, 3, 3, 3], "wake": [4, 5, 4, 5], "impact": [2, 3, 4, 4] } }, "specterSeal": { "speed": 0, "spawn": [295, 0], "hitbox": [-90, 0, 180, 130], "lifetime": 900, "wake": { "range": 80, "reachY": 110, "pull": 0, "delay": 8, "active": 8, "limit": 3, "endVar": "specter" }, "damage": 800, "hitstun": 30, "untech": 44, "blockstun": 18, "hitstop": 12, "pushbackHit": 20, "pushbackBlock": 40, "guard": "low", "launch": { "type": "soft", "x": 1, "y": 14 }, "sprite": { "image": "sheets/specter-seal.png", "columns": 12, "rows": 1, "count": 12, "frameW": 454, "frameH": 268, "originX": 237, "originY": 256, "scale": 0.5, "additive": true }, "anim": { "loop": [3, 3, 3, 3], "wake": [2, 2, 2, 4, 6], "impact": [3, 3, 4] } }, "roarOrb": { "speed": 8, "speedY": -8, "minY": 55, "track": 2, "spawn": [95, 40], "hitbox": [-40, -40, 80, 80], "lifetime": 60, "damage": 700, "hitstun": 26, "untech": 34, "blockstun": 16, "hitstop": 10, "pushbackHit": 16, "pushbackBlock": 30, "guard": "mid", "launch": { "type": "soft", "x": 1, "y": 12 }, "airHit": { "x": 1, "y": 6 }, "sprite": { "image": "sheets/roar-orb.png", "columns": 12, "rows": 1, "count": 12, "frameW": 248, "frameH": 191, "originX": 123, "originY": 95, "scale": 0.5, "additive": true }, "anim": { "release": [2, 3], "loop": [3, 3, 3, 3, 3, 3], "impact": [2, 3, 4, 4] } }, "graspHandL": { "guard": "mid", "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 20, "speed": 8, "spawn": [70, 0], "fromGround": true, "hitbox": [-35, 0, 80, 140], "lifetime": 24, "damage": 600, "hitstun": 34, "untech": 34, "blockstun": 16, "pull": { "to": 90, "frames": 14 }, "sprite": { "image": "sheets/grasp-hand.png", "columns": 10, "rows": 1, "count": 10, "frameW": 396, "frameH": 393, "originX": 184, "originY": 384, "scale": 0.5, "additive": true }, "anim": { "release": [3], "loop": [3, 3, 3], "impact": [2, 4, 3, 3, 3, 4] } }, "graspHandM": { "guard": "mid", "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 20, "speed": 10, "spawn": [70, 0], "fromGround": true, "hitbox": [-35, 0, 80, 140], "lifetime": 30, "damage": 600, "hitstun": 34, "untech": 34, "blockstun": 16, "pull": { "to": 90, "frames": 14 }, "sprite": { "image": "sheets/grasp-hand.png", "columns": 10, "rows": 1, "count": 10, "frameW": 396, "frameH": 393, "originX": 184, "originY": 384, "scale": 0.5, "additive": true }, "anim": { "release": [3], "loop": [3, 3, 3], "impact": [2, 4, 3, 3, 3, 4] } }, "stompWaveL": { "guard": "low", "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 20, "speed": 6, "spawn": [110, 0], "fromGround": true, "hitbox": [-45, 0, 90, 70], "lifetime": 42, "damage": 550, "hitstun": 22, "untech": 30, "blockstun": 14, "wakesTraps": { "names": ["specterOrb", "specterSeal"], "range": 50 }, "sprite": { "image": "sheets/specter-stomp-wave.png", "columns": 10, "rows": 1, "count": 10, "frameW": 482, "frameH": 298, "originX": 244, "originY": 287, "scale": 0.5, "additive": true }, "anim": { "release": [2], "loop": [3, 3, 3, 3, 3, 3], "impact": [3, 4, 4] } }, "stompWaveM": { "guard": "low", "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 20, "speed": 8, "spawn": [110, 0], "fromGround": true, "hitbox": [-45, 0, 90, 70], "lifetime": 42, "damage": 550, "hitstun": 22, "untech": 30, "blockstun": 14, "wakesTraps": { "names": ["specterOrb", "specterSeal"], "range": 50 }, "sprite": { "image": "sheets/specter-stomp-wave.png", "columns": 10, "rows": 1, "count": 10, "frameW": 482, "frameH": 298, "originX": 244, "originY": 287, "scale": 0.5, "additive": true }, "anim": { "release": [2], "loop": [3, 3, 3, 3, 3, 3], "impact": [3, 4, 4] } }, "stompWaveH": { "guard": "low", "hitstop": 8, "pushbackHit": 12, "pushbackBlock": 20, "speed": 10, "spawn": [110, 0], "fromGround": true, "hitbox": [-45, 0, 90, 70], "lifetime": 42, "damage": 550, "hitstun": 22, "untech": 30, "blockstun": 14, "wakesTraps": { "names": ["specterOrb", "specterSeal"], "range": 50 }, "sprite": { "image": "sheets/specter-stomp-wave.png", "columns": 10, "rows": 1, "count": 10, "frameW": 482, "frameH": 298, "originX": 244, "originY": 287, "scale": 0.5, "additive": true }, "anim": { "release": [2], "loop": [3, 3, 3, 3, 3, 3], "impact": [3, 4, 4] } }, "judgmentWallL": { "guard": "high", "hitstop": 12, "pushbackHit": 20, "pushbackBlock": 30, "speed": 0, "spawn": [130, 0], "fromGround": true, "hitbox": [-50, 0, 100, 300], "lifetime": 46, "phases": [[16, 21, null]], "persist": true, "damage": 900, "hitstun": 30, "untech": 40, "blockstun": 18, "hitReaction": "softKD", "airReaction": "softKD", "sprite": { "image": "sheets/judgment-wall.png", "columns": 14, "rows": 1, "count": 14, "frameW": 470, "frameH": 782, "originX": 236, "originY": 769, "scale": 0.5, "additive": true, "ground": true }, "anim": { "release": [4, 4, 4, 2, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4], "loop": [1] } }, "judgmentWallM": { "guard": "high", "hitstop": 12, "pushbackHit": 20, "pushbackBlock": 30, "speed": 0, "spawn": [230, 0], "fromGround": true, "hitbox": [-50, 0, 100, 300], "lifetime": 46, "phases": [[16, 21, null]], "persist": true, "damage": 900, "hitstun": 30, "untech": 40, "blockstun": 18, "hitReaction": "softKD", "airReaction": "softKD", "sprite": { "image": "sheets/judgment-wall.png", "columns": 14, "rows": 1, "count": 14, "frameW": 470, "frameH": 782, "originX": 236, "originY": 769, "scale": 0.5, "additive": true, "ground": true }, "anim": { "release": [4, 4, 4, 2, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4], "loop": [1] } }, "judgmentWallH": { "guard": "high", "hitstop": 12, "pushbackHit": 20, "pushbackBlock": 30, "speed": 0, "spawn": [330, 0], "fromGround": true, "hitbox": [-50, 0, 100, 300], "lifetime": 46, "phases": [[16, 21, null]], "persist": true, "damage": 900, "hitstun": 30, "untech": 40, "blockstun": 18, "hitReaction": "softKD", "airReaction": "softKD", "sprite": { "image": "sheets/judgment-wall.png", "columns": 14, "rows": 1, "count": 14, "frameW": 470, "frameH": 782, "originX": 236, "originY": 769, "scale": 0.5, "additive": true, "ground": true }, "anim": { "release": [4, 4, 4, 2, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4], "loop": [1] } }, "barrageBeam": { "speed": 0, "spawn": [100, 160], "hitbox": [0, -90, 610, 120], "lifetime": 38, "phases": [[2, 37, null]], "rehit": { "every": 3, "hits": 12 }, "damage": 120, "hitstun": 14, "untech": 20, "blockstun": 10, "hitstop": 2, "pushbackHit": 0, "pushbackBlock": 0, "guard": "mid", "airHit": { "x": 1, "y": 1 }, "sprite": { "image": "sheets/barrage-blast.png", "columns": 10, "rows": 1, "count": 10, "frameW": 1291, "frameH": 78, "originX": 55, "originY": 39, "scale": 0.5, "additive": true }, "anim": { "release": [2, 2], "loop": [9, 9, 9, 7], "impact": [4, 4, 4, 5] } }
   },
   "art": {
     "opacity": {
@@ -744,7 +569,7 @@
       "ward": 0.8,
       "spiritOrb": 1,
       "spiritOrbM": 1,
-      "spiritOrbH": 1
+      "spiritOrbH": 1, "airOrbL": 1, "specterOrb": 1, "specterSeal": 1, "roarOrb": 1, "specterBlast": 0.85, "specterWall": 0.85, "specterShield": 0.8, "graspHandL": 1, "graspHandM": 1, "stompWaveL": 1, "stompWaveM": 1, "stompWaveH": 1, "judgmentWallL": 1, "judgmentWallM": 1, "judgmentWallH": 1, "barrageBeam": 1
     },
     "shockwave": {
       "5H": "default",
@@ -754,57 +579,10 @@
       "spirit5H": "default",
       "spiritOrbH": "default",
       "pillarH": "default",
-      "lariatH": "default",
-      "lariatL_ex": "default",
-      "lariatM_ex": "default",
-      "lariatH_ex": "default",
       "6H": "big",
       "4H": "big"
     },
-    "motion": {
-      "lariatL": {
-        "play": "dashDustF",
-        "at": "feet",
-        "from": 3,
-        "every": 6,
-        "until": 13
-      },
-      "lariatM": {
-        "play": "dashDustF",
-        "at": "feet",
-        "from": 3,
-        "every": 6,
-        "until": 13
-      },
-      "lariatH": {
-        "play": "dashDustF",
-        "at": "feet",
-        "from": 3,
-        "every": 6,
-        "until": 13
-      },
-      "lariatL_ex": {
-        "play": "dashDustF",
-        "at": "feet",
-        "from": 3,
-        "every": 6,
-        "until": 13
-      },
-      "lariatM_ex": {
-        "play": "dashDustF",
-        "at": "feet",
-        "from": 3,
-        "every": 6,
-        "until": 13
-      },
-      "lariatH_ex": {
-        "play": "dashDustF",
-        "at": "feet",
-        "from": 3,
-        "every": 6,
-        "until": 13
-      }
-    },
+    "motion": {},
     "throws": {
       "4H": {
         "throwHold": { "holds": [8, 6], "sprite": { "image": "sheets/throw-back-hold.png", "columns": 2, "rows": 1, "count": 2, "frameW": 390, "frameH": 378, "originX": 201, "originY": 376, "scale": 0.5 } },
@@ -1234,9 +1012,30 @@
         "scale": 0.5,
         "additive": true
       }
-    }
+    }, "specterBlast": { "holds": [1, 2, 2, 2, 2, 2, 2, 2, 2, 3], "at": [242, 124], "sprite": { "image": "sheets/specter-5M-fx.png", "columns": 10, "rows": 1, "count": 10, "frameW": 493, "frameH": 389, "originX": 246, "originY": 194, "scale": 0.59, "additive": true } }, "specterWall": { "holds": [2, 2, 2, 3, 3, 3, 3, 3, 3, 4], "at": [148, 0], "sprite": { "image": "sheets/specter-5H-fx.png", "columns": 10, "rows": 1, "count": 10, "frameW": 329, "frameH": 473, "originX": 162, "originY": 466, "scale": 0.59, "additive": true } }, "specterShield": { "holds": [2, 2, 2, 2, 3, 3, 3, 3, 3, 4], "at": [71, 112], "sprite": { "image": "sheets/specter-shield.png", "columns": 10, "rows": 1, "count": 10, "frameW": 223, "frameH": 355, "originX": 112, "originY": 177, "scale": 0.59, "additive": true } }
   },
   "moves": [
+    {"id": "specter", "name": "Ancestral Specter (level 3 super)", "input": "236236S", "kind": "super", "level": 3, "requires": {"vars": {"specter": [0,0], "install": [0,0]}}, "startup": 50, "active": 3, "recovery": 6, "damage": 300, "hitstun": 24, "blockstun": 16, "hitstop": 10, "pushbackHit": 260, "pushbackBlock": 260, "guard": "mid", "hitboxes": [[-60,0,220,200]], "timeline": [{"at": 4, "superFlash": 40},{"from": 0, "to": 56, "invuln": {"strike": true, "throw": true}},{"at": 56, "setVar": {"specter": 600}}], "sprite": { "image": "sheets/specter-transform.png", "columns": 18, "rows": 1, "count": 18, "frameW": 356, "frameH": 324, "originX": 167, "originY": 323, "scale": 0.83427, "holds": [2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 3, 3, 3, 3, 3, 4, 4, 5] }},
+    {"id": "specter5L", "name": "Specter Standing Light", "input": "5L", "startup": 4, "active": 2, "recovery": 7, "damage": 400, "hitstun": 13, "blockstun": 14, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 33, "selfPushback": 14, "guard": "mid", "reach": 148, "starterProration": 8000, "hitboxes": [[35, 24, 112, 177]], "sprite": { "image": "sheets/specter-5L.png", "columns": 8, "rows": 1, "count": 8, "frameW": 337, "frameH": 264, "originX": 159, "originY": 263, "scale": 0.83383, "holds": [1, 1, 1, 2, 2, 2, 2, 1] }, "requires": {"vars": {"specter": [1,600]}}, "timeline": [{"from": 0, "to": 2, "armor": 1}]},
+    {"id": "specter5M", "name": "Specter Standing Medium (two hits)", "input": "5M", "startup": 6, "active": 5, "recovery": 12, "damage": 250, "hitstun": 17, "blockstun": 17, "hitstop": 8, "pushbackHit": 4, "pushbackBlock": 9, "selfPushback": 4, "guard": "mid", "reach": 212, "starterProration": 9000, "hitboxes": [[35, 24, 100, 177]], "timeline": [{ "at": 6, "fx": "specterBlast" }, { "at": 7, "hit": [[47, 59, 165, 142]], "hitProps": { "damage": 400, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 28, "selfPushback": 18 } }, { "from": 0, "to": 4, "armor": 1 }], "sprite": { "image": "sheets/specter-5M.png", "columns": 10, "rows": 1, "count": 10, "frameW": 325, "frameH": 282, "originX": 150, "originY": 281, "scale": 0.83231, "holds": [2, 2, 1, 2, 3, 3, 3, 2, 2, 2] }, "jumpCancel": "hit", "requires": {"vars": {"specter": [1,600]}}},
+    {"id": "specter5H", "name": "Specter Standing Heavy", "input": "5H", "counterReaction": "crumple", "startup": 9, "active": 3, "recovery": 18, "damage": 800, "hitstun": 40, "blockstun": 19, "hitstop": 12, "pushbackHit": 28, "pushbackBlock": 51, "selfPushback": 22, "guard": "mid", "reach": 224, "hitboxes": [[47, 0, 177, 224]], "timeline": [{ "at": 8, "fx": "specterWall" }, { "from": 0, "to": 7, "armor": 1 }], "sprite": { "image": "sheets/specter-5H.png", "columns": 12, "rows": 1, "count": 12, "frameW": 410, "frameH": 256, "originX": 199, "originY": 255, "scale": 0.83293, "holds": [2, 2, 2, 1, 1, 3, 3, 3, 3, 3, 3, 3] }, "otg": true, "requires": {"vars": {"specter": [1,600]}}},
+    {"id": "specter2L", "name": "Specter Crouching Light", "input": "2L", "otg": true, "startup": 4, "active": 2, "recovery": 8, "damage": 350, "hitstun": 13, "blockstun": 14, "hitstop": 8, "pushbackHit": 18, "pushbackBlock": 33, "selfPushback": 14, "guard": "low", "reach": 156, "starterProration": 8000, "hitboxes": [[47, 0, 109, 71]], "sprite": { "image": "sheets/specter-2L.png", "columns": 8, "rows": 1, "count": 8, "frameW": 489, "frameH": 389, "originX": 197, "originY": 387, "scale": 0.5, "holds": [1, 1, 1, 2, 2, 2, 2, 2] }, "requires": {"vars": {"specter": [1,600]}}, "timeline": [{"from": 0, "to": 2, "armor": 1}]},
+    {"id": "specter2M", "name": "Specter Crouching Medium", "input": "2M", "startup": 7, "active": 3, "recovery": 13, "damage": 550, "hitstun": 17, "blockstun": 17, "hitstop": 10, "pushbackHit": 22, "pushbackBlock": 42, "selfPushback": 18, "guard": "low", "reach": 165, "starterProration": 9000, "hitboxes": [[47, 0, 130, 100]], "sprite": { "image": "sheets/specter-2M.png", "columns": 10, "rows": 1, "count": 10, "frameW": 529, "frameH": 421, "originX": 216, "originY": 419, "scale": 0.5, "holds": [2, 2, 1, 1, 3, 3, 3, 3, 2, 2] }, "launch": {"type": "soft", "x": 2, "y": 10}, "requires": {"vars": {"specter": [1,600]}}, "timeline": [{"from": 0, "to": 5, "armor": 1}]},
+    {"id": "specter2H", "name": "Specter Crouching Heavy (crystal wall)", "input": "2H", "startup": 9, "active": 3, "recovery": 22, "damage": 800, "hitstun": 22, "blockstun": 18, "hitstop": 12, "pushbackHit": 10, "pushbackBlock": 45, "selfPushback": 22, "guard": "low", "reach": 180, "knockdown": true, "hitboxes": [[40, 0, 140, 210]], "sprite": { "image": "sheets/specter-2H.png", "columns": 12, "rows": 1, "count": 12, "frameW": 460, "frameH": 299, "originX": 238, "originY": 298, "scale": 0.8337, "holds": [2, 2, 1, 2, 1, 3, 3, 3, 4, 4, 4, 4] }, "requires": {"vars": {"specter": [1,600]}}, "timeline": [{"from": 0, "to": 7, "armor": 1}]},
+    {"id": "specterTrap5", "name": "Specter Trap (orb in front)", "input": "5R", "kind": "special", "requires": {"vars": {"specter": [1,600]}}, "startup": 13, "active": 0, "recovery": 20, "timeline": [{"at": 12, "spawn": {"name": "specterOrb", "x": 236, "y": 130}}], "sprite": { "image": "sheets/specter-trap5.png", "columns": 12, "rows": 1, "count": 12, "frameW": 375, "frameH": 254, "originX": 177, "originY": 253, "scale": 0.83333, "holds": [1, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4, 5] }},
+    {"id": "specterTrap2", "name": "Specter Seal (dome in the floor ahead)", "input": "2R", "kind": "special", "requires": {"vars": {"specter": [1,600]}}, "startup": 13, "active": 0, "recovery": 20, "timeline": [{ "at": 12, "spawn": { "name": "specterSeal", "x": 295, "y": 0 } }], "sprite": { "image": "sheets/specter-trap2.png", "columns": 12, "rows": 1, "count": 12, "frameW": 349, "frameH": 246, "originX": 156, "originY": 245, "scale": 0.83238, "holds": [1, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4, 5] }},
+    {"id":"specterToll","name":"Warden's Toll","input":"4R","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":16,"active":3,"recovery":18,"damage":600,"hitstun":24,"untech":36,"blockstun":16,"hitstop":10,"pushbackHit":30,"pushbackBlock":40,"guard":"mid","reach":153,"hitboxes":[[-142, 0, 295, 224]],"launch":{"type":"soft","x":2,"y":11},"timeline":[{"at":15,"wakeTraps":["specterOrb","specterSeal"]}],"sprite":{"image":"sheets/specter-toll.png","columns":12,"rows":1,"count":12,"frameW":383,"frameH":261,"originX":183,"originY":260,"scale":0.8342,"holds":[2,2,2,3,3,3,3,3,3,4,4,4]}},
+    {"id":"specterGraspL","name":"Warden's Grasp (L)","input":"236L","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":10,"active":0,"recovery":27,"timeline":[{"at":9,"spawn":"graspHandL"}],"sprite":{"image":"sheets/specter-grasp.png","columns":12,"rows":1,"count":12,"frameW":399,"frameH":267,"originX":154,"originY":266,"scale":0.83333,"holds":[2,2,2,3,3,4,4,4,3,3,3,3]}},
+    {"id":"specterGraspM","name":"Warden's Grasp (M)","input":"236M","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":10,"active":0,"recovery":27,"timeline":[{"at":9,"spawn":"graspHandM"}],"sprite":{"image":"sheets/specter-grasp.png","columns":12,"rows":1,"count":12,"frameW":399,"frameH":267,"originX":154,"originY":266,"scale":0.83333,"holds":[2,2,2,3,3,4,4,4,3,3,3,3]}},
+    {"id":"specterBarrage","name":"Ancestral Barrage (ends the Specter)","input":"236H","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":32,"active":0,"recovery":55,"timeline":[{ "from": 0, "to": 12, "armor": 1 }, { "at": 31, "spawn": "barrageBeam" }, { "at": 85, "setVar": { "specter": 0 } }],"sprite":{ "image": "sheets/specter-barrage.png", "columns": 20, "rows": 1, "count": 20, "frameW": 452, "frameH": 394, "originX": 215, "originY": 317, "scale": 0.83407, "holds": [2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 9, 9, 9, 9, 4, 4, 4, 5] }},
+    {"id":"specterStompL","name":"Colossal Stomp (L)","input":"623L","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":17,"active":0,"recovery":21,"timeline":[{"at":16,"spawn":"stompWaveL"}],"sprite":{"image":"sheets/specter-stomp.png","columns":12,"rows":1,"count":12,"frameW":388,"frameH":267,"originX":158,"originY":266,"scale":0.83247,"holds":[2,2,3,3,4,2,2,3,4,4,4,4]}},
+    {"id":"specterStompM","name":"Colossal Stomp (M)","input":"623M","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":17,"active":0,"recovery":21,"timeline":[{"at":16,"spawn":"stompWaveM"}],"sprite":{"image":"sheets/specter-stomp.png","columns":12,"rows":1,"count":12,"frameW":388,"frameH":267,"originX":158,"originY":266,"scale":0.83247,"holds":[2,2,3,3,4,2,2,3,4,4,4,4]}},
+    {"id":"specterStompH","name":"Colossal Stomp (H)","input":"623H","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":17,"active":0,"recovery":21,"timeline":[{"at":16,"spawn":"stompWaveH"}],"sprite":{"image":"sheets/specter-stomp.png","columns":12,"rows":1,"count":12,"frameW":388,"frameH":267,"originX":158,"originY":266,"scale":0.83247,"holds":[2,2,3,3,4,2,2,3,4,4,4,4]}},
+    {"id":"specterJudgmentL","name":"Ancestor's Judgment (L)","input":"22L","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":9,"active":0,"recovery":30,"timeline":[{"at":8,"spawn":"judgmentWallL"}],"sprite":{"image":"sheets/specter-judgment.png","columns":12,"rows":1,"count":12,"frameW":412,"frameH":287,"originX":182,"originY":286,"scale":0.83374,"holds":[2,2,3,3,4,4,3,2,3,4,4,4]}},
+    {"id":"specterJudgmentM","name":"Ancestor's Judgment (M)","input":"22M","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":9,"active":0,"recovery":30,"timeline":[{"at":8,"spawn":"judgmentWallM"}],"sprite":{"image":"sheets/specter-judgment.png","columns":12,"rows":1,"count":12,"frameW":412,"frameH":287,"originX":182,"originY":286,"scale":0.83374,"holds":[2,2,3,3,4,4,3,2,3,4,4,4]}},
+    {"id":"specterJudgmentH","name":"Ancestor's Judgment (H)","input":"22H","kind":"special","requires":{"vars":{"specter":[1,600]}},"startup":9,"active":0,"recovery":30,"timeline":[{"at":8,"spawn":"judgmentWallH"}],"sprite":{"image":"sheets/specter-judgment.png","columns":12,"rows":1,"count":12,"frameW":412,"frameH":287,"originX":182,"originY":286,"scale":0.83374,"holds":[2,2,3,3,4,4,3,2,3,4,4,4]}},
+    {"id": "airOrbL", "name": "Air Spirit Orb (L)", "input": "j.236L", "kind": "special", "stance": "air", "perJump": "airOrb", "startup": 13, "active": 0, "recovery": 22, "timeline": [{"at": 0, "gravity": false, "vel": {"x": 0, "y": 0}},{"at": 13, "spawn": "airOrbL"},{"at": 26, "gravity": true}], "sprite": {"image": "sheets/air-orb.png", "columns": 12, "rows": 1, "count": 12, "frameW": 417, "frameH": 310, "originX": 177, "originY": 326, "scale": 0.5, "holds": [1,1,2,2,1,2,2,3,4,5,6,5]}},
+    {"id":"airBurstM","name":"Air Spirit Burst (M)","input":"j.236M","kind":"special","stance":"air","perJump":"airBurst","startup":14,"active":4,"recovery":9,"damage":500,"hitstun":24,"untech":34,"blockstun":14,"hitstop":8,"pushbackHit":0,"pushbackBlock":14,"selfPushback":0,"guard":"mid","reach":110,"airHit":{"x":1,"y":6},"hitboxes":[[-100,10,210,180]],"timeline":[{"at":0,"gravity":false,"vel":{"x":0,"y":0}},{"at":25,"gravity":true}],"sprite":{"image":"sheets/air-orb-M.png","columns":12,"rows":1,"count":12,"frameW":472,"frameH":403,"originX":240,"originY":388,"scale":0.5,"holds":[1,1,2,2,2,2,3,2,2,2,3,4]}},
     {
       "id": "spirit5L",
       "name": "Guardian Light (Spirit Install: the guardian strikes, Malik holds his idle)",
@@ -1484,7 +1283,7 @@
         "frameH": 391,
         "originX": 163,
         "originY": 389,
-        "scale": 0.5,
+        "scale": 0.45,
         "holds": [
           3,
           6,
@@ -1617,10 +1416,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 584,
-        "frameH": 358,
-        "originX": 317,
-        "originY": 356,
+        "frameW": 561,
+        "frameH": 350,
+        "originX": 305,
+        "originY": 348,
         "scale": 0.5,
         "holds": [
           3,
@@ -1651,34 +1450,20 @@
       "pushbackBlock": 22,
       "selfPushback": 14,
       "guard": "low",
-      "reach": 70,
+      "reach": 135,
       "starterProration": 8000,
-      "hitboxes": [
-        [
-          35,
-          0,
-          71,
-          73
-        ]
-      ],
+      "hitboxes": [[40, 0, 95, 45]],
       "sprite": {
         "image": "sheets/2L.png",
         "columns": 6,
         "rows": 1,
         "count": 6,
-        "frameW": 446,
-        "frameH": 322,
-        "originX": 250,
-        "originY": 320,
+        "frameW": 419,
+        "frameH": 281,
+        "originX": 112,
+        "originY": 279,
         "scale": 0.5,
-        "holds": [
-          1,
-          2,
-          2,
-          3,
-          3,
-          2
-        ]
+        "holds": [2, 1, 2, 2, 3, 3]
       }
     },
     {
@@ -1711,10 +1496,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 686,
-        "frameH": 293,
-        "originX": 200,
-        "originY": 291,
+        "frameW": 754,
+        "frameH": 322,
+        "originX": 220,
+        "originY": 320,
         "scale": 0.5,
         "holds": [
           2,
@@ -1763,10 +1548,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 511,
-        "frameH": 270,
-        "originX": 208,
-        "originY": 268,
+        "frameW": 593,
+        "frameH": 306,
+        "originX": 241,
+        "originY": 304,
         "scale": 0.5,
         "holds": [
           3,
@@ -1892,10 +1677,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 591,
-        "frameH": 390,
-        "originX": 314,
-        "originY": 388,
+        "frameW": 572,
+        "frameH": 367,
+        "originX": 290,
+        "originY": 365,
         "scale": 0.5,
         "holds": [
           3,
@@ -2052,6 +1837,7 @@
         ]
       }
     },
+    {"id":"j.2H","name":"Spirit Stomp (ground bounce)","input":"j.2H","airReaction":"hardKD","startup":10,"active":9,"recovery":12,"damage":900,"hitstun":22,"untech":30,"blockstun":14,"hitstop":14,"pushbackHit":0,"pushbackBlock":18,"selfPushback":0,"guard":"high","reach":80,"airHit":{"x":1,"y":-14},"groundBounce":{"y":13},"hitboxes":[[-35,-25,90,75]],"sprite":{"image":"sheets/j2H.png","columns":12,"rows":1,"count":12,"frameW":419,"frameH":372,"originX":188,"originY":331,"scale":0.5,"holds":[1,1,2,2,2,1,3,3,3,3,4,5]}},
     {
       "id": "j.H",
       "name": "Jumping Heavy (spirit hand)",
@@ -2100,10 +1886,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 417,
-        "frameH": 445,
-        "originX": 221,
-        "originY": 395,
+        "frameW": 434,
+        "frameH": 467,
+        "originX": 229,
+        "originY": 406,
         "scale": 0.5,
         "holds": [
           3,
@@ -2119,60 +1905,24 @@
     },
     {
       "id": "j.S",
-      "name": "Air Axe Kick",
+      "name": "Air Spirit Lance",
       "input": "j.S",
-      "airReaction": "hardKD",
-      "startup": 9,
-      "active": 4,
-      "recovery": 18,
-      "damage": 900,
-      "hitstun": 22,
-      "untech": 30,
+      "startup": 12,
+      "active": 8,
+      "recovery": 21,
+      "damage": 800,
+      "hitstun": 20,
+      "untech": 26,
       "blockstun": 14,
-      "hitstop": 14,
-      "pushbackHit": 0,
-      "pushbackBlock": 18,
+      "hitstop": 10,
+      "pushbackHit": 30,
+      "pushbackBlock": 30,
       "selfPushback": 0,
       "guard": "high",
-      "reach": 90,
-      "airHit": {
-        "x": 1,
-        "y": -14
-      },
-      "groundBounce": {
-        "y": 13
-      },
-      "hitboxes": [
-        [
-          15,
-          -30,
-          78,
-          250
-        ]
-      ],
-      "sprite": {
-        "image": "sheets/jS.png",
-        "columns": 10,
-        "rows": 1,
-        "count": 10,
-        "frameW": 498,
-        "frameH": 432,
-        "originX": 236,
-        "originY": 396,
-        "scale": 0.5,
-        "holds": [
-          1,
-          1,
-          2,
-          2,
-          1,
-          1,
-          4,
-          6,
-          6,
-          6
-        ]
-      }
+      "reach": 300,
+      "airHit": { "x": 4, "y": 4 },
+      "hitboxes": [[30, 85, 270, 40]],
+      "sprite": { "image": "sheets/jS.png", "columns": 16, "rows": 1, "count": 16, "frameW": 713, "frameH": 347, "originX": 199, "originY": 330, "scale": 0.5, "holds": [1, 1, 2, 2, 2, 2, 1, 2, 3, 3, 3, 3, 3, 3, 4, 5] }, "timeline": [{ "at": 0, "gravity": false, "vel": { "x": 0, "y": 0 } }, { "at": 20, "gravity": true }]
     },
     {
       "id": "5S",
@@ -2219,27 +1969,7 @@
           }
         }
       ],
-      "sprite": {
-        "image": "sheets/5S.png",
-        "columns": 8,
-        "rows": 1,
-        "count": 8,
-        "frameW": 553,
-        "frameH": 522,
-        "originX": 318,
-        "originY": 488,
-        "scale": 0.5,
-        "holds": [
-          3,
-          3,
-          2,
-          3,
-          6,
-          6,
-          6,
-          6
-        ]
-      }
+      "sprite": { "image": "sheets/5S.png", "columns": 12, "rows": 1, "count": 12, "frameW": 556, "frameH": 527, "originX": 290, "originY": 431, "scale": 0.5, "holds": [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5] }
     },
     {
       "id": "spiritOrb",
@@ -2290,24 +2020,15 @@
       ],
       "sprite": {
         "image": "sheets/fireball.png",
-        "columns": 8,
+        "columns": 12,
         "rows": 1,
-        "count": 8,
-        "frameW": 507,
-        "frameH": 332,
-        "originX": 251,
-        "originY": 330,
+        "count": 12,
+        "frameW": 511,
+        "frameH": 328,
+        "originX": 256,
+        "originY": 326,
         "scale": 0.5,
-        "holds": [
-          4,
-          4,
-          3,
-          3,
-          5,
-          5,
-          6,
-          6
-        ]
+        "holds": [1, 2, 2, 2, 1, 2, 1, 3, 4, 5, 6, 7]
       },
       "airReaction": "softKD",
       "untech": 40
@@ -2356,7 +2077,7 @@
       "timeline": [
         {
           "at": 18,
-          "spawn": "spiritOrbM"
+          "spawn": { "name": "spiritOrbM", "under": "opponent" }
         }
       ],
       "sprite": {
@@ -2364,9 +2085,9 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 461,
-        "frameH": 407,
-        "originX": 188,
+        "frameW": 484,
+        "frameH": 408,
+        "originX": 195,
         "originY": 394,
         "scale": 0.5,
         "holds": [
@@ -2507,7 +2228,7 @@
         "frameH": 554,
         "originX": 148,
         "originY": 526,
-        "scale": 0.5,
+        "scale": 0.45,
         "holds": [
           2,
           2,
@@ -2579,7 +2300,7 @@
         "frameH": 554,
         "originX": 148,
         "originY": 526,
-        "scale": 0.5,
+        "scale": 0.45,
         "holds": [
           3,
           3,
@@ -2636,7 +2357,7 @@
         "frameH": 554,
         "originX": 148,
         "originY": 526,
-        "scale": 0.5,
+        "scale": 0.45,
         "holds": [
           4,
           4,
@@ -2648,377 +2369,7 @@
         ]
       }
     },
-    {
-      "id": "lariatL",
-      "name": "Running Lariat (L)",
-      "input": "214L",
-      "startup": 14,
-      "active": 4,
-      "recovery": 24,
-      "damage": 900,
-      "hitstun": 24,
-      "untech": 30,
-      "blockstun": 24,
-      "hitstop": 12,
-      "pushbackHit": 20,
-      "pushbackBlock": 30,
-      "selfPushback": 20,
-      "guard": "mid",
-      "reach": 130,
-      "specialCancel": false,
-      "hitboxes": [
-        [
-          20,
-          70,
-          110,
-          80
-        ]
-      ],
-      "timeline": [
-        {
-          "at": 7,
-          "fx": "lariatTrailL"
-        },
-        {
-          "at": 3,
-          "vel": {
-            "x": 12
-          }
-        },
-        {
-          "at": 13,
-          "vel": {
-            "x": 0
-          }
-        }
-      ],
-      "ex": {
-        "name": "Running Lariat (EX)",
-        "startup": 18,
-        "active": 4,
-        "recovery": 24,
-        "timeline": [
-          {
-            "at": 8,
-            "fx": "lariatTrailEx"
-          },
-          {
-            "from": 0,
-            "to": 20,
-            "armor": 1
-          },
-          {
-            "at": 3,
-            "vel": {
-              "x": 23
-            }
-          },
-          {
-            "at": 17,
-            "vel": {
-              "x": 0
-            }
-          }
-        ],
-        "sprite": {
-          "image": "sheets/lariat.png",
-          "columns": 9,
-          "rows": 1,
-          "count": 9,
-          "frameW": 577,
-          "frameH": 442,
-          "originX": 321,
-          "originY": 440,
-          "scale": 0.5,
-          "holds": [
-            4,
-            3,
-            4,
-            3,
-            3,
-            4,
-            9,
-            8,
-            7
-          ]
-        },
-        "damage": 1300,
-        "blockstun": 17
-      },
-      "sprite": {
-        "image": "sheets/lariat.png",
-        "columns": 9,
-        "rows": 1,
-        "count": 9,
-        "frameW": 577,
-        "frameH": 442,
-        "originX": 321,
-        "originY": 440,
-        "scale": 0.5,
-        "holds": [
-          4,
-          2,
-          3,
-          2,
-          2,
-          4,
-          9,
-          8,
-          7
-        ]
-      }
-    },
-    {
-      "id": "lariatM",
-      "name": "Running Lariat (M)",
-      "input": "214M",
-      "startup": 18,
-      "active": 4,
-      "recovery": 24,
-      "damage": 1000,
-      "hitstun": 34,
-      "untech": 30,
-      "blockstun": 20,
-      "hitstop": 12,
-      "pushbackHit": 20,
-      "pushbackBlock": 30,
-      "selfPushback": 20,
-      "guard": "mid",
-      "reach": 130,
-      "specialCancel": false,
-      "hitboxes": [
-        [
-          20,
-          70,
-          110,
-          76
-        ]
-      ],
-      "timeline": [
-        {
-          "at": 8,
-          "fx": "lariatTrailM"
-        },
-        {
-          "at": 3,
-          "vel": {
-            "x": 16
-          }
-        },
-        {
-          "at": 17,
-          "vel": {
-            "x": 0
-          }
-        }
-      ],
-      "ex": {
-        "name": "Running Lariat (EX)",
-        "startup": 18,
-        "active": 4,
-        "recovery": 24,
-        "timeline": [
-          {
-            "at": 8,
-            "fx": "lariatTrailEx"
-          },
-          {
-            "from": 0,
-            "to": 20,
-            "armor": 1
-          },
-          {
-            "at": 3,
-            "vel": {
-              "x": 23
-            }
-          },
-          {
-            "at": 17,
-            "vel": {
-              "x": 0
-            }
-          }
-        ],
-        "sprite": {
-          "image": "sheets/lariat.png",
-          "columns": 9,
-          "rows": 1,
-          "count": 9,
-          "frameW": 577,
-          "frameH": 442,
-          "originX": 321,
-          "originY": 440,
-          "scale": 0.5,
-          "holds": [
-            4,
-            3,
-            4,
-            3,
-            3,
-            4,
-            9,
-            8,
-            7
-          ]
-        },
-        "damage": 1300,
-        "blockstun": 17
-      },
-      "sprite": {
-        "image": "sheets/lariat.png",
-        "columns": 9,
-        "rows": 1,
-        "count": 9,
-        "frameW": 577,
-        "frameH": 442,
-        "originX": 321,
-        "originY": 440,
-        "scale": 0.5,
-        "holds": [
-          4,
-          3,
-          4,
-          3,
-          3,
-          4,
-          9,
-          8,
-          7
-        ]
-      },
-      "airHit": {
-        "x": 3,
-        "y": -2
-      },
-      "airReaction": "hardKD"
-    },
-    {
-      "id": "lariatH",
-      "name": "Running Lariat (H)",
-      "input": "214H",
-      "hitReaction": "crumple",
-      "startup": 22,
-      "active": 4,
-      "recovery": 26,
-      "damage": 1100,
-      "hitstun": 30,
-      "untech": 30,
-      "blockstun": 19,
-      "hitstop": 12,
-      "pushbackHit": 20,
-      "pushbackBlock": 30,
-      "selfPushback": 20,
-      "guard": "mid",
-      "reach": 130,
-      "specialCancel": false,
-      "hitboxes": [
-        [
-          20,
-          70,
-          110,
-          78
-        ]
-      ],
-      "timeline": [
-        {
-          "at": 9,
-          "fx": "lariatTrailH"
-        },
-        {
-          "at": 3,
-          "vel": {
-            "x": 18
-          }
-        },
-        {
-          "at": 21,
-          "vel": {
-            "x": 0
-          }
-        }
-      ],
-      "ex": {
-        "name": "Running Lariat (EX)",
-        "startup": 18,
-        "active": 4,
-        "recovery": 24,
-        "timeline": [
-          {
-            "at": 8,
-            "fx": "lariatTrailEx"
-          },
-          {
-            "from": 0,
-            "to": 20,
-            "armor": 1
-          },
-          {
-            "at": 3,
-            "vel": {
-              "x": 23
-            }
-          },
-          {
-            "at": 17,
-            "vel": {
-              "x": 0
-            }
-          }
-        ],
-        "sprite": {
-          "image": "sheets/lariat.png",
-          "columns": 9,
-          "rows": 1,
-          "count": 9,
-          "frameW": 577,
-          "frameH": 442,
-          "originX": 321,
-          "originY": 440,
-          "scale": 0.5,
-          "holds": [
-            4,
-            3,
-            4,
-            3,
-            3,
-            4,
-            9,
-            8,
-            7
-          ]
-        },
-        "damage": 1300,
-        "blockstun": 17
-      },
-      "sprite": {
-        "image": "sheets/lariat.png",
-        "columns": 9,
-        "rows": 1,
-        "count": 9,
-        "frameW": 577,
-        "frameH": 442,
-        "originX": 321,
-        "originY": 440,
-        "scale": 0.5,
-        "holds": [
-          4,
-          4,
-          5,
-          5,
-          3,
-          4,
-          10,
-          9,
-          7
-        ]
-      },
-      "airReaction": "hardKD",
-      "airHit": {
-        "x": 9,
-        "y": -17
-      }
-    },
+    { "id": "spearM", "name": "Spirit Spear (M)", "input": "214M", "startup": 14, "active": 6, "recovery": 18, "damage": 800, "hitstun": 22, "untech": 26, "blockstun": 16, "hitstop": 11, "pushbackHit": 30, "pushbackBlock": 34, "selfPushback": 10, "guard": "mid", "reach": 250, "specialCancel": false, "hitboxes": [[60, 78, 190, 34]], "sprite": { "image": "sheets/spear.png", "columns": 8, "rows": 1, "count": 8, "frameW": 794, "frameH": 351, "originX": 358, "originY": 349, "scale": 0.5, "holds": [4, 4, 5, 3, 3, 6, 6, 6] } },
     {
       "id": "dashF",
       "name": "Dash (system state art)",
@@ -3027,10 +2378,10 @@
         "columns": 6,
         "rows": 1,
         "count": 6,
-        "frameW": 565,
-        "frameH": 287,
-        "originX": 286,
-        "originY": 285,
+        "frameW": 598,
+        "frameH": 304,
+        "originX": 303,
+        "originY": 302,
         "scale": 0.5,
         "holds": [
           2,
@@ -3050,10 +2401,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 424,
-        "frameH": 313,
-        "originX": 199,
-        "originY": 311,
+        "frameW": 438,
+        "frameH": 323,
+        "originX": 205,
+        "originY": 321,
         "scale": 0.5,
         "holds": [
           2,
@@ -3069,10 +2420,10 @@
         "columns": 5,
         "rows": 1,
         "count": 5,
-        "frameW": 559,
-        "frameH": 339,
-        "originX": 210,
-        "originY": 337,
+        "frameW": 593,
+        "frameH": 353,
+        "originX": 223,
+        "originY": 351,
         "scale": 0.5,
         "holds": [
           2,
@@ -3111,10 +2462,10 @@
         "columns": 5,
         "rows": 1,
         "count": 5,
-        "frameW": 622,
-        "frameH": 272,
-        "originX": 280,
-        "originY": 312,
+        "frameW": 659,
+        "frameH": 289,
+        "originX": 296,
+        "originY": 320,
         "scale": 0.5,
         "holds": [
           2,
@@ -3133,10 +2484,10 @@
         "columns": 6,
         "rows": 1,
         "count": 6,
-        "frameW": 340,
-        "frameH": 400,
-        "originX": 133,
-        "originY": 372,
+        "frameW": 343,
+        "frameH": 405,
+        "originX": 136,
+        "originY": 366,
         "scale": 0.5,
         "holds": [
           2,
@@ -3156,9 +2507,9 @@
         "columns": 3,
         "rows": 1,
         "count": 3,
-        "frameW": 279,
-        "frameH": 358,
-        "originX": 158,
+        "frameW": 284,
+        "frameH": 364,
+        "originX": 163,
         "originY": 342,
         "scale": 0.5,
         "holds": [
@@ -3176,10 +2527,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 295,
-        "frameH": 332,
-        "originX": 147,
-        "originY": 330,
+        "frameW": 312,
+        "frameH": 352,
+        "originX": 156,
+        "originY": 350,
         "scale": 0.5,
         "holds": [
           4,
@@ -3195,10 +2546,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 267,
-        "frameH": 266,
-        "originX": 122,
-        "originY": 264,
+        "frameW": 283,
+        "frameH": 282,
+        "originX": 130,
+        "originY": 280,
         "scale": 0.5,
         "holds": [
           4,
@@ -3214,10 +2565,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 244,
-        "frameH": 304,
-        "originX": 125,
-        "originY": 327,
+        "frameW": 252,
+        "frameH": 315,
+        "originX": 129,
+        "originY": 332,
         "scale": 0.5,
         "holds": [
           4,
@@ -3233,10 +2584,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 317,
-        "frameH": 295,
-        "originX": 141,
-        "originY": 293,
+        "frameW": 328,
+        "frameH": 306,
+        "originX": 146,
+        "originY": 304,
         "scale": 0.5,
         "holds": [
           6,
@@ -3252,10 +2603,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 324,
-        "frameH": 245,
-        "originX": 136,
-        "originY": 243,
+        "frameW": 343,
+        "frameH": 259,
+        "originX": 144,
+        "originY": 257,
         "scale": 0.5,
         "holds": [
           6,
@@ -3271,9 +2622,9 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 325,
-        "frameH": 311,
-        "originX": 130,
+        "frameW": 320,
+        "frameH": 306,
+        "originX": 125,
         "originY": 335,
         "scale": 0.5,
         "holds": [
@@ -3290,10 +2641,10 @@
         "columns": 6,
         "rows": 1,
         "count": 6,
-        "frameW": 350,
-        "frameH": 330,
-        "originX": 158,
-        "originY": 342,
+        "frameW": 363,
+        "frameH": 350,
+        "originX": 159,
+        "originY": 352,
         "scale": 0.5,
         "holds": [
           2,
@@ -3351,9 +2702,9 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 325,
-        "frameH": 311,
-        "originX": 130,
+        "frameW": 320,
+        "frameH": 306,
+        "originX": 125,
         "originY": 335,
         "scale": 0.5,
         "holds": [
@@ -3471,10 +2822,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 317,
-        "frameH": 295,
-        "originX": 141,
-        "originY": 293,
+        "frameW": 328,
+        "frameH": 306,
+        "originX": 146,
+        "originY": 304,
         "scale": 0.5,
         "holds": [
           1
@@ -3484,12 +2835,12 @@
     {
       "id": "throwHold",
       "name": "Holding a thrown opponent (system state art: forward throw drawings 1-3)",
-      "sprite": { "image": "sheets/throw-hold.png", "columns": 3, "rows": 1, "count": 3, "frameW": 392, "frameH": 333, "originX": 194, "originY": 331, "scale": 0.5, "holds": [4, 4, 6] }
+      "sprite": { "image": "sheets/throw-hold.png", "columns": 3, "rows": 1, "count": 3, "frameW": 392, "frameH": 335, "originX": 194, "originY": 333, "scale": 0.5, "holds": [4, 4, 6] }
     },
     {
       "id": "throwFinish",
       "name": "After the throw lands (system state art: forward throw drawings 4-7, the double palm)",
-      "sprite": { "image": "sheets/throw-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 420, "frameH": 332, "originX": 190, "originY": 330, "scale": 0.5, "holds": [6, 8, 8, 8] }
+      "sprite": { "image": "sheets/throw-finish.png", "columns": 4, "rows": 1, "count": 4, "frameW": 424, "frameH": 335, "originX": 192, "originY": 333, "scale": 0.5, "holds": [6, 8, 8, 8] }
     },
     {
       "id": "throwTech",
@@ -3521,14 +2872,7 @@
       "startup": 31,
       "active": 0,
       "recovery": 10,
-      "requires": {
-        "vars": {
-          "install": [
-            0,
-            0
-          ]
-        }
-      },
+      "requires": { "vars": { "install": [0, 0], "specter": [0, 0] } },
       "timeline": [
         {
           "at": 2,
@@ -3598,10 +2942,10 @@
         "columns": 1,
         "rows": 1,
         "count": 1,
-        "frameW": 364,
-        "frameH": 267,
-        "originX": 175,
-        "originY": 265,
+        "frameW": 385,
+        "frameH": 283,
+        "originX": 185,
+        "originY": 281,
         "scale": 0.5
       }
     },
@@ -3613,10 +2957,10 @@
         "columns": 1,
         "rows": 1,
         "count": 1,
-        "frameW": 364,
-        "frameH": 267,
-        "originX": 175,
-        "originY": 265,
+        "frameW": 385,
+        "frameH": 283,
+        "originX": 185,
+        "originY": 281,
         "scale": 0.5
       }
     },
@@ -3628,10 +2972,10 @@
         "columns": 5,
         "rows": 1,
         "count": 5,
-        "frameW": 360,
-        "frameH": 399,
-        "originX": 187,
-        "originY": 336,
+        "frameW": 356,
+        "frameH": 402,
+        "originX": 186,
+        "originY": 337,
         "scale": 0.5,
         "holds": [
           5,
@@ -3650,10 +2994,10 @@
         "columns": 5,
         "rows": 1,
         "count": 5,
-        "frameW": 360,
-        "frameH": 399,
-        "originX": 187,
-        "originY": 336,
+        "frameW": 356,
+        "frameH": 402,
+        "originX": 186,
+        "originY": 337,
         "scale": 0.5,
         "holds": [
           5,
@@ -3672,10 +3016,10 @@
         "columns": 5,
         "rows": 1,
         "count": 5,
-        "frameW": 360,
-        "frameH": 399,
-        "originX": 187,
-        "originY": 336,
+        "frameW": 356,
+        "frameH": 402,
+        "originX": 186,
+        "originY": 337,
         "scale": 0.5,
         "holds": [
           5,
@@ -3694,10 +3038,10 @@
         "columns": 2,
         "rows": 1,
         "count": 2,
-        "frameW": 370,
-        "frameH": 340,
-        "originX": 190,
-        "originY": 341,
+        "frameW": 346,
+        "frameH": 320,
+        "originX": 178,
+        "originY": 331,
         "scale": 0.5,
         "holds": [
           8,
@@ -3713,10 +3057,10 @@
         "columns": 1,
         "rows": 1,
         "count": 1,
-        "frameW": 388,
-        "frameH": 274,
-        "originX": 182,
-        "originY": 272,
+        "frameW": 405,
+        "frameH": 286,
+        "originX": 190,
+        "originY": 284,
         "scale": 0.5
       }
     },
@@ -3728,10 +3072,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 310,
-        "frameH": 379,
-        "originX": 141,
-        "originY": 377,
+        "frameW": 322,
+        "frameH": 396,
+        "originX": 146,
+        "originY": 394,
         "scale": 0.5,
         "holds": [
           8,
@@ -3753,10 +3097,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 304,
-        "frameH": 383,
-        "originX": 137,
-        "originY": 381,
+        "frameW": 314,
+        "frameH": 406,
+        "originX": 144,
+        "originY": 404,
         "scale": 0.5,
         "holds": [
           6,
@@ -3778,10 +3122,10 @@
         "columns": 8,
         "rows": 1,
         "count": 8,
-        "frameW": 304,
-        "frameH": 383,
-        "originX": 137,
-        "originY": 381,
+        "frameW": 314,
+        "frameH": 406,
+        "originX": 144,
+        "originY": 404,
         "scale": 0.5,
         "holds": [
           6,
@@ -3795,51 +3139,10 @@
         ]
       }
     },
-    {
-      "id": "rite_4",
-      "sprite": {
-        "image": "sheets/rite-4.png",
-        "columns": 7,
-        "rows": 1,
-        "count": 7,
-        "frameW": 407,
-        "frameH": 485,
-        "originX": 162,
-        "originY": 483,
-        "scale": 0.5,
-        "holds": [
-          3,
-          4,
-          4,
-          6,
-          6,
-          6,
-          6
-        ]
-      },
-      "name": "Guardian's Wrath",
-      "input": "4R",
-      "startup": 5,
-      "active": 0,
-      "recovery": 31,
-      "timeline": [
-        {
-          "from": 0,
-          "to": 10,
-          "invuln": {
-            "strike": true,
-            "throw": false
-          }
-        },
-        {
-          "at": 5,
-          "spawn": "ward"
-        }
-      ]
-    },
+    { "id": "rite_4", "name": "Colossus Clap", "input": "4R", "startup": 9, "active": 4, "recovery": 28, "damage": 1000, "hitstun": 30, "untech": 40, "blockstun": 18, "hitstop": 14, "pushbackHit": 0, "pushbackBlock": 30, "guard": "mid", "reach": 120, "launch": "hard", "hitboxes": [[-80, 150, 200, 150]], "timeline": [{ "from": 0, "to": 8, "invuln": { "strike": true, "throw": false } }], "sprite": { "image": "sheets/rite-4.png", "columns": 12, "rows": 1, "count": 12, "frameW": 849, "frameH": 590, "originX": 424, "originY": 588, "scale": 0.5, "holds": [1, 1, 1, 1, 1, 1, 2, 4, 5, 6, 8, 9] } },
     {
       "id": "rite_5",
-      "sprite": { "image": "sheets/rite-5.png", "columns": 8, "rows": 1, "count": 8, "frameW": 411, "frameH": 457, "originX": 198, "originY": 380, "scale": 0.5, "holds": [2, 2, 3, 3, 2, 6, 7, 8] },
+      "sprite": { "image": "sheets/rite-5.png", "columns": 8, "rows": 1, "count": 8, "frameW": 524, "frameH": 583, "originX": 253, "originY": 485, "scale": 0.5, "holds": [2, 2, 3, 3, 2, 6, 7, 8] },
       "name": "Guardian Palm",
       "input": "5R",
       "startup": 12,
@@ -3854,7 +3157,7 @@
     },
     {
       "id": "rite_2",
-      "sprite": { "image": "sheets/rite-2.png", "columns": 8, "rows": 1, "count": 8, "frameW": 479, "frameH": 489, "originX": 230, "originY": 487, "scale": 0.5, "holds": [2, 2, 3, 3, 3, 7, 8, 8] },
+      "sprite": { "image": "sheets/rite-2.png", "columns": 12, "rows": 1, "count": 12, "frameW": 626, "frameH": 470, "originX": 295, "originY": 468, "scale": 0.5, "holds": [1, 1, 2, 2, 2, 2, 1, 2, 4, 5, 6, 8] },
       "name": "Ancestor's Seal",
       "input": "2R",
       "startup": 13,
@@ -3875,46 +3178,7 @@
       ],
       "jumpCancel": true
     },
-    {
-      "id": "rite_j",
-      "sprite": {
-        "image": "sheets/rite-j.png",
-        "columns": 5,
-        "rows": 1,
-        "count": 5,
-        "frameW": 297,
-        "frameH": 455,
-        "originX": 149,
-        "originY": 387,
-        "scale": 0.5,
-        "holds": [
-          5,
-          6,
-          4,
-          7,
-          6
-        ]
-      },
-      "name": "Guardian's Judgment",
-      "input": "j.R",
-      "perJump": "rite",
-      "startup": 11,
-      "active": 0,
-      "recovery": 18,
-      "timeline": [
-        {
-          "at": 1,
-          "fx": "riteClap"
-        },
-        {
-          "at": 11,
-          "spawn": {
-            "name": "palmJ",
-            "under": "opponent"
-          }
-        }
-      ]
-    },
+    { "id": "rite_j", "name": "Ancestral Roar", "input": "j.R", "perJump": "rite", "startup": 14, "active": 0, "recovery": 20, "damage": 0, "reach": 220, "hitboxes": [], "timeline": [{ "at": 0, "gravity": false, "vel": { "x": 0, "y": 0 } }, { "at": 13, "spawn": "roarOrb" }, { "at": 26, "gravity": true }], "sprite": { "image": "sheets/rite-j-roar.png", "columns": 12, "rows": 1, "count": 12, "frameW": 656, "frameH": 581, "originX": 296, "originY": 409, "scale": 0.5, "holds": [1, 1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 5] } },
     {
       "id": "vow_start",
       "name": "Vow: the guard coming up",
@@ -4007,7 +3271,7 @@
         "frameH": 425,
         "originX": 166,
         "originY": 423,
-        "scale": 0.5,
+        "scale": 0.45,
         "holds": [
           3,
           3,
@@ -4048,7 +3312,7 @@
         "frameH": 425,
         "originX": 166,
         "originY": 423,
-        "scale": 0.5,
+        "scale": 0.45,
         "holds": [
           5,
           4,
@@ -4089,7 +3353,7 @@
         "frameH": 425,
         "originX": 166,
         "originY": 423,
-        "scale": 0.5,
+        "scale": 0.45,
         "holds": [
           5,
           5,
@@ -4251,9 +3515,9 @@
         "columns": 6,
         "rows": 1,
         "count": 6,
-        "frameW": 442,
+        "frameW": 443,
         "frameH": 332,
-        "originX": 228,
+        "originX": 229,
         "originY": 330,
         "scale": 0.5,
         "holds": [
@@ -4265,6 +3529,6 @@
           1
         ]
       }
-    }, { "id": "spearL", "name": "Spirit Spear (L)", "input": "421L", "startup": 14, "active": 6, "recovery": 18, "damage": 800, "hitstun": 22, "untech": 26, "blockstun": 16, "hitstop": 11, "pushbackHit": 30, "pushbackBlock": 34, "selfPushback": 10, "guard": "mid", "reach": 250, "specialCancel": false, "hitboxes": [[60, 78, 190, 34]], "sprite": { "image": "sheets/spear.png", "columns": 8, "rows": 1, "count": 8, "frameW": 816, "frameH": 361, "originX": 368, "originY": 359, "scale": 0.5, "holds": [4, 4, 5, 3, 3, 6, 6, 6] } }, { "id": "spearH", "name": "Spirit Spear (H)", "input": "421H", "startup": 19, "active": 6, "recovery": 16, "damage": 1100, "hitstun": 24, "untech": 30, "blockstun": 18, "hitstop": 13, "pushbackHit": 24, "pushbackBlock": 30, "selfPushback": 10, "guard": "high", "reach": 230, "specialCancel": false, "hitReaction": "softKD", "hitboxes": [[55, 0, 120, 120]], "timeline": [{ "at": 3, "vel": { "x": 6 } }, { "at": 18, "vel": { "x": 0 } }], "sprite": { "image": "sheets/spear-H.png", "columns": 8, "rows": 1, "count": 8, "frameW": 549, "frameH": 462, "originX": 180, "originY": 460, "scale": 0.5, "holds": [3, 5, 5, 5, 3, 3, 8, 8] } }
+    }, { "id": "spearL", "name": "Spirit Spear (L)", "input": "214L", "startup": 14, "active": 6, "recovery": 18, "damage": 800, "hitstun": 22, "untech": 26, "blockstun": 16, "hitstop": 11, "pushbackHit": 30, "pushbackBlock": 34, "selfPushback": 10, "guard": "mid", "reach": 250, "specialCancel": false, "hitboxes": [[60, 78, 190, 34]], "sprite": { "image": "sheets/spear.png", "columns": 8, "rows": 1, "count": 8, "frameW": 794, "frameH": 351, "originX": 358, "originY": 349, "scale": 0.5, "holds": [4, 4, 5, 3, 3, 6, 6, 6] } }, { "id": "spearH", "name": "Spirit Spear (H)", "input": "214H", "startup": 19, "active": 6, "recovery": 16, "damage": 1100, "hitstun": 24, "untech": 30, "blockstun": 18, "hitstop": 13, "pushbackHit": 24, "pushbackBlock": 30, "selfPushback": 10, "guard": "high", "reach": 230, "specialCancel": false, "hitReaction": "softKD", "hitboxes": [[40, 0, 170, 150]], "timeline": [{ "at": 3, "vel": { "x": 6 } }, { "at": 18, "vel": { "x": 0 } }], "sprite": { "image": "sheets/spear-H.png", "columns": 12, "rows": 1, "count": 12, "frameW": 698, "frameH": 415, "originX": 295, "originY": 413, "scale": 0.5, "holds": [2, 3, 3, 3, 2, 2, 3, 3, 3, 4, 5, 7] } }
   ]
 }

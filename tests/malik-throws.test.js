@@ -177,7 +177,7 @@ test('impact feel is drawing-only data: shake sizes, flash, and dust under the m
   for (const size of fx.hit) assert.ok(size.name in fx.impact.shake, `a shake size for ${size.name} hits`);
   assert.ok(fx.impact.shake.frames > 0 && fx.impact.flash.frames >= 0);
   // (Avner's 2H stopped being a slide on Nov 25, owner's call, so it no longer has dust of its own.)
-  for (const [id, states] of [['avner', []], ['malik', ['lariatL', 'lariatM', 'lariatH']]]) {
+  for (const [id, states] of [['avner', []], ['malik', []]]) { // (Malik's Lariat was cut on Nov 27, owner: the Spirit Spear took 214)
     const raw = loadJSON(`data/characters/${id}/${id}.toska.json`);
     const def = loadChar(`data/characters/${id}/${id}.toska.json`);
     for (const st of states) {
