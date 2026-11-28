@@ -158,13 +158,17 @@ test('saving: the text editor handles sets, adds and removes in objects and list
   assert.equal(format({ at: 4, hurt: [[-1, 0, 2.5, 3]], s: 'a"b' }), '{ "at": 4, "hurt": [[-1, 0, 2.5, 3]], "s": "a\\"b" }');
 });
 
-test('projectiles: every one in the cast can be found, read, edited and saved as one box', () => {
+test('projectiles: every one in the cast can be found, read, edited and saved (one box, or a list for a slanted beam)', () => {
+  const multi = [];
   for (const file of ['data/characters/avner/avner.toska.json', 'data/characters/malik/malik.toska.json']) {
     const ids = projectileNames(loadJSON(file));
     assert.ok(ids.length > 0, file + ' has projectiles');
     for (const id of ids) {
       const raw = loadJSON(file); // a fresh copy per projectile: each is edited and saved by itself
       const src = projectileSource(raw, id);
+      // A slanted beam is drawn as a staircase of boxes (Malik's Ancestral Barrage, Nov 28): it is edited as a list,
+      // like a move's boxes, and checked by the list test below.
+      if (Array.isArray(raw.projectiles[id].hitbox?.[0])) { assert.equal(src.single, false, id); multi.push([file, id]); continue; }
       assert.ok(editable(src));
       // What the editor shows is what the game uses.
       assert.deepEqual(units(boxesOf(raw, SYSTEM, src)), compileCharacter(raw, SYSTEM).projectiles[id].hitbox, id);
@@ -190,4 +194,22 @@ test('projectiles: every one in the cast can be found, read, edited and saved as
   }
   assert.throws(() => projectileSource(loadJSON('data/characters/avner/avner.toska.json'), 'nope'), /No projectile/);
   assert.deepEqual(projectileNames({ moves: [] }), []);
+  // A projectile with a list of boxes: the editor shows every box the game uses, and an edit to one of them is what
+  // the game then uses, the file changing only in those numbers.
+  // (No projectile in the cast uses a list since the Barrage became a straight blast, Nov 28: one is made here.)
+  if (!multi.length) multi.push(['data/characters/malik/malik.toska.json', 'barrageBeam', [[0, -90, 300, 120], [300, -80, 310, 100]]]);
+  for (const [file, id, list0] of multi) {
+    const raw = loadJSON(file);
+    if (list0) raw.projectiles[id].hitbox = list0;
+    const src = projectileSource(raw, id);
+    assert.deepEqual(units(boxesOf(raw, SYSTEM, src)), compileCharacter(raw, SYSTEM).projectiles[id].hitbox, id);
+    const before = clone(raw);
+    const list = boxesOf(raw, SYSTEM, src);
+    list[1] = [list[1][0] + 5, list[1][1], list[1][2], list[1][3] + 4];
+    setBoxes(raw, src, list);
+    assert.deepEqual(raw.projectiles[id].hitbox, list);
+    assert.deepEqual(compileCharacter(raw, SYSTEM).projectiles[id].hitbox, units(list));
+    if (!list0) { const out = editJSON(fs.readFileSync(file, 'utf8'), diffOps(before, raw)); assert.deepEqual(JSON.parse(out), raw); }
+    else assert.ok(diffOps(before, raw).every((o) => o.path.slice(0, 3).join('/') === 'projectiles/' + id + '/hitbox'));
+  }
 });

@@ -161,7 +161,7 @@ test('Move X / Move Y: the drawing moves, written as sprite.offset; the rules do
 test('Malik\'s effects (the redesign\'s orbs and spout, Nov 26; the Rite ones from before): every sheet his file names matches the cut, and each animation stays inside its sheet', () => {
   const raw = loadJSON(PATH('malik'));
   const manifest = loadJSON('data/characters/malik/sheets/manifest.json');
-  for (const [name, key, drawings] of [['spiritOrb', 'orb', 7], ['spiritOrbM', 'orb-M', 5], ['spiritOrbH', 'orb-H', 6], ['palm2', 'palm-2', 11], ['palmJ', 'air-burst', 8]]) {
+  for (const [name, key, drawings] of [['spiritOrb', 'orb', 12], ['spiritOrbM', 'orb-M', 8], ['spiritOrbH', 'orb-H', 12], ['palm2', 'palm-2', 11], ['palmJ', 'air-burst', 8]]) {
     const p = raw.projectiles[name], m = manifest[key].sprite;
     assert.equal(p.sprite.image, `sheets/${key}.png`, name);
     assert.ok(fs.existsSync(`data/characters/malik/sheets/${key}.png`), key);

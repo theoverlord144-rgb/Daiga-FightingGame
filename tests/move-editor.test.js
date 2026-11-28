@@ -227,12 +227,10 @@ test('preview: a projectile entry plays the move that releases it', () => {
   const raw = loadJSON(MALIK);
   const def = compileCharacter(raw, SYSTEM);
   assert.equal(stateFor(def, 'proj:palm5'), 'rite_5');
-  assert.equal(stateFor(def, 'proj:palmJ'), 'rite_j');
+  assert.equal(stateFor(def, 'proj:palm2'), 'rite_2');
   assert.equal(stateFor(def, 'idle'), 'idle');
   assert.equal(play(raw, 'proj:palm5').result, 'hit');
-  const j = play(raw, 'proj:palmJ');
-  assert.equal(j.result, 'hit');
-  assert.ok(j.launched, 'the ground hand launches');
+  assert.equal(play(raw, 'proj:palm2').result, 'hit', 'the seal, under the dummy');
 });
 
 test('recoil: the attacker slides back whenever the move touches, on hit and on block, and not on a whiff', () => {
@@ -256,10 +254,10 @@ test('recoil: the attacker slides back whenever the move touches, on hit and on 
 test('hit settings: a move that only releases a projectile shows the settings of that projectile', async () => {
   const { hitOwner } = await import('../src/editor/preview.js');
   const def = compileCharacter(loadJSON(MALIK), SYSTEM);
-  assert.equal(hitOwner(def, 'rite_j'), 'proj:palmJ');
+  assert.equal(hitOwner(def, 'rite_2'), 'proj:palm2');
   assert.equal(hitOwner(def, 'rite_5'), 'proj:palm5');
   assert.equal(hitOwner(def, '5L'), '5L', 'a move with its own hitbox keeps its own');
-  assert.equal(hitOwner(def, 'proj:palmJ'), 'proj:palmJ');
+  assert.equal(hitOwner(def, 'proj:palm2'), 'proj:palm2');
   assert.equal(hitOwner(def, 'idle'), 'idle');
 });
 
@@ -331,13 +329,17 @@ test('projectile timeline: when each projectile appears, when it can hit, and th
   const raw = loadJSON(MALIK);
   const def = compileCharacter(raw, SYSTEM);
   assert.equal(flightOf(def, '5L'), null, 'a move that releases nothing has none');
-  // Judgment: opens under the opponent on the clap, its box out 11 frames later.
-  const j = flightOf(def, 'rite_j');
-  assert.equal(j.state, 'rite_j');
+  // The seal (2R): rises under the opponent on the slam and is live its whole life. (j.R, which used to be the
+  // example here, became Guardian's Shell on Nov 27 and releases nothing.)
+  const j = flightOf(def, 'rite_2');
+  assert.equal(j.state, 'rite_2');
   assert.equal(j.spawns.length, 1);
-  const P = raw.projectiles.palmJ;
-  assert.deepEqual(j.spawns[0], { at: 11, name: 'palmJ', lifetime: P.lifetime, speed: 0, under: true, start: null, live: [[P.phases[0][0], Math.min(P.phases[0][1], P.lifetime - 1)]] });
-  assert.deepEqual(flightOf(def, 'proj:palmJ'), j, 'the same from the projectile\'s own entry');
+  const P = raw.projectiles.palm2;
+  assert.deepEqual(j.spawns[0], { at: 13, name: 'palm2', lifetime: P.lifetime, speed: 0, under: true, start: null, live: [[0, P.lifetime - 1]] });
+  assert.deepEqual(flightOf(def, 'proj:palm2'), j, 'the same from the projectile\'s own entry');
+  // j.R is Ancestral Roar since Nov 27 (owner): it releases the stalking orb on its frame 13.
+  const roar = flightOf(def, 'rite_j');
+  assert.deepEqual([roar.spawns.length, roar.spawns[0].name, roar.spawns[0].at], [1, 'roarOrb', 13], 'the Roar releases its orb');
   // The orb: appears in front of him and flies.
   const o = flightOf(def, 'spiritOrb');
   const O = raw.projectiles.spiritOrb;

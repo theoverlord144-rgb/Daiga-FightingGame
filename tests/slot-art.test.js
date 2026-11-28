@@ -79,7 +79,7 @@ test('Malik: the universal systems use his own drawings, timed to the rules', ()
     assert.equal(st.frames[first].sprite.index, drawing, `${name}: drawing ${drawing + 1} shows on the first hitting frame`);
   }
   // Each Rite move shows the thrust on the frame the hand appears.
-  for (const name of ['rite_5', 'rite_2', 'rite_4', 'rite_j']) {
+  for (const name of ['rite_5', 'rite_2']) { // (j.R and 4R, redesigned Nov 27, are his own hits and release nothing)
     const st = c.states[name];
     const at = st.onEnter.findIndex((evs) => (evs || []).some((e) => e.type === 'spawn'));
     assert.ok(at > 0, `${name} spawns its hand`);
