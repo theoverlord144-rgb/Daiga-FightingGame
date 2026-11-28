@@ -196,10 +196,103 @@ export function createFightRenderer(ctx, W, H) {
     } else if (T.shatter) {
       const S = m.shatter;
       fxOp = opOf(m, oppDef, `mark:${k}`, 'mark'); // FXOPACITY
-      drawSheetFrame(oppDef, sized(S.sprite), heldFrame(S.holds, Math.max(0, T.shatter.age - 1), false)[0], x, y, 1, 0);
+      drawSheetFrame(oppDef, sized(S.sprite), (S.first ?? 0) + heldFrame(S.holds, Math.max(0, T.shatter.age - 1), false)[0], x, y, 1, 0); // first: its drawings start there in the sheet
     }
   }
   // MARK END
+
+  // RELIC BEGIN (drawing only): a character's set object (Avner's lantern, src/core/relic.js) drawn from its state.
+  // art.relic: { sprite (6 drawings: front, 3/4, side, 3/4, dark, struck; origin = the ring), spin (frames a drawing
+  // while it flies), sway / swayFrames (degrees and period while it hangs), swing (degrees at the top of a pendulum
+  // swing), tilt / bob (degrees and px while it slides), light: [1, 2, 3 flames], lightAt (px from the ring to the
+  // glass), snuff, relight }. Light goes behind it; the flame snuffing or relighting plays on it, or on the lantern in
+  // his hand when it is there (art.lantern.at).
+  const relicFx = []; // { p, sheet, age }
+  const handAt = {}; // the in-hand lantern's screen point this frame, per fighter
+  function relicTrack(game, world) {
+    for (let i = relicFx.length - 1; i >= 0; i--) if (++relicFx[i].age >= sumOf(relicFx[i].sheet.holds)) relicFx.splice(i, 1);
+    for (const c of game.cues) {
+      const def = world.chars[c.p], A = def?.art?.relic;
+      if (!A) continue;
+      if (c.type === 'relicFlame') relicFx.push({ p: c.p, sheet: c.why === 'relight' ? A.relight : A.snuff, age: 0 });
+      if (c.type === 'relicFx' && def.effects[c.name]) {
+        const e = def.effects[c.name];
+        effects.push({ sheet: { ...e, follow: false, behind: false }, def, x: c.x, y: c.y, facing: c.facing, age: 0, life: lifeOf(e) });
+      }
+    }
+    for (const p of game.players) {
+      const def = world.chars[p.id], r = p.relic;
+      if (!def.art?.relic || !r || r.mode !== 'slide') continue;
+      const a = def.relic.actions[r.act];
+      // The slide's sparks and dust (the 3H Lantern Drag's) play behind it as it skims.
+      for (const [k, name] of (a?.trail ?? []).entries()) {
+        const e = def.effects[name];
+        if (e && r.t >= 0 && r.t % (4 + 2 * k) === 0) effects.push({ sheet: { ...e, follow: false, behind: false }, def, x: r.x - r.facing * 20 * UNIT, y: 0, facing: r.facing, age: 0, life: lifeOf(e) });
+      }
+    }
+  }
+  /** The lantern's drawing and angle (radians, screen clockwise) from its state. */
+  function relicPose(r, def, frame) {
+    const A = def.art.relic, deg = (d) => (d * Math.PI) / 180;
+    if (r.dark) return [4, 0, 0];
+    if (r.struck > 0) return [5, 0, 0];
+    if (r.mode === 'fly' || r.mode === 'return') return [Math.floor(frame / A.spin) % 4, 0, 0];
+    if (r.mode === 'slide') return [0, deg(A.tilt) * r.facing, Math.sin(frame * 0.6) * A.bob];
+    if (r.mode === 'pendulum') {
+      const P = def.relic.actions[r.act], h0 = P.hitAt[0], half = P.half;
+      const ease = Math.min(1, Math.max(0, r.t) / h0);
+      return [0, deg(A.swing) * Math.sin((Math.PI * (r.t - h0)) / half) * ease * r.facing, 0];
+    }
+    return [0, deg(A.sway) * Math.sin((frame * Math.PI * 2) / A.swayFrames), 0];
+  }
+  function drawRelic(p, def, frame) {
+    const r = p.relic, A = def.art?.relic;
+    if (!A || !r || r.mode === 'hand') return;
+    const [index, ang, bob] = relicPose(r, def, frame);
+    const [sx, sy0] = toScreen(r.x, r.y);
+    const sy = sy0 - bob;
+    const glass = [sx - Math.sin(ang) * -A.lightAt, sy + Math.cos(ang) * -A.lightAt]; // the glass, swung with it
+    const n = p.vars[def.relic.vars.flames] | 0;
+    const Te = r.mode === 'pendulum' && !r.dark ? def.effects[A.trail] : null; // art.relic.trail: the named effect of the swing
+    if (Te) { // the swing's trail (owner, Nov 27): one pass of it per pass of the swing, behind
+      const P = def.relic.actions[r.act], k = P.hitAt.findIndex((h) => Math.abs(r.t - h) < P.half / 2);
+      if (k >= 0) {
+        // Spread over the pass with its bottom drawing (the middle one, 3 of 6) centred on the hit.
+        const T = Te.sprite, mid = Math.floor((T.count - 1) / 2), i = Math.max(0, Math.min(T.count - 1, mid + Math.floor(((r.t - P.hitAt[k]) * T.count) / P.half + 0.5)));
+        // The art sweeps left to right; the swing reverses every pass (relicPose: its angle goes as sin, so the bottom moves the other way each pass).
+        const dir = (k % 2 === 0 ? -1 : 1) * r.facing;
+        fxOp = opOf(Te, def, A.trail, 'trail'); // FXOPACITY
+        drawSheetFrame(def, T, i, sx, sy, dir, 0);
+      }
+    }
+    if (!r.dark && n > 0) { // behind the lantern (owner, Nov 27): the glow shows around it and the crescent on its glass stays clear
+      const L = A.light[Math.min(n, A.light.length) - 1];
+      fxOp = opOf(L, def, null, 'aura'); // FXOPACITY
+      drawSheetFrame(def, L, Math.floor(frame / 6) % L.count, glass[0], glass[1], 1, 0);
+    }
+    drawSheetFrame(def, A.sprite, index, sx, sy, r.facing, ang);
+    for (const e of relicFx) if (e.p === p.id) drawSheetFrame(def, e.sheet, heldFrame(e.sheet.holds, e.age, false)[0], glass[0], glass[1], 1, 0);
+  }
+  /** The lantern in his hand: behind = its light, drawn before his sprite so it glows around the lantern painted in his
+   *  sheet (owner, Nov 27); otherwise a flame snuffing or relighting there, on top. */
+  function drawRelicHand(p, def, shown, frame, behind) {
+    const r = p.relic, A = def.art?.relic;
+    if (behind) handAt[p.id] = null;
+    if (!A || !r || r.mode !== 'hand') return;
+    const at = lanternAt(p, def, shown);
+    if (!at) return;
+    handAt[p.id] = at;
+    const n = p.vars[def.relic.vars.flames] | 0;
+    if (behind) {
+      if (n <= 0) return;
+      const L = A.light[Math.min(n, A.light.length) - 1];
+      fxOp = opOf(L, def, null, 'aura'); // FXOPACITY
+      drawSheetFrame(def, L, Math.floor(frame / 6) % L.count, at[0], at[1], 1, 0);
+      return;
+    }
+    for (const e of relicFx) if (e.p === p.id) drawSheetFrame(def, e.sheet, heldFrame(e.sheet.holds, e.age, false)[0], at[0], at[1], 1, 0);
+  }
+  // RELIC END
   function drawOpponentMarks(p, opp, oppDef, frame, pDef) {
     for (const [k, v] of Object.entries(oppDef.mechanic?.vars || {})) {
       const n = opp.vars[k];
@@ -642,8 +735,10 @@ export function createFightRenderer(ctx, W, H) {
     const at = lanternAt(p, def, shown);
     if (!at) return;
     const L = def.art.lantern;
-    const bars = Math.min(L.sprite.count - 1, Math.floor((p.meter * (def.stats?.meterBars ?? 4)) / Math.max(1, def.meterMax)));
-    drawSheetFrame(def, L.sprite, bars, at[0], at[1], p.facing);
+    if (L.sprite) { // the moon phase by Devotion bars (a placeholder disc; Avner's was removed Nov 27, his flames are on the HUD)
+      const bars = Math.min(L.sprite.count - 1, Math.floor((p.meter * (def.stats?.meterBars ?? 4)) / Math.max(1, def.meterMax)));
+      drawSheetFrame(def, L.sprite, bars, at[0], at[1], p.facing);
+    }
     // A move's pinned effect (the lantern flaring as the moon is called): from one drawing of the move on.
     const st = def.states[p.state];
     const pin = st.move?.pinFx, e = pin && def.effects[pin.effect];
@@ -770,6 +865,8 @@ export function createFightRenderer(ctx, W, H) {
       drawSheetFrame(def, sized(L.sprite), index, x, y, pr.facing);
       ctx.restore();
     };
+    layer(A.haze, t); // an optional soft smoke behind all of it (painted, not light)
+    layer(A.glow, t); // an optional back glow, behind everything else of the burst (its sprite says `additive` to be drawn as light)
     layer(A.smoke, t - (A.smoke?.delay ?? 0), (A.smoke?.rise ?? 0) * Math.max(0, t - (A.smoke?.delay ?? 0)) * k);
     layer(A.fire, t);
     const [ring, done] = heldFrame(A.burst, t, false);
@@ -1280,6 +1377,11 @@ export function createFightRenderer(ctx, W, H) {
     if (rule.byDrift) { const d = Math.abs(dx) > M.driftMax * UNIT ? 0 : Math.sign(dx) * p.facing; name = rule.byDrift[d > 0 ? 0 : d < 0 ? 2 : 1]; }
     const s = M.sheets[name];
     if (s) effects.push({ motion: s, x: p.x, y: rule.at === 'body' ? y : 0, facing, age: 0, life: s.sprite.count * s.hold });
+    // `also`: more sheets played with the rule, listed first so they sit under its own (a name, { play, back }, or a list).
+    for (const a of [].concat(rule.also ?? [])) {
+      const extra = M.sheets[typeof a === 'string' ? a : a.play];
+      if (extra) effects.splice(s ? effects.length - 1 : effects.length, 0, { motion: extra, x: p.x, y: rule.at === 'body' ? y : 0, facing: a.back ? -facing : facing, age: 0, life: extra.sprite.count * extra.hold });
+    }
     const t = M.sheets[rule.trail];
     if (t) effects.push({ motion: t, follow: p.id, state: p.state, dy: y - p.y, x: p.x, y, facing, age: 0, life: 1 });
   }
@@ -1296,6 +1398,7 @@ export function createFightRenderer(ctx, W, H) {
     blockAge(game, world); // BLOCKFX
     shockAge(game); // SHOCKWAVE
     markTrack(game, world); // MARK
+    relicTrack(game, world); // RELIC
     for (let i = burstShakes.length - 1; i >= 0; i--) if (--burstShakes[i].left <= 0) { jolt(burstShakes[i].amp); burstShakes.splice(i, 1); }
     for (const c of game.cues) {
       shockCue(c, game, world); // SHOCKWAVE
@@ -1346,7 +1449,8 @@ export function createFightRenderer(ctx, W, H) {
       // A move (or projectile) with its own hit effect (art) shows that instead of the generic spark.
       const src = world.chars[c.p];
       // (hitFx as a name, "slash", picks one of the universal strips instead: see below.)
-      const ownFx = (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && (src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx;
+      const ownFx = (c.type === 'hit' || c.type === 'counter' || c.type === 'witness') && ((src?.states[c.move]?.move ?? src?.projectiles[c.move]?.move)?.hitFx
+        ?? (String(c.move).startsWith('relic:') ? src?.art?.relic?.hitFx?.[String(c.move).slice(6)] : null)); // a set object's own hit art, per action (art.relic.hitFx)
       const fx = ownFx && typeof ownFx === 'object' ? ownFx : null;
       if (fx) effects.push({ sheet: fx, def: world.chars[c.p], x: c.x, y: c.y, age: 0, life: lifeOf(fx) });
       // The universal effects: a Witness counter, a counter hit and a projectile's hit have their own strips, a move
@@ -1399,7 +1503,8 @@ export function createFightRenderer(ctx, W, H) {
       const ex = exitArt[p.id];
       if (ex && (!ex.rule.into.includes(p.state) || ++ex.t >= ex.total)) exitArt[p.id] = null;
       if (was && was.state !== p.state) {
-        const rule = world.chars[p.id].art?.exit?.find((r) => r.from === was.state && r.into.includes(p.state) && was.since >= (r.after ?? 0));
+        const swapped = Object.entries(world.chars[p.id].mechanic?.vars || {}).some(([k, v]) => v.art?.[was.state] && p.vars[k] > 0); // drawn from another state's art: its exit drawings don't belong
+        const rule = swapped ? null : world.chars[p.id].art?.exit?.find((r) => r.from === was.state && r.into.includes(p.state) && was.since >= (r.after ?? 0));
         exitArt[p.id] = rule ? { rule, t: 0, total: rule.holds.reduce((a, b) => a + b, 0) } : null;
         const dx = p.x - was.x;
         if (FX.impact && (p.state === 'knockdown' || p.state === 'knockdownSoft' || p.state === 'slide')) jolt(FX.impact.shake.knockdown);
@@ -1571,6 +1676,7 @@ export function createFightRenderer(ctx, W, H) {
       const r0 = rank(game.players[0]), r1 = rank(game.players[1]);
       if (r0 !== r1) front = r0 > r1 ? 0 : 1;
       const order = [game.players[1 - front], game.players[front]];
+      for (const p of game.players) drawRelic(p, world.chars[p.id], game.frame); // RELIC: set lanterns hang behind the fighters
       bodies = game.players.map((q) => bodyRect(q, world)); fxPlain = opts.effectsOpacity === false; // FXOPACITY
       for (const p of order) {
         const def = world.chars[p.id];
@@ -1612,6 +1718,7 @@ export function createFightRenderer(ctx, W, H) {
         ctx.save();
         ctx.translate(nx, ny);
         if (turn) { const [cx, cy] = toScreen(p.x, p.y + 80 * UNIT); ctx.translate(cx, cy); ctx.rotate((turn * Math.PI) / 180); ctx.translate(-cx, -cy); }
+        drawRelicHand(p, def, shown, game.frame, true); // RELIC: the held lantern's light, behind him
         if (!drawSprite(p, def, shown, pal, impact ? (POLISH.impactFrame.style === 'whiteOnBlack' ? '#ffffff' : '#000000') : null)) drawPlaceholder(p, def, fr, placeholderColors(def.palettes, pal));
         else if (!impact && p.state.endsWith('_ex') && def.sheets[p.state]?.image === def.sheets[p.state.slice(0, -3)]?.image) {
           // An EX move with no art of its own: the normal animation, brightened.
@@ -1640,6 +1747,7 @@ export function createFightRenderer(ctx, W, H) {
         }
         drawRibbons(def, T);
         drawLantern(p, def, shown);
+        drawRelicHand(p, def, shown, game.frame, false); // RELIC: snuff / relight on top
         drawLayers(p, def, fr, false);
         stretch = [1, 1];
         ctx.restore();

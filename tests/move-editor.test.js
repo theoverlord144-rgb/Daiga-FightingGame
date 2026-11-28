@@ -264,7 +264,7 @@ test('hit settings: a move that only releases a projectile shows the settings of
 });
 
 test('"Hits airborne" is yes unless the file says no, and the switch writes only what differs from that', () => {
-  const raw = loadJSON('data/characters/avner/avner.toska.json');
+  const raw = loadJSON('data/characters/_archive/avner_moonlit/avner.toska.json');
   const field = FIELDS.find((f) => f.key === 'hitsAirborne');
   const wave = settingsTarget(raw, SYSTEM, 'proj:tideWaveL');
   assert.ok(applies(field, wave));
@@ -314,7 +314,7 @@ test('"Appears": a projectile is switched between in front of him and under the 
   assert.equal(spawnOf('rite_5'), 'palm5');
   assert.deepEqual(raw, base, 'exactly as it was');
   // A spawn that carries its own distance keeps it.
-  const av = loadJSON('data/characters/avner/avner.toska.json');
+  const av = loadJSON('data/characters/_archive/avner_moonlit/avner.toska.json');
   const cres = settingsTarget(av, SYSTEM, 'proj:crescent');
   const before = clone(av.moves.find((m) => m.id === 'moonlit5').timeline);
   writeSetting(av, cres, 'place', 'opponent', RULES);
@@ -354,7 +354,7 @@ test('projectile timeline: when each projectile appears, when it can hit, and th
 
 test('projectile timeline: it warns when a haul comes before its wave has arrived (Avner\'s Tide)', async () => {
   const { flightOf, firstTouch, flightWarning } = await import('../src/editor/preview.js');
-  const raw = loadJSON('data/characters/avner/avner.toska.json');
+  const raw = loadJSON('data/characters/_archive/avner_moonlit/avner.toska.json');
   const def = compileCharacter(raw, SYSTEM);
   const f = flightOf(def, 'tideM');
   assert.equal(f.remote, true);

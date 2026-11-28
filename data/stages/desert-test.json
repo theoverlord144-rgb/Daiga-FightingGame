@@ -1,0 +1,13 @@
+{
+  "notes": "The owner's painted desert (Nov 27): five pictures in data/stages/Desert Test/, back to front. Layer type image: image (its path under data/stages/), parallax (0 = fixed, 1 = moves with the floor), scale (screen px per picture px), ground (the picture's row that sits on the ground line; default its bottom edge), repeat (default true: tiled sideways so no edge shows). Drawing only: size and walls come from data/system/battle.json.",
+  "id": "desert-test",
+  "name": "Desert Test",
+  "light": { "color": "#ffb070", "side": "left" },
+  "layers": [
+    {"type": "image", "image": "Desert Test/Stage_DesertTest_Skybox.png", "parallax": 0, "scale": 0.5, "ground": 1252},
+    {"type": "image", "image": "Desert Test/Stage_DesertTest_FarGround.png", "parallax": 0.15, "scale": 0.45, "ground": 1121},
+    {"type": "image", "image": "Desert Test/Stage_DeserTest_MidGround.png", "parallax": 0.4, "scale": 0.5, "ground": 1030},
+    {"type": "image", "image": "Desert Test/Stage_DesertTest_Closeground.png", "parallax": 1, "scale": 0.5, "ground": 100},
+    {"type": "image", "image": "Desert Test/Stage_DesertTest_Closeground_Extra.png", "parallax": 1, "scale": 0.45, "ground": 1236}
+  ]
+}

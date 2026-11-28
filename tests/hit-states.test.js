@@ -613,7 +613,10 @@ test('Avner: Moon Phase Assault (j.236 + L, M or H) is a three-part air rekka: h
   assert.deepEqual(raw.effects.moonCrash.holds, [2, 1, 2, 3, 3, 4, 4]);
   for (const e of ['threeCrescentsEx', 'halfMoonArcEx', 'moonCrashEx', 'fullMoonBurstEx']) {
     assert.ok(raw.effects[e].sprite.tint, `${e} is tinted`);
-    assert.ok(Math.abs(raw.effects[e].sprite.scale / raw.effects[e.slice(0, -2)].sprite.scale - 1.3) < 0.001, `${e} is 1.3 times the size`);
+    // 1.3 times the size, except where the owner resized them in the editor (Nov 27, kept at his word): Three Crescents
+    // 0.8 / EX 0.9, Half Moon 0.6 / EX 0.65.
+    const k = { threeCrescentsEx: 0.9 / 0.8, halfMoonArcEx: 0.65 / 0.6 }[e] ?? 1.3;
+    assert.ok(Math.abs(raw.effects[e].sprite.scale / raw.effects[e.slice(0, -2)].sprite.scale - k) < 0.001, `${e} is ${k.toFixed(3)} times the size`);
   }
   const QCF = (b) => [RAW.DOWN, RAW.DOWN | RAW.RIGHT, RAW.RIGHT | b];
   /**

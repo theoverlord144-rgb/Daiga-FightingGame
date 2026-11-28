@@ -8,6 +8,7 @@ import { soften } from './systems.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
 import { pct, sign } from './fixed.js';
 import { lobRise, lobDrop, lobAges } from './lob.js';
+import { relicSide, relicToss } from './relic.js';
 
 // ---------- Boxes ----------
 
@@ -221,7 +222,7 @@ export function holdVictims(game, world) {
  * A fighter lying in a hard knockdown can only be touched by an OTG move, and only while the combo they are in
  * still has an OTG left (after a throw there is no combo: combo.json says whether an OTG may start one).
  */
-function floorBlocks(world, move, d) {
+export function floorBlocks(world, move, d) {
   if (!world.chars[d.id].states[d.state].floor) return false;
   const O = world.combo.hit.otg;
   if (!move || !move.otg || O.perCombo <= 0) return true;
@@ -460,7 +461,7 @@ function applyStrike(game, world, r) {
   let base = special ? pct(move.damage, ch.damagePct) : move.damage;
   base = pct(base, damageMod(world, a));
   base = pct(base, combo.scale);
-  if (uses > 0) base = pct(base, C.repeatDamage); // a move used again in the same combo
+  if (uses > 0) base = pct(base, move.repeatDamage ?? C.repeatDamage); // a move used again in the same combo (a move may set its own share)
   // Lying in a hard knockdown: only an OTG move reaches here. It does a share of its damage and lifts the fighter.
   const H = C.hit;
   const floored = !!ddef.states[d.state].floor;
@@ -503,7 +504,14 @@ function applyStrike(game, world, r) {
   // Launches. One hard launch per combo: another one acts as a soft launch.
   // The reaction: the move's own, or its counter-hit one. Crumple and slide are limited per combo.
   let react = floored ? 'normal' : (special && move.counterReaction) || (airborne && zoneHit?.airReaction) || zoneHit?.hitReaction || (airborne && move.airReaction) || move.hitReaction || 'normal';
-  if ((react === 'crumple' || react === 'slide') && combo[react] >= H[react].perCombo) react = 'normal';
+  // slideLimit: a move's own slide, counted apart from the shared limit (the 6H spike after a Moonstruck slide); past
+  // its own count it is `then` instead.
+  if (react === 'slide' && move.slideLimit) {
+    if (!combo.own) combo.own = {};
+    const k = move.slideLimit.key, n = combo.own[k] | 0;
+    if (n >= move.slideLimit.perCombo) react = move.slideLimit.then;
+    else combo.own[k] = n + 1;
+  } else if ((react === 'crumple' || react === 'slide') && combo[react] >= H[react].perCombo) react = 'normal';
   const whirlOf = (x) => x === 'spin' || x === 'tumble';
   // spin and tumble are air states: on a grounded fighter they are a soft launch, even if the move names no launch.
   const launchType = floored || zoneHit?.noLaunch ? null : move.launchType ?? (whirlOf(react) && !airborne ? 'soft' : null);
@@ -524,7 +532,7 @@ function applyStrike(game, world, r) {
   // Combo time: the longer the combo has run, the shorter the hitstun and untechable time.
   let rawStun = floored ? H.otg.untech : (inAir ? move.untech ?? R.untech ?? move.hitstun : move.hitstun) + (r.stagger | 0);
   if (special) rawStun = pct(rawStun, ch.hitstunPct);
-  if (uses > 0) rawStun = pct(rawStun, C.repeatHitstun);
+  if (uses > 0) rawStun = pct(rawStun, move.repeatHitstun ?? C.repeatHitstun);
   const clock = Math.max(0, combo.time - combo.extend); // a Witness combo's decay timer runs late
   const stun = out && (airborne || floored) ? 0 : Math.max(C.minHitstun, pct(rawStun, decayAt(inAir ? C.untechDecay : C.hitstunDecay, clock)));
   // A slide lasts its own time, shortened like untechable time (combo time, a repeated move).
@@ -550,15 +558,18 @@ function applyStrike(game, world, r) {
     const v = (floored ? H.otg.lift : null)
       || (launches ? (hard || launchType === 'soft' ? move.launch : null) ?? (!hard && whirl ? R.launch : null) ?? (hard ? C.hardLaunchUnits : C.softLaunchUnits) : null)
       || (out ? null : zoneHit?.airHit ?? move.airHit ?? (whirl ? R.launch : react === 'slide' ? R.slam : null)) || { x: battle.airHitUnits.x, y: battle.airHitUnits.y };
+    // repeatLaunch: each earlier use of the move in this combo sends them that share as high (the pulse).
+    let vy = v.y;
+    if (launches && move.repeatLaunch) for (let i = 0; i < uses; i++) vy = pct(vy, move.repeatLaunch);
     enterState(d, ddef, react === 'spin' ? 'hitSpin' : react === 'tumble' ? 'hitTumble' : 'hitAir');
-    if (react === 'slide') { d.slideV = away * R.speed; d.slideT = skidFor; combo.slide++; } // slammed down: the skid starts on landing
+    if (react === 'slide') { d.slideV = (move.slideTo === 'relic' ? relicSide(a, d) || away : away) * R.speed; d.slideT = skidFor; combo.slide++; } // slammed down: the skid starts on landing (slideTo: toward the attacker's set lantern)
     d.vx = v.x * away; // x is authored as "away from the attacker"
-    d.vy = v.y;
+    d.vy = vy;
     if (d.y === 0 && d.vy > 0) d.y = 1; // leave the ground this frame
   } else if (skid) {
     enterState(d, ddef, 'slide');
     d.y = 0;
-    d.vx = away * R.speed;
+    d.vx = (move.slideTo === 'relic' ? relicSide(a, d) || away : away) * R.speed;
     d.vy = 0;
     combo.slide++;
   } else if (react === 'hardKD' || react === 'softKD') {
@@ -581,6 +592,7 @@ function applyStrike(game, world, r) {
     if (body) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
     else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackHit, battle.pushbackFrames);
   }
+  if (move.toRelic && !out && !r.held && inAir) relicToss(game, world, a, d, move.toRelic); // thrown at the attacker's set lantern
   if (body) recoil(world, a, away, move);
   if (body && move.onHitState) {
     // An animation branch on hit (a catch): still the same use of the move, so it keeps its contact.
@@ -599,9 +611,11 @@ export function moveProjectiles(game, world) {
   for (const pr of game.projectiles) {
     const pd = world.chars[pr.owner].projectiles[pr.kind];
     if (pd.lob) { moveLob(game, world, pr, pd.lob); continue; }
-    pr.x += pd.speed * pr.facing;
-    pr.y += pd.speedY;
+    // vx / vy: a projectile given its own speeds (one turned by the lantern) flies by them instead of its kind's.
+    pr.x += pr.vx ?? pd.speed * pr.facing;
+    pr.y += pr.vy ?? pd.speedY;
     pr.age++;
+    if (pr.cool > 0) pr.cool--;
     // A burst projectile's collapse: an opponent close to it slides toward its centre (a pull, not a hit).
     const P = pd.burst?.pull;
     if (!P || pr.end || pr.hit || pr.age < pr.fuse || pr.age >= pr.boom) continue;
@@ -662,7 +676,7 @@ export function resolveProjectiles(game, world) {
     }
     game.cues.push({ type: 'projBurst', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, lv: pr.lv, size: pr.size, joined: pr.joined | 0 });
   }
-  const boxOf = (pr, def) => (def.burst ? (pr.hit || pr.age < pr.boom + def.burst.delay || pr.age >= pr.boom + def.burst.delay + def.burst.active ? null : scaledBox(def.hitbox, pr.size)) : def.noHit || pr.hit ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
+  const boxOf = (pr, def) => (def.burst ? (pr.hit || pr.age < pr.boom + def.burst.delay || pr.age >= pr.boom + def.burst.delay + def.burst.active ? null : scaledBox(def.hitbox, pr.size)) : def.noHit || pr.hit || pr.cool > 0 ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
   list.forEach((pr, i) => { if (pr.end) gone[i] = 'recall'; });
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
@@ -686,12 +700,14 @@ export function resolveProjectiles(game, world) {
       const move = def.burst && pr.dmg !== 10000 ? { ...def.move, damage: pct(def.move.damage, pr.dmg) } : def.move;
       // It pushes the way it flies, and is blocked by holding away from where it came from. A burst knocks away
       // from its centre and is blocked holding either way.
-      const away = def.burst ? (d.x > pr.x ? 1 : d.x < pr.x ? -1 : pr.facing) : pr.facing;
+      const away = def.burst ? (d.x > pr.x ? 1 : d.x < pr.x ? -1 : pr.facing) : pr.vx ? (pr.vx > 0 ? 1 : -1) : pr.facing;
       const block = blockKind(d, ddef, { x: d.x - away }, move, world) || (def.burst ? blockKind(d, ddef, { x: d.x + away }, move, world) : null);
       const kind = absorbs(ddef, d.state, move) ? 'absorb' : !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
       const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
-      applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: true, kind, stagger, proj: pr });
-      if (def.persist || def.burst) pr.hit = 1;
+      applyStrike(game, world, { a, d, move, block, away, rect, moveId: pr.kind, firstOfUse: !(pr.n > 0), kind, stagger, proj: pr });
+      // hits: a projectile that hits more than once waits `rehit` frames between its hits, then is used up.
+      if (def.hits > 1 && (pr.n | 0) + 1 < def.hits) { pr.n = (pr.n | 0) + 1; pr.cool = def.rehit; }
+      else if (def.persist || def.burst) pr.hit = 1;
       else gone[i] = kind === 'block' || kind === 'absorb' ? 'block' : 'hit';
       // A catch: the owner, still in the move that made it, goes to a follow-up state.
       if (def.ownerOnHit && kind !== 'block' && kind !== 'absorb' && kind !== 'armor' && a.state === pr.from) {
@@ -712,6 +728,21 @@ export function resolveProjectiles(game, world) {
     if (gone[i]) game.cues.push({ type: 'projectileEnd', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, facing: pr.facing, why: gone[i] });
   });
   game.projectiles = list.filter((_, i) => !gone[i]);
+}
+
+/**
+ * A hit from something of the attacker's that is not their body (the relic): blocked by holding away from `away`,
+ * then applied like a projectile's (no hitstop, contact or pushback on the attacker). Returns what it was:
+ * 'hit' | 'counter' | 'witness' | 'block' | 'armor' | 'absorb'.
+ */
+export function strikeRemote(game, world, { a, d, move, rect, away, moveId, firstOfUse = true }) {
+  const ddef = world.chars[d.id];
+  const fd = frameOf(ddef, d.state, d.frame);
+  const block = blockKind(d, ddef, { x: d.x - away }, move, world);
+  const kind = absorbs(ddef, d.state, move) ? 'absorb' : !block && fd.armor > d.armorUsed ? 'armor' : block ? 'block' : hitKind(world, d, fd);
+  const stagger = move.stagger && meets(a, move.stagger.when) ? move.stagger.hitstun : 0;
+  applyStrike(game, world, { a, d, move, block, away, rect, moveId, firstOfUse, kind, stagger, proj: true });
+  return kind;
 }
 
 /** Percent from a decay table at combo time t: the last row whose time has been reached. */

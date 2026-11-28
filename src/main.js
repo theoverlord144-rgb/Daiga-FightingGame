@@ -27,7 +27,7 @@ const params = new URLSearchParams(location.search);
 const mode = params.get('mode') || 'game';
 const isGame = mode === 'game' || mode === 'training' || mode === 'versus' || mode === 'editor';
 const opts = { boxes: params.has('boxes'), labels: true, history: true, versusHistory: false, meter: true };
-const stage = STAGES[params.get('stage')] || Object.values(STAGES)[0];
+const stage = STAGES[params.get('stage')] || STAGES['dusk-terrace'] || Object.values(STAGES)[0]; // the default (title, editor, a fight started from the address)
 
 // Time controls (training, sync test, replays): pause, one-frame steps, slow motion.
 const SPEEDS = [1, 0.5, 0.25];
@@ -92,7 +92,7 @@ if (isGame) {
       : mode === 'editor' ? ['editor', { char: picks[0].id, state: params.get('move'), frame: Number(params.get('frame') ?? 0), page: params.get('page') ?? 'boxes' }]
         : ['title', {}];
   app = createApp({
-    ctx, ui, W, H, devices, chars, stage, battle: BATTLE, matchBase: MATCH, renderer, opts, time,
+    ctx, ui, W, H, devices, chars, stage, stages: Object.values(STAGES), battle: BATTLE, matchBase: MATCH, renderer, opts, time,
     makeWorld: (a, b, match) => makeWorld(a, b, match),
     drawHistories: (game) => drawHistories(game, app.screenName === 'training' ? opts.history : opts.versusHistory),
   }, start);

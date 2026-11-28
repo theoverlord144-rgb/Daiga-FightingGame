@@ -6,6 +6,7 @@
 
 import { BTN, readMotion, pressedWithin, relDirAt, dirMotionNow, chordWithin, motionAt, held as isHeld } from './input.js';
 import { pct } from './fixed.js';
+import { createRelic, relicAction } from './relic.js';
 
 export const CONTACT = { NONE: 0, HIT: 1, BLOCK: 2, CLASH: 3 };
 const BTN_INDEX = { L: 0, M: 1, H: 2, S: 3, R: 4 };
@@ -141,6 +142,7 @@ export function createFighter(def, side, x) {
     gauge: def.mechanic?.gauge ? def.mechanic.gauge.start : 0, // the character mechanic's gauge
     vars: Object.fromEntries(Object.entries(def.mechanic?.vars || {}).map(([k, v]) => [k, v.start])), // its counters
     varIdle: {}, // for vars that drain: frames since each last went up
+    ...(def.relic ? { relic: createRelic() } : {}), // a character with a relic (Avner's lantern): its state (relic.js)
   };
 }
 
@@ -404,6 +406,10 @@ export function fireOnEnter(game, p, def, world) {
       case 'endProjectile':
         // The fighter's own projectiles of this kind end this frame (resolveProjectiles removes them).
         for (const pr of game.projectiles) if (pr.owner === p.id && pr.kind === v) pr.end = 1;
+        break;
+      case 'relic':
+        // The character's relic does one of its named actions (relic.js): set it down, recall it, swing it, pulse it.
+        relicAction(game, p, def, world, v);
         break;
       case 'setVar':
         for (const [k, n] of Object.entries(v)) {

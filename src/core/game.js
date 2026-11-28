@@ -8,6 +8,7 @@ import { createInputState, pushInput, BTN } from './input.js';
 import { compileMatch, createMatch, matchBefore, matchAfter, controlsLive } from './match.js';
 import { createFighter, advanceAndDecide, move, land, resolveGuardActions, tickRite, tickDrains } from './fighter.js';
 import { separate, holdTogether, holdVictims, resolveHits, checkThrowBreaks, throwLands, throwTurns, moveProjectiles, resolveProjectiles } from './combat.js';
+import { moveRelics, resolveRelics } from './relic.js';
 import { px } from './fixed.js';
 import { compileSystems, compileHitStates } from './systems.js';
 
@@ -129,6 +130,7 @@ export function step(state, rawInputs, world) {
   moveProjectiles(state, world);
   const before = [ps[0].x, ps[1].x]; // where each fighter stood before this frame's movement (for the distance limit)
   for (const p of ps) if (!frozen[p.id]) move(state, p, world.chars[p.id], world);
+  moveRelics(state, world); // a set lantern's travel and timers, after its owner's frame (which may have just set it)
   separate(state, world);
   holdTogether(state, world, before);
   for (const p of ps) if (!frozen[p.id]) land(state, p, world.chars[p.id], world);
@@ -144,6 +146,7 @@ export function step(state, rawInputs, world) {
   }
   resolveHits(state, world, frozen);
   resolveProjectiles(state, world);
+  resolveRelics(state, world); // a set lantern: struck, its owner hit, its own hits
   if (state.match) matchAfter(state, world);
   return state;
 }

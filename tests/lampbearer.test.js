@@ -9,7 +9,7 @@ import { runSyncTest } from '../src/net/sync-test.js';
 import { compileCharacter } from '../src/core/character.js';
 import { loadWorld, loadChar, loadJSON, script, lcg, SYSTEM } from './helpers.js';
 
-const FILE = 'data/characters/avner/avner.toska.json';
+const FILE = 'data/characters/_archive/avner_moonlit/avner.toska.json';
 const RAW = loadJSON(FILE);
 const A = loadChar(FILE);
 const W = loadWorld(A, A);

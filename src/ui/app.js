@@ -2,6 +2,7 @@
 // Every screen gets the menu input each step and draws itself; `app.go(name, params)` switches screens.
 import { createTitleScreen } from './screens/title.js';
 import { createSelectScreen } from './screens/select.js';
+import { createStageSelectScreen } from './screens/stage-select.js';
 import { createSidesScreen } from './screens/sides.js';
 import { createFightScreen } from './screens/fight.js';
 import { createTrainingScreen } from './screens/training-screen.js';
@@ -14,6 +15,7 @@ const SCREENS = {
   title: createTitleScreen,
   sides: createSidesScreen,
   select: createSelectScreen,
+  stage: createStageSelectScreen,
   versus: createFightScreen,
   training: createTrainingScreen,
   settings: createSettingsScreen,
@@ -21,7 +23,7 @@ const SCREENS = {
 };
 
 /**
- * shared: { ctx, ui, W, H, devices, chars, stage, battle, matchBase, makeWorld(a, b, match), renderer, opts, time,
+ * shared: { ctx, ui, W, H, devices, chars, stage (the default), stages (every stage, for stage select), battle, matchBase, makeWorld(a, b, match), renderer, opts, time,
  * drawHistories(game) }.
  */
 export function createApp(shared, start = ['title', {}]) {

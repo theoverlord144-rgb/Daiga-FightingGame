@@ -54,6 +54,12 @@ const AIR_CENTRE = 92; // game px above the fighter's position where an air draw
 // fx sheets: feather: px (a dark drawing on white: fade its pale rim away); arc: 'right' (see processEffect).
 // fx sheets: anchor = centre | ground (bottom centre) | bright (the brightest point); size = game px of the
 // largest drawing's longer side.
+const GUARD_H = 170; // the empty-hand idle's height, game px (its median drawn height 480 x its head-size scale 0.709 / 2)
+// The empty-hand set (set: 'E', one stance for the whole sheet) came out about 8% too big: his head, forehead under the
+// locs to chin, is 27.5 px in the empty-hand idle against 25.4 in the lantern idle (owner, Nov 27: match the heads).
+// Every such sheet's own size is multiplied by this one factor. Sheets that mix stances (sets: '...') are sized by
+// their lantern drawings and keep their size; only their swapped-in last drawing (e-base) shrinks with it.
+const E_FIX = 0.92;
 const AVNER_SHEETS = [
   // The older idle: only measured. It sets the size of the older sheets further down (specials, throws, hit reactions).
   { name: 'idle-old', file: 'Avner_Idle.png', n: 6, scaleRef: true, measureOnly: true },
@@ -123,7 +129,7 @@ const AVNER_SHEETS = [
     { name: 'moon-smash-land', frames: [6, 7], anchor: 'upper', lineFrom: [6, 7], holds: [10, 8] },
   ] },
   { name: 'three-crescents', file: 'Avner_SpecialMove_WaxingCrescent_Effect.png', n: 8, rows: 2, mode: 'fx', anchor: 'centre', feather: 26, size: 190, holds: [2, 3, 2, 3, 2, 3, 4, 4] },
-  { name: 'half-moon-arc', file: 'Avner_SpecialMove_HalfMoon_Effect.png', n: 7, rows: 2, perRow: [4, 3], mode: 'fx', anchor: 'centre', arc: 'right', size: 250, holds: [4, 3, 2, 3, 3, 4, 4] },
+  { name: 'half-moon-arc', file: 'Avner_SpecialMove_HalfMoon_Effect.png', n: 7, mode: 'fx', anchor: 'centre', arc: 'right', size: 250, holds: [4, 3, 2, 3, 3, 4, 4] },
   { name: 'full-moon-burst', file: 'Avner_SpecialMove_FullMoon_Effect.png', n: 10, rows: 2, mode: 'fx', anchor: 'centre', size: 280, holds: [2, 2, 2, 3, 3, 3, 1, 2, 3, 4] },
   { name: 'moon-crash', file: 'Avner_SpecialMove_MoonFallSmash_Effect.png', n: 7, rows: 2, perRow: [4, 3], mode: 'fx', anchor: 'ground', size: 330, holds: [2, 1, 2, 3, 3, 4, 4] },
   { name: 'drag-sparks', file: 'Avner_LanternDrag_Effect.png', n: 6, mode: 'fx', anchor: 'bright', size: 150, cuts: [[365, 745, 1325, 1820, 2290]], holds: [3, 3, 3, 3, 3, 3] },
@@ -240,6 +246,73 @@ const AVNER_SHEETS = [
   { ref: [8, 190], name: 'intro', bb: true, file: 'Avner_Intro.png', n: 8, rows: 2, anchor: 'upper', holds: [8, 8, 6, 8, 8, 8, 6, 20] },
   { ref: [5, 186], name: 'throw-tech', file: 'Avner_Throw_Tech.png', n: 5, holds: [3, 4, 5, 4, 4] },
   // Universal systems.
+  // ---- The Lantern-Bearer kit (owner, Nov 27). Sized by his HEAD (by: 'hair': no lantern in half of them, and the
+  // low stances are shorter), feet planted (anchor: 'foot'). set: 'E' = the empty-hand set, placed by its own idle. ----
+  { name: 'e-idle', by: 'hair', set: 'E', footRef: true, file: 'Avner_NoLantern_Idle.png', n: 12, rows: 3, anchor: 'foot', holds: [7, 6, 5, 5, 6, 7, 6, 5, 7, 6, 5, 5] },
+  { ref: [1, GUARD_H], name: 'e-base', set: 'E', file: 'Avner_NoLantern_BaseSprite.png', n: 1, anchor: 'foot', holds: [10] }, // his empty-hand base sprite: replaces a move's last drawing where it does not match (endWith)
+  { by: 'hair', set: 'E', file: 'Avner_NoLantern_Jump.png', n: 12, rows: 3, parts: [
+    { name: 'e-jumpsquat', frames: [1, 2, 3, 4], anchor: 'foot', lineFrom: [1, 2, 3], holds: [1, 1, 1, 1] },
+    { name: 'e-jump', frames: [5, 6, 7, 8, 9, 10], mode: 'air', holds: [3, 4, 5, 6, 5, 7] },
+    { name: 'e-land', frames: [11, 12], anchor: 'foot', lineFrom: [11, 12], holds: [2, 2] },
+  ] },
+  { ref: [12, GUARD_H], name: 'e5L', set: 'E', file: 'Avner_NoLantern_Light.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2] },
+  { ref: [12, GUARD_H], name: 'e5M', set: 'E', file: 'Avner_NoLantern_Medium.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 2, 2, 2, 1, 1, 1, 2, 2, 3, 3, 4] },
+  { ref: [12, GUARD_H], name: 'e5H', set: 'E', file: 'Avner_NoLantern_Heavy.png', n: 12, rows: 3, anchor: 'foot', holds: [2, 2, 2, 2, 2, 2, 2, 3, 3, 4, 4, 5] },
+  { ref: [12, GUARD_H], name: 'e4H', set: 'E', file: 'Avner_NoLantern_BackHeavy.png', n: 12, rows: 3, anchor: 'foot', holds: [2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 5, 7] },
+  { ref: [14, GUARD_H], name: 'e6H', set: 'E', file: 'Avner_NoLantern_ForwardHeavy.png', n: 14, rows: 2, anchor: 'foot', holds: [3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 4, 5, 6, 7] },
+  { ref: [12, GUARD_H], name: 'e5S', set: 'E', file: 'Avner_NoLantern_SLauncher.png', n: 12, rows: 3, anchor: 'foot', holds: [2, 2, 2, 2, 1, 2, 2, 3, 4, 4, 5, 6] },
+  { name: 'e2L', by: 'hair', set: 'E', file: 'Avner_NoLantern_Crouch_Light.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2] },
+  { name: 'e2M', by: 'hair', set: 'E', file: 'Avner_NoLantern_Crouch_Medium.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 2, 2, 2, 1, 1, 1, 2, 3, 3, 3, 4] },
+  { name: 'e2H', by: 'hair', set: 'E', file: 'Avner_NoLantern_Crouch_Heavy.png', n: 12, rows: 3, anchor: 'foot', holds: [2, 2, 2, 2, 1, 2, 2, 1, 4, 5, 6, 7] },
+  { name: 'e3H', by: 'hair', set: 'E', file: 'Avner_NoLantern_Crouch_DownforwardHeavy.png', n: 12, rows: 3, anchor: 'foot', holds: [2, 2, 2, 2, 3, 1, 1, 1, 4, 5, 6, 7] },
+  { name: 'ejL', by: 'hair', set: 'E', file: 'Avner_NoLantern_Air_Light.png', n: 12, rows: 3, mode: 'air', holds: [1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2] },
+  { name: 'ejM', by: 'hair', set: 'E', file: 'Avner_NoLantern_Air_Medium.png', n: 12, rows: 3, mode: 'air', holds: [1, 1, 2, 2, 1, 1, 2, 2, 2, 3, 3, 4] },
+  { name: 'ejH', by: 'hair', set: 'E', file: 'Avner_NoLantern_Air_Heavy.png', n: 12, rows: 3, mode: 'air', holds: [2, 2, 2, 2, 1, 2, 2, 1, 3, 4, 5, 6] },
+  // Commands to a lantern that is already set: empty-handed from the first drawing.
+  { ref: [12, GUARD_H], name: 'rite-recall', set: 'E', file: 'Avner_NoLantern_Rite_Recall.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 1, 1, 2, 2, 1, 1, 1, 2, 2, 2, 2] },
+  { ref: [12, GUARD_H], name: 'rite-pendulum', set: 'E', file: 'Avner_NoLantern_Rite_Pendulum.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2] },
+  { ref: [12, GUARD_H], name: 'pulse', set: 'E', file: 'Avner_NoLantern_Rite_Pulse.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3] },
+  // The catch: 6 drawings (the brief's holds list 8), refitted. It ends in the lantern stance.
+  { ref: [6, 190], name: 'rite-catch', set: 'E', sets: 'LLLLLL', file: 'Avner_NoLantern_Rite_Catch.png', n: 6, rows: 2, anchor: 'foot', holds: [1, 2, 2, 2, 2, 3] },
+  // Setting the lantern: these start in the lantern stance (set: 'L', placed by the lantern idle).
+  { ref: [1, 190], name: 'rite-hang', set: 'L', sets: 'LLLLLEEEEEEE', endWith: ['e-base', 0], file: 'Avner_Rite_Neutral.png', n: 12, rows: 3, anchor: 'foot', holds: [2, 2, 2, 1, 2, 1, 1, 1, 2, 2, 2, 2] },
+  { ref: [1, 190], name: 'rite-lob', set: 'L', sets: 'LLLLLEEEEEEE', endWith: ['e-base', 0], file: 'Avner_Rite_Forward.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 4] },
+  { ref: [12, 190], name: 'rite-slide', set: 'L', sets: 'LLLLLEEEEEEE', endWith: ['e-base', 0], file: 'Avner_Rite_Down.png', n: 12, rows: 3, anchor: 'foot', holds: [1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 4] },
+  { name: 'rite-leave', bb: true, set: 'L', file: 'Avner_Air_Rite_Neutral.png', n: 12, rows: 3, mode: 'air', holds: [1, 1, 1, 2, 2, 1, 1, 1, 2, 2, 2, 2] },
+  // Moonstruck: the owner's GIF (Nov 27; Avner_SpecialMove_Moonstruck.png is a GIF under that name, 12 frames at 0.2 s,
+  // 288 px), laid out 6 x 2 into Avner_SpecialMove_Moonstruck_Gif.png by ffmpeg. The holds stay fitted to the move.
+  { ref: [12, 190], name: 'moonstruck', set: 'L', file: 'Avner_SpecialMove_Moonstruck_Gif.png', n: 12, rows: 2, anchor: 'foot', holds: [2, 2, 2, 2, 2, 1, 2, 2, 4, 5, 5, 6] },
+  // The Sliver (236 with the lantern set or coming home; owner, Nov 27): his GIF Avner_SpecialMove_Silver.gif, 9 frames,
+  // laid out 9 x 1 into Avner_SpecialMove_Silver_Gif.png by ffmpeg. His holds list 12; fitted to the 9 drawings with the
+  // same timing: the push (7) on frames 13-14, the shot on 13, free on 36.
+  { name: 'sliver', by: 'hair', set: 'E', file: 'Avner_SpecialMove_Silver_Gif.png', n: 9, anchor: 'foot', holds: [2, 2, 2, 2, 2, 2, 2, 10, 12] },
+  { ref: [1, 190], name: '6H', set: 'L', file: 'Avner_ForwardHeavy.png', n: 14, rows: 2, anchor: 'foot', holds: [2, 2, 2, 2, 3, 3, 3, 4, 2, 2, 4, 5, 6, 7] },
+  // The lantern as its own object: front, 3/4, side, 3/4 the other way, dark, struck. Placed by the middle of its ring.
+  { name: 'lantern-object', bb: true, file: 'Lantern_Idle.png', n: 6, anchor: 'ring', holds: [2, 2, 2, 2, 2, 6] },
+  // Effects, light on black, cut on a grid.
+  { file: 'Lantern_LightLevelsEffect.png', n: 9, rows: 3, mode: 'fx', parts: [
+    { name: 'lantern-light-3', use: [1, 3], anchor: 'centre', size: 96, holds: [6, 6, 6] },
+    { name: 'lantern-light-2', use: [4, 6], anchor: 'centre', size: 48, holds: [6, 6, 6] },
+    { name: 'lantern-light-1', use: [7, 9], anchor: 'centre', size: 30, holds: [6, 6, 6] },
+  ] },
+  { file: 'Lantern_SnuffAndRelight.png', n: 8, rows: 2, mode: 'fx', parts: [
+    { name: 'flame-snuff', use: [1, 4], anchor: 'ground', size: 64, holds: [2, 2, 3, 4] },
+    { name: 'flame-relight', use: [5, 8], anchor: 'ground', size: 64, holds: [1, 2, 2, 3] },
+  ] },
+  { name: 'moonstruck-mark', file: 'MoonstruckMark.png', n: 10, rows: 2, mode: 'fx', anchor: 'centre', size: 74, holds: [1, 2, 6, 6, 6, 6, 2, 2, 3, 4] },
+  { name: 'pulse-fx', file: 'Avner_NoLantern_Rite_Pulse_Effect.png', n: 9, rows: 3, mode: 'fx', anchor: 'centre', size: 300, holds: [1, 1, 2, 2, 2, 3, 3, 3, 4] },
+  { name: 'full-crescent', file: 'Lantern_FullCrescent.png', n: 10, rows: 2, mode: 'fx', anchor: 'centre', size: 210, holds: [2, 2, 3, 3, 3, 3, 2, 3, 3, 4] },
+  // Moonstruck's arc (owner, Nov 27): 6 drawings evenly spaced in one row, each placed by its cell's middle so the swing
+  // does not drift. Played as the move's layer (spread over its 36 frames): 18 cells of 2 frames, the arc from frame
+  // 10, its second drawing on frame 12, the hit.
+  // The Sliver's shot: 1 the spark, 2-6 the thin crescent flying, 7-8 the hit, 9 the fade. Placed by its brightest point.
+  { name: 'sliver-fx', file: 'Avner_SpecialMove_Silver_effect.png', n: 9, mode: 'fx', anchor: 'bright', size: 90, holds: [2, 2, 3, 3, 3, 3, 2, 3, 4] },
+  // The pendulum (owner, Nov 27). Trail: one pass of the swing, 6 drawings that are pieces of one circle, each cell
+  // centred on that circle (read off the sheet), so the arc stays put; played once a pass, flipped on the way back.
+  { name: 'pendulum-trail', file: 'Avner_NoLantern_Rite_Pendulum_Effect1.png', n: 6, mode: 'fx', anchor: 'centre', size: 90, centres: [[224, 745], [672, 745], [1120, 745], [1568, 745], [2016, 745], [2464, 745]], holds: [5, 5, 5, 5, 5, 5] },
+  // Its hit: spark, burst, fade. Played where each swing hits.
+  { name: 'pendulum-hit', file: 'Avner_NoLantern_Rite_Pendulum_Effect2.png', n: 5, mode: 'fx', anchor: 'bright', size: 110, holds: [2, 2, 3, 3, 4] },
+  { name: 'moonstruck-arc', file: 'Avner_SpecialMove_Moonstruck_Effect.png', n: 6, mode: 'fx', anchor: 'centre', size: 200, centres: [[224, 760], [672, 760], [1120, 760], [1568, 760], [2016, 760], [2464, 760]], blank: [5, 7], holds: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] },
 ];
 
 const SHEETS = OTHER?.SHEETS ?? AVNER_SHEETS;
@@ -529,6 +602,8 @@ function gridDrawings(K, n, rows, hand = null, perRow = null) {
 
 // ---------- Measuring a body drawing ----------
 
+const isHair = (r, g, b) => r >= 44 && r <= 112 && r >= g + 10 && g >= b && b >= 16 && b <= 64 && g <= 78; // his dark brown locks
+const isGold = (r, g, b) => r > 170 && g > 120 && b < 110 && r > b + 80; // the lantern's ring and cap
 const isLantern = (r, g, b) => b > r + 18 && b > g + 22 && b > 62 && b < 135 && r > 30 && r < 95; // the lantern's indigo glass
 
 /** Distance (px, capped) from every drawing pixel to the nearest pixel outside the drawing: thick parts score high. */
@@ -552,11 +627,14 @@ function measureBody(K, D, i) {
   const { W, a, rgb } = K;
   const box = D.boxes[i];
   const inside = (p) => a[p] > 0.5 && D.owner[D.label[p]] === i;
-  let lan = 0, lx = 0, ly = 0, bottom = 0;
+  let lan = 0, lx = 0, ly = 0, bottom = 0, hair = 0;
+  const ring = { x0: W, y0: K.H, x1: 0, y1: 0 }, ringTo = box.y0 + (box.y1 - box.y0) * 0.24, hairTo = box.y0 + (box.y1 - box.y0) * 0.55;
   for (let y = box.y0; y <= box.y1; y++) for (let x = box.x0; x <= box.x1; x++) {
     const p = y * W + x;
     if (!inside(p)) continue;
     if (y > bottom) bottom = y;
+    if (y <= hairTo && isHair(rgb[p * 3], rgb[p * 3 + 1], rgb[p * 3 + 2])) hair++;
+    if (y <= ringTo && isGold(rgb[p * 3], rgb[p * 3 + 1], rgb[p * 3 + 2])) { if (x < ring.x0) ring.x0 = x; if (x > ring.x1) ring.x1 = x; if (y < ring.y0) ring.y0 = y; if (y > ring.y1) ring.y1 = y; }
     if (BY_AREA || isLantern(rgb[p * 3], rgb[p * 3 + 1], rgb[p * 3 + 2])) { lan++; lx += x; ly += y; }
   }
   // The body's core: the thickest part (head, torso, hips), limbs and streaks eroded away.
@@ -575,7 +653,7 @@ function measureBody(K, D, i) {
   const band = bottom - 14;
   let fx0 = W, fx1 = 0;
   for (let y = band; y <= bottom; y++) for (let x = box.x0; x <= box.x1; x++) if (inside(y * W + x)) { if (x < fx0) fx0 = x; if (x > fx1) fx1 = x; }
-  return { box, bottom, lantern: lan, lanternAt: lan > 40 ? [lx / lan, ly / lan] : null, core: [box.x0 - 1 + cx / cn, box.y0 - 1 + cy / cn], upper: un ? ux / un : (box.x0 + box.x1) / 2, thick: max, feet: [fx0, fx1], height: bottom - box.y0 + 1 };
+  return { hair, ring: ring.x1 > ring.x0 ? [(ring.x0 + ring.x1) / 2, (ring.y0 + ring.y1) / 2] : [(box.x0 + box.x1) / 2, box.y0], box, bottom, lantern: lan, lanternAt: lan > 40 ? [lx / lan, ly / lan] : null, core: [box.x0 - 1 + cx / cn, box.y0 - 1 + cy / cn], upper: un ? ux / un : (box.x0 + box.x1) / 2, thick: max, feet: [fx0, fx1], height: bottom - box.y0 + 1 };
 }
 
 // ---------- Drawing into a sheet ----------
@@ -677,7 +755,24 @@ function bodyScale(ms, bb = false) {
 }
 
 /** A scaleRef sheet sets how big its family of sheets is drawn: its lantern's size and its standing height. */
+// by: 'hair': the empty-hand sheets have no lantern and no upright drawing, so they are sized by his head: the area of
+// his hair, which must come to E_HAIR sheet px. That number is read off the Catch sheet, the one sheet with both
+// stances at one size: its last drawing stands 190 px, and the hair of its five empty-hand drawings (median 12786
+// drawn px) is then 3098 sheet px.
+// Checked against the three sheets that show both stances in one picture (Catch, Hang, Lob/Slide): the guard there
+// stands 7% taller than 3098 gave, so the figure is raised by that (area: x 1.15).
+const E_HAIR = 3563;
+// The moves that end back in his empty-hand guard are sized by that last drawing instead: it stands as tall as the
+// empty-hand idle (game px). Head-size readings swing with the head's angle; a matching end pose does not.
+
+const hairScale = (ms) => Math.sqrt(E_HAIR / median(ms.map((m) => m.hair).filter((n) => n > 50)));
+// foot anchor: how far in front of his rear foot the fighter's position is, game px, per stance: L read off the
+// lantern idle, E off the empty-hand idle (its wide guard puts his middle further forward). A drawing is placed by its
+// own stance (spec.set, or per drawing: sets: 'LLEE...'). Where a move changes stance, its data moves him by the
+// difference (warp) on the frame the stance changes, so his rear foot stays put and his boxes follow his body.
+const FOOT = {};
 function setScale(spec, ms) {
+  if (spec.bb) { FOOT.L = (median(ms.map((m) => m.upper - m.feet[0])) * (((spec.stand ?? STAND) * RES) / median(ms.map((m) => m.height)))) / RES; }
   if (spec.bb) { BB_LANTERN = median(ms.map((m) => m.lantern)); BB_SCALE = ((spec.stand ?? STAND) * RES) / median(ms.map((m) => m.height)); return; }
   IDLE_LANTERN = median(ms.map((m) => m.lantern));
   SCALE = (STAND * RES) / median(ms.map((m) => m.height));
@@ -762,6 +857,9 @@ function tone(out, OW, cell, count, spec) {
   }
 }
 
+/** E_FIX for a sheet of the empty-hand set alone; 1 for everything else. */
+const eFix = (spec) => (spec.set === 'E' && !spec.sets ? E_FIX : 1);
+
 function processBody(spec, manifest) {
   const K = keyBody(readSheet(DIR + spec.file));
   if (spec.crop) for (let y = 0; y < K.H; y++) for (let x = 0; x < K.W; x++) if (x < spec.crop[0] || y < spec.crop[1] || x > spec.crop[2] || y > spec.crop[3]) K.a[y * K.W + x] = 0;
@@ -776,12 +874,14 @@ function processBody(spec, manifest) {
   }
   const ms = D.boxes.map((_, i) => measureBody(K, D, i));
   if (spec.scaleRef) setScale(spec, ms);
-  const k = (spec.ref ? (spec.ref[1] * RES) / ms[spec.ref[0] - 1].height : bodyScale(ms, spec.bb) ?? SCALE) * (spec.fix ?? 1);
+  const byHair = spec.by === 'hair' ? hairScale(ms) : null;
+  const k = (byHair ?? (spec.ref ? (spec.ref[1] * RES) / ms[spec.ref[0] - 1].height : bodyScale(ms, spec.bb) ?? SCALE)) * (spec.fix ?? 1) * eFix(spec);
+  if (spec.footRef) FOOT[spec.set] = (median(ms.map((m) => m.upper - m.feet[0])) * k) / RES;
   // one scale per drawing: k, corrected where the drawing was made too big or too small (even), then by the table's
   // own hand-given factor per drawing of the sheet (scales: [..], 1 = leave)
   const ks = evenScales(spec, K, D, ms, k).map((v, i) => v * (spec.scales?.[i] ?? 1));
   if (ANALYZE) {
-    console.log(`${(spec.name ?? spec.file).padEnd(14)} ${K.kind.padEnd(11)} scale ${k.toFixed(3)}  heights ${ms.map((m) => m.height).join(' ')}  lantern ${ms.map((m) => m.lantern).join(' ')}${spec.even ? '  even ' + ks.map((v) => (v / k).toFixed(2)).join(' ') : ''}`);
+    console.log(`${(spec.name ?? spec.file).padEnd(14)} ${K.kind.padEnd(11)} scale ${k.toFixed(3)}  hair ${ms.map((m) => m.hair).join(' ')}  heights ${ms.map((m) => m.height).join(' ')}  lantern ${ms.map((m) => m.lantern).join(' ')}${spec.even ? '  even ' + ks.map((v) => (v / k).toFixed(2)).join(' ') : ''}`);
     return;
   }
   // The ground line of each row: drawings whose lowest point is close to it stand exactly on it; the rest are in the air.
@@ -794,6 +894,7 @@ function processBody(spec, manifest) {
     const pts = idx.map((i) => {
       const m = ms[i];
       if (mode === 'air') return { ax: m.core[0], ay: m.core[1] };
+      if (anchor === 'ring') return { ax: m.ring[0], ay: m.ring[1] };
       // air: [drawings]: he has left the ground there and the game lifts him, so the drawing hangs from his body.
       if (part.air?.includes(i + 1)) return { ax: anchor === 'upper' ? m.upper : m.core[0], ay: m.core[1] + (AIR_CENTRE * RES) / ks[i] };
       // lineFrom: only its drawings in this drawing's own row count (a sheet of two rows has two ground lines).
@@ -803,7 +904,10 @@ function processBody(spec, manifest) {
       const ay = Math.abs(m.bottom - line) <= 16 ? m.bottom + 1 : line + 1;
       // shift: [game px per drawing]: moves a drawing forward (+) or back from where its anchor put it, for a move whose feet must stay planted.
       const sh = ((part.shift ?? spec.shift)?.[i] ?? 0) * RES / ks[i];
-      return { ax: (anchor === 'rear' ? m.feet[0] + 60 : anchor === 'upper' ? m.upper : m.core[0]) - sh, ay };
+      // foot: the rear foot stays where it is; the fighter's position is the set's idle offset in front of it.
+      const stance = (part.sets ?? spec.sets)?.[i] ?? spec.set ?? 'L';
+      const footAt = anchor === 'foot' ? (part.footOf ? ms[part.footOf - 1] : m).feet[0] + ((FOOT[stance] ?? FOOT.L) * RES) / ks[i] : 0;
+      return { ax: (anchor === 'foot' ? footAt : anchor === 'rear' ? m.feet[0] + 60 : anchor === 'upper' ? m.upper : m.core[0]) - sh, ay };
     });
     // One cell that holds every drawing with the anchor in the same place.
     let left = 0, right = 0, up = 0, down = 0;
@@ -921,12 +1025,31 @@ const manifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath
 for (const spec of SHEETS) {
   const names = spec.parts ? spec.parts.map((p) => p.name) : [spec.name];
   const wanted = !ONLY || names.some((n) => ONLY.includes(n));
-  if (!wanted && !spec.scaleRef) continue;
+  if (!wanted && !spec.scaleRef && !spec.footRef) continue;
   if (!existsSync(DIR + spec.file)) { console.log(`${names.join(', ')}: ${spec.file} is not there (skipped)`); continue; }
   if (spec.measureOnly) { processBodyQuiet(spec); continue; } // an older sheet kept only because it sets its family's size
   if (spec.mode === 'fx') processEffect(spec, manifest);
   else if (!wanted) { const was = ANALYZE; processBodyQuiet(spec); void was; } else processBody(spec, manifest);
 }
+// endWith: [sheet, drawing]: the move's last drawing does not match the stance it returns to, so it is replaced by
+// that drawing of an already cut sheet (his base sprite), placed by its origin.
+for (const spec of SHEETS) {
+  if (!spec.endWith || ANALYZE || (ONLY && !ONLY.includes(spec.name))) continue;
+  const m = manifest[spec.name].sprite, s = manifest[spec.endWith[0]].sprite;
+  const out = decodePng(readFileSync(OUT + spec.name + '.png')), src = decodePng(readFileSync(OUT + spec.endWith[0] + '.png'));
+  const x0 = (m.count - 1) * m.frameW;
+  for (let y = 0; y < m.frameH; y++) for (let x = 0; x < m.frameW; x++) {
+    const q = (y * out.width + x0 + x) * 4, sx = x - m.originX + s.originX, sy = y - m.originY + s.originY;
+    const inside = sx >= 0 && sy >= 0 && sx < s.frameW && sy < s.frameH;
+    const p = inside ? (sy * src.width + spec.endWith[1] * s.frameW + sx) * 4 : -1;
+    for (let c = 0; c < 4; c++) out.data[q + c] = inside ? src.data[p + c] : 0;
+  }
+  writeFileSync(OUT + spec.name + '.png', encodePng(out));
+  writeFileSync(PREVIEWS + spec.name + '.png', encodePng(contactSheet(out.data, out.width, out.height, m.count, { w: m.frameW, h: m.frameH }, { x: m.originX, y: m.originY }, false)));
+  manifest[spec.name].swappedLast = spec.endWith;
+  console.log(`${spec.name}: last drawing swapped for ${spec.endWith[0]} drawing ${spec.endWith[1] + 1}`);
+}
+if (FOOT.L && FOOT.E) { manifest._foot = { L: Math.round(FOOT.L), E: Math.round(FOOT.E), note: 'game px from his rear foot to his position, per stance; a move that changes stance moves him by E - L' }; console.log('foot offsets', JSON.stringify(manifest._foot)); }
 if (!ANALYZE) writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 1)}\n`);
 
 /** The idle is always measured (it sets the body size), even when only other sheets are asked for. */
@@ -936,5 +1059,6 @@ function processBodyQuiet(spec) {
   for (let i = 0; i < mask.length; i++) mask[i] = K.a[i] > 0.5 ? 1 : 0;
   const D = drawings(K.W, K.H, mask, spec.n, spec.rows ?? 1);
   const ms = D.boxes.map((_, i) => measureBody(K, D, i));
-  setScale(spec, ms);
+  if (spec.scaleRef) setScale(spec, ms);
+  if (spec.footRef) FOOT[spec.set] = (median(ms.map((m) => m.upper - m.feet[0])) * hairScale(ms) * eFix(spec)) / RES;
 }

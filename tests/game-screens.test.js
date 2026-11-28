@@ -1,10 +1,11 @@
 // Phase 9 pieces outside the core: palettes, stages, and the character-select rules.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync } from 'node:fs';
+import { readdirSync, existsSync } from 'node:fs';
 import { compileCharacter } from '../src/core/character.js';
 import { recolorPixels, hexToRgb, placeholderColors } from '../src/render/palette.js';
 import { createSelectScreen } from '../src/ui/screens/select.js';
+import { createStageSelectScreen } from '../src/ui/screens/stage-select.js';
 import { loadChar, loadJSON, SYSTEM } from './helpers.js';
 
 const AVNER = loadChar('data/characters/avner/avner.toska.json');
@@ -41,7 +42,7 @@ test('a broken palette is an error when the character loads', () => {
 });
 
 test('every stage file is well formed (known layer types, parallax 0 to 1)', () => {
-  const KNOWN = new Set(['sky', 'sun', 'ridge', 'haze', 'arches', 'railing', 'floor', 'stars', 'torches', 'motes', 'vignette']);
+  const KNOWN = new Set(['sky', 'sun', 'ridge', 'haze', 'arches', 'railing', 'floor', 'stars', 'torches', 'motes', 'vignette', 'image']);
   const files = readdirSync(new URL('../data/stages/', import.meta.url)).filter((f) => f.endsWith('.json'));
   assert.ok(files.length >= 1);
   for (const f of files) {
@@ -51,8 +52,11 @@ test('every stage file is well formed (known layer types, parallax 0 to 1)', () 
     for (const L of s.layers) {
       assert.ok(KNOWN.has(L.type), `${f}: unknown layer ${L.type}`);
       if (L.parallax !== undefined) assert.ok(L.parallax >= 0 && L.parallax <= 1, `${f}: parallax ${L.parallax}`);
+      if (L.type === 'image') assert.ok(existsSync(new URL(`../data/stages/${L.image}`, import.meta.url)), `${f}: ${L.image} is in data/stages`);
     }
-    assert.equal(s.layers.at(-1).type, 'floor', `${f}: the floor is drawn last`);
+    // The ground they stand on is drawn last: the code-drawn floor, or a painted piece that moves with the floor.
+    const last = s.layers.at(-1);
+    assert.ok(last.type === 'floor' || (last.type === 'image' && last.parallax === 1), `${f}: the floor is drawn last`);
   }
 });
 
@@ -74,7 +78,8 @@ test('select: same fighter in the same colour gets bumped to the next colour', (
   const s = createSelectScreen(app, { mode: 'versus', last: [{ id: 'avner', pal: 2 }, { id: 'avner', pal: 2 }] });
   run(s, [[press('confirm'), idle()], [idle(), press('confirm')], ...Array(31).fill([idle(), idle()])]);
   const [name, params] = went[0];
-  assert.equal(name, 'versus');
+  assert.equal(name, 'stage', 'the stage comes next');
+  assert.equal(params.mode, 'versus');
   assert.deepEqual(params.picks, [{ id: 'avner', pal: 2 }, { id: 'avner', pal: 3 }]);
 });
 
@@ -92,14 +97,14 @@ test('select (versus CPU): Player 1 picks their fighter, then the CPU\'s; back u
     ...Array(31).fill([idle(), idle()]),
   ]);
   const [name, params] = went[0];
-  assert.equal(name, 'versus');
+  assert.equal(name, 'stage', 'the stage comes next');
   assert.equal(params.mode, 'cpu');
   assert.equal(params.picks[0].id, 'proto');
   assert.equal(params.picks[1].id, 'proto');
   assert.notEqual(params.picks[0].pal, params.picks[1].pal);
 });
 
-test('select: back with nothing picked returns to the title; training goes to the training screen', () => {
+test('select: back with nothing picked returns to the title; training goes on to the stage, then the training screen', () => {
   let { app, went } = fakeApp();
   let s = createSelectScreen(app, { mode: 'training' });
   s.step([press('back'), idle()]);
@@ -107,5 +112,22 @@ test('select: back with nothing picked returns to the title; training goes to th
   ({ app, went } = fakeApp());
   s = createSelectScreen(app, { mode: 'training' });
   run(s, [[press('confirm'), idle()], [press('confirm'), idle()], ...Array(31).fill([idle(), idle()])]);
-  assert.equal(went[0][0], 'training');
+  assert.equal(went[0][0], 'stage');
+  assert.equal(went[0][1].mode, 'training');
+});
+
+test('stage select: left/right picks the stage, confirm starts the fight on it (training: the training screen), back returns to character select with the picks', () => {
+  const stages = [{ id: 'a', name: 'A', layers: [] }, { id: 'b', name: 'B', layers: [] }];
+  const picks = [{ id: 'avner', pal: 0 }, { id: 'proto', pal: 1 }];
+  const make = (mode) => { const went = []; const app = { ctx: null, W: 960, H: 540, stages, stage: stages[0], battle: { stage: { halfWidth: 760 } }, go: (...a) => went.push(a) }; return { went, s: createStageSelectScreen(app, { mode, picks }) }; };
+  let { went, s } = make('versus');
+  run(s, [[press('right'), idle()], [press('confirm'), idle()], ...Array(21).fill([idle(), idle()])]);
+  assert.deepEqual(went[0], ['versus', { mode: 'versus', picks, stage: stages[1] }]);
+  ({ went, s } = make('training'));
+  run(s, [[press('left'), idle()], [press('left'), idle()], [press('confirm'), idle()], ...Array(21).fill([idle(), idle()])]);
+  assert.deepEqual(went[0], ['training', { picks, stage: stages[0] }]);
+  ({ went, s } = make('cpu'));
+  s.step([idle(), press('right')]); // the CPU side's controller does not choose
+  s.step([press('back'), idle()]);
+  assert.deepEqual(went[0], ['select', { mode: 'cpu', last: picks }]);
 });

@@ -5,7 +5,7 @@ import { drawPortrait, title, hint, FONT, INK, DIM, GOLD } from './common.js';
 const SIDE_COLORS = ['#ff6b5a', '#5aa8ff'];
 const MODE_NAMES = { versus: 'VERSUS', cpu: 'VERSUS CPU', training: 'TRAINING' };
 
-export function createSelectScreen(app, { mode = 'versus', last = null } = {}) {
+export function createSelectScreen(app, { mode = 'versus', last = null, stageId = null } = {}) {
   const { ctx, W, H } = app;
   const cast = app.cast; // [{ id, def, test }]
   const sides = [0, 1].map((i) => {
@@ -38,8 +38,7 @@ export function createSelectScreen(app, { mode = 'versus', last = null } = {}) {
       if (wait >= 0) {
         if (++wait >= 30) {
           const picks = sides.map((s) => ({ id: cast[s.cursor].id, pal: s.pal }));
-          if (mode === 'training') app.go('training', { picks });
-          else app.go('versus', { mode, picks });
+          app.go('stage', { mode, picks, stageId }); // then the stage (stage-select.js)
         }
         return;
       }

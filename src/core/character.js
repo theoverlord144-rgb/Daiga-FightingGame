@@ -110,7 +110,7 @@ function ref(v, stats, kind) {
 }
 
 const LASTING = ['sprite', 'hit', 'hitProps', 'hurt', 'push', 'throw', 'throwHurt', 'invuln', 'armor', 'counter', 'gravity', 'catch', 'hold'];
-const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile', 'warp', 'detonate'];
+const ONE_SHOT = ['vel', 'addVel', 'velScale', 'sound', 'fx', 'jump', 'superFlash', 'meter', 'gauge', 'addVar', 'setVar', 'toOpponent', 'spawn', 'endProjectile', 'warp', 'detonate', 'relic'];
 
 const STANCE_BOX = { stand: ['standHurt', 'standPush'], crouch: ['crouchHurt', 'crouchPush'], air: ['airHurt', 'airPush'] };
 
@@ -205,6 +205,18 @@ function compileMoveData(m, ctx = {}) {
     // Pull-in: on hit the defender slides toward the attacker, ending `to` px in front of them, over `frames`.
     pull: m.pull ? { to: px(m.pull.to ?? 70), frames: Math.max(1, m.pull.frames ?? 8) } : null,
     perCombo: m.perCombo ?? 0, // > 0: the move can hit at most this many times in one combo (no loops)
+    // Used again in the same combo, a move's own share of damage, hitstun and launch height (out of 10000 each; null
+    // = combo.json's repeat rules; repeatLaunch applies once per earlier use, so each one goes lower).
+    repeatDamage: m.repeatDamage ?? null,
+    repeatHitstun: m.repeatHitstun ?? null,
+    repeatLaunch: m.repeatLaunch ?? null,
+    // slideLimit: { perCombo, then }: this move's slide is counted on its own, not against the shared slide limit;
+    // past perCombo it does `then` (a hit reaction) instead. key: the count it shares (default: the move's own).
+    slideLimit: m.slideLimit ? { perCombo: m.slideLimit.perCombo ?? 1, then: m.slideLimit.then ?? 'hardKD', key: m.slideLimit.key ?? null } : null,
+    slideTo: m.slideTo ?? null, // "relic": the slide it starts heads for the attacker's set lantern (away from them if none)
+    // toRelic: { speed, maxUp, grace }: on hit the fighter is thrown at the attacker's set lantern (relic.js bounces
+    // them off it). Nothing without a set lantern with a flame.
+    toRelic: m.toRelic ? { speed: px(m.toRelic.speed ?? 14), maxUp: px(m.toRelic.maxUp ?? 16), grace: m.toRelic.grace ?? 12 } : null,
     // Conditions on the attacker's own resources (same shape as `requires`), read at the moment of the hit:
     hitRequires: m.hitRequires ? condition(m.hitRequires) : null, // unmet: the hitbox touches nothing at all
     stagger: m.stagger ? { when: condition(m.stagger.when), hitstun: m.stagger.hitstun | 0 } : null, // met: extra hitstun
@@ -269,6 +281,13 @@ function compileProjectiles(src, meter) {
       onEnd: p.onEnd?.setVar ?? null, // { var: n }: set on its owner when it ends, however it ends
       ownerOnHit: p.ownerOnHit ?? null, // on hit, an owner still in the move that made it switches to this state
       endsOnGround: !!p.endsOnGround, // it ends when it reaches the floor (a diving projectile)
+      hits: Math.max(1, p.hits ?? 1), // how many times it hits before it is used up
+      rehit: Math.max(1, p.rehit ?? 8), // frames between those hits
+      // bend: { range, rangeY, pull, through, into, floorY }: near its owner's set relic it curves toward it (pull px a
+      // frame, within range px ahead and rangeY above or below); through it (its hitbox touching the relic's body grown
+      // by `through` px) it spends a flame and becomes the projectile `into` (relic.js).
+      bend: p.bend ? { range: px(p.bend.range ?? 70), rangeY: px(p.bend.rangeY ?? p.bend.range ?? 70), pull: px(p.bend.pull ?? 1.5), through: px(p.bend.through ?? 8), into: p.bend.into, floorY: px(p.bend.floorY ?? 24) } : null,
+      homeTurn: px(p.homeTurn ?? 2), // homing (a projectile made by `bend` on a marked opponent): how fast it turns, px a frame
       // burst: a projectile that waits, pulls, then bursts once (a vacuum). All numbers in px / frames / percent:
       //   fuse (frames before the collapse), collapse (frames of pull before the burst), active (frames the burst's
       //   box is out), linger (frames it stays after, for its drawing), limit (most of them out; one more makes the
@@ -328,6 +347,55 @@ function compileMechanic(src) {
   }
   const modifiers = (src.modifiers || []).map((x) => ({ when: x.when || {}, damagePct: x.damagePct ?? 10000 }));
   return { name: src.name ?? null, gauge, vars, modifiers };
+}
+
+/**
+ * The relic (relic.js): an object the character owns and sets down (Avner's lantern). Distances in px, times in
+ * frames, all turned into game units here.
+ *   relic: { vars: { state, flames, mark }, flames, relight, autoReturn, darkFrames, strikeLock, struckShow,
+ *            returnSpeed, margin, body, aim, markFrames, heights: { low, high }, hurtbox, catch: { state, at },
+ *            toss: { reach, reachY, bounce: [x, y], untech, markFloat, markUntech }, actions: { name: {...} } }
+ */
+function compileRelic(src, meter) {
+  if (!src) return null;
+  const P = (a) => (a ? [px(a[0]), px(a[1])] : null);
+  const hit = (h) => (h ? compileMoveData(h, { kind: 'special', meter }) : null);
+  const actions = {};
+  for (const [name, a] of Object.entries(src.actions || {})) {
+    if (!['place', 'slide', 'recall', 'pendulum', 'pulse', 'moon', 'fx'].includes(a.type)) throw new Error(`relic action ${name}: type must be place, slide, recall, pendulum, pulse, moon or fx (got ${a.type})`);
+    const hitAt = a.hitAt ?? [];
+    actions[name] = {
+      name, type: a.type,
+      from: P(a.from), // where it leaves his hand: [forward, up] px from his position, in the release drawing
+      to: P(a.to), // where it is set: [forward, up] from his position (none: it stays where it left his hand)
+      frames: Math.max(1, a.frames ?? 1), arc: px(a.arc ?? 0), // its travel, and how much the travel rises
+      dist: px(a.dist ?? 0), floor: px(a.floor ?? 0), drop: Math.max(1, a.drop ?? 1), // slide: how far, at what height, how fast it gets there
+      hitFrom: a.hitFrom ?? 0, pastBy: px(a.pastBy ?? 30), sliding: a.sliding ? { speed: px(a.sliding.speed ?? 6), frames: a.sliding.frames ?? 10 } : null,
+      hold: a.hold ?? 0, button: a.button ?? 'R', speed: px(a.speed ?? 14), // recall
+      hitAt, half: hitAt.length > 1 ? hitAt[1] - hitAt[0] : 30, // pendulum: the ages it passes the bottom (and hits)
+      near: px(a.near ?? 0), // pulse: within this of the lantern it always hits
+      fx: a.fx ?? null,
+      cost: a.cost ?? 0, // flames it spends when it fires (the second moon)
+      trail: a.trail ?? null, // drawing only: named effects that follow it while it travels (the slide's sparks and dust)
+      box: boxes(a.box ? [a.box] : []), // its hitbox from the ring, [x, y, w, h] px (y up)
+      hit: hit(a.hit), far: a.hit && a.far ? hit({ ...a.hit, ...a.far }) : null,
+    };
+  }
+  const T = src.toss ?? {};
+  return {
+    vars: { state: src.vars?.state ?? 'lantern', flames: src.vars?.flames ?? 'flames', mark: src.vars?.mark ?? 'mark' },
+    flames: src.flames ?? 3, relight: src.relight ?? 120, autoReturn: src.autoReturn ?? 480, darkFrames: src.darkFrames ?? 30,
+    strikeLock: src.strikeLock ?? 20, struckShow: src.struckShow ?? 6, returnSpeed: px(src.returnSpeed ?? 12), margin: px(src.margin ?? 20),
+    body: px(src.body ?? 22), aim: px(src.aim ?? 85), markFrames: src.markFrames ?? 300,
+    heights: { low: px(src.heights?.low ?? 50), high: px(src.heights?.high ?? 170) },
+    hurt: boxes([src.hurtbox ?? [-12, -46, 24, 40]]),
+    // catch: the state he plays when it reaches his hand standing free, where his hand is in its first drawing (from
+    // his position as he stands now, empty-handed), and how far back his position moves as it starts (his two stances
+    // stand at different places over the same rear foot).
+    catch: { state: src.catch?.state ?? null, at: P(src.catch?.at ?? [0, 90]), shift: px(src.catch?.shift ?? 0), during: src.catch?.during ?? [] }, // during: moves that end in the catch too (the Recall)
+    toss: { reach: px(T.reach ?? 40), reachY: px(T.reachY ?? 60), bounce: P(T.bounce ?? [6, 12]), untech: T.untech ?? 30, markFloat: px(T.markFloat ?? 4), markUntech: T.markUntech ?? 10 },
+    actions,
+  };
 }
 
 /**
@@ -586,6 +654,11 @@ export function compileCharacter(file, system) {
     states[name] = compileState(name, src, stats, { sheet: src.sprite, sheetName: name });
   }
   const projectiles = compileProjectiles(t.projectiles ?? file.projectiles, system.meter);
+  const relic = compileRelic(t.relic ?? file.relic, system.meter);
+  if (relic) {
+    for (const v of Object.values(relic.vars)) if (!mechanic.vars[v]) throw new Error(`${ch.id}: relic names var ${v}, which the mechanic doesn't declare`);
+    for (const p of Object.values(projectiles)) if (p.bend && !projectiles[p.bend.into]) throw new Error(`${ch.id}: projectile ${p.name} bends into unknown projectile ${p.bend.into}`);
+  }
   for (const p of Object.values(projectiles)) checkVars(ch.id, p.name, mechanic, [p.move.onHit, p.move.onBlock, p.move.stagger?.when, { vars: p.onEnd || {} }, { vars: p.zone?.markVar ? { [p.zone.markVar]: 1 } : {} }]);
 
   // Universal moves (burst, Vow). A character's own move with the same id is laid over the universal one, so it
@@ -655,6 +728,7 @@ export function compileCharacter(file, system) {
         if (s.type === 'meter') s.value = Math.round(s.value * (system.meter?.unit ?? 1)); // written in Devotion points
         if (s.type === 'gauge' && !mechanic.gauge) throw new Error(`${ch.id}: ${st.name} changes the gauge, but the mechanic has none`);
         if (s.type === 'spawn' && !projectiles[s.value?.name ?? s.value]) throw new Error(`${ch.id}: ${st.name} spawns unknown projectile ${s.value?.name ?? s.value}`);
+        if (s.type === 'relic' && !relic?.actions[s.value]) throw new Error(`${ch.id}: ${st.name} names relic action ${s.value}, which the relic doesn't have`);
         if (s.type === 'endProjectile' && !projectiles[s.value]) throw new Error(`${ch.id}: ${st.name} ends unknown projectile ${s.value}`);
         if (s.type === 'detonate' && !projectiles[s.value.name]?.burst) throw new Error(`${ch.id}: ${st.name} detonates ${s.value.name}, which is not a burst projectile`);
         if (s.type === 'warp' && s.value.behindIf && !mechanic.vars[s.value.behindIf]) throw new Error(`${ch.id}: ${st.name} warps by unknown var ${s.value.behindIf}`);
@@ -667,6 +741,7 @@ export function compileCharacter(file, system) {
   }
   for (const p of Object.values(projectiles)) if (p.move.varHit && !mechanic.vars[p.move.varHit.var]) throw new Error(`${ch.id}: projectile ${p.name} reads var "${p.move.varHit.var}", which the mechanic doesn't declare`);
   for (const st of Object.values(states)) if (st.move?.varHit && !mechanic.vars[st.move.varHit.var]) throw new Error(`${ch.id}: move ${st.name} reads var "${st.move.varHit.var}", which the mechanic doesn't declare`);
+  if (relic?.catch.state && !states[relic.catch.state]) throw new Error(`${ch.id}: the relic's catch state ${relic.catch.state} does not exist`);
   for (const c of commands) if (c.chase && !states[c.chase]) throw new Error(`${ch.id}: move ${c.move} chases into unknown state ${c.chase}`);
   for (const p of Object.values(projectiles)) if (p.ownerOnHit && !states[p.ownerOnHit]) throw new Error(`${ch.id}: projectile ${p.name} sends its owner to unknown state ${p.ownerOnHit}`);
   for (const st of Object.values(states)) {
@@ -707,7 +782,7 @@ export function compileCharacter(file, system) {
   const meterStart = stats.units.meterStart * (system.meter?.unit ?? 1);
   const devotion = compileArchetype(system.meter, t.meter ?? file.meter, ch.id);
   return { id: ch.id, name: ch.name ?? ch.id, version: t.version, upgradedFrom: t.upgradedFrom ?? null, stats: stats.units, states, commands,
-    sheets, mechanic, meterMax, meterStart, devotion, rite, upgrades, sOnly, attackOnly, projectiles, palettes: compilePalettes(ch.id, t.palettes),
+    sheets, mechanic, meterMax, meterStart, devotion, rite, upgrades, sOnly, attackOnly, projectiles, relic, palettes: compilePalettes(ch.id, t.palettes),
     effects: t.effects ?? file.effects ?? {},
     art: t.art ?? file.art ?? {} }; // drawing only: carried-over drawings, the guard pose, the lantern's moon phase // drawing only: named sheet effects for `fx` cues
 }
