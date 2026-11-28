@@ -2,11 +2,11 @@
 // throws and throw techs, hitstop, hitstun/blockstun, pushback (and corner pushback), damage with guts.
 
 import { frameOf } from './character.js';
-import { CONTACT, enterState, isAirborne, inZone, startSlide, applyResources, meets, gainDevotion, fallState } from './fighter.js';
+import { CONTACT, enterState, isAirborne, inZone, startSlide, applyResources, meets, gainDevotion, fallState, modeOf } from './fighter.js';
 import { perPercent } from './devotion.js';
 import { soften } from './systems.js';
 import { BTN, dirOf, frameAt, pressedAt, mirrorDir } from './input.js';
-import { pct, sign } from './fixed.js';
+import { pct, sign, px } from './fixed.js';
 import { lobRise, lobDrop, lobAges } from './lob.js';
 import { relicSide, relicToss } from './relic.js';
 
@@ -407,8 +407,9 @@ function applyStrike(game, world, r) {
     if (body) a.hitstop = move.blockHitstop;
     enterState(d, ddef, r.block === 'air' ? 'blockAir' : r.block === 'crouch' ? 'blockCrouch' : 'blockStand');
     d.stun = move.blockstun;
-    if (body) pushback(world, a, d, away, move.pushbackBlock, move.selfPushback);
-    else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackBlock, battle.pushbackFrames);
+    const bp = pct(move.pushbackBlock, modeOf(d, ddef)?.pushbackPct ?? 10000); // a mode may make him harder to move
+    if (body) pushback(world, a, d, away, bp, move.selfPushback);
+    else if (!cornered(d, ddef, world, away)) startSlide(d, away * bp, battle.pushbackFrames);
     if (body) recoil(world, a, away, move);
     if (body && move.onBlockState) {
       // A branch when blocked (a baited Absolve's long recovery): still the same use of the move.
@@ -503,7 +504,10 @@ function applyStrike(game, world, r) {
   const airborne = isAirborne(ddef, d);
   // Launches. One hard launch per combo: another one acts as a soft launch.
   // The reaction: the move's own, or its counter-hit one. Crumple and slide are limited per combo.
-  let react = floored ? 'normal' : (special && move.counterReaction) || (airborne && zoneHit?.airReaction) || zoneHit?.hitReaction || (airborne && move.airReaction) || move.hitReaction || 'normal';
+  // A mode that keeps its fighter's footing: a hit on the ground (not a super) never launches or knocks him down.
+  const dmode = modeOf(d, ddef);
+  const footed = !!dmode?.keepFooting && !isAirborne(ddef, d) && move.kind !== 'super';
+  let react = footed ? 'normal' : floored ? 'normal' : (special && move.counterReaction) || (airborne && zoneHit?.airReaction) || zoneHit?.hitReaction || (airborne && move.airReaction) || move.hitReaction || 'normal';
   // slideLimit: a move's own slide, counted apart from the shared limit (the 6H spike after a Moonstruck slide); past
   // its own count it is `then` instead.
   if (react === 'slide' && move.slideLimit) {
@@ -514,7 +518,7 @@ function applyStrike(game, world, r) {
   } else if ((react === 'crumple' || react === 'slide') && combo[react] >= H[react].perCombo) react = 'normal';
   const whirlOf = (x) => x === 'spin' || x === 'tumble';
   // spin and tumble are air states: on a grounded fighter they are a soft launch, even if the move names no launch.
-  const launchType = floored || zoneHit?.noLaunch ? null : move.launchType ?? (whirlOf(react) && !airborne ? 'soft' : null);
+  const launchType = footed || floored || zoneHit?.noLaunch ? null : move.launchType ?? (whirlOf(react) && !airborne ? 'soft' : null);
   const skid = react === 'slide' && !airborne; // a grounded fighter starts skidding at once
   const hard = launchType === 'hard' && combo.hard < C.hardLaunchLimit;
   const soft = !!launchType && !hard;
@@ -589,8 +593,9 @@ function applyStrike(game, world, r) {
     const gap = Math.abs(d.x - a.x) - move.pull.to;
     startSlide(d, gap > 0 ? -away * gap : 0, move.pull.frames);
   } else if (!airborne && !launches && !skid && !floored) {
-    if (body) pushback(world, a, d, away, move.pushbackHit, move.selfPushback);
-    else if (!cornered(d, ddef, world, away)) startSlide(d, away * move.pushbackHit, battle.pushbackFrames);
+    const hp = pct(move.pushbackHit, dmode?.pushbackPct ?? 10000);
+    if (body) pushback(world, a, d, away, hp, move.selfPushback);
+    else if (!cornered(d, ddef, world, away)) startSlide(d, away * hp, battle.pushbackFrames);
   }
   if (move.toRelic && !out && !r.held && inAir) relicToss(game, world, a, d, move.toRelic); // thrown at the attacker's set lantern
   if (body) recoil(world, a, away, move);
@@ -614,8 +619,29 @@ export function moveProjectiles(game, world) {
     // vx / vy: a projectile given its own speeds (one turned by the lantern) flies by them instead of its kind's.
     pr.x += pr.vx ?? pd.speed * pr.facing;
     pr.y += pr.vy ?? pd.speedY;
+    if (pd.minY !== null && pd.minY !== undefined && pr.y < pd.minY) pr.y = pd.minY;
     pr.age++;
     if (pr.cool > 0) pr.cool--;
+    // A tracking projectile follows the opponent along x until it has touched something.
+    if (pd.track > 0 && !pr.end && !pr.hit) {
+      const dx = game.players[1 - pr.owner].x - pr.x;
+      pr.x += dx > pd.track ? pd.track : dx < -pd.track ? -pd.track : dx;
+    }
+    // A trap: it wakes when the opponent comes near (or when the owner's var runs out), then pulls them in.
+    const Wk = pd.wake;
+    if (Wk && !pr.end) {
+      const d = game.players[1 - pr.owner];
+      if (pr.woke < 0) {
+        const dx = d.x - pr.x, dy = d.y + px(90) - pr.y;
+        const ended = Wk.endVar && (game.players[pr.owner].vars[Wk.endVar] | 0) <= 0;
+        if (ended || ((dx < 0 ? -dx : dx) <= Wk.range && (dy < 0 ? -dy : dy) <= Wk.reachY)) pr.woke = pr.age;
+      } else if (Wk.pull > 0 && pr.age < pr.woke + Wk.delay) {
+        const dst = world.chars[d.id].states[d.state];
+        if (!dst.throwVictim && d.state !== 'throwHold' && !dst.floor) { const dx = pr.x - d.x; d.x += dx > 0 ? Math.min(Wk.pull, dx) : Math.max(-Wk.pull, dx); }
+      }
+    }
+    // A trap-waker (a ground wave): its owner's waiting traps it passes over wake.
+    if (pd.wakesTraps && !pr.end) for (const q of game.projectiles) if (q.owner === pr.owner && q.woke < 0 && pd.wakesTraps.names.includes(q.kind) && Math.abs(q.x - pr.x) <= pd.wakesTraps.range) q.woke = q.age;
     // A burst projectile's collapse: an opponent close to it slides toward its centre (a pull, not a hit).
     const P = pd.burst?.pull;
     if (!P || pr.end || pr.hit || pr.age < pr.fuse || pr.age >= pr.boom) continue;
@@ -676,7 +702,7 @@ export function resolveProjectiles(game, world) {
     }
     game.cues.push({ type: 'projBurst', p: pr.owner, name: pr.kind, x: pr.x, y: pr.y, lv: pr.lv, size: pr.size, joined: pr.joined | 0 });
   }
-  const boxOf = (pr, def) => (def.burst ? (pr.hit || pr.age < pr.boom + def.burst.delay || pr.age >= pr.boom + def.burst.delay + def.burst.active ? null : scaledBox(def.hitbox, pr.size)) : def.noHit || pr.hit || pr.cool > 0 ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
+  const boxOf = (pr, def) => (def.wake ? (pr.woke < 0 || pr.age < pr.woke + def.wake.delay || pr.age >= pr.woke + def.wake.delay + def.wake.active ? null : def.hitbox) : def.burst ? (pr.hit || pr.age < pr.boom + def.burst.delay || pr.age >= pr.boom + def.burst.delay + def.burst.active ? null : scaledBox(def.hitbox, pr.size)) : def.noHit || pr.hit || pr.cool > 0 ? null : def.phases ? def.phases.find((ph) => pr.age >= ph.from && pr.age <= ph.to)?.box ?? null : def.hitbox);
   list.forEach((pr, i) => { if (pr.end) gone[i] = 'recall'; });
   for (let i = 0; i < list.length; i++) {
     for (let j = i + 1; j < list.length; j++) {
@@ -717,6 +743,7 @@ export function resolveProjectiles(game, world) {
       if (def.persist && pr.age >= def.lifetime) gone[i] = 'edge';
     } else if (def.endsOnGround && pr.y <= 0) { pr.y = 0; gone[i] = 'ground'; }
     else if (def.burst) { if (pr.age >= pr.boom + def.burst.delay + def.burst.active + def.burst.linger) gone[i] = 'edge'; }
+    else if (def.wake && pr.woke >= 0) { if (pr.age >= pr.woke + def.wake.delay + def.wake.active) gone[i] = 'burst'; }
     else if (pr.x < -half || pr.x > half || pr.age >= def.lifetime) gone[i] = 'edge';
   });
   list.forEach((pr, i) => {
